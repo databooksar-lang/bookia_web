@@ -14,6 +14,22 @@
       href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <script>
+      (function handleGitHubPagesRedirect(location) {
+        if (location.search[1] !== "/") {
+          return;
+        }
+
+        const decoded = location.search
+          .slice(1)
+          .split("&")
+          .map((segment, index) => (index === 0 ? segment : `?${segment}`))
+          .join("")
+          .replace(/~and~/g, "&");
+
+        window.history.replaceState(null, "", `${location.pathname.slice(0, -1)}${decoded}${location.hash}`);
+      })(window.location);
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </head>
   <body>

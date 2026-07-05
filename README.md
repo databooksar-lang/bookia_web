@@ -34,6 +34,13 @@ npm run build
 npm run preview
 ```
 
+## Publicacion en GitHub Pages
+
+- El sitio se publica con GitHub Actions desde la rama principal.
+- Para el repo `bookia_web`, el build usa `VITE_BASE_PATH=/bookia_web/` para que las rutas funcionen en Pages.
+- Define `VITE_API_BASE_URL` en `Settings > Secrets and variables > Actions > Variables` del repositorio, apuntando a la API publica.
+- En GitHub, activa `Settings > Pages > Build and deployment > Source: GitHub Actions`.
+
 ## Integracion con el backend
 
 - Los `fetch` usan `VITE_API_BASE_URL` cuando existe.

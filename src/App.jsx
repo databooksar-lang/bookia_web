@@ -1,16 +1,17 @@
 import { useEffect, useState, useTransition } from "react";
 
 import { apiFetch, resolveApiUrl } from "./api";
+import { stripBasePath, withBasePath } from "./routing";
 
 function navigate(path) {
-  window.history.pushState({}, "", path);
+  window.history.pushState({}, "", withBasePath(path));
   window.dispatchEvent(new PopStateEvent("popstate"));
 }
 
 function AppLink({ href, className, children }) {
   return (
     <a
-      href={href}
+      href={withBasePath(href)}
       className={className}
       onClick={(event) => {
         event.preventDefault();
@@ -24,14 +25,14 @@ function AppLink({ href, className, children }) {
 
 function useLocationState() {
   const [locationState, setLocationState] = useState({
-    pathname: window.location.pathname,
+    pathname: stripBasePath(window.location.pathname),
     search: window.location.search,
   });
 
   useEffect(() => {
     const onChange = () => {
       setLocationState({
-        pathname: window.location.pathname,
+        pathname: stripBasePath(window.location.pathname),
         search: window.location.search,
       });
     };
@@ -865,6 +866,4 @@ export default function App() {
     </div>
   );
 }
-
-
 
