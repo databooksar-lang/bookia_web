@@ -357,22 +357,25 @@ function BookstorePage({ slug }) {
     return <p className="feedback error">{error || "No encontramos esa libreria."}</p>;
   }
 
+  const resolvedHeroImageUrl = resolveApiUrl(store.hero_image_url);
+  const resolvedLogoUrl = resolveApiUrl(store.logo_url);
+
   return (
     <section className="store-page">
       <div
-        className={`store-hero store-hero-banner${store.hero_image_url ? " has-hero" : ""}`}
+        className={`store-hero store-hero-banner${resolvedHeroImageUrl ? " has-hero" : ""}`}
         style={
-          store.hero_image_url
+          resolvedHeroImageUrl
             ? {
-                backgroundImage: `linear-gradient(rgba(35, 22, 13, 0.54), rgba(35, 22, 13, 0.72)), url(${store.hero_image_url})`,
+                backgroundImage: `linear-gradient(rgba(35, 22, 13, 0.54), rgba(35, 22, 13, 0.72)), url(${resolvedHeroImageUrl})`,
               }
             : undefined
         }
       >
         <div>
           <p className="eyebrow">Libreria adherida</p>
-          {store.logo_url ? (
-            <img className="store-logo store-logo-large" src={store.logo_url} alt={`Logo de ${store.name}`} />
+          {resolvedLogoUrl ? (
+            <img className="store-logo store-logo-large" src={resolvedLogoUrl} alt={`Logo de ${store.name}`} />
           ) : null}
           <h1>{store.name}</h1>
           <p>{store.description || "Catalogo publicado desde fotos validadas por la libreria."}</p>
