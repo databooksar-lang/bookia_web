@@ -34,6 +34,36 @@ npm run build
 npm run preview
 ```
 
+## Despliegue en Railway
+
+La recomendacion para Railway es desplegar este repo con el `Dockerfile` incluido.
+
+- Railway detecta el `Dockerfile` y construye el frontend automaticamente.
+- El contenedor compila con Vite y luego sirve `dist/` con Caddy.
+- Las rutas de la SPA como `/login`, `/dashboard` y `/bookstores/:slug` hacen fallback a `index.html`.
+- El servidor escucha en `0.0.0.0` usando el `PORT` que provee Railway.
+
+### Variables de entorno en Railway
+
+Define al menos:
+
+```env
+VITE_API_BASE_URL=https://api.bookia.com
+```
+
+Notas:
+
+- Usa el dominio publico real de tu backend de Railway.
+- Para Railway no hace falta definir `VITE_BASE_PATH`; el valor por defecto `/` ya es correcto.
+
+### Pasos en Railway
+
+1. Crea un nuevo servicio y conecta este repositorio.
+2. Deja que Railway detecte el `Dockerfile`.
+3. Agrega `VITE_API_BASE_URL` en las variables del servicio.
+4. Publica el frontend en tu dominio, por ejemplo `bookia.com` o `www.bookia.com`.
+5. Verifica que al refrescar rutas internas la app siga cargando sin `404`.
+
 ## Publicacion en GitHub Pages
 
 - El sitio se publica con GitHub Actions desde la rama principal.
@@ -45,4 +75,5 @@ npm run preview
 
 - Los `fetch` usan `VITE_API_BASE_URL` cuando existe.
 - Las tapas del catalogo se resuelven contra la misma base usando el helper compartido de `src/api.js`.
-- El backend debe permitir el origen del frontend en `FRONTEND_ORIGINS` y, si se usan cookies entre dominios, configurar `SESSION_COOKIE_SECURE`, `SESSION_COOKIE_SAMESITE` y `SESSION_COOKIE_DOMAIN`.
+- El backend debe permitir el origen del frontend en `FRONTEND_ORIGINS`.
+- Como el frontend usa `credentials: "include"`, revisa tambien `SESSION_COOKIE_SECURE`, la politica `SESSION_COOKIE_SAMESITE` y `SESSION_COOKIE_DOMAIN` solo si realmente necesitas compartir cookies entre subdominios.
