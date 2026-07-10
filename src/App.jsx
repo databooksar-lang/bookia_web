@@ -156,6 +156,7 @@ function SearchResults({ filters, stores }) {
   const [items, setItems] = useState([]);
   const [selectedStore, setSelectedStore] = useState("");
   const [selectedCover, setSelectedCover] = useState(null);
+  const [brokenCoverItemIds, setBrokenCoverItemIds] = useState({});
   const [loading, startTransition] = useTransition();
   const [error, setError] = useState("");
   const hasSearched = filters !== null;
@@ -181,6 +182,7 @@ function SearchResults({ filters, stores }) {
       setSelectedStore("");
       setError("");
       setSelectedCover(null);
+      setBrokenCoverItemIds({});
       return;
     }
 
@@ -199,6 +201,7 @@ function SearchResults({ filters, stores }) {
       apiFetch(`/search?${params.toString()}`)
         .then((data) => {
           setItems(data.items);
+          setBrokenCoverItemIds({});
           setError("");
         })
         .catch((fetchError) => {
@@ -240,17 +243,34 @@ function SearchResults({ filters, stores }) {
           <span>WhatsApp</span>
         </div>
         <div className="search-results-body">
-          {items.map((item) => (
+          {items.map((item) => {
+            const coverUrl = item.cover_image_url ? resolveApiUrl(item.cover_image_url) : null;
+            const hasVisibleCover = coverUrl && !brokenCoverItemIds[item.id];
+
+            return (
             <article key={item.id} className="search-result-row" role="listitem">
               <div className="search-result-cell search-result-title" data-label="Nombre">
-                {item.cover_image_url ? (
+                {hasVisibleCover ? (
                   <button
                     type="button"
                     className="search-result-cover-button"
                     aria-label={`Ampliar tapa de ${item.title}`}
-                    onClick={() => setSelectedCover({ title: item.title, url: resolveApiUrl(item.cover_image_url) })}
+                    onClick={() => setSelectedCover({ title: item.title, url: coverUrl })}
                   >
-                    <img className="search-result-cover" src={resolveApiUrl(item.cover_image_url)} alt={`Tapa de ${item.title}`} />
+                    <img
+                      className="search-result-cover"
+                      src={coverUrl}
+                      alt={`Tapa de ${item.title}`}
+                      onError={() => {
+                        setBrokenCoverItemIds((current) => {
+                          if (current[item.id]) {
+                            return current;
+                          }
+                          return { ...current, [item.id]: true };
+                        });
+                        setSelectedCover((current) => (current?.url === coverUrl ? null : current));
+                      }}
+                    />
                   </button>
                 ) : null}
                 <strong>{item.title}</strong>
@@ -273,7 +293,8 @@ function SearchResults({ filters, stores }) {
                 </WhatsAppButton>
               </div>
             </article>
-          ))}
+            );
+          })}
         </div>
       </div>
       {selectedCover ? (

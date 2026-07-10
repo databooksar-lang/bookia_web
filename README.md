@@ -78,3 +78,6 @@ Notas:
 - Las tapas del catalogo se resuelven contra la misma base usando el helper compartido de `src/api.js`.
 - El backend debe permitir el origen del frontend en `FRONTEND_ORIGINS`.
 - Como el frontend usa `credentials: "include"`, revisa tambien `SESSION_COOKIE_SECURE`, la politica `SESSION_COOKIE_SAMESITE` y `SESSION_COOKIE_DOMAIN` solo si realmente necesitas compartir cookies entre subdominios.
+
+
+- Si una tapa falla al cargar, el buscador la oculta para evitar imagenes rotas visibles.
