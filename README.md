@@ -55,6 +55,7 @@ Notas:
 
 - Usa el dominio publico real de tu backend de Railway.
 - Para Railway no hace falta definir `VITE_BASE_PATH`; el valor por defecto `/` ya es correcto.
+- Este frontend ahora tambien lee `VITE_API_BASE_URL` en runtime al iniciar el contenedor, para evitar builds publicados con la API vacia o desactualizada.
 
 ### Pasos en Railway
 
