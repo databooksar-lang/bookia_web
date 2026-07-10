@@ -16,6 +16,8 @@ export default defineConfig({
       "/me": "http://127.0.0.1:8000",
       "/dashboard": "http://127.0.0.1:8000",
       "/catalog": "http://127.0.0.1:8000",
+      "/media": "http://127.0.0.1:8000",
+      "/static": "http://127.0.0.1:8000",
     },
   },
 });
