@@ -39,13 +39,16 @@ export function resolveApiUrl(path) {
 
 export async function apiFetch(path, options = {}) {
   let response;
+  const method = (options.method || "GET").toUpperCase();
+  const defaultHeaders = {
+    ...(options.body !== undefined || method !== "GET" ? { "Content-Type": "application/json" } : {}),
+    ...(options.headers || {}),
+  };
+
   try {
     response = await fetch(resolveApiUrl(path), {
       credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        ...(options.headers || {}),
-      },
+      headers: defaultHeaders,
       ...options,
     });
   } catch (error) {
