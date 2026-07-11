@@ -19,7 +19,10 @@ export function DashboardPage({ me, refreshMe }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [newItem, setNewItem] = useState(EMPTY_ITEM);
+  const [editingItemId, setEditingItemId] = useState(null);
+  const [draftItem, setDraftItem] = useState(EMPTY_ITEM);
   const [createBusy, startCreateTransition] = useTransition();
+  const [saveBusy, startSaveTransition] = useTransition();
   const activeItems = items.filter((item) => item.availability_status !== "hidden");
   const hiddenItems = items.filter((item) => item.availability_status === "hidden");
 
@@ -50,6 +53,39 @@ export function DashboardPage({ me, refreshMe }) {
 
   function hideItem(itemId) {
     updateAvailability(itemId, "hidden");
+  }
+
+  function startEditing(item) {
+    setEditingItemId(item.id);
+    setDraftItem({
+      title: item.title || "",
+      author: item.author || "",
+      publisher: item.publisher || "",
+      language: item.language || "",
+    });
+  }
+
+  function cancelEditing() {
+    setEditingItemId(null);
+    setDraftItem(EMPTY_ITEM);
+  }
+
+  function saveItem(itemId) {
+    startSaveTransition(() => {
+      apiFetch(`/dashboard/catalog/${itemId}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          title: draftItem.title,
+          author: draftItem.author,
+          publisher: draftItem.publisher || null,
+          language: draftItem.language || null,
+        }),
+      }).then(() => {
+        cancelEditing();
+        setError("");
+        loadCatalog(query);
+      }).catch((fetchError) => setError(fetchError.message));
+    });
   }
 
   function createItem(event) {
@@ -91,11 +127,12 @@ export function DashboardPage({ me, refreshMe }) {
       {!loading && activeItems.length === 0 ? <EmptyState title={query ? "No hay coincidencias" : "Tu catalogo esta listo para crecer"}>{query ? "Proba con otra busqueda." : "Agrega el primer libro usando el formulario de arriba."}</EmptyState> : null}
       {!loading && activeItems.length > 0 ? <div className="dashboard-list dashboard-list-active">{activeItems.map((item) => {
         const coverUrl = resolveApiUrl(item.cover_image_url);
+        const isEditing = editingItemId === item.id;
         return (
-          <article key={item.id} className="dashboard-card catalog-item">
+          <article key={item.id} className={`dashboard-card catalog-item${isEditing ? " is-editing" : ""}`}>
             <div className="catalog-item-summary">{coverUrl ? <img src={coverUrl} alt={`Tapa de ${item.title}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : <span className="catalog-cover-placeholder"><BookIcon /></span>}<div><span className="catalog-id">Libro #{item.id}</span><h3>{item.title}</h3><p>{item.author || "Autor no visible"}</p></div><label className="status-select">Disponibilidad<select value={item.availability_status} onChange={(event) => updateAvailability(item.id, event.target.value)}><option value="available">Disponible</option><option value="reserved">Reservado</option><option value="sold_out">Agotado</option><option value="hidden">Oculto</option></select></label></div>
-            <div className="dashboard-form-grid"><label>Titulo<input defaultValue={item.title} onBlur={(event) => updateItem(item.id, { title: event.target.value })} /></label><label>Autor<input defaultValue={item.author} onBlur={(event) => updateItem(item.id, { author: event.target.value })} /></label><label>Editorial<input defaultValue={item.publisher || ""} onBlur={(event) => updateItem(item.id, { publisher: event.target.value || null })} /></label><label>Idioma<input defaultValue={item.language || ""} onBlur={(event) => updateItem(item.id, { language: event.target.value || null })} /></label></div>
-            <div className="card-actions"><button className="danger-button" onClick={() => hideItem(item.id)}>Eliminar</button></div>
+            {isEditing ? <div className="dashboard-form-grid"><label>Titulo<input value={draftItem.title} onChange={(event) => setDraftItem((current) => ({ ...current, title: event.target.value }))} /></label><label>Autor<input value={draftItem.author} onChange={(event) => setDraftItem((current) => ({ ...current, author: event.target.value }))} /></label><label>Editorial<input value={draftItem.publisher} onChange={(event) => setDraftItem((current) => ({ ...current, publisher: event.target.value }))} /></label><label>Idioma<input value={draftItem.language} onChange={(event) => setDraftItem((current) => ({ ...current, language: event.target.value }))} /></label></div> : null}
+            <div className="card-actions"><div className="card-actions-main">{isEditing ? <button className="secondary-button" onClick={cancelEditing}>Cancelar</button> : <button className="secondary-button" onClick={() => startEditing(item)}>Editar</button>}{isEditing ? <button className="primary-button" onClick={() => saveItem(item.id)} disabled={saveBusy}>{saveBusy ? "Guardando..." : "Guardar"}</button> : null}</div><button className="danger-button" onClick={() => hideItem(item.id)}>Eliminar</button></div>
           </article>
         );
       })}</div> : null}
@@ -115,4 +152,3 @@ export function DashboardPage({ me, refreshMe }) {
     </section>
   );
 }
-

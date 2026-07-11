@@ -1546,9 +1546,11 @@ button:disabled {
   font-weight: 800;
 }
 
-.catalog-item {
-  display: grid;
-  gap: 24px;
+
+
+.catalog-item.is-editing {
+  border-color: rgba(18, 63, 50, 0.28);
+  box-shadow: var(--shadow-card);
 }
 
 .catalog-item-summary {
@@ -1589,8 +1591,16 @@ button:disabled {
 
 .card-actions {
   padding-top: 20px;
-  justify-content: flex-end;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   border-top: 1px solid var(--line);
+}
+
+.card-actions-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .site-footer {
@@ -1962,10 +1972,11 @@ button:disabled {
     flex-direction: column;
   }
 
-  .cta-actions > *,
-  .dashboard-actions > *,
-  .card-actions > * {
+  
+
+  .card-actions-main {
     width: 100%;
+    flex-direction: column;
   }
 
   .store-page {
