@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 
 import { apiFetch, resolveApiUrl } from "../api";
-import { formatDisplayPhone } from "../formatters";
+import { buildFacebookHref, buildInstagramHref, buildWebsiteHref, formatDisplayPhone, formatDisplayUrl } from "../formatters";
 import { AppLink, navigate } from "../navigation";
 import { EmptyState, WhatsAppButton } from "../components/Commerce";
 import { ArrowIcon, BookIcon, LocationIcon, SearchIcon, StoreIcon, WhatsAppIcon } from "../components/Icons";
@@ -209,6 +209,10 @@ function BookstoresSection({ stores, loading }) {
   );
 }
 
+function ContactLink({ href, children }) {
+  return <a href={href} target="_blank" rel="noreferrer">{children}</a>;
+}
+
 export function HomePage() {
   const [stores, setStores] = useState([]);
   const [storesLoading, setStoresLoading] = useState(true);
@@ -276,11 +280,23 @@ export function BookstorePage({ slug }) {
 
   const heroImageUrl = resolveApiUrl(store.hero_image_url);
   const logoUrl = resolveApiUrl(store.logo_url);
+  const phoneLabel = formatDisplayPhone(store.phone_country_cd, store.phone);
+  const hasWhatsApp = Boolean(phoneLabel);
+  const instagramHref = buildInstagramHref(store.instagram_handle);
+  const facebookHref = buildFacebookHref(store.facebook_handle);
+  const websiteHref = buildWebsiteHref(store.website_url);
+  const contactItems = [
+    phoneLabel ? { label: "Telefono", content: phoneLabel } : null,
+    instagramHref ? { label: "Instagram", content: <ContactLink href={instagramHref}>{formatDisplayUrl(instagramHref)}</ContactLink> } : null,
+    facebookHref ? { label: "Facebook", content: <ContactLink href={facebookHref}>{formatDisplayUrl(facebookHref)}</ContactLink> } : null,
+    websiteHref ? { label: "Sitio web", content: <ContactLink href={websiteHref}>{formatDisplayUrl(websiteHref)}</ContactLink> } : null,
+  ].filter(Boolean);
+
   return (
     <section className="store-page">
       <div className={`store-hero${heroImageUrl ? " has-hero" : ""}`} style={heroImageUrl ? { backgroundImage: `linear-gradient(90deg, rgba(11,45,36,.91), rgba(11,45,36,.52)), url(${heroImageUrl})` } : undefined}>
         <div className="store-identity"><p className="section-label">Libreria en Bookia</p>{logoUrl ? <img className="store-logo" src={logoUrl} alt={`Logo de ${store.name}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : null}<h1>{store.name}</h1><p>{store.description || "Un catalogo local para descubrir nuevas lecturas."}</p><span className="store-address"><LocationIcon size={18} /> {store.address || "Direccion a confirmar"}</span></div>
-        <aside className="store-contact-card"><p className="contact-label">Datos de contacto</p><dl><div><dt>Telefono</dt><dd>{formatDisplayPhone(store.phone_country_cd, store.phone)}</dd></div><div><dt>Instagram</dt><dd>{store.instagram_handle || "No disponible"}</dd></div><div><dt>Sitio web</dt><dd>{store.website_url || "No disponible"}</dd></div></dl><WhatsAppButton phoneCountryCd={store.phone_country_cd} phone={store.phone}><WhatsAppIcon size={19} /> Hablar por WhatsApp</WhatsAppButton></aside>
+        {contactItems.length > 0 || hasWhatsApp ? <aside className="store-contact-card"><p className="contact-label">Datos de contacto</p>{contactItems.length > 0 ? <dl>{contactItems.map((item) => <div key={item.label}><dt>{item.label}</dt><dd>{item.content}</dd></div>)}</dl> : null}{hasWhatsApp ? <WhatsAppButton phoneCountryCd={store.phone_country_cd} phone={store.phone}><WhatsAppIcon size={19} /> Hablar por WhatsApp</WhatsAppButton> : null}</aside> : null}
       </div>
       <div className="store-catalog">
         <div className="section-heading results-heading"><div><p className="section-label">Estantes disponibles</p><h2>Catalogo de {store.name}</h2><p>{visibleItems.length} {visibleItems.length === 1 ? "libro publicado" : "libros publicados"}</p></div><button className="secondary-button" onClick={() => navigate("/")}>Volver a buscar</button></div>
