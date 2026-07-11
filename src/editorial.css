@@ -1253,6 +1253,16 @@ button:disabled {
   color: var(--muted);
 }
 
+.book-card-description {
+  display: -webkit-box;
+  margin: 0 0 10px;
+  overflow: hidden;
+  color: var(--muted);
+  line-height: 1.5;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+}
+
 .book-card small {
   color: var(--muted);
   font-size: 0.68rem;
@@ -1502,6 +1512,89 @@ button:disabled {
   margin-bottom: 70px;
   border-top: 4px solid var(--forest);
 }
+.dashboard-section {
+  margin-bottom: 28px;
+}
+
+.dashboard-section-toggle {
+  width: 100%;
+  padding: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+}
+
+.dashboard-section-toggle h2 {
+  margin-bottom: 6px;
+  color: var(--forest-deep);
+  font-size: 2rem;
+}
+
+.dashboard-section-toggle p:not(.section-label) {
+  margin: 0;
+  color: var(--muted);
+}
+
+.dashboard-section-meta {
+  display: grid;
+  justify-items: end;
+  gap: 10px;
+}
+
+.dashboard-section-meta > span {
+  padding: 7px 12px;
+  color: var(--forest);
+  background: rgba(18, 63, 50, 0.08);
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.dashboard-section-meta strong {
+  color: var(--coral-dark);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dashboard-section-body {
+  margin-top: 24px;
+}
+
+.dashboard-card-head-inline {
+  margin-bottom: 24px;
+}
+
+.dashboard-form-grid-extended {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dashboard-field-wide {
+  grid-column: 1 / -1;
+}
+
+textarea {
+  width: 100%;
+  min-height: 128px;
+  padding: 14px 15px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(30, 36, 31, 0.17);
+  border-radius: 10px;
+  resize: vertical;
+  transition: border 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+textarea:hover,
+textarea:focus {
+  background: #fff;
+  border-color: rgba(18, 63, 50, 0.46);
+  box-shadow: 0 0 0 3px rgba(18, 63, 50, 0.07);
+}
 
 .dashboard-card-head {
   margin-bottom: 26px;
@@ -1548,9 +1641,17 @@ button:disabled {
 
 
 
-.catalog-item.is-editing {
-  border-color: rgba(18, 63, 50, 0.28);
-  box-shadow: var(--shadow-card);
+.catalog-item {
+  display: grid;
+  gap: 24px;
+}
+
+
+
+.catalog-item-description {
+  margin: -6px 0 0;
+  color: var(--muted);
+  line-height: 1.6;
 }
 
 .catalog-item-summary {
@@ -1691,6 +1792,10 @@ button:disabled {
   .dashboard-form-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .dashboard-form-grid-extended {
+    grid-template-columns: 1fr;
+  }
   .dashboard-list-active {
     grid-template-columns: 1fr;
   }
@@ -1762,7 +1867,8 @@ button:disabled {
   .bookstore-cta,
   .plans-cta,
   .dashboard-top,
-  .dashboard-card-head {
+  .dashboard-card-head,
+  .dashboard-section-toggle {
     align-items: flex-start;
     flex-direction: column;
   }
@@ -2066,4 +2172,6 @@ button:disabled {
     transition-duration: 0.01ms !important;
   }
 }
+
+
 
