@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { apiFetch, resolveApiUrl } from "../api";
 import { buildFacebookHref, buildInstagramHref, buildWebsiteHref, formatDisplayPhone, formatDisplayUrl } from "../formatters";
@@ -290,17 +290,18 @@ export function BookstorePage({ slug }) {
     instagramHref ? { label: "Instagram", content: <ContactLink href={instagramHref}>{formatDisplayUrl(instagramHref)}</ContactLink> } : null,
     facebookHref ? { label: "Facebook", content: <ContactLink href={facebookHref}>{formatDisplayUrl(facebookHref)}</ContactLink> } : null,
     websiteHref ? { label: "Sitio web", content: <ContactLink href={websiteHref}>{formatDisplayUrl(websiteHref)}</ContactLink> } : null,
+    store.address && String(store.address).trim() ? { label: "Direccion", content: store.address.trim() } : null,
   ].filter(Boolean);
 
   return (
     <section className="store-page">
       <div className={`store-hero${heroImageUrl ? " has-hero" : ""}`} style={heroImageUrl ? { backgroundImage: `linear-gradient(90deg, rgba(11,45,36,.91), rgba(11,45,36,.52)), url(${heroImageUrl})` } : undefined}>
-        <div className="store-identity"><p className="section-label">Libreria en Bookia</p>{logoUrl ? <img className="store-logo" src={logoUrl} alt={`Logo de ${store.name}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : null}<h1>{store.name}</h1><p>{store.description || "Un catalogo local para descubrir nuevas lecturas."}</p><span className="store-address"><LocationIcon size={18} /> {store.address || "Direccion a confirmar"}</span></div>
+        <div className="store-identity"><p className="section-label">Libreria en Bookia</p>{logoUrl ? <img className="store-logo" src={logoUrl} alt={`Logo de ${store.name}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : null}<h1>{store.name}</h1><p>{store.description || "Un catalogo local para descubrir nuevas lecturas."}</p></div>
         {contactItems.length > 0 || hasWhatsApp ? <aside className="store-contact-card"><p className="contact-label">Datos de contacto</p>{contactItems.length > 0 ? <dl>{contactItems.map((item) => <div key={item.label}><dt>{item.label}</dt><dd>{item.content}</dd></div>)}</dl> : null}{hasWhatsApp ? <WhatsAppButton phoneCountryCd={store.phone_country_cd} phone={store.phone}><WhatsAppIcon size={19} /> Hablar por WhatsApp</WhatsAppButton> : null}</aside> : null}
       </div>
       <div className="store-catalog">
         <div className="section-heading results-heading"><div><p className="section-label">Estantes disponibles</p><h2>Catalogo de {store.name}</h2><p>{visibleItems.length} {visibleItems.length === 1 ? "libro publicado" : "libros publicados"}</p></div><button className="secondary-button" onClick={() => navigate("/")}>Volver a buscar</button></div>
-        {visibleItems.length === 0 ? <EmptyState title="Este catalogo se esta preparando">Volve pronto para descubrir sus libros.</EmptyState> : <div className="book-grid">{visibleItems.map((item) => <article key={item.id} className="book-card"><BookCover item={item} /><div><span className={`status-pill status-${item.availability_status}`}>{({ available: "Disponible", reserved: "Reservado", sold_out: "Agotado", hidden: "Oculto" })[item.availability_status] || item.availability_status}</span><h3>{item.title}</h3><p>{item.author || "Autor no visible"}</p><small>{item.publisher || "Editorial no visible"}{item.language ? ` · ${item.language}` : ""}</small></div></article>)}</div>}
+        {visibleItems.length === 0 ? <EmptyState title="Este catalogo se esta preparando">Volve pronto para descubrir sus libros.</EmptyState> : <div className="book-grid">{visibleItems.map((item) => <article key={item.id} className="book-card"><BookCover item={item} /><div><span className={`status-pill status-${item.availability_status}`}>{({ available: "Disponible", reserved: "Reservado", sold_out: "Agotado", hidden: "Oculto" })[item.availability_status] || item.availability_status}</span><h3>{item.title}</h3><p>{item.author || "Autor no visible"}</p><small>{item.publisher || "Editorial no visible"}{item.language ? ` Â· ${item.language}` : ""}</small></div></article>)}</div>}
       </div>
     </section>
   );

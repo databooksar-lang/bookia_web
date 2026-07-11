@@ -66,8 +66,8 @@ export function DashboardPage({ me, refreshMe }) {
   return (
     <section className="dashboard-shell">
       <header className="dashboard-top">
-        <div><p className="section-label">Panel de libreria</p><h1>{me.bookstore.name}</h1><p>Gestiona el catalogo que ven los lectores en Bookia.</p></div>
-        <div className="dashboard-actions"><button className="secondary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver ficha publica <ArrowIcon /></button><button className="text-link" onClick={logout}>Cerrar sesion</button></div>
+        <div><p className="section-label">Gestiona tu vidriera</p><h1>{me.bookstore.name}</h1><p>Gestiona tu vidriera y lo que ven los lectores en Bookia.</p></div>
+        <div className="dashboard-actions"><button className="secondary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver vidriera digital <ArrowIcon /></button><button className="text-link" onClick={logout}>Cerrar sesion</button></div>
       </header>
 
       <form className="dashboard-search" onSubmit={(event) => { event.preventDefault(); loadCatalog(query); }}>
@@ -95,7 +95,7 @@ export function DashboardPage({ me, refreshMe }) {
           <article key={item.id} className="dashboard-card catalog-item">
             <div className="catalog-item-summary">{coverUrl ? <img src={coverUrl} alt={`Tapa de ${item.title}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : <span className="catalog-cover-placeholder"><BookIcon /></span>}<div><span className="catalog-id">Libro #{item.id}</span><h3>{item.title}</h3><p>{item.author || "Autor no visible"}</p></div><label className="status-select">Disponibilidad<select value={item.availability_status} onChange={(event) => updateAvailability(item.id, event.target.value)}><option value="available">Disponible</option><option value="reserved">Reservado</option><option value="sold_out">Agotado</option><option value="hidden">Oculto</option></select></label></div>
             <div className="dashboard-form-grid"><label>Titulo<input defaultValue={item.title} onBlur={(event) => updateItem(item.id, { title: event.target.value })} /></label><label>Autor<input defaultValue={item.author} onBlur={(event) => updateItem(item.id, { author: event.target.value })} /></label><label>Editorial<input defaultValue={item.publisher || ""} onBlur={(event) => updateItem(item.id, { publisher: event.target.value || null })} /></label><label>Idioma<input defaultValue={item.language || ""} onBlur={(event) => updateItem(item.id, { language: event.target.value || null })} /></label></div>
-            <div className="card-actions"><button className="secondary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver en el sitio publico</button><button className="danger-button" onClick={() => hideItem(item.id)}>Eliminar</button></div>
+            <div className="card-actions"><button className="secondary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver vidriera digital</button><button className="danger-button" onClick={() => hideItem(item.id)}>Eliminar</button></div>
           </article>
         );
       })}</div> : null}
@@ -107,7 +107,7 @@ export function DashboardPage({ me, refreshMe }) {
             <article key={item.id} className="dashboard-card catalog-item">
               <div className="catalog-item-summary">{coverUrl ? <img src={coverUrl} alt={`Tapa de ${item.title}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : <span className="catalog-cover-placeholder"><BookIcon /></span>}<div><span className="catalog-id">Libro #{item.id}</span><h3>{item.title}</h3><p>{item.author || "Autor no visible"}</p></div><span className={`status-pill status-${item.availability_status}`}>{AVAILABILITY_LABELS[item.availability_status] || item.availability_status}</span></div>
               <div className="dashboard-form-grid"><label>Titulo<input defaultValue={item.title} onBlur={(event) => updateItem(item.id, { title: event.target.value })} /></label><label>Autor<input defaultValue={item.author} onBlur={(event) => updateItem(item.id, { author: event.target.value })} /></label><label>Editorial<input defaultValue={item.publisher || ""} onBlur={(event) => updateItem(item.id, { publisher: event.target.value || null })} /></label><label>Idioma<input defaultValue={item.language || ""} onBlur={(event) => updateItem(item.id, { language: event.target.value || null })} /></label></div>
-              <div className="card-actions"><button className="primary-button" onClick={() => updateAvailability(item.id, "available")}>Volver a publicar</button><button className="secondary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver en el sitio publico</button></div>
+              <div className="card-actions"><button className="primary-button" onClick={() => updateAvailability(item.id, "available")}>Volver a publicar</button><button className="secondary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver vidriera digital</button></div>
             </article>
           );
         })}</div>
