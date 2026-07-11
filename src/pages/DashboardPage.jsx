@@ -89,13 +89,13 @@ export function DashboardPage({ me, refreshMe }) {
       <div className="catalog-heading"><div><p className="section-label">Catalogo activo</p><h2>Tus publicaciones</h2></div><span>{activeItems.length} {activeItems.length === 1 ? "libro" : "libros"}</span></div>
       {loading ? <div className="loading-list"><span /><span /><span /></div> : null}
       {!loading && activeItems.length === 0 ? <EmptyState title={query ? "No hay coincidencias" : "Tu catalogo esta listo para crecer"}>{query ? "Proba con otra busqueda." : "Agrega el primer libro usando el formulario de arriba."}</EmptyState> : null}
-      {!loading && activeItems.length > 0 ? <div className="dashboard-list">{activeItems.map((item) => {
+      {!loading && activeItems.length > 0 ? <div className="dashboard-list dashboard-list-active">{activeItems.map((item) => {
         const coverUrl = resolveApiUrl(item.cover_image_url);
         return (
           <article key={item.id} className="dashboard-card catalog-item">
             <div className="catalog-item-summary">{coverUrl ? <img src={coverUrl} alt={`Tapa de ${item.title}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : <span className="catalog-cover-placeholder"><BookIcon /></span>}<div><span className="catalog-id">Libro #{item.id}</span><h3>{item.title}</h3><p>{item.author || "Autor no visible"}</p></div><label className="status-select">Disponibilidad<select value={item.availability_status} onChange={(event) => updateAvailability(item.id, event.target.value)}><option value="available">Disponible</option><option value="reserved">Reservado</option><option value="sold_out">Agotado</option><option value="hidden">Oculto</option></select></label></div>
             <div className="dashboard-form-grid"><label>Titulo<input defaultValue={item.title} onBlur={(event) => updateItem(item.id, { title: event.target.value })} /></label><label>Autor<input defaultValue={item.author} onBlur={(event) => updateItem(item.id, { author: event.target.value })} /></label><label>Editorial<input defaultValue={item.publisher || ""} onBlur={(event) => updateItem(item.id, { publisher: event.target.value || null })} /></label><label>Idioma<input defaultValue={item.language || ""} onBlur={(event) => updateItem(item.id, { language: event.target.value || null })} /></label></div>
-            <div className="card-actions"><button className="secondary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver vidriera digital</button><button className="danger-button" onClick={() => hideItem(item.id)}>Eliminar</button></div>
+            <div className="card-actions"><button className="danger-button" onClick={() => hideItem(item.id)}>Eliminar</button></div>
           </article>
         );
       })}</div> : null}
@@ -115,3 +115,4 @@ export function DashboardPage({ me, refreshMe }) {
     </section>
   );
 }
+
