@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 
 import { apiFetch, resolveApiUrl } from "../api";
 import { formatDisplayPhone } from "../formatters";
@@ -41,15 +41,15 @@ function HeroSearch({ initialQuery = "", initialField = "general", onSearch }) {
   return (
     <section className="hero">
       <div className="hero-copy">
-        <p className="section-label">Tu próxima lectura está cerca</p>
-        <h1>El libro que buscás, <em>más cerca</em> de lo que imaginás.</h1>
-        <p className="hero-lead">Bookia reúne catálogos de librerías, vendedores de usados y emprendimientos para que encuentres tu próxima historia en tu comunidad.</p>
+        <p className="section-label">Tu prÃ³xima lectura estÃ¡ cerca</p>
+        <h1>El libro que buscÃ¡s, <em>mÃ¡s cerca</em> de lo que imaginÃ¡s.</h1>
+        <p className="hero-lead">Bookia reÃºne catÃ¡logos de librerÃ­as, vendedores de usados y emprendimientos para que encuentres tu prÃ³xima historia en tu comunidad.</p>
         <form className="search-panel" onSubmit={submit} aria-label="Buscar libros">
           <label className="search-field search-field-type">
             <span>Buscar por</span>
             <select value={field} onChange={(event) => setField(event.target.value)}>
-              <option value="general">Título, autor o editorial</option>
-              <option value="title">Solo título</option>
+              <option value="general">TÃ­tulo, autor o editorial</option>
+              <option value="title">Solo tÃ­tulo</option>
               <option value="author">Autor</option>
               <option value="publisher">Editorial</option>
             </select>
@@ -66,7 +66,7 @@ function HeroSearch({ initialQuery = "", initialField = "general", onSearch }) {
       </div>
       <div className="hero-books" aria-hidden="true">
         <span className="hero-book hero-book-one"><small>Historias</small><strong>que nos<br />encuentran</strong></span>
-        <span className="hero-book hero-book-two"><small>Autores</small><strong>de acá<br />y de allá</strong></span>
+        <span className="hero-book hero-book-two"><small>Autores</small><strong>de acÃ¡<br />y de allÃ¡</strong></span>
         <span className="hero-book hero-book-three"><small>Lecturas</small><strong>para cada<br />momento</strong></span>
         <span className="hero-leaf hero-leaf-one" />
         <span className="hero-leaf hero-leaf-two" />
@@ -82,6 +82,7 @@ function SearchResults({ filters, stores }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const hasSearched = filters !== null;
+  const visibleItems = items.filter((item) => item.availability_status !== "hidden");
 
   useEffect(() => {
     if (!selectedCover) return undefined;
@@ -123,24 +124,24 @@ function SearchResults({ filters, stores }) {
     <section className="results-section" id="resultados" aria-live="polite">
       <div className="section-heading results-heading">
         <div>
-          <p className="section-label">Catálogos locales</p>
-          <h2>Resultados de búsqueda</h2>
-          <p>{loading ? "Buscando en los catálogos..." : `${items.length} ${items.length === 1 ? "libro encontrado" : "libros encontrados"}`}</p>
+          <p className="section-label">CatÃ¡logos locales</p>
+          <h2>Resultados de bÃºsqueda</h2>
+          <p>{loading ? "Buscando en los catÃ¡logos..." : `${visibleItems.length} ${visibleItems.length === 1 ? "libro encontrado" : "libros encontrados"}`}</p>
         </div>
         <label className="compact-filter">
-          <span>Librería</span>
+          <span>LibrerÃ­a</span>
           <select value={selectedStore} onChange={(event) => setSelectedStore(event.target.value)}>
-            <option value="">Todas las librerías</option>
+            <option value="">Todas las librerÃ­as</option>
             {stores.map((store) => <option key={store.id} value={store.slug}>{store.name}</option>)}
           </select>
         </label>
       </div>
       {error ? <p className="feedback error">{error}</p> : null}
       {loading ? <div className="loading-list" aria-label="Cargando resultados"><span /><span /><span /></div> : null}
-      {!loading && !error && items.length === 0 ? <EmptyState title="No encontramos coincidencias">Probá con otro título, autor o editorial, o buscá en todas las librerías.</EmptyState> : null}
-      {!loading && items.length > 0 ? (
+      {!loading && !error && visibleItems.length === 0 ? <EmptyState title="No encontramos coincidencias">ProbÃ¡ con otro tÃ­tulo, autor o editorial, o buscÃ¡ en todas las librerÃ­as.</EmptyState> : null}
+      {!loading && visibleItems.length > 0 ? (
         <div className="search-results-list" role="list">
-          {items.map((item) => (
+          {visibleItems.map((item) => (
             <article key={item.id} className="search-result-row" role="listitem">
               <BookCover item={item} className="search-result-cover" interactive onOpen={setSelectedCover} />
               <div className="search-result-main">
@@ -149,7 +150,7 @@ function SearchResults({ filters, stores }) {
                 <p>{item.author || "Autor no visible"}</p>
               </div>
               <div className="search-result-store-info">
-                <span>Librería</span>
+                <span>LibrerÃ­a</span>
                 <AppLink href={`/bookstores/${item.bookstore.slug}`}>{item.bookstore.name} <ArrowIcon size={15} /></AppLink>
               </div>
               <WhatsAppButton className="primary-button search-result-whatsapp" phoneCountryCd={item.bookstore.phone_country_cd} phone={item.bookstore.phone}>
@@ -174,8 +175,8 @@ function SearchResults({ filters, stores }) {
 function BenefitsStrip() {
   const benefits = [
     [<LocationIcon key="icon" />, "Cerca tuyo", "Resultados de tu comunidad"],
-    [<StoreIcon key="icon" />, "Librerías y vendedores", "Nuevos, usados y hallazgos"],
-    [<WhatsAppIcon key="icon" />, "Contacto directo", "Consultá por WhatsApp"],
+    [<StoreIcon key="icon" />, "LibrerÃ­as y vendedores", "Nuevos, usados y hallazgos"],
+    [<WhatsAppIcon key="icon" />, "Contacto directo", "ConsultÃ¡ por WhatsApp"],
   ];
   return <section className="benefits-strip" aria-label="Beneficios de Bookia">{benefits.map(([icon, title, text]) => <div key={title}>{icon}<span><strong>{title}</strong><small>{text}</small></span></div>)}</section>;
 }
@@ -184,11 +185,11 @@ function BookstoresSection({ stores, loading }) {
   return (
     <section className="home-section bookstores-section">
       <div className="section-heading">
-        <div><p className="section-label">Una red que crece</p><h2>Librerías para descubrir</h2></div>
-        <p>Explorá catálogos reales y encontrá una nueva librería favorita.</p>
+        <div><p className="section-label">Una red que crece</p><h2>LibrerÃ­as para descubrir</h2></div>
+        <p>ExplorÃ¡ catÃ¡logos reales y encontrÃ¡ una nueva librerÃ­a favorita.</p>
       </div>
       {loading ? <div className="store-grid loading-stores"><span /><span /><span /></div> : null}
-      {!loading && stores.length === 0 ? <EmptyState compact title="Próximamente más librerías">Estamos preparando nuevos catálogos para que puedas descubrirlos.</EmptyState> : null}
+      {!loading && stores.length === 0 ? <EmptyState compact title="PrÃ³ximamente mÃ¡s librerÃ­as">Estamos preparando nuevos catÃ¡logos para que puedas descubrirlos.</EmptyState> : null}
       {!loading && stores.length > 0 ? (
         <div className="store-grid">
           {stores.slice(0, 6).map((store, index) => {
@@ -197,7 +198,7 @@ function BookstoresSection({ stores, loading }) {
               <AppLink className="store-card" href={`/bookstores/${store.slug}`} key={store.id}>
                 <span className="store-card-number">{String(index + 1).padStart(2, "0")}</span>
                 {logoUrl ? <img src={logoUrl} alt="" onError={(event) => { event.currentTarget.hidden = true; }} /> : <span className="store-card-placeholder"><StoreIcon /></span>}
-                <span><strong>{store.name}</strong><small>{store.address || "Catálogo disponible online"}</small></span>
+                <span><strong>{store.name}</strong><small>{store.address || "CatÃ¡logo disponible online"}</small></span>
                 <ArrowIcon />
               </AppLink>
             );
@@ -225,10 +226,10 @@ export function HomePage() {
       <SearchResults filters={searchFilters} stores={stores} />
       <BookstoresSection stores={stores} loading={storesLoading} />
       <section className="home-section how-section">
-        <div className="how-intro"><p className="section-label">Simple y local</p><h2>Una búsqueda.<br />Muchas historias posibles.</h2><p>Bookia acerca catálogos que antes estaban dispersos para que encontrar un libro vuelva a sentirse como un descubrimiento.</p></div>
-        <ol className="how-list"><li><span>01</span><div><h3>Buscá lo que querés leer</h3><p>Por título, autor o editorial.</p></div></li><li><span>02</span><div><h3>Elegí dónde encontrarlo</h3><p>Compará librerías y vendedores locales.</p></div></li><li><span>03</span><div><h3>Hablá directamente</h3><p>Consultá disponibilidad por WhatsApp.</p></div></li></ol>
+        <div className="how-intro"><p className="section-label">Simple y local</p><h2>Una bÃºsqueda.<br />Muchas historias posibles.</h2><p>Bookia acerca catÃ¡logos que antes estaban dispersos para que encontrar un libro vuelva a sentirse como un descubrimiento.</p></div>
+        <ol className="how-list"><li><span>01</span><div><h3>BuscÃ¡ lo que querÃ©s leer</h3><p>Por tÃ­tulo, autor o editorial.</p></div></li><li><span>02</span><div><h3>ElegÃ­ dÃ³nde encontrarlo</h3><p>ComparÃ¡ librerÃ­as y vendedores locales.</p></div></li><li><span>03</span><div><h3>HablÃ¡ directamente</h3><p>ConsultÃ¡ disponibilidad por WhatsApp.</p></div></li></ol>
       </section>
-      <section className="bookstore-cta"><div><p className="section-label">Para librerías</p><h2>Tu catálogo merece una vidriera más grande.</h2><p>Sumá tu librería a Bookia y acercá tus libros a personas que ya los están buscando.</p></div><AppLink className="light-button" href="/plans">Conocé la propuesta <ArrowIcon /></AppLink></section>
+      <section className="bookstore-cta"><div><p className="section-label">Para librerÃ­as</p><h2>Tu catÃ¡logo merece una vidriera mÃ¡s grande.</h2><p>SumÃ¡ tu librerÃ­a a Bookia y acercÃ¡ tus libros a personas que ya los estÃ¡n buscando.</p></div><AppLink className="light-button" href="/plans">ConocÃ© la propuesta <ArrowIcon /></AppLink></section>
     </>
   );
 }
@@ -236,13 +237,13 @@ export function HomePage() {
 export function PlansPage() {
   return (
     <div className="editorial-page plans-page">
-      <section className="page-hero"><p className="section-label">Bookia para librerías</p><h1>Tu catálogo, donde ya están buscando lectores.</h1><p>Una presencia digital simple para mostrar lo que tenés, mantenerlo actualizado y recibir consultas directas.</p></section>
+      <section className="page-hero"><p className="section-label">Bookia para librerÃ­as</p><h1>Tu catÃ¡logo, donde ya estÃ¡n buscando lectores.</h1><p>Una presencia digital simple para mostrar lo que tenÃ©s, mantenerlo actualizado y recibir consultas directas.</p></section>
       <section className="plan-benefits">
-        <article><span>01</span><StoreIcon size={28} /><h2>Presencia digital</h2><p>Una ficha propia para contar quiénes son, dónde están y qué libros ofrecen.</p></article>
-        <article><span>02</span><BookIcon size={28} /><h2>Catálogo al día</h2><p>Gestioná títulos y disponibilidad desde un panel claro, sin procesos complicados.</p></article>
-        <article><span>03</span><WhatsAppIcon size={28} /><h2>Contacto directo</h2><p>Cada consulta llega a la librería por WhatsApp, sin intermediarios innecesarios.</p></article>
+        <article><span>01</span><StoreIcon size={28} /><h2>Presencia digital</h2><p>Una ficha propia para contar quiÃ©nes son, dÃ³nde estÃ¡n y quÃ© libros ofrecen.</p></article>
+        <article><span>02</span><BookIcon size={28} /><h2>CatÃ¡logo al dÃ­a</h2><p>GestionÃ¡ tÃ­tulos y disponibilidad desde un panel claro, sin procesos complicados.</p></article>
+        <article><span>03</span><WhatsAppIcon size={28} /><h2>Contacto directo</h2><p>Cada consulta llega a la librerÃ­a por WhatsApp, sin intermediarios innecesarios.</p></article>
       </section>
-      <section className="plans-cta"><div><p className="section-label">Empezá por tu catálogo</p><h2>Hagamos que más lectores encuentren tus libros.</h2></div><AppLink href="/login" className="primary-button">Ingresar como librería <ArrowIcon /></AppLink></section>
+      <section className="plans-cta"><div><p className="section-label">EmpezÃ¡ por tu catÃ¡logo</p><h2>Hagamos que mÃ¡s lectores encuentren tus libros.</h2></div><AppLink href="/login" className="primary-button">Ingresar como librerÃ­a <ArrowIcon /></AppLink></section>
     </div>
   );
 }
@@ -250,10 +251,10 @@ export function PlansPage() {
 export function AboutPage() {
   return (
     <div className="editorial-page about-page">
-      <section className="page-hero about-hero"><p className="section-label">Sobre Bookia</p><h1>Encontrar un libro debería acercarte a tu comunidad.</h1><p>Bookia nace para conectar búsquedas concretas con catálogos reales: los de librerías, vendedores de usados y proyectos que sostienen la circulación de libros.</p></section>
-      <section className="about-statement"><blockquote>“Cada libro encontrado también puede ser una librería descubierta.”</blockquote><div><h2>Más cerca es mejor</h2><p>Creemos en una tecnología que ordena la búsqueda sin borrar el vínculo humano. Por eso Bookia no reemplaza la conversación: ayuda a que suceda.</p><p>Los lectores encuentran opciones. Las librerías ganan visibilidad. Los libros vuelven a circular.</p></div></section>
-      <section className="about-values"><article><span>01</span><h3>Descubrimiento</h3><p>Hacemos visibles catálogos que merecen ser explorados.</p></article><article><span>02</span><h3>Cercanía</h3><p>Priorizamos el contacto directo y las redes locales.</p></article><article><span>03</span><h3>Circulación</h3><p>Ayudamos a que cada libro encuentre una nueva lectura.</p></article></section>
-      <section className="bookstore-cta about-cta"><div><p className="section-label">Dos lados de la misma historia</p><h2>¿Buscás un libro o querés mostrar tu catálogo?</h2></div><div className="cta-actions"><AppLink className="light-button" href="/">Buscar libros <ArrowIcon /></AppLink><AppLink className="outline-light-button" href="/plans">Para librerías</AppLink></div></section>
+      <section className="page-hero about-hero"><p className="section-label">Sobre Bookia</p><h1>Encontrar un libro deberÃ­a acercarte a tu comunidad.</h1><p>Bookia nace para conectar bÃºsquedas concretas con catÃ¡logos reales: los de librerÃ­as, vendedores de usados y proyectos que sostienen la circulaciÃ³n de libros.</p></section>
+      <section className="about-statement"><blockquote>â€œCada libro encontrado tambiÃ©n puede ser una librerÃ­a descubierta.â€</blockquote><div><h2>MÃ¡s cerca es mejor</h2><p>Creemos en una tecnologÃ­a que ordena la bÃºsqueda sin borrar el vÃ­nculo humano. Por eso Bookia no reemplaza la conversaciÃ³n: ayuda a que suceda.</p><p>Los lectores encuentran opciones. Las librerÃ­as ganan visibilidad. Los libros vuelven a circular.</p></div></section>
+      <section className="about-values"><article><span>01</span><h3>Descubrimiento</h3><p>Hacemos visibles catÃ¡logos que merecen ser explorados.</p></article><article><span>02</span><h3>CercanÃ­a</h3><p>Priorizamos el contacto directo y las redes locales.</p></article><article><span>03</span><h3>CirculaciÃ³n</h3><p>Ayudamos a que cada libro encuentre una nueva lectura.</p></article></section>
+      <section className="bookstore-cta about-cta"><div><p className="section-label">Dos lados de la misma historia</p><h2>Â¿BuscÃ¡s un libro o querÃ©s mostrar tu catÃ¡logo?</h2></div><div className="cta-actions"><AppLink className="light-button" href="/">Buscar libros <ArrowIcon /></AppLink><AppLink className="outline-light-button" href="/plans">Para librerÃ­as</AppLink></div></section>
     </div>
   );
 }
@@ -263,26 +264,27 @@ export function BookstorePage({ slug }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const visibleItems = items.filter((item) => item.availability_status !== "hidden");
 
   useEffect(() => {
     setLoading(true);
     apiFetch(`/bookstores/${slug}`).then((data) => { setStore(data.bookstore); setItems(data.items); setError(""); }).catch((fetchError) => setError(fetchError.message)).finally(() => setLoading(false));
   }, [slug]);
 
-  if (loading) return <div className="page-state"><div className="loading-mark" /><p>Cargando librería...</p></div>;
-  if (error || !store) return <div className="page-state"><EmptyState title="No encontramos esa librería">{error || "Revisá el enlace o volvé a la búsqueda."}</EmptyState><button className="secondary-button" onClick={() => navigate("/")}>Volver a buscar</button></div>;
+  if (loading) return <div className="page-state"><div className="loading-mark" /><p>Cargando librerÃ­a...</p></div>;
+  if (error || !store) return <div className="page-state"><EmptyState title="No encontramos esa librerÃ­a">{error || "RevisÃ¡ el enlace o volvÃ© a la bÃºsqueda."}</EmptyState><button className="secondary-button" onClick={() => navigate("/")}>Volver a buscar</button></div>;
 
   const heroImageUrl = resolveApiUrl(store.hero_image_url);
   const logoUrl = resolveApiUrl(store.logo_url);
   return (
     <section className="store-page">
       <div className={`store-hero${heroImageUrl ? " has-hero" : ""}`} style={heroImageUrl ? { backgroundImage: `linear-gradient(90deg, rgba(11,45,36,.91), rgba(11,45,36,.52)), url(${heroImageUrl})` } : undefined}>
-        <div className="store-identity"><p className="section-label">Librería en Bookia</p>{logoUrl ? <img className="store-logo" src={logoUrl} alt={`Logo de ${store.name}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : null}<h1>{store.name}</h1><p>{store.description || "Un catálogo local para descubrir nuevas lecturas."}</p><span className="store-address"><LocationIcon size={18} /> {store.address || "Dirección a confirmar"}</span></div>
-        <aside className="store-contact-card"><p className="contact-label">Datos de contacto</p><dl><div><dt>Teléfono</dt><dd>{formatDisplayPhone(store.phone_country_cd, store.phone)}</dd></div><div><dt>Instagram</dt><dd>{store.instagram_handle || "No disponible"}</dd></div><div><dt>Sitio web</dt><dd>{store.website_url || "No disponible"}</dd></div></dl><WhatsAppButton phoneCountryCd={store.phone_country_cd} phone={store.phone}><WhatsAppIcon size={19} /> Hablar por WhatsApp</WhatsAppButton></aside>
+        <div className="store-identity"><p className="section-label">LibrerÃ­a en Bookia</p>{logoUrl ? <img className="store-logo" src={logoUrl} alt={`Logo de ${store.name}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : null}<h1>{store.name}</h1><p>{store.description || "Un catÃ¡logo local para descubrir nuevas lecturas."}</p><span className="store-address"><LocationIcon size={18} /> {store.address || "DirecciÃ³n a confirmar"}</span></div>
+        <aside className="store-contact-card"><p className="contact-label">Datos de contacto</p><dl><div><dt>TelÃ©fono</dt><dd>{formatDisplayPhone(store.phone_country_cd, store.phone)}</dd></div><div><dt>Instagram</dt><dd>{store.instagram_handle || "No disponible"}</dd></div><div><dt>Sitio web</dt><dd>{store.website_url || "No disponible"}</dd></div></dl><WhatsAppButton phoneCountryCd={store.phone_country_cd} phone={store.phone}><WhatsAppIcon size={19} /> Hablar por WhatsApp</WhatsAppButton></aside>
       </div>
       <div className="store-catalog">
-        <div className="section-heading results-heading"><div><p className="section-label">Estantes disponibles</p><h2>Catálogo de {store.name}</h2><p>{items.length} {items.length === 1 ? "libro publicado" : "libros publicados"}</p></div><button className="secondary-button" onClick={() => navigate("/")}>Volver a buscar</button></div>
-        {items.length === 0 ? <EmptyState title="Este catálogo se está preparando">Volvé pronto para descubrir sus libros.</EmptyState> : <div className="book-grid">{items.map((item) => <article key={item.id} className="book-card"><BookCover item={item} /><div><span className={`status-pill status-${item.availability_status}`}>{({ available: "Disponible", reserved: "Reservado", sold_out: "Agotado", hidden: "Oculto" })[item.availability_status] || item.availability_status}</span><h3>{item.title}</h3><p>{item.author || "Autor no visible"}</p><small>{item.publisher || "Editorial no visible"}{item.language ? ` · ${item.language}` : ""}</small></div></article>)}</div>}
+        <div className="section-heading results-heading"><div><p className="section-label">Estantes disponibles</p><h2>CatÃ¡logo de {store.name}</h2><p>{visibleItems.length} {visibleItems.length === 1 ? "libro publicado" : "libros publicados"}</p></div><button className="secondary-button" onClick={() => navigate("/")}>Volver a buscar</button></div>
+        {visibleItems.length === 0 ? <EmptyState title="Este catÃ¡logo se estÃ¡ preparando">VolvÃ© pronto para descubrir sus libros.</EmptyState> : <div className="book-grid">{visibleItems.map((item) => <article key={item.id} className="book-card"><BookCover item={item} /><div><span className={`status-pill status-${item.availability_status}`}>{({ available: "Disponible", reserved: "Reservado", sold_out: "Agotado", hidden: "Oculto" })[item.availability_status] || item.availability_status}</span><h3>{item.title}</h3><p>{item.author || "Autor no visible"}</p><small>{item.publisher || "Editorial no visible"}{item.language ? ` Â· ${item.language}` : ""}</small></div></article>)}</div>}
       </div>
     </section>
   );
