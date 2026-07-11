@@ -12,7 +12,15 @@ export default function App() {
   const [me, setMe] = useState(undefined);
 
   function refreshMe() {
-    return apiFetch("/me").then((data) => setMe(data)).catch(() => setMe(null));
+    return apiFetch("/me")
+      .then((data) => {
+        setMe(data);
+        return data;
+      })
+      .catch(() => {
+        setMe(null);
+        return null;
+      });
   }
 
   useEffect(() => {
