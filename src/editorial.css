@@ -1145,14 +1145,6 @@ button:disabled {
   color: rgba(255, 250, 240, 0.78);
 }
 
-.store-address {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.83rem;
-  font-weight: 700;
-}
-
 .store-contact-card {
   padding: 30px;
   color: var(--ink);

@@ -47,7 +47,7 @@ export function SiteHeader({ pathname, me }) {
             </AppLink>
           ))}
           <AppLink href={accountHref} className={`header-account${pathname === accountHref || pathname === "/dashboard" ? " is-active" : ""}`}>
-            {me ? "Mi catalogo" : "Para librerias"}
+            {me ? "Mi vidriera" : "Para librerias"}
           </AppLink>
         </nav>
       </div>
