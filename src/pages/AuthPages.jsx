@@ -41,7 +41,12 @@ export function LoginPage({ onLogin, me }) {
     startTransition(() => {
       apiFetch("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) })
         .then(() => onLogin())
-        .then(() => navigate("/dashboard"))
+        .then((sessionData) => {
+          if (!sessionData) {
+            throw new Error("El ingreso fue aceptado, pero no pudimos recuperar tu sesion. Revisa la configuracion de cookies del backend (SESSION_COOKIE_SECURE, SESSION_COOKIE_SAMESITE, FRONTEND_ORIGINS).");
+          }
+          navigate("/dashboard");
+        })
         .catch((loginError) => setError(loginError.message));
     });
   }
