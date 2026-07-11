@@ -1,4 +1,4 @@
-const RUNTIME_API_BASE = globalThis.__BOOKIA_CONFIG__?.apiBaseUrl || "";
+﻿const RUNTIME_API_BASE = globalThis.__BOOKIA_CONFIG__?.apiBaseUrl || "";
 const BUILD_API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 const API_BASE = (RUNTIME_API_BASE || BUILD_API_BASE).replace(/\/$/, "");
 
@@ -15,6 +15,26 @@ function buildInvalidApiResponseMessage(path, response, contentType) {
   }
 
   return `El servidor devolvio una respuesta invalida (${response.status} ${contentType || "sin content-type"}).`;
+}
+
+function buildNonJsonErrorMessage(path, response, contentType, bodyText) {
+  const trimmedBody = bodyText.trim();
+  const looksLikeHtml = contentType.includes("text/html") || /^<!doctype html/i.test(trimmedBody) || /^<html/i.test(trimmedBody);
+  const looksLikeApiRoute = /^\/(search|bookstores|auth|me|dashboard|catalog)(\/|\?|$)/.test(path);
+
+  if (looksLikeHtml && looksLikeApiRoute) {
+    return buildInvalidApiResponseMessage(path, response, contentType || "text/html");
+  }
+
+  if (trimmedBody) {
+    return `La API respondio ${response.status} y no devolvio JSON. ${trimmedBody.slice(0, 180)}`;
+  }
+
+  if (response.status >= 500) {
+    return `La API respondio con error ${response.status}. Revisa el backend o el proxy de /auth/login.`;
+  }
+
+  return `La API respondio ${response.status} sin un error legible (${contentType || "sin content-type"}).`;
 }
 
 export function resolveApiUrl(path) {
@@ -63,10 +83,11 @@ export async function apiFetch(path, options = {}) {
   const expectsJson = contentType.includes("application/json");
 
   if (!expectsJson) {
+    const responseText = await response.text().catch(() => "");
     if (response.ok) {
       throw new Error(buildInvalidApiResponseMessage(path, response, contentType));
     }
-    throw new Error("No pudimos completar la accion.");
+    throw new Error(buildNonJsonErrorMessage(path, response, contentType, responseText));
   }
 
   let data = null;
