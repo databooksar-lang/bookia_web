@@ -1,7 +1,8 @@
-:{$PORT:3000} {
-  root * /srv
-  encode gzip zstd
-  file_server
-
-  try_files {path} /index.html
+﻿:{$PORT:3000} {
+  handle {
+    root * /srv
+    encode gzip zstd
+    try_files {path} /index.html
+    file_server
+  }
 }

@@ -1,4 +1,4 @@
-#!/bin/sh
+﻿#!/bin/sh
 set -eu
 
 cat > /etc/caddy/Caddyfile <<EOF
@@ -8,7 +8,9 @@ EOF
 if [ -n "${BOOKIA_API_UPSTREAM_URL:-}" ]; then
   cat >> /etc/caddy/Caddyfile <<EOF
   @api path /search* /bookstores* /auth* /me* /dashboard* /catalog* /media* /static*
-  reverse_proxy @api ${BOOKIA_API_UPSTREAM_URL}
+  handle @api {
+    reverse_proxy ${BOOKIA_API_UPSTREAM_URL}
+  }
 
 EOF
   api_base_url=""
@@ -17,11 +19,12 @@ else
 fi
 
 cat >> /etc/caddy/Caddyfile <<EOF
-  root * /srv
-  encode gzip zstd
-  file_server
-
-  try_files {path} /index.html
+  handle {
+    root * /srv
+    encode gzip zstd
+    try_files {path} /index.html
+    file_server
+  }
 }
 EOF
 
