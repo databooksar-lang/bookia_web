@@ -57,6 +57,18 @@ Notas:
 - Para Railway no hace falta definir `VITE_BASE_PATH`; el valor por defecto `/` ya es correcto.
 - Este frontend ahora tambien lee `VITE_API_BASE_URL` en runtime al iniciar el contenedor, para evitar builds publicados con la API vacia o desactualizada.
 
+Si el login de librerias responde "aceptado" pero luego no recupera la sesion, conviene evitar cookies cross-site y publicar el frontend con proxy same-origin hacia la API:
+
+```env
+BOOKIA_API_UPSTREAM_URL=https://api.bookia.com
+```
+
+Con esa variable:
+
+- Caddy proxyea `/auth`, `/me`, `/dashboard`, `/catalog`, `/search`, `/bookstores`, `/media` y `/static` al backend.
+- El navegador ve las llamadas como mismo origen, por lo que la cookie de sesion deja de depender de una configuracion cross-site delicada.
+- `VITE_API_BASE_URL` puede quedar vacia o mantenerse como respaldo, pero el contenedor va a priorizar el proxy same-origin.
+
 ### Pasos en Railway
 
 1. Crea un nuevo servicio y conecta este repositorio.
@@ -78,6 +90,7 @@ Notas:
 - Las tapas del catalogo se resuelven contra la misma base usando el helper compartido de `src/api.js`.
 - El backend debe permitir el origen del frontend en `FRONTEND_ORIGINS`.
 - Como el frontend usa `credentials: "include"`, revisa tambien `SESSION_COOKIE_SECURE`, la politica `SESSION_COOKIE_SAMESITE` y `SESSION_COOKIE_DOMAIN` solo si realmente necesitas compartir cookies entre subdominios.
+- Si despliegas este frontend con `BOOKIA_API_UPSTREAM_URL`, las llamadas a la API salen por el mismo origen del frontend y normalmente ya no hace falta depender de cookies cross-site.
 
 
 - Si una tapa falla al cargar, el buscador la oculta para evitar imagenes rotas visibles.
