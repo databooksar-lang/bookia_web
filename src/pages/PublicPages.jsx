@@ -302,8 +302,9 @@ export function BookstorePage({ slug }) {
       </div>
       <div className="store-catalog">
         <div className="section-heading results-heading"><div><p className="section-label">Estantes disponibles</p><h2>Catalogo de {store.name}</h2><p>{visibleItems.length} {visibleItems.length === 1 ? "libro publicado" : "libros publicados"}</p></div><button className="secondary-button" onClick={() => navigate("/")}>Volver a buscar</button></div>
-        {visibleItems.length === 0 ? <EmptyState title="Este catalogo se esta preparando">Volve pronto para descubrir sus libros.</EmptyState> : <div className="book-grid">{visibleItems.map((item) => <article key={item.id} className="book-card"><BookCover item={item} /><div><span className={`status-pill status-${item.availability_status}`}>{({ available: "Disponible", reserved: "Reservado", sold_out: "Agotado", hidden: "Oculto" })[item.availability_status] || item.availability_status}</span><h3>{item.title}</h3><p>{item.author || "Autor no visible"}</p><small>{item.publisher || "Editorial no visible"}{item.language ? ` Â· ${item.language}` : ""}</small></div></article>)}</div>}
+        {visibleItems.length === 0 ? <EmptyState title="Este catalogo se esta preparando">Volve pronto para descubrir sus libros.</EmptyState> : <div className="book-grid">{visibleItems.map((item) => <article key={item.id} className="book-card"><BookCover item={item} /><div><span className={`status-pill status-${item.availability_status}`}>{({ available: "Disponible", reserved: "Reservado", sold_out: "Agotado", hidden: "Oculto" })[item.availability_status] || item.availability_status}</span><h3>{item.title}</h3><p>{item.author || "Autor no visible"}</p>{item.description ? <p className="book-card-description">{item.description}</p> : null}<small>{item.publisher || "Editorial no visible"}{item.language ? ` · ${item.language}` : ""}</small></div></article>)}</div>}
       </div>
     </section>
   );
 }
+
