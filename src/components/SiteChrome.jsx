@@ -34,20 +34,20 @@ export function SiteHeader({ pathname, me }) {
           type="button"
           aria-expanded={menuOpen}
           aria-controls="site-navigation"
-          aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"}
+          aria-label={menuOpen ? "Cerrar menu" : "Abrir menu"}
           onClick={() => setMenuOpen((current) => !current)}
         >
           <MenuIcon open={menuOpen} />
         </button>
 
-        <nav id="site-navigation" className={`header-links${menuOpen ? " is-open" : ""}`} aria-label="Navegación principal">
+        <nav id="site-navigation" className={`header-links${menuOpen ? " is-open" : ""}`} aria-label="Navegacion principal">
           {NAV_ITEMS.map((item) => (
             <AppLink key={item.href} href={item.href} className={isActive(pathname, item.href) ? "is-active" : undefined} aria-current={isActive(pathname, item.href) ? "page" : undefined}>
               {item.label}
             </AppLink>
           ))}
           <AppLink href={accountHref} className={`header-account${pathname === accountHref || pathname === "/dashboard" ? " is-active" : ""}`}>
-            {me ? "Mi catálogo" : "Para librerías"}
+            {me ? "Mi catalogo" : "Para librerias"}
           </AppLink>
         </nav>
       </div>
@@ -64,13 +64,13 @@ export function SiteFooter() {
             <span className="brand-mark"><span>B</span></span>
             <span className="brand-name">Bookia</span>
           </AppLink>
-          <p>Libros, librerías y lectores más cerca.</p>
+          <p>Libros, librerias y lectores mas cerca.</p>
         </div>
-        <nav className="footer-links" aria-label="Navegación secundaria">
+        <nav className="footer-links" aria-label="Navegacion secundaria">
           <AppLink href="/">Buscar</AppLink>
           <AppLink href="/plans">Planes</AppLink>
           <AppLink href="/about">Sobre Bookia</AppLink>
-          <AppLink href="/login">Ingreso de librerías</AppLink>
+          <AppLink href="/login">Ingreso de librerias</AppLink>
         </nav>
         <p className="footer-note">Una vidriera local para cada historia.</p>
       </div>

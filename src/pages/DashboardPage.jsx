@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 import { apiFetch, resolveApiUrl } from "../api";
 import { navigate } from "../navigation";
@@ -37,7 +37,7 @@ export function DashboardPage({ me, refreshMe }) {
   }
 
   if (!me) {
-    return <div className="page-state"><EmptyState title="NecesitÃ¡s iniciar sesiÃ³n">IngresÃ¡ con los datos de tu librerÃ­a para administrar el catÃ¡logo.</EmptyState><button className="primary-button" onClick={() => navigate("/login")}>Ingresar</button></div>;
+    return <div className="page-state"><EmptyState title="Necesitas iniciar sesion">Ingresa con los datos de tu libreria para administrar el catalogo.</EmptyState><button className="primary-button" onClick={() => navigate("/login")}>Ingresar</button></div>;
   }
 
   function updateItem(itemId, payload) {
@@ -66,19 +66,19 @@ export function DashboardPage({ me, refreshMe }) {
   return (
     <section className="dashboard-shell">
       <header className="dashboard-top">
-        <div><p className="section-label">Panel de librerÃ­a</p><h1>{me.bookstore.name}</h1><p>GestionÃ¡ el catÃ¡logo que ven los lectores en Bookia.</p></div>
-        <div className="dashboard-actions"><button className="secondary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver ficha pÃºblica <ArrowIcon /></button><button className="text-link" onClick={logout}>Cerrar sesiÃ³n</button></div>
+        <div><p className="section-label">Panel de libreria</p><h1>{me.bookstore.name}</h1><p>Gestiona el catalogo que ven los lectores en Bookia.</p></div>
+        <div className="dashboard-actions"><button className="secondary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver ficha publica <ArrowIcon /></button><button className="text-link" onClick={logout}>Cerrar sesion</button></div>
       </header>
 
       <form className="dashboard-search" onSubmit={(event) => { event.preventDefault(); loadCatalog(query); }}>
-        <span className="input-with-icon"><SearchIcon /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar en mi catÃ¡logo" /></span>
+        <span className="input-with-icon"><SearchIcon /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar en mi catalogo" /></span>
         <button className="primary-button" type="submit">Filtrar</button>
       </form>
 
       <form className="dashboard-create dashboard-card" onSubmit={createItem}>
-        <div className="dashboard-card-head"><div><p className="section-label">Nuevo tÃ­tulo</p><h2>Agregar libro manualmente</h2><p>UsÃ¡ este formulario cuando quieras cargar un libro desde cero.</p></div><button className="primary-button" type="submit" disabled={createBusy}>{createBusy ? "Guardando..." : "Crear libro"}</button></div>
+        <div className="dashboard-card-head"><div><p className="section-label">Nuevo titulo</p><h2>Agregar libro manualmente</h2><p>Usa este formulario cuando quieras cargar un libro desde cero.</p></div><button className="primary-button" type="submit" disabled={createBusy}>{createBusy ? "Guardando..." : "Crear libro"}</button></div>
         <div className="dashboard-form-grid">
-          <label>TÃ­tulo<input value={newItem.title} onChange={(event) => setNewItem((current) => ({ ...current, title: event.target.value }))} required /></label>
+          <label>Titulo<input value={newItem.title} onChange={(event) => setNewItem((current) => ({ ...current, title: event.target.value }))} required /></label>
           <label>Autor<input value={newItem.author} onChange={(event) => setNewItem((current) => ({ ...current, author: event.target.value }))} required /></label>
           <label>Editorial<input value={newItem.publisher} onChange={(event) => setNewItem((current) => ({ ...current, publisher: event.target.value }))} /></label>
           <label>Idioma<input value={newItem.language} onChange={(event) => setNewItem((current) => ({ ...current, language: event.target.value }))} /></label>
@@ -86,16 +86,16 @@ export function DashboardPage({ me, refreshMe }) {
       </form>
 
       {error ? <p className="feedback error">{error}</p> : null}
-      <div className="catalog-heading"><div><p className="section-label">CatÃ¡logo activo</p><h2>Tus publicaciones</h2></div><span>{activeItems.length} {activeItems.length === 1 ? "libro" : "libros"}</span></div>
+      <div className="catalog-heading"><div><p className="section-label">Catalogo activo</p><h2>Tus publicaciones</h2></div><span>{activeItems.length} {activeItems.length === 1 ? "libro" : "libros"}</span></div>
       {loading ? <div className="loading-list"><span /><span /><span /></div> : null}
-      {!loading && activeItems.length === 0 ? <EmptyState title={query ? "No hay coincidencias" : "Tu catÃ¡logo estÃ¡ listo para crecer"}>{query ? "ProbÃ¡ con otra bÃºsqueda." : "AgregÃ¡ el primer libro usando el formulario de arriba."}</EmptyState> : null}
+      {!loading && activeItems.length === 0 ? <EmptyState title={query ? "No hay coincidencias" : "Tu catalogo esta listo para crecer"}>{query ? "Proba con otra busqueda." : "Agrega el primer libro usando el formulario de arriba."}</EmptyState> : null}
       {!loading && activeItems.length > 0 ? <div className="dashboard-list">{activeItems.map((item) => {
         const coverUrl = resolveApiUrl(item.cover_image_url);
         return (
           <article key={item.id} className="dashboard-card catalog-item">
             <div className="catalog-item-summary">{coverUrl ? <img src={coverUrl} alt={`Tapa de ${item.title}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : <span className="catalog-cover-placeholder"><BookIcon /></span>}<div><span className="catalog-id">Libro #{item.id}</span><h3>{item.title}</h3><p>{item.author || "Autor no visible"}</p></div><label className="status-select">Disponibilidad<select value={item.availability_status} onChange={(event) => updateAvailability(item.id, event.target.value)}><option value="available">Disponible</option><option value="reserved">Reservado</option><option value="sold_out">Agotado</option><option value="hidden">Oculto</option></select></label></div>
-            <div className="dashboard-form-grid"><label>TÃ­tulo<input defaultValue={item.title} onBlur={(event) => updateItem(item.id, { title: event.target.value })} /></label><label>Autor<input defaultValue={item.author} onBlur={(event) => updateItem(item.id, { author: event.target.value })} /></label><label>Editorial<input defaultValue={item.publisher || ""} onBlur={(event) => updateItem(item.id, { publisher: event.target.value || null })} /></label><label>Idioma<input defaultValue={item.language || ""} onBlur={(event) => updateItem(item.id, { language: event.target.value || null })} /></label></div>
-            <div className="card-actions"><button className="secondary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver en el sitio pÃºblico</button><button className="danger-button" onClick={() => hideItem(item.id)}>Eliminar</button></div>
+            <div className="dashboard-form-grid"><label>Titulo<input defaultValue={item.title} onBlur={(event) => updateItem(item.id, { title: event.target.value })} /></label><label>Autor<input defaultValue={item.author} onBlur={(event) => updateItem(item.id, { author: event.target.value })} /></label><label>Editorial<input defaultValue={item.publisher || ""} onBlur={(event) => updateItem(item.id, { publisher: event.target.value || null })} /></label><label>Idioma<input defaultValue={item.language || ""} onBlur={(event) => updateItem(item.id, { language: event.target.value || null })} /></label></div>
+            <div className="card-actions"><button className="secondary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver en el sitio publico</button><button className="danger-button" onClick={() => hideItem(item.id)}>Eliminar</button></div>
           </article>
         );
       })}</div> : null}
@@ -106,8 +106,8 @@ export function DashboardPage({ me, refreshMe }) {
           return (
             <article key={item.id} className="dashboard-card catalog-item">
               <div className="catalog-item-summary">{coverUrl ? <img src={coverUrl} alt={`Tapa de ${item.title}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : <span className="catalog-cover-placeholder"><BookIcon /></span>}<div><span className="catalog-id">Libro #{item.id}</span><h3>{item.title}</h3><p>{item.author || "Autor no visible"}</p></div><span className={`status-pill status-${item.availability_status}`}>{AVAILABILITY_LABELS[item.availability_status] || item.availability_status}</span></div>
-              <div className="dashboard-form-grid"><label>TÃ­tulo<input defaultValue={item.title} onBlur={(event) => updateItem(item.id, { title: event.target.value })} /></label><label>Autor<input defaultValue={item.author} onBlur={(event) => updateItem(item.id, { author: event.target.value })} /></label><label>Editorial<input defaultValue={item.publisher || ""} onBlur={(event) => updateItem(item.id, { publisher: event.target.value || null })} /></label><label>Idioma<input defaultValue={item.language || ""} onBlur={(event) => updateItem(item.id, { language: event.target.value || null })} /></label></div>
-              <div className="card-actions"><button className="primary-button" onClick={() => updateAvailability(item.id, "available")}>Volver a publicar</button><button className="secondary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver en el sitio pÃºblico</button></div>
+              <div className="dashboard-form-grid"><label>Titulo<input defaultValue={item.title} onBlur={(event) => updateItem(item.id, { title: event.target.value })} /></label><label>Autor<input defaultValue={item.author} onBlur={(event) => updateItem(item.id, { author: event.target.value })} /></label><label>Editorial<input defaultValue={item.publisher || ""} onBlur={(event) => updateItem(item.id, { publisher: event.target.value || null })} /></label><label>Idioma<input defaultValue={item.language || ""} onBlur={(event) => updateItem(item.id, { language: event.target.value || null })} /></label></div>
+              <div className="card-actions"><button className="primary-button" onClick={() => updateAvailability(item.id, "available")}>Volver a publicar</button><button className="secondary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver en el sitio publico</button></div>
             </article>
           );
         })}</div>
