@@ -1,4 +1,4 @@
-import { useEffect, useState, useTransition } from "react";
+﻿import { useEffect, useState, useTransition } from "react";
 
 import { apiFetch, resolveApiUrl } from "../api";
 import { navigate } from "../navigation";
@@ -34,7 +34,8 @@ function DashboardSection({ label, title, description, countLabel, isOpen, onTog
 
 export function DashboardPage({ me, refreshMe }) {
   const [items, setItems] = useState([]);
-  const [query, setQuery] = useState("");
+  const [titleQuery, setTitleQuery] = useState("");
+  const [authorQuery, setAuthorQuery] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [newItem, setNewItem] = useState(EMPTY_ITEM);
@@ -47,10 +48,14 @@ export function DashboardPage({ me, refreshMe }) {
   const [saveBusy, startSaveTransition] = useTransition();
   const activeItems = items.filter((item) => item.availability_status !== "hidden");
   const hiddenItems = items.filter((item) => item.availability_status === "hidden");
+  const hasActiveFilters = Boolean(titleQuery.trim() || authorQuery.trim());
 
-  function loadCatalog(search = "") {
+  function loadCatalog(filters = {}) {
     const params = new URLSearchParams();
-    if (search) params.set("query", search);
+    const nextTitle = filters.title ?? titleQuery;
+    const nextAuthor = filters.author ?? authorQuery;
+    if (nextTitle.trim()) params.set("title", nextTitle.trim());
+    if (nextAuthor.trim()) params.set("author", nextAuthor.trim());
     setLoading(true);
     apiFetch(`/dashboard/catalog?${params.toString()}`).then((data) => { setItems(data.items); setError(""); }).catch((fetchError) => setError(fetchError.message)).finally(() => setLoading(false));
   }
@@ -66,11 +71,11 @@ export function DashboardPage({ me, refreshMe }) {
   }
 
   function updateItem(itemId, payload) {
-    apiFetch(`/dashboard/catalog/${itemId}`, { method: "PATCH", body: JSON.stringify(payload) }).then(() => loadCatalog(query)).catch((fetchError) => setError(fetchError.message));
+    apiFetch(`/dashboard/catalog/${itemId}`, { method: "PATCH", body: JSON.stringify(payload) }).then(() => loadCatalog()).catch((fetchError) => setError(fetchError.message));
   }
 
   function updateAvailability(itemId, availabilityStatus) {
-    apiFetch(`/dashboard/catalog/${itemId}/availability`, { method: "PATCH", body: JSON.stringify({ availability_status: availabilityStatus }) }).then(() => loadCatalog(query)).catch((fetchError) => setError(fetchError.message));
+    apiFetch(`/dashboard/catalog/${itemId}/availability`, { method: "PATCH", body: JSON.stringify({ availability_status: availabilityStatus }) }).then(() => loadCatalog()).catch((fetchError) => setError(fetchError.message));
   }
 
   function hideItem(itemId) {
@@ -107,7 +112,7 @@ export function DashboardPage({ me, refreshMe }) {
       }).then(() => {
         cancelEditing();
         setError("");
-        loadCatalog(query);
+        loadCatalog();
       }).catch((fetchError) => setError(fetchError.message));
     });
   }
@@ -120,7 +125,7 @@ export function DashboardPage({ me, refreshMe }) {
         setError("");
         setIsCreateOpen(false);
         setIsActiveOpen(true);
-        loadCatalog(query);
+        loadCatalog();
       }).catch((fetchError) => setError(fetchError.message));
     });
   }
@@ -135,11 +140,6 @@ export function DashboardPage({ me, refreshMe }) {
         <div><p className="section-label">Gestiona tu vidriera</p><h1>{me.bookstore.name}</h1><p>Gestiona tu vidriera y lo que ven los lectores en Bookia.</p></div>
         <div className="dashboard-actions"><button className="secondary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver vidriera digital <ArrowIcon /></button><button className="text-link" onClick={logout}>Cerrar sesion</button></div>
       </header>
-
-      <form className="dashboard-search" onSubmit={(event) => { event.preventDefault(); loadCatalog(query); }}>
-        <span className="input-with-icon"><SearchIcon /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar en mi catalogo" /></span>
-        <button className="primary-button" type="submit">Filtrar</button>
-      </form>
 
       {error ? <p className="feedback error">{error}</p> : null}
 
@@ -173,8 +173,19 @@ export function DashboardPage({ me, refreshMe }) {
         isOpen={isActiveOpen}
         onToggle={() => setIsActiveOpen((current) => !current)}
       >
+        <form className="dashboard-search" onSubmit={(event) => { event.preventDefault(); loadCatalog(); }}>
+          <label className="dashboard-search-field dashboard-search-field-title">
+            <span>Nombre de libro</span>
+            <span className="input-with-icon"><SearchIcon /><input value={titleQuery} onChange={(event) => setTitleQuery(event.target.value)} placeholder="Filtrar por nombre de libro" /></span>
+          </label>
+          <label className="dashboard-search-field">
+            <span>Autor</span>
+            <input value={authorQuery} onChange={(event) => setAuthorQuery(event.target.value)} placeholder="Filtrar por autor" />
+          </label>
+          <button className="primary-button" type="submit">Filtrar</button>
+        </form>
         {loading ? <div className="loading-list"><span /><span /><span /></div> : null}
-        {!loading && activeItems.length === 0 ? <EmptyState title={query ? "No hay coincidencias" : "Tu catalogo esta listo para crecer"}>{query ? "Proba con otra busqueda." : "Agrega el primer libro usando el formulario de arriba."}</EmptyState> : null}
+        {!loading && activeItems.length === 0 ? <EmptyState title={hasActiveFilters ? "No hay coincidencias" : "Tu catalogo esta listo para crecer"}>{hasActiveFilters ? "Proba con otros filtros." : "Agrega el primer libro usando el formulario de arriba."}</EmptyState> : null}
         {!loading && activeItems.length > 0 ? <div className="dashboard-list dashboard-list-active">{activeItems.map((item) => {
           const coverUrl = resolveApiUrl(item.cover_image_url);
           const isEditing = editingItemId === item.id;
