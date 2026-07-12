@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   font-family: "Manrope", sans-serif;
   color: #1f1c17;
   background:
@@ -502,6 +502,11 @@ select {
   margin: 1rem 0;
 }
 
+.dashboard-search-field {
+  display: grid;
+  gap: 0.5rem;
+}
+
 .dashboard-form-grid {
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   margin: 1rem 0;
@@ -609,3 +614,4 @@ select {
     text-transform: uppercase;
   }
 }
+

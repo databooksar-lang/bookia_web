@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   font-family: "Manrope", sans-serif;
   color: #1e241f;
   background: #f7f1e6;
@@ -1481,13 +1481,26 @@ button:disabled {
 
 .dashboard-search {
   margin: 30px 0;
-  padding: 8px;
+  padding: 14px;
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 8px;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
   background: rgba(255, 250, 240, 0.72);
   border: 1px solid var(--line);
   border-radius: 13px;
+}
+
+.dashboard-search-field {
+  display: grid;
+  gap: 8px;
+}
+
+.dashboard-search-field > span:first-child {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
 }
 
 .dashboard-search .input-with-icon {
@@ -1498,6 +1511,10 @@ button:disabled {
   background: transparent;
   border: 0;
   box-shadow: none;
+}
+
+.dashboard-search button {
+  align-self: stretch;
 }
 
 .dashboard-card {
@@ -2139,6 +2156,10 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 
+  .dashboard-search button {
+    width: 100%;
+  }
+
   .dashboard-form-grid {
     grid-template-columns: 1fr;
   }
@@ -2172,6 +2193,7 @@ textarea:focus {
     transition-duration: 0.01ms !important;
   }
 }
+
 
 
 
