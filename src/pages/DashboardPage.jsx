@@ -267,7 +267,14 @@ export function DashboardPage({ me, refreshMe }) {
             return (
               <article key={item.id} className="dashboard-card catalog-item">
                 <div className="catalog-item-summary">{coverUrl ? <img src={coverUrl} alt={`Tapa de ${item.title}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : <span className="catalog-cover-placeholder"><BookIcon /></span>}<div><span className="catalog-id">Libro #{item.id}</span><h3>{item.title}</h3><p>{item.author || "Autor no visible"}</p><p>Estado: {bookStatusLabel}</p></div><span className={`status-pill status-${item.availability_status}`}>{AVAILABILITY_LABELS[item.availability_status] || item.availability_status}</span></div>
-                <div className="dashboard-form-grid dashboard-form-grid-extended"><label>Titulo<input defaultValue={item.title} onBlur={(event) => updateItem(item.id, { title: event.target.value })} /></label><label>Autor<input defaultValue={item.author} onBlur={(event) => updateItem(item.id, { author: event.target.value })} /></label><label>Editorial<input defaultValue={item.publisher || ""} onBlur={(event) => updateItem(item.id, { publisher: event.target.value || null })} /></label><label>Idioma<input defaultValue={item.language || ""} onBlur={(event) => updateItem(item.id, { language: event.target.value || null })} /></label><label>Estado<input value={bookStatusLabel} readOnly disabled /></label><label className="dashboard-field-wide">Descripcion<textarea defaultValue={item.description || ""} rows={4} onBlur={(event) => updateItem(item.id, { description: event.target.value || null })} /></label></div>
+                {item.description ? <p className="catalog-item-description">{item.description}</p> : null}
+                <div className="catalog-item-readonly">
+                  <p><strong>Titulo:</strong> {item.title}</p>
+                  <p><strong>Autor:</strong> {item.author || "Autor no visible"}</p>
+                  <p><strong>Editorial:</strong> {item.publisher || "Editorial no visible"}</p>
+                  <p><strong>Idioma:</strong> {item.language || "Idioma no visible"}</p>
+                  <p><strong>Estado:</strong> {bookStatusLabel}</p>
+                </div>
                 <div className="card-actions"><button type="button" className="primary-button" onClick={() => updateAvailability(item.id, "available")}>Volver a publicar</button><button type="button" className="secondary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver vidriera digital</button></div>
               </article>
             );
@@ -277,4 +284,3 @@ export function DashboardPage({ me, refreshMe }) {
     </section>
   );
 }
-
