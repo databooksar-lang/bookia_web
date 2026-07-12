@@ -2,6 +2,20 @@
 const BUILD_API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 const API_BASE = (RUNTIME_API_BASE || BUILD_API_BASE).replace(/\/$/, "");
 
+function readCookie(name) {
+  if (typeof document === "undefined") {
+    return "";
+  }
+
+  const encodedName = `${encodeURIComponent(name)}=`;
+  const cookie = document.cookie.split("; ").find((entry) => entry.startsWith(encodedName));
+  if (!cookie) {
+    return "";
+  }
+
+  return decodeURIComponent(cookie.slice(encodedName.length));
+}
+
 function buildInvalidApiResponseMessage(path, response, contentType) {
   const resolvedPath = resolveApiUrl(path);
   const isHtmlResponse = contentType.includes("text/html");
@@ -60,8 +74,10 @@ export function resolveApiUrl(path) {
 export async function apiFetch(path, options = {}) {
   let response;
   const method = (options.method || "GET").toUpperCase();
+  const csrfToken = method === "GET" ? "" : readCookie("bookia_csrf");
   const defaultHeaders = {
     ...(options.body !== undefined || method !== "GET" ? { "Content-Type": "application/json" } : {}),
+    ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}),
     ...(options.headers || {}),
   };
 
