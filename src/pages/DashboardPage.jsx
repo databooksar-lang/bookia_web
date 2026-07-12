@@ -238,8 +238,8 @@ export function DashboardPage({ me, refreshMe }) {
 
       {hiddenItems.length > 0 ? (
         <DashboardSection
-          label="Ocultos"
-          title="Libros ocultos"
+          label="Agotados"
+          title="Libros agotados"
           countLabel={`${hiddenItems.length} ${hiddenItems.length === 1 ? "libro" : "libros"}`}
           isOpen={isHiddenOpen}
           onToggle={() => setIsHiddenOpen((current) => !current)}
@@ -259,3 +259,4 @@ export function DashboardPage({ me, refreshMe }) {
     </section>
   );
 }
+
