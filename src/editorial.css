@@ -1671,6 +1671,21 @@ textarea:focus {
   line-height: 1.6;
 }
 
+.catalog-item-readonly {
+  display: grid;
+  gap: 10px;
+}
+
+.catalog-item-readonly p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.catalog-item-readonly strong {
+  color: var(--forest-deep);
+}
+
 .catalog-item-summary {
   display: grid;
   grid-template-columns: 60px 1fr minmax(175px, 0.3fr);
@@ -2193,7 +2208,3 @@ textarea:focus {
     transition-duration: 0.01ms !important;
   }
 }
-
-
-
-
