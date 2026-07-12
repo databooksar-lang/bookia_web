@@ -11,6 +11,7 @@ const EMPTY_ITEM = {
   publisher: "",
   language: "",
   description: "",
+  book_status: "nuevo",
   availability_status: "available",
 };
 const AVAILABILITY_LABELS = {
@@ -23,6 +24,14 @@ const EDITABLE_AVAILABILITY_OPTIONS = [
   { value: "available", label: "Disponible" },
   { value: "reserved", label: "Reservado" },
   { value: "hidden", label: "Agotado" },
+];
+const BOOK_STATUS_LABELS = {
+  nuevo: "Nuevo",
+  usado: "Usado",
+};
+const EDITABLE_BOOK_STATUS_OPTIONS = [
+  { value: "nuevo", label: "Nuevo" },
+  { value: "usado", label: "Usado" },
 ];
 
 function DashboardSection({ label, title, description, countLabel, isOpen, onToggle, children, className = "" }) {
@@ -52,6 +61,10 @@ function normalizeEditableAvailability(value) {
     return "hidden";
   }
   return "available";
+}
+
+function normalizeBookStatus(value) {
+  return value === "nuevo" || value === "usado" ? value : "usado";
 }
 
 export function DashboardPage({ me, refreshMe }) {
@@ -112,6 +125,7 @@ export function DashboardPage({ me, refreshMe }) {
       publisher: item.publisher || "",
       language: item.language || "",
       description: item.description || "",
+      book_status: normalizeBookStatus(item.book_status),
       availability_status: normalizeEditableAvailability(item.availability_status),
     });
   }
@@ -132,6 +146,7 @@ export function DashboardPage({ me, refreshMe }) {
           publisher: draftItem.publisher || null,
           language: draftItem.language || null,
           description: draftItem.description || null,
+          book_status: normalizeBookStatus(draftItem.book_status),
         }),
       }).then(() => {
         if (nextAvailabilityStatus !== normalizeEditableAvailability(currentAvailabilityStatus)) {
@@ -196,6 +211,7 @@ export function DashboardPage({ me, refreshMe }) {
             <label>Autor<input value={newItem.author} onChange={(event) => setNewItem((current) => ({ ...current, author: event.target.value }))} required /></label>
             <label>Editorial<input value={newItem.publisher} onChange={(event) => setNewItem((current) => ({ ...current, publisher: event.target.value }))} /></label>
             <label>Idioma<input value={newItem.language} onChange={(event) => setNewItem((current) => ({ ...current, language: event.target.value }))} /></label>
+            <label>Estado<select value={newItem.book_status} onChange={(event) => setNewItem((current) => ({ ...current, book_status: event.target.value }))}>{EDITABLE_BOOK_STATUS_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
             <label className="dashboard-field-wide">Descripcion<textarea value={newItem.description} onChange={(event) => setNewItem((current) => ({ ...current, description: event.target.value }))} rows={4} placeholder="Cuenta brevemente de que trata el libro, su edicion o cualquier detalle util." /></label>
           </div>
         </form>
@@ -225,11 +241,12 @@ export function DashboardPage({ me, refreshMe }) {
           const coverUrl = resolveApiUrl(item.cover_image_url);
           const isEditing = editingItemId === item.id;
           const statusLabel = AVAILABILITY_LABELS[item.availability_status] || AVAILABILITY_LABELS[normalizeEditableAvailability(item.availability_status)];
+          const bookStatusLabel = BOOK_STATUS_LABELS[normalizeBookStatus(item.book_status)] || BOOK_STATUS_LABELS.usado;
           return (
             <article key={item.id} className={`dashboard-card catalog-item${isEditing ? " is-editing" : ""}`}>
-              <div className="catalog-item-summary">{coverUrl ? <img src={coverUrl} alt={`Tapa de ${item.title}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : <span className="catalog-cover-placeholder"><BookIcon /></span>}<div><span className="catalog-id">Libro #{item.id}</span><h3>{item.title}</h3><p>{item.author || "Autor no visible"}</p></div>{isEditing ? <span className={`status-pill status-${draftItem.availability_status}`}>{AVAILABILITY_LABELS[draftItem.availability_status] || statusLabel}</span> : <span className={`status-pill status-${normalizeEditableAvailability(item.availability_status)}`}>{statusLabel}</span>}</div>
+              <div className="catalog-item-summary">{coverUrl ? <img src={coverUrl} alt={`Tapa de ${item.title}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : <span className="catalog-cover-placeholder"><BookIcon /></span>}<div><span className="catalog-id">Libro #{item.id}</span><h3>{item.title}</h3><p>{item.author || "Autor no visible"}</p><p>Estado: {isEditing ? BOOK_STATUS_LABELS[normalizeBookStatus(draftItem.book_status)] : bookStatusLabel}</p></div>{isEditing ? <span className={`status-pill status-${draftItem.availability_status}`}>{AVAILABILITY_LABELS[draftItem.availability_status] || statusLabel}</span> : <span className={`status-pill status-${normalizeEditableAvailability(item.availability_status)}`}>{statusLabel}</span>}</div>
               {item.description ? <p className="catalog-item-description">{item.description}</p> : null}
-              {isEditing ? <div className="dashboard-form-grid dashboard-form-grid-extended"><label>Titulo<input value={draftItem.title} onChange={(event) => setDraftItem((current) => ({ ...current, title: event.target.value }))} /></label><label>Autor<input value={draftItem.author} onChange={(event) => setDraftItem((current) => ({ ...current, author: event.target.value }))} /></label><label>Disponibilidad<select value={draftItem.availability_status} onChange={(event) => setDraftItem((current) => ({ ...current, availability_status: event.target.value }))}>{EDITABLE_AVAILABILITY_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label><label>Editorial<input value={draftItem.publisher} onChange={(event) => setDraftItem((current) => ({ ...current, publisher: event.target.value }))} /></label><label>Idioma<input value={draftItem.language} onChange={(event) => setDraftItem((current) => ({ ...current, language: event.target.value }))} /></label><label className="dashboard-field-wide">Descripcion<textarea value={draftItem.description} onChange={(event) => setDraftItem((current) => ({ ...current, description: event.target.value }))} rows={4} /></label></div> : null}
+              {isEditing ? <div className="dashboard-form-grid dashboard-form-grid-extended"><label>Titulo<input value={draftItem.title} onChange={(event) => setDraftItem((current) => ({ ...current, title: event.target.value }))} /></label><label>Autor<input value={draftItem.author} onChange={(event) => setDraftItem((current) => ({ ...current, author: event.target.value }))} /></label><label>Disponibilidad<select value={draftItem.availability_status} onChange={(event) => setDraftItem((current) => ({ ...current, availability_status: event.target.value }))}>{EDITABLE_AVAILABILITY_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label><label>Editorial<input value={draftItem.publisher} onChange={(event) => setDraftItem((current) => ({ ...current, publisher: event.target.value }))} /></label><label>Idioma<input value={draftItem.language} onChange={(event) => setDraftItem((current) => ({ ...current, language: event.target.value }))} /></label><label>Estado<select value={draftItem.book_status} onChange={(event) => setDraftItem((current) => ({ ...current, book_status: event.target.value }))}>{EDITABLE_BOOK_STATUS_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label><label className="dashboard-field-wide">Descripcion<textarea value={draftItem.description} onChange={(event) => setDraftItem((current) => ({ ...current, description: event.target.value }))} rows={4} /></label></div> : null}
               <div className="card-actions"><div className="card-actions-main">{isEditing ? <button type="button" className="secondary-button" onClick={cancelEditing}>Cancelar</button> : <button type="button" className="secondary-button" onClick={() => startEditing(item)}>Editar</button>}{isEditing ? <button type="button" className="primary-button" onClick={() => saveItem(item.id, item.availability_status)} disabled={saveBusy}>{saveBusy ? "Guardando..." : "Guardar"}</button> : null}</div><button type="button" className="danger-button" onClick={() => hideItem(item.id)}>Eliminar</button></div>
             </article>
           );
@@ -246,10 +263,11 @@ export function DashboardPage({ me, refreshMe }) {
         >
           <div className="dashboard-list">{hiddenItems.map((item) => {
             const coverUrl = resolveApiUrl(item.cover_image_url);
+            const bookStatusLabel = BOOK_STATUS_LABELS[normalizeBookStatus(item.book_status)] || BOOK_STATUS_LABELS.usado;
             return (
               <article key={item.id} className="dashboard-card catalog-item">
-                <div className="catalog-item-summary">{coverUrl ? <img src={coverUrl} alt={`Tapa de ${item.title}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : <span className="catalog-cover-placeholder"><BookIcon /></span>}<div><span className="catalog-id">Libro #{item.id}</span><h3>{item.title}</h3><p>{item.author || "Autor no visible"}</p></div><span className={`status-pill status-${item.availability_status}`}>{AVAILABILITY_LABELS[item.availability_status] || item.availability_status}</span></div>
-                <div className="dashboard-form-grid dashboard-form-grid-extended"><label>Titulo<input defaultValue={item.title} onBlur={(event) => updateItem(item.id, { title: event.target.value })} /></label><label>Autor<input defaultValue={item.author} onBlur={(event) => updateItem(item.id, { author: event.target.value })} /></label><label>Editorial<input defaultValue={item.publisher || ""} onBlur={(event) => updateItem(item.id, { publisher: event.target.value || null })} /></label><label>Idioma<input defaultValue={item.language || ""} onBlur={(event) => updateItem(item.id, { language: event.target.value || null })} /></label><label className="dashboard-field-wide">Descripcion<textarea defaultValue={item.description || ""} rows={4} onBlur={(event) => updateItem(item.id, { description: event.target.value || null })} /></label></div>
+                <div className="catalog-item-summary">{coverUrl ? <img src={coverUrl} alt={`Tapa de ${item.title}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : <span className="catalog-cover-placeholder"><BookIcon /></span>}<div><span className="catalog-id">Libro #{item.id}</span><h3>{item.title}</h3><p>{item.author || "Autor no visible"}</p><p>Estado: {bookStatusLabel}</p></div><span className={`status-pill status-${item.availability_status}`}>{AVAILABILITY_LABELS[item.availability_status] || item.availability_status}</span></div>
+                <div className="dashboard-form-grid dashboard-form-grid-extended"><label>Titulo<input defaultValue={item.title} onBlur={(event) => updateItem(item.id, { title: event.target.value })} /></label><label>Autor<input defaultValue={item.author} onBlur={(event) => updateItem(item.id, { author: event.target.value })} /></label><label>Editorial<input defaultValue={item.publisher || ""} onBlur={(event) => updateItem(item.id, { publisher: event.target.value || null })} /></label><label>Idioma<input defaultValue={item.language || ""} onBlur={(event) => updateItem(item.id, { language: event.target.value || null })} /></label><label>Estado<input value={bookStatusLabel} readOnly disabled /></label><label className="dashboard-field-wide">Descripcion<textarea defaultValue={item.description || ""} rows={4} onBlur={(event) => updateItem(item.id, { description: event.target.value || null })} /></label></div>
                 <div className="card-actions"><button type="button" className="primary-button" onClick={() => updateAvailability(item.id, "available")}>Volver a publicar</button><button type="button" className="secondary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver vidriera digital</button></div>
               </article>
             );
