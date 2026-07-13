@@ -17,7 +17,7 @@ VITE_API_BASE_URL=http://127.0.0.1:8000
 
 Notas:
 
-- En desarrollo con `npm run dev`, el proxy de Vite ya redirige `/search`, `/bookstores`, `/auth`, `/me`, `/dashboard` y `/catalog` al backend local.
+- En desarrollo con `npm run dev`, el proxy de Vite ya redirige `/search`, `/bookstores`, `/genres`, `/auth`, `/me`, `/dashboard` y `/catalog` al backend local.
 - En cualquier despliegue separado del backend, `VITE_API_BASE_URL` debe apuntar al host publico de la API.
 
 ## Desarrollo local
@@ -65,7 +65,7 @@ BOOKIA_API_UPSTREAM_URL=https://api.bookia.com
 
 Con esa variable:
 
-- Caddy proxyea `/auth`, `/me`, `/dashboard`, `/catalog`, `/search`, `/bookstores`, `/media` y `/static` al backend.
+- Caddy proxyea `/auth`, `/me`, `/dashboard`, `/catalog`, `/search`, `/bookstores`, `/genres`, `/media` y `/static` al backend.
 - El navegador ve las llamadas como mismo origen, por lo que la cookie de sesion deja de depender de una configuracion cross-site delicada.
 - `VITE_API_BASE_URL` puede quedar vacia o mantenerse como respaldo, pero el contenedor va a priorizar el proxy same-origin.
 
@@ -94,3 +94,4 @@ Con esa variable:
 
 
 - Si una tapa falla al cargar, el buscador la oculta para evitar imagenes rotas visibles.
+

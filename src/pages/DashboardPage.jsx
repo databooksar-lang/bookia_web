@@ -1,9 +1,10 @@
-﻿import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 import { apiFetch, resolveApiUrl } from "../api";
-import { navigate } from "../navigation";
 import { EmptyState } from "../components/Commerce";
 import { ArrowIcon, BookIcon, SearchIcon } from "../components/Icons";
+import { getGenreSelectorState } from "../genreSelectorState";
+import { navigate } from "../navigation";
 
 const EMPTY_ITEM = {
   title: "",
@@ -68,9 +69,16 @@ function normalizeBookStatus(value) {
   return value === "nuevo" || value === "usado" ? value : "usado";
 }
 
-function GenreSelector({ genres, selectedGenreIds, onChange, legend = "Generos" }) {
-  if (!genres.length) {
-    return <div className="dashboard-field-wide"><span>{legend}</span><small>Cargando generos...</small></div>;
+function GenreSelector({ genres, genresLoading = false, genresError = "", selectedGenreIds, onChange, legend = "Generos" }) {
+  const state = getGenreSelectorState({ genresLoading, genresError, genres });
+
+  if (state.kind !== "ready") {
+    return (
+      <div className={`dashboard-field-wide dashboard-genre-status is-${state.kind}`} role={state.kind === "error" ? "alert" : undefined}>
+        <span className="dashboard-genre-status-label">{legend}</span>
+        <small>{state.message}</small>
+      </div>
+    );
   }
 
   return (
@@ -108,6 +116,8 @@ export function DashboardPage({ me, refreshMe }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [genres, setGenres] = useState([]);
+  const [genresLoading, setGenresLoading] = useState(true);
+  const [genresError, setGenresError] = useState("");
   const [newItem, setNewItem] = useState(EMPTY_ITEM);
   const [editingItemId, setEditingItemId] = useState(null);
   const [draftItem, setDraftItem] = useState(EMPTY_ITEM);
@@ -131,7 +141,18 @@ export function DashboardPage({ me, refreshMe }) {
   }
 
   useEffect(() => {
-    apiFetch("/genres").then((data) => setGenres(data.items || [])).catch(() => setGenres([]));
+    setGenresLoading(true);
+    setGenresError("");
+    apiFetch("/genres")
+      .then((data) => {
+        setGenres(data.items || []);
+        setGenresError("");
+      })
+      .catch((fetchError) => {
+        setGenres([]);
+        setGenresError(fetchError.message || "No pudimos cargar los generos.");
+      })
+      .finally(() => setGenresLoading(false));
   }, []);
 
   useEffect(() => { if (me) loadCatalog(); }, [me]);
@@ -253,7 +274,13 @@ export function DashboardPage({ me, refreshMe }) {
             <label>Editorial<input value={newItem.publisher} onChange={(event) => setNewItem((current) => ({ ...current, publisher: event.target.value }))} /></label>
             <label>Idioma<input value={newItem.language} onChange={(event) => setNewItem((current) => ({ ...current, language: event.target.value }))} /></label>
             <label>Estado<select value={newItem.book_status} onChange={(event) => setNewItem((current) => ({ ...current, book_status: event.target.value }))}>{EDITABLE_BOOK_STATUS_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
-            <GenreSelector genres={genres} selectedGenreIds={newItem.genre_ids} onChange={(genreIds) => setNewItem((current) => ({ ...current, genre_ids: genreIds }))} />
+            <GenreSelector
+              genres={genres}
+              genresLoading={genresLoading}
+              genresError={genresError}
+              selectedGenreIds={newItem.genre_ids}
+              onChange={(genreIds) => setNewItem((current) => ({ ...current, genre_ids: genreIds }))}
+            />
             <label className="dashboard-field-wide">Descripcion<textarea value={newItem.description} onChange={(event) => setNewItem((current) => ({ ...current, description: event.target.value }))} rows={4} placeholder="Cuenta brevemente de que trata el libro, su edicion o cualquier detalle util." /></label>
           </div>
         </form>
@@ -289,7 +316,7 @@ export function DashboardPage({ me, refreshMe }) {
               <div className="catalog-item-summary">{coverUrl ? <img src={coverUrl} alt={`Tapa de ${item.title}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : <span className="catalog-cover-placeholder"><BookIcon /></span>}<div><span className="catalog-id">Libro #{item.id}</span><h3>{item.title}</h3><p>{item.author || "Autor no visible"}</p><p>Estado: {isEditing ? BOOK_STATUS_LABELS[normalizeBookStatus(draftItem.book_status)] : bookStatusLabel}</p></div>{isEditing ? <span className={`status-pill status-${draftItem.availability_status}`}>{AVAILABILITY_LABELS[draftItem.availability_status] || statusLabel}</span> : <span className={`status-pill status-${normalizeEditableAvailability(item.availability_status)}`}>{statusLabel}</span>}</div>
               {item.genres?.length ? <div className="store-tags" aria-label="Generos del libro">{item.genres.map((genre) => <span key={genre.id} className="store-tag">{genre.name}</span>)}</div> : null}
               {item.description ? <p className="catalog-item-description">{item.description}</p> : null}
-              {isEditing ? <div className="dashboard-form-grid dashboard-form-grid-extended"><label>Titulo<input value={draftItem.title} onChange={(event) => setDraftItem((current) => ({ ...current, title: event.target.value }))} /></label><label>Autor<input value={draftItem.author} onChange={(event) => setDraftItem((current) => ({ ...current, author: event.target.value }))} /></label><label>Disponibilidad<select value={draftItem.availability_status} onChange={(event) => setDraftItem((current) => ({ ...current, availability_status: event.target.value }))}>{EDITABLE_AVAILABILITY_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label><label>Editorial<input value={draftItem.publisher} onChange={(event) => setDraftItem((current) => ({ ...current, publisher: event.target.value }))} /></label><label>Idioma<input value={draftItem.language} onChange={(event) => setDraftItem((current) => ({ ...current, language: event.target.value }))} /></label><label>Estado<select value={draftItem.book_status} onChange={(event) => setDraftItem((current) => ({ ...current, book_status: event.target.value }))}>{EDITABLE_BOOK_STATUS_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label><GenreSelector genres={genres} selectedGenreIds={draftItem.genre_ids || []} onChange={(genreIds) => setDraftItem((current) => ({ ...current, genre_ids: genreIds }))} /><label className="dashboard-field-wide">Descripcion<textarea value={draftItem.description} onChange={(event) => setDraftItem((current) => ({ ...current, description: event.target.value }))} rows={4} /></label></div> : null}
+              {isEditing ? <div className="dashboard-form-grid dashboard-form-grid-extended"><label>Titulo<input value={draftItem.title} onChange={(event) => setDraftItem((current) => ({ ...current, title: event.target.value }))} /></label><label>Autor<input value={draftItem.author} onChange={(event) => setDraftItem((current) => ({ ...current, author: event.target.value }))} /></label><label>Disponibilidad<select value={draftItem.availability_status} onChange={(event) => setDraftItem((current) => ({ ...current, availability_status: event.target.value }))}>{EDITABLE_AVAILABILITY_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label><label>Editorial<input value={draftItem.publisher} onChange={(event) => setDraftItem((current) => ({ ...current, publisher: event.target.value }))} /></label><label>Idioma<input value={draftItem.language} onChange={(event) => setDraftItem((current) => ({ ...current, language: event.target.value }))} /></label><label>Estado<select value={draftItem.book_status} onChange={(event) => setDraftItem((current) => ({ ...current, book_status: event.target.value }))}>{EDITABLE_BOOK_STATUS_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label><GenreSelector genres={genres} genresLoading={genresLoading} genresError={genresError} selectedGenreIds={draftItem.genre_ids || []} onChange={(genreIds) => setDraftItem((current) => ({ ...current, genre_ids: genreIds }))} /><label className="dashboard-field-wide">Descripcion<textarea value={draftItem.description} onChange={(event) => setDraftItem((current) => ({ ...current, description: event.target.value }))} rows={4} /></label></div> : null}
               <div className="card-actions"><div className="card-actions-main">{isEditing ? <button type="button" className="secondary-button" onClick={cancelEditing}>Cancelar</button> : <button type="button" className="secondary-button" onClick={() => startEditing(item)}>Editar</button>}{isEditing ? <button type="button" className="primary-button" onClick={() => saveItem(item.id, item.availability_status)} disabled={saveBusy}>{saveBusy ? "Guardando..." : "Guardar"}</button> : null}</div><button type="button" className="danger-button" onClick={() => hideItem(item.id)}>Eliminar</button></div>
             </article>
           );

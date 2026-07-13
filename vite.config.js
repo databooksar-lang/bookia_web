@@ -12,6 +12,7 @@ export default defineConfig({
     proxy: {
       "/search": "http://127.0.0.1:8000",
       "/bookstores": "http://127.0.0.1:8000",
+      "/genres": "http://127.0.0.1:8000",
       "/auth": "http://127.0.0.1:8000",
       "/me": "http://127.0.0.1:8000",
       "/dashboard": "http://127.0.0.1:8000",
