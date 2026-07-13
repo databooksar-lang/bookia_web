@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 
 import { isBookiaApiRoute } from "../src/apiRoutes.js";
+import { buildSingleGenreIds, getSingleGenreValue } from "../src/genreSelection.js";
 import { getGenreSelectorState } from "../src/genreSelectorState.js";
 
 const tests = [
@@ -35,6 +36,19 @@ const tests = [
       getGenreSelectorState({ genresLoading: false, genresError: "", genres: [{ id: 1, name: "Policial" }] }),
       { kind: "ready", message: "" },
     );
+  }],
+  ["returns the first selected genre id for single-select fields", () => {
+    assert.equal(getSingleGenreValue([8, 3]), 8);
+  }],
+  ["returns an empty value when no genre is selected", () => {
+    assert.equal(getSingleGenreValue([]), "");
+    assert.equal(getSingleGenreValue(undefined), "");
+  }],
+  ["builds an empty genre_ids array when the selection is cleared", () => {
+    assert.deepEqual(buildSingleGenreIds(""), []);
+  }],
+  ["builds a single-item genre_ids array from the selected option", () => {
+    assert.deepEqual(buildSingleGenreIds("12"), [12]);
   }],
 ];
 
