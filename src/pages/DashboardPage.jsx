@@ -11,6 +11,7 @@ const EMPTY_ITEM = {
   publisher: "",
   language: "",
   description: "",
+  genre_ids: [],
   book_status: "nuevo",
   availability_status: "available",
 };
@@ -67,12 +68,46 @@ function normalizeBookStatus(value) {
   return value === "nuevo" || value === "usado" ? value : "usado";
 }
 
+function GenreSelector({ genres, selectedGenreIds, onChange, legend = "Generos" }) {
+  if (!genres.length) {
+    return <div className="dashboard-field-wide"><span>{legend}</span><small>Cargando generos...</small></div>;
+  }
+
+  return (
+    <fieldset className="dashboard-field-wide dashboard-genre-fieldset">
+      <legend>{legend}</legend>
+      <div className="dashboard-genre-options">
+        {genres.map((genre) => {
+          const checked = selectedGenreIds.includes(genre.id);
+          return (
+            <label key={genre.id} className={`dashboard-genre-option${checked ? " is-selected" : ""}`}>
+              <input
+                type="checkbox"
+                checked={checked}
+                onChange={() => {
+                  if (checked) {
+                    onChange(selectedGenreIds.filter((genreId) => genreId !== genre.id));
+                    return;
+                  }
+                  onChange([...selectedGenreIds, genre.id]);
+                }}
+              />
+              <span>{genre.name}</span>
+            </label>
+          );
+        })}
+      </div>
+    </fieldset>
+  );
+}
+
 export function DashboardPage({ me, refreshMe }) {
   const [items, setItems] = useState([]);
   const [titleQuery, setTitleQuery] = useState("");
   const [authorQuery, setAuthorQuery] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [genres, setGenres] = useState([]);
   const [newItem, setNewItem] = useState(EMPTY_ITEM);
   const [editingItemId, setEditingItemId] = useState(null);
   const [draftItem, setDraftItem] = useState(EMPTY_ITEM);
@@ -94,6 +129,10 @@ export function DashboardPage({ me, refreshMe }) {
     setLoading(true);
     apiFetch(`/dashboard/catalog?${params.toString()}`).then((data) => { setItems(data.items); setError(""); }).catch((fetchError) => setError(fetchError.message)).finally(() => setLoading(false));
   }
+
+  useEffect(() => {
+    apiFetch("/genres").then((data) => setGenres(data.items || [])).catch(() => setGenres([]));
+  }, []);
 
   useEffect(() => { if (me) loadCatalog(); }, [me]);
 
@@ -125,6 +164,7 @@ export function DashboardPage({ me, refreshMe }) {
       publisher: item.publisher || "",
       language: item.language || "",
       description: item.description || "",
+      genre_ids: item.genre_ids || [],
       book_status: normalizeBookStatus(item.book_status),
       availability_status: normalizeEditableAvailability(item.availability_status),
     });
@@ -146,6 +186,7 @@ export function DashboardPage({ me, refreshMe }) {
           publisher: draftItem.publisher || null,
           language: draftItem.language || null,
           description: draftItem.description || null,
+          genre_ids: draftItem.genre_ids || [],
           book_status: normalizeBookStatus(draftItem.book_status),
         }),
       }).then(() => {
@@ -212,6 +253,7 @@ export function DashboardPage({ me, refreshMe }) {
             <label>Editorial<input value={newItem.publisher} onChange={(event) => setNewItem((current) => ({ ...current, publisher: event.target.value }))} /></label>
             <label>Idioma<input value={newItem.language} onChange={(event) => setNewItem((current) => ({ ...current, language: event.target.value }))} /></label>
             <label>Estado<select value={newItem.book_status} onChange={(event) => setNewItem((current) => ({ ...current, book_status: event.target.value }))}>{EDITABLE_BOOK_STATUS_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
+            <GenreSelector genres={genres} selectedGenreIds={newItem.genre_ids} onChange={(genreIds) => setNewItem((current) => ({ ...current, genre_ids: genreIds }))} />
             <label className="dashboard-field-wide">Descripcion<textarea value={newItem.description} onChange={(event) => setNewItem((current) => ({ ...current, description: event.target.value }))} rows={4} placeholder="Cuenta brevemente de que trata el libro, su edicion o cualquier detalle util." /></label>
           </div>
         </form>
@@ -245,8 +287,9 @@ export function DashboardPage({ me, refreshMe }) {
           return (
             <article key={item.id} className={`dashboard-card catalog-item${isEditing ? " is-editing" : ""}`}>
               <div className="catalog-item-summary">{coverUrl ? <img src={coverUrl} alt={`Tapa de ${item.title}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : <span className="catalog-cover-placeholder"><BookIcon /></span>}<div><span className="catalog-id">Libro #{item.id}</span><h3>{item.title}</h3><p>{item.author || "Autor no visible"}</p><p>Estado: {isEditing ? BOOK_STATUS_LABELS[normalizeBookStatus(draftItem.book_status)] : bookStatusLabel}</p></div>{isEditing ? <span className={`status-pill status-${draftItem.availability_status}`}>{AVAILABILITY_LABELS[draftItem.availability_status] || statusLabel}</span> : <span className={`status-pill status-${normalizeEditableAvailability(item.availability_status)}`}>{statusLabel}</span>}</div>
+              {item.genres?.length ? <div className="store-tags" aria-label="Generos del libro">{item.genres.map((genre) => <span key={genre.id} className="store-tag">{genre.name}</span>)}</div> : null}
               {item.description ? <p className="catalog-item-description">{item.description}</p> : null}
-              {isEditing ? <div className="dashboard-form-grid dashboard-form-grid-extended"><label>Titulo<input value={draftItem.title} onChange={(event) => setDraftItem((current) => ({ ...current, title: event.target.value }))} /></label><label>Autor<input value={draftItem.author} onChange={(event) => setDraftItem((current) => ({ ...current, author: event.target.value }))} /></label><label>Disponibilidad<select value={draftItem.availability_status} onChange={(event) => setDraftItem((current) => ({ ...current, availability_status: event.target.value }))}>{EDITABLE_AVAILABILITY_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label><label>Editorial<input value={draftItem.publisher} onChange={(event) => setDraftItem((current) => ({ ...current, publisher: event.target.value }))} /></label><label>Idioma<input value={draftItem.language} onChange={(event) => setDraftItem((current) => ({ ...current, language: event.target.value }))} /></label><label>Estado<select value={draftItem.book_status} onChange={(event) => setDraftItem((current) => ({ ...current, book_status: event.target.value }))}>{EDITABLE_BOOK_STATUS_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label><label className="dashboard-field-wide">Descripcion<textarea value={draftItem.description} onChange={(event) => setDraftItem((current) => ({ ...current, description: event.target.value }))} rows={4} /></label></div> : null}
+              {isEditing ? <div className="dashboard-form-grid dashboard-form-grid-extended"><label>Titulo<input value={draftItem.title} onChange={(event) => setDraftItem((current) => ({ ...current, title: event.target.value }))} /></label><label>Autor<input value={draftItem.author} onChange={(event) => setDraftItem((current) => ({ ...current, author: event.target.value }))} /></label><label>Disponibilidad<select value={draftItem.availability_status} onChange={(event) => setDraftItem((current) => ({ ...current, availability_status: event.target.value }))}>{EDITABLE_AVAILABILITY_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label><label>Editorial<input value={draftItem.publisher} onChange={(event) => setDraftItem((current) => ({ ...current, publisher: event.target.value }))} /></label><label>Idioma<input value={draftItem.language} onChange={(event) => setDraftItem((current) => ({ ...current, language: event.target.value }))} /></label><label>Estado<select value={draftItem.book_status} onChange={(event) => setDraftItem((current) => ({ ...current, book_status: event.target.value }))}>{EDITABLE_BOOK_STATUS_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label><GenreSelector genres={genres} selectedGenreIds={draftItem.genre_ids || []} onChange={(genreIds) => setDraftItem((current) => ({ ...current, genre_ids: genreIds }))} /><label className="dashboard-field-wide">Descripcion<textarea value={draftItem.description} onChange={(event) => setDraftItem((current) => ({ ...current, description: event.target.value }))} rows={4} /></label></div> : null}
               <div className="card-actions"><div className="card-actions-main">{isEditing ? <button type="button" className="secondary-button" onClick={cancelEditing}>Cancelar</button> : <button type="button" className="secondary-button" onClick={() => startEditing(item)}>Editar</button>}{isEditing ? <button type="button" className="primary-button" onClick={() => saveItem(item.id, item.availability_status)} disabled={saveBusy}>{saveBusy ? "Guardando..." : "Guardar"}</button> : null}</div><button type="button" className="danger-button" onClick={() => hideItem(item.id)}>Eliminar</button></div>
             </article>
           );
@@ -267,12 +310,14 @@ export function DashboardPage({ me, refreshMe }) {
             return (
               <article key={item.id} className="dashboard-card catalog-item">
                 <div className="catalog-item-summary">{coverUrl ? <img src={coverUrl} alt={`Tapa de ${item.title}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : <span className="catalog-cover-placeholder"><BookIcon /></span>}<div><span className="catalog-id">Libro #{item.id}</span><h3>{item.title}</h3><p>{item.author || "Autor no visible"}</p><p>Estado: {bookStatusLabel}</p></div><span className={`status-pill status-${item.availability_status}`}>{AVAILABILITY_LABELS[item.availability_status] || item.availability_status}</span></div>
+                {item.genres?.length ? <div className="store-tags" aria-label="Generos del libro">{item.genres.map((genre) => <span key={genre.id} className="store-tag">{genre.name}</span>)}</div> : null}
                 {item.description ? <p className="catalog-item-description">{item.description}</p> : null}
                 <div className="catalog-item-readonly">
                   <p><strong>Titulo:</strong> {item.title}</p>
                   <p><strong>Autor:</strong> {item.author || "Autor no visible"}</p>
                   <p><strong>Editorial:</strong> {item.publisher || "Editorial no visible"}</p>
                   <p><strong>Idioma:</strong> {item.language || "Idioma no visible"}</p>
+                  <p><strong>Generos:</strong> {item.genres?.length ? item.genres.map((genre) => genre.name).join(", ") : "Sin generos"}</p>
                   <p><strong>Estado:</strong> {bookStatusLabel}</p>
                 </div>
                 <div className="card-actions"><button type="button" className="primary-button" onClick={() => updateAvailability(item.id, "available")}>Volver a publicar</button><button type="button" className="secondary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver vidriera digital</button></div>

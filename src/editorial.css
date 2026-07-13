@@ -1594,6 +1594,52 @@ button:disabled {
   grid-column: 1 / -1;
 }
 
+.dashboard-genre-fieldset {
+  margin: 0;
+  padding: 14px 16px 16px;
+  border: 1px solid rgba(30, 36, 31, 0.14);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.dashboard-genre-fieldset legend {
+  padding: 0 6px;
+  color: var(--forest-deep);
+  font-weight: 700;
+}
+
+.dashboard-genre-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.dashboard-genre-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border: 1px solid rgba(18, 63, 50, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+}
+
+.dashboard-genre-option.is-selected {
+  border-color: rgba(18, 63, 50, 0.44);
+  background: rgba(18, 63, 50, 0.08);
+}
+
+.dashboard-genre-option input {
+  margin: 0;
+}
+
+.compact-filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 textarea {
   width: 100%;
   min-height: 128px;
