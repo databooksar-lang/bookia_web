@@ -75,9 +75,10 @@ function HeroSearch({ initialQuery = "", initialField = "general", onSearch }) {
   );
 }
 
-function SearchResults({ filters, stores }) {
+function SearchResults({ filters, stores, genres }) {
   const [items, setItems] = useState([]);
   const [selectedStore, setSelectedStore] = useState("");
+  const [selectedGenre, setSelectedGenre] = useState("");
   const [selectedCover, setSelectedCover] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -95,6 +96,7 @@ function SearchResults({ filters, stores }) {
     if (!hasSearched) {
       setItems([]);
       setSelectedStore("");
+      setSelectedGenre("");
       setError("");
       setSelectedCover(null);
       return;
@@ -104,6 +106,7 @@ function SearchResults({ filters, stores }) {
     if (filters.query) params.set("query", filters.query);
     if (filters.field) params.set("field", filters.field);
     if (selectedStore) params.set("bookstore", selectedStore);
+    if (selectedGenre) params.set("genre_slug", selectedGenre);
 
     setLoading(true);
     apiFetch(`/search?${params.toString()}`)
@@ -116,7 +119,7 @@ function SearchResults({ filters, stores }) {
         setError(fetchError.message);
       })
       .finally(() => setLoading(false));
-  }, [filters, hasSearched, selectedStore]);
+  }, [filters, hasSearched, selectedStore, selectedGenre]);
 
   if (!hasSearched) return null;
 
@@ -128,13 +131,22 @@ function SearchResults({ filters, stores }) {
           <h2>Resultados de busqueda</h2>
           <p>{loading ? "Buscando en los catalogos..." : `${visibleItems.length} ${visibleItems.length === 1 ? "libro encontrado" : "libros encontrados"}`}</p>
         </div>
-        <label className="compact-filter">
-          <span>Libreria</span>
-          <select value={selectedStore} onChange={(event) => setSelectedStore(event.target.value)}>
-            <option value="">Todas las librerias</option>
-            {stores.map((store) => <option key={store.id} value={store.slug}>{store.name}</option>)}
-          </select>
-        </label>
+        <div className="compact-filter-group">
+          <label className="compact-filter">
+            <span>Libreria</span>
+            <select value={selectedStore} onChange={(event) => setSelectedStore(event.target.value)}>
+              <option value="">Todas las librerias</option>
+              {stores.map((store) => <option key={store.id} value={store.slug}>{store.name}</option>)}
+            </select>
+          </label>
+          <label className="compact-filter">
+            <span>Genero</span>
+            <select value={selectedGenre} onChange={(event) => setSelectedGenre(event.target.value)}>
+              <option value="">Todos los generos</option>
+              {genres.map((genre) => <option key={genre.id} value={genre.slug}>{genre.name}</option>)}
+            </select>
+          </label>
+        </div>
       </div>
       {error ? <p className="feedback error">{error}</p> : null}
       {loading ? <div className="loading-list" aria-label="Cargando resultados"><span /><span /><span /></div> : null}
@@ -148,6 +160,7 @@ function SearchResults({ filters, stores }) {
                 <p className="result-kicker">{item.publisher || "Editorial no visible"}</p>
                 <h3>{item.title}</h3>
                 <p>{item.author || "Autor no visible"}</p>
+                {item.genres?.length ? <div className="store-tags" aria-label="Generos del libro">{item.genres.map((genre) => <span key={genre.id} className="store-tag">{genre.name}</span>)}</div> : null}
               </div>
               <div className="search-result-store-info">
                 <span>Libreria</span>
@@ -215,19 +228,21 @@ function ContactLink({ href, children }) {
 
 export function HomePage() {
   const [stores, setStores] = useState([]);
+  const [genres, setGenres] = useState([]);
   const [storesLoading, setStoresLoading] = useState(true);
   const [draftFilters, setDraftFilters] = useState({ query: "", field: "general" });
   const [searchFilters, setSearchFilters] = useState(null);
 
   useEffect(() => {
     apiFetch("/bookstores").then((data) => setStores(data.items)).catch(() => setStores([])).finally(() => setStoresLoading(false));
+    apiFetch("/genres").then((data) => setGenres(data.items || [])).catch(() => setGenres([]));
   }, []);
 
   return (
     <>
       <HeroSearch initialQuery={draftFilters.query} initialField={draftFilters.field} onSearch={(nextFilters) => { setDraftFilters(nextFilters); setSearchFilters(nextFilters); setTimeout(() => document.getElementById("resultados")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0); }} />
       <BenefitsStrip />
-      <SearchResults filters={searchFilters} stores={stores} />
+      <SearchResults filters={searchFilters} stores={stores} genres={genres} />
       <BookstoresSection stores={stores} loading={storesLoading} />
       <section className="home-section how-section">
         <div className="how-intro"><p className="section-label">Simple y local</p><h2>Una busqueda.<br />Muchas historias posibles.</h2><p>Bookia acerca catalogos que antes estaban dispersos para que encontrar un libro vuelva a sentirse como un descubrimiento.</p></div>
@@ -302,7 +317,7 @@ export function BookstorePage({ slug }) {
       </div>
       <div className="store-catalog">
         <div className="section-heading results-heading"><div><p className="section-label">Estantes disponibles</p><h2>Catalogo de {store.name}</h2><p>{visibleItems.length} {visibleItems.length === 1 ? "libro publicado" : "libros publicados"}</p></div><button className="secondary-button" onClick={() => navigate("/")}>Volver a buscar</button></div>
-        {visibleItems.length === 0 ? <EmptyState title="Este catalogo se esta preparando">Volve pronto para descubrir sus libros.</EmptyState> : <div className="book-grid">{visibleItems.map((item) => <article key={item.id} className="book-card"><BookCover item={item} /><div><span className={`status-pill status-${item.availability_status}`}>{({ available: "Disponible", reserved: "Reservado", sold_out: "Agotado", hidden: "Oculto" })[item.availability_status] || item.availability_status}</span><h3>{item.title}</h3><p>{item.author || "Autor no visible"}</p>{item.description ? <p className="book-card-description">{item.description}</p> : null}<small>{item.publisher || "Editorial no visible"}{item.language ? ` � ${item.language}` : ""}</small></div></article>)}</div>}
+        {visibleItems.length === 0 ? <EmptyState title="Este catalogo se esta preparando">Volve pronto para descubrir sus libros.</EmptyState> : <div className="book-grid">{visibleItems.map((item) => <article key={item.id} className="book-card"><BookCover item={item} /><div><span className={`status-pill status-${item.availability_status}`}>{({ available: "Disponible", reserved: "Reservado", sold_out: "Agotado", hidden: "Oculto" })[item.availability_status] || item.availability_status}</span><h3>{item.title}</h3><p>{item.author || "Autor no visible"}</p>{item.genres?.length ? <div className="store-tags" aria-label="Generos del libro">{item.genres.map((genre) => <span key={genre.id} className="store-tag">{genre.name}</span>)}</div> : null}{item.description ? <p className="book-card-description">{item.description}</p> : null}<small>{item.publisher || "Editorial no visible"}{item.language ? ` ? ${item.language}` : ""}</small></div></article>)}</div>}
       </div>
     </section>
   );
