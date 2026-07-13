@@ -8,8 +8,9 @@ export function getGenreSelectorState({ genresLoading, genresError, genres }) {
   }
 
   if (!genres.length) {
-    return { kind: "empty", message: "No hay generos disponibles por ahora." };
+    return { kind: "empty", message: "Todavia no hay generos cargados en la base. Cuando existan, vas a poder seleccionarlos aca." };
   }
 
   return { kind: "ready", message: "" };
 }
+
