@@ -3,6 +3,7 @@ import { useEffect, useState, useTransition } from "react";
 import { apiFetch, resolveApiUrl } from "../api";
 import { EmptyState } from "../components/Commerce";
 import { ArrowIcon, BookIcon, SearchIcon } from "../components/Icons";
+import { buildSingleGenreIds, getSingleGenreValue } from "../genreSelection";
 import { getGenreSelectorState } from "../genreSelectorState";
 import { navigate } from "../navigation";
 
@@ -82,30 +83,13 @@ function GenreSelector({ genres, genresLoading = false, genresError = "", select
   }
 
   return (
-    <fieldset className="dashboard-field-wide dashboard-genre-fieldset">
-      <legend>{legend}</legend>
-      <div className="dashboard-genre-options">
-        {genres.map((genre) => {
-          const checked = selectedGenreIds.includes(genre.id);
-          return (
-            <label key={genre.id} className={`dashboard-genre-option${checked ? " is-selected" : ""}`}>
-              <input
-                type="checkbox"
-                checked={checked}
-                onChange={() => {
-                  if (checked) {
-                    onChange(selectedGenreIds.filter((genreId) => genreId !== genre.id));
-                    return;
-                  }
-                  onChange([...selectedGenreIds, genre.id]);
-                }}
-              />
-              <span>{genre.name}</span>
-            </label>
-          );
-        })}
-      </div>
-    </fieldset>
+    <label>
+      <span>{legend}</span>
+      <select value={getSingleGenreValue(selectedGenreIds)} onChange={(event) => onChange(buildSingleGenreIds(event.target.value))}>
+        <option value="">Sin genero</option>
+        {genres.map((genre) => <option key={genre.id} value={genre.id}>{genre.name}</option>)}
+      </select>
+    </label>
   );
 }
 
