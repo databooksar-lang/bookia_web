@@ -7,7 +7,7 @@ EOF
 
 if [ -n "${BOOKIA_API_UPSTREAM_URL:-}" ]; then
   cat >> /etc/caddy/Caddyfile <<EOF
-  @api path /search* /bookstores* /auth* /me* /dashboard* /catalog* /media* /static*
+  @api path /search* /bookstores* /genres* /auth* /me* /dashboard* /catalog* /media* /static*
   handle @api {
     reverse_proxy ${BOOKIA_API_UPSTREAM_URL}
   }

@@ -1,4 +1,6 @@
-﻿const RUNTIME_API_BASE = globalThis.__BOOKIA_CONFIG__?.apiBaseUrl || "";
+import { isBookiaApiRoute } from "./apiRoutes";
+
+const RUNTIME_API_BASE = globalThis.__BOOKIA_CONFIG__?.apiBaseUrl || "";
 const BUILD_API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 const API_BASE = (RUNTIME_API_BASE || BUILD_API_BASE).replace(/\/$/, "");
 
@@ -19,7 +21,7 @@ function readCookie(name) {
 function buildInvalidApiResponseMessage(path, response, contentType) {
   const resolvedPath = resolveApiUrl(path);
   const isHtmlResponse = contentType.includes("text/html");
-  const looksLikeApiRoute = /^\/(search|bookstores|auth|me|dashboard|catalog)(\/|\?|$)/.test(path);
+  const looksLikeApiRoute = isBookiaApiRoute(path);
 
   if (isHtmlResponse && looksLikeApiRoute) {
     if (!API_BASE) {
@@ -34,7 +36,7 @@ function buildInvalidApiResponseMessage(path, response, contentType) {
 function buildNonJsonErrorMessage(path, response, contentType, bodyText) {
   const trimmedBody = bodyText.trim();
   const looksLikeHtml = contentType.includes("text/html") || /^<!doctype html/i.test(trimmedBody) || /^<html/i.test(trimmedBody);
-  const looksLikeApiRoute = /^\/(search|bookstores|auth|me|dashboard|catalog)(\/|\?|$)/.test(path);
+  const looksLikeApiRoute = isBookiaApiRoute(path);
 
   if (looksLikeHtml && looksLikeApiRoute) {
     return buildInvalidApiResponseMessage(path, response, contentType || "text/html");

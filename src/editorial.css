@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   font-family: "Manrope", sans-serif;
   color: #1e241f;
   background: #f7f1e6;
@@ -1594,6 +1594,29 @@ button:disabled {
   grid-column: 1 / -1;
 }
 
+.dashboard-genre-status {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px 16px;
+  border: 1px solid rgba(30, 36, 31, 0.14);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.dashboard-genre-status-label {
+  color: var(--forest-deep);
+  font-weight: 700;
+}
+
+.dashboard-genre-status small {
+  color: rgba(30, 36, 31, 0.78);
+}
+
+.dashboard-genre-status.is-error {
+  border-color: rgba(177, 61, 42, 0.28);
+  background: rgba(177, 61, 42, 0.08);
+}
 .dashboard-genre-fieldset {
   margin: 0;
   padding: 14px 16px 16px;
@@ -2254,3 +2277,5 @@ textarea:focus {
     transition-duration: 0.01ms !important;
   }
 }
+
+
