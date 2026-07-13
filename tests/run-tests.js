@@ -27,7 +27,7 @@ const tests = [
   ["returns empty state when the API responds without genres", () => {
     assert.deepEqual(
       getGenreSelectorState({ genresLoading: false, genresError: "", genres: [] }),
-      { kind: "empty", message: "No hay generos disponibles por ahora." },
+      { kind: "empty", message: "Todavia no hay generos cargados en la base. Cuando existan, vas a poder seleccionarlos aca." },
     );
   }],
   ["returns ready state when genres exist", () => {
