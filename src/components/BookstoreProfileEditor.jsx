@@ -135,20 +135,6 @@ export default function BookstoreProfileEditor({ bookstore, onSaved, onError }) 
           </div>
           <button type="button" className="secondary-button" onClick={startEditing}>Editar perfil</button>
         </div>
-        <div className="bookstore-profile-media-grid">
-          <div>
-            <span className="bookstore-profile-media-label">Logo</span>
-            <div className="bookstore-profile-logo">
-              {renderLogoUrl ? <img src={renderLogoUrl} alt={`Logo de ${bookstore.name}`} onError={() => markImageFailed("logo", renderLogoUrl)} /> : <span>Sin logo</span>}
-            </div>
-          </div>
-          <div>
-            <span className="bookstore-profile-media-label">Banner</span>
-            <div className="bookstore-profile-banner">
-              {renderBannerUrl ? <img src={renderBannerUrl} alt={`Banner de ${bookstore.name}`} onError={() => markImageFailed("banner", renderBannerUrl)} /> : <span>Sin banner</span>}
-            </div>
-          </div>
-        </div>
       </section>
     );
   }

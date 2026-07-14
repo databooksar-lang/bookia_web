@@ -103,6 +103,18 @@ export function registerProfileEditorStateTests(test) {
     assert.match(publicPagesSource, /displayBookstoreDescription\(\s*store\.description\s*\)/);
   });
 
+  test("hides profile images until the editor is opened", () => {
+    const editorSource = readFileSync(new URL("../src/components/BookstoreProfileEditor.jsx", import.meta.url), "utf8");
+    const closedStart = editorSource.indexOf("if (!isEditing)");
+    const editingStart = editorSource.indexOf("<form onSubmit={saveProfile}>", closedStart);
+    const closedStateSource = editorSource.slice(closedStart, editingStart);
+
+    assert.ok(closedStart >= 0);
+    assert.ok(editingStart > closedStart);
+    assert.doesNotMatch(closedStateSource, /bookstore-profile-media-grid/);
+    assert.doesNotMatch(closedStateSource, /Sin logo/);
+    assert.doesNotMatch(closedStateSource, /Sin banner/);
+  });
   test("keeps profile image upload actions visible and explicit", () => {
     const editorSource = readFileSync(new URL("../src/components/BookstoreProfileEditor.jsx", import.meta.url), "utf8");
 
