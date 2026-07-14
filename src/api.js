@@ -1,7 +1,7 @@
-import { isBookiaApiRoute } from "./apiRoutes";
+import { isBookiaApiRoute } from "./apiRoutes.js";
 
 const RUNTIME_API_BASE = globalThis.__BOOKIA_CONFIG__?.apiBaseUrl || "";
-const BUILD_API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+const BUILD_API_BASE = import.meta.env?.VITE_API_BASE_URL || "";
 const API_BASE = (RUNTIME_API_BASE || BUILD_API_BASE).replace(/\/$/, "");
 
 function readCookie(name) {
@@ -73,21 +73,27 @@ export function resolveApiUrl(path) {
   return `${API_BASE}/${path}`;
 }
 
+export function buildRequestHeaders(options = {}, csrfToken = "") {
+  const isFormData = typeof FormData !== "undefined" && options.body instanceof FormData;
+
+  return {
+    ...(options.body !== undefined && !isFormData ? { "Content-Type": "application/json" } : {}),
+    ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}),
+    ...(options.headers || {}),
+  };
+}
+
 export async function apiFetch(path, options = {}) {
   let response;
   const method = (options.method || "GET").toUpperCase();
   const csrfToken = method === "GET" ? "" : readCookie("bookia_csrf");
-  const defaultHeaders = {
-    ...(options.body !== undefined || method !== "GET" ? { "Content-Type": "application/json" } : {}),
-    ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}),
-    ...(options.headers || {}),
-  };
+  const defaultHeaders = buildRequestHeaders(options, csrfToken);
 
   try {
     response = await fetch(resolveApiUrl(path), {
+      ...options,
       credentials: "include",
       headers: defaultHeaders,
-      ...options,
     });
   } catch (error) {
     throw new Error("No pudimos conectar con el servidor.");
