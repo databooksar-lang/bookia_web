@@ -240,7 +240,7 @@ export function DashboardPage({ me, refreshMe }) {
 
       {error ? <p className="feedback error">{error}</p> : null}
 
-      <BookstoreProfileEditor bookstore={me.bookstore} onSaved={refreshMe} onError={setError} />
+      <BookstoreProfileEditor bookstore={me.bookstore} onSaved={() => refreshMe({ preserveOnError: true })} onError={setError} />
 
       <DashboardSection
         label="Nuevo titulo"

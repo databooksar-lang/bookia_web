@@ -30,14 +30,6 @@ export default function BookstoreProfileEditor({ bookstore, onSaved, onError }) 
   const renderBannerUrl = visibleBannerUrl && visibleBannerUrl !== failedBannerUrl ? visibleBannerUrl : "";
 
   useEffect(() => {
-    setFailedLogoUrl("");
-  }, [savedLogoUrl]);
-
-  useEffect(() => {
-    setFailedBannerUrl("");
-  }, [savedBannerUrl]);
-
-  useEffect(() => {
     if (!logoFile) {
       setLogoPreviewUrl("");
       return undefined;
@@ -69,6 +61,8 @@ export default function BookstoreProfileEditor({ bookstore, onSaved, onError }) 
   function cancelEditing() {
     setFailedLogoUrl("");
     setFailedBannerUrl("");
+    setLogoPreviewUrl("");
+    setBannerPreviewUrl("");
     setDraft(createProfileDraft(bookstore));
     setIsEditing(false);
   }
@@ -117,6 +111,8 @@ export default function BookstoreProfileEditor({ bookstore, onSaved, onError }) 
       onError("");
       setFailedLogoUrl("");
       setFailedBannerUrl("");
+      setLogoPreviewUrl("");
+      setBannerPreviewUrl("");
       setDraft(createProfileDraft());
       setIsEditing(false);
     } catch (error) {

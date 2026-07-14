@@ -91,11 +91,14 @@ export function registerProfileEditorStateTests(test) {
   });
 
   test("integrates the profile editor and shared description fallback", () => {
+    const appSource = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
     const dashboardSource = readFileSync(new URL("../src/pages/DashboardPage.jsx", import.meta.url), "utf8");
     const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
 
+    assert.match(appSource, /function\s+refreshMe\s*\(\s*\{\s*preserveOnError\s*=\s*false\s*\}\s*=\s*\{\s*\}\s*\)/);
+    assert.match(appSource, /if\s*\(\s*!preserveOnError\s*\)\s*\{\s*setMe\(\s*null\s*\)\s*;?\s*\}/s);
     assert.match(dashboardSource, /import\s+BookstoreProfileEditor\s+from\s+["']\.\.\/components\/BookstoreProfileEditor["']/);
-    assert.match(dashboardSource, /<BookstoreProfileEditor\b/);
+    assert.match(dashboardSource, /<BookstoreProfileEditor\b[^>]*\bonSaved\s*=\s*\{\s*\(\s*\)\s*=>\s*refreshMe\(\s*\{\s*preserveOnError\s*:\s*true\s*\}\s*\)\s*\}/s);
     assert.match(publicPagesSource, /import\s*\{[^}]*\bdisplayBookstoreDescription\b[^}]*\}\s*from\s*["']\.\.\/profileEditorState["']/s);
     assert.match(publicPagesSource, /displayBookstoreDescription\(\s*store\.description\s*\)/);
   });
