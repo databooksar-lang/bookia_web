@@ -6,6 +6,7 @@ import {
   createProfileDraft,
   displayBookstoreDescription,
   removeProfileImage,
+  requireRefreshedBookstore,
   selectProfileImage,
 } from "../src/profileEditorState.js";
 import { buildRequestHeaders } from "../src/api.js";
@@ -76,14 +77,27 @@ export function registerProfileEditorStateTests(test) {
     assert.equal(formData.has("banner"), false);
   });
 
+  test("requires a bookstore in the refreshed session result", () => {
+    const bookstore = { id: 7, name: "Libreria Sur" };
+
+    assert.equal(requireRefreshedBookstore({ bookstore }), bookstore);
+  });
+
+  test("rejects refresh results without a bookstore", () => {
+    const expected = { message: "No pudimos actualizar los datos de la librer\u00eda." };
+
+    assert.throws(() => requireRefreshedBookstore(null), expected);
+    assert.throws(() => requireRefreshedBookstore({}), expected);
+  });
+
   test("integrates the profile editor and shared description fallback", () => {
     const dashboardSource = readFileSync(new URL("../src/pages/DashboardPage.jsx", import.meta.url), "utf8");
     const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
 
-    assert.match(dashboardSource, /import BookstoreProfileEditor from ["']\.\.\/components\/BookstoreProfileEditor["']/);
+    assert.match(dashboardSource, /import\s+BookstoreProfileEditor\s+from\s+["']\.\.\/components\/BookstoreProfileEditor["']/);
     assert.match(dashboardSource, /<BookstoreProfileEditor\b/);
-    assert.match(publicPagesSource, /import \{ displayBookstoreDescription \} from ["']\.\.\/profileEditorState["']/);
-    assert.match(publicPagesSource, /displayBookstoreDescription\(store\.description\)/);
+    assert.match(publicPagesSource, /import\s*\{[^}]*\bdisplayBookstoreDescription\b[^}]*\}\s*from\s*["']\.\.\/profileEditorState["']/s);
+    assert.match(publicPagesSource, /displayBookstoreDescription\(\s*store\.description\s*\)/);
   });
 
   test("does not set a JSON content type for FormData", () => {

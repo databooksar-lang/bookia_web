@@ -6,6 +6,7 @@ import {
   createProfileDraft,
   displayBookstoreDescription,
   removeProfileImage,
+  requireRefreshedBookstore,
   selectProfileImage,
 } from "../profileEditorState";
 
@@ -17,12 +18,24 @@ export default function BookstoreProfileEditor({ bookstore, onSaved, onError }) 
   const [draft, setDraft] = useState(() => createProfileDraft(bookstore));
   const [logoPreviewUrl, setLogoPreviewUrl] = useState("");
   const [bannerPreviewUrl, setBannerPreviewUrl] = useState("");
+  const [failedLogoUrl, setFailedLogoUrl] = useState("");
+  const [failedBannerUrl, setFailedBannerUrl] = useState("");
   const logoFile = draft.logoFile;
   const bannerFile = draft.bannerFile;
   const savedLogoUrl = resolveApiUrl(bookstore.logo_url);
   const savedBannerUrl = resolveApiUrl(bookstore.hero_image_url || bookstore.banner_url);
   const visibleLogoUrl = draft.removeLogo ? "" : logoPreviewUrl || savedLogoUrl;
   const visibleBannerUrl = draft.removeBanner ? "" : bannerPreviewUrl || savedBannerUrl;
+  const renderLogoUrl = visibleLogoUrl && visibleLogoUrl !== failedLogoUrl ? visibleLogoUrl : "";
+  const renderBannerUrl = visibleBannerUrl && visibleBannerUrl !== failedBannerUrl ? visibleBannerUrl : "";
+
+  useEffect(() => {
+    setFailedLogoUrl("");
+  }, [savedLogoUrl]);
+
+  useEffect(() => {
+    setFailedBannerUrl("");
+  }, [savedBannerUrl]);
 
   useEffect(() => {
     if (!logoFile) {
@@ -47,11 +60,15 @@ export default function BookstoreProfileEditor({ bookstore, onSaved, onError }) 
   }, [bannerFile]);
 
   function startEditing() {
+    setFailedLogoUrl("");
+    setFailedBannerUrl("");
     setDraft(createProfileDraft(bookstore));
     setIsEditing(true);
   }
 
   function cancelEditing() {
+    setFailedLogoUrl("");
+    setFailedBannerUrl("");
     setDraft(createProfileDraft(bookstore));
     setIsEditing(false);
   }
@@ -60,7 +77,29 @@ export default function BookstoreProfileEditor({ bookstore, onSaved, onError }) 
     const file = event.currentTarget.files?.[0];
     event.currentTarget.value = "";
     if (file) {
+      if (role === "logo") {
+        setFailedLogoUrl("");
+      } else {
+        setFailedBannerUrl("");
+      }
       setDraft((current) => selectProfileImage(current, role, file));
+    }
+  }
+
+  function removeImage(role) {
+    if (role === "logo") {
+      setFailedLogoUrl("");
+    } else {
+      setFailedBannerUrl("");
+    }
+    setDraft((current) => removeProfileImage(current, role));
+  }
+
+  function markImageFailed(role, source) {
+    if (role === "logo") {
+      setFailedLogoUrl(source);
+    } else {
+      setFailedBannerUrl(source);
     }
   }
 
@@ -73,7 +112,11 @@ export default function BookstoreProfileEditor({ bookstore, onSaved, onError }) 
         method: "PATCH",
         body: buildProfileFormData(draft),
       });
-      await onSaved();
+      const refreshedSession = await onSaved();
+      requireRefreshedBookstore(refreshedSession);
+      onError("");
+      setFailedLogoUrl("");
+      setFailedBannerUrl("");
       setDraft(createProfileDraft());
       setIsEditing(false);
     } catch (error) {
@@ -98,13 +141,13 @@ export default function BookstoreProfileEditor({ bookstore, onSaved, onError }) 
           <div>
             <span className="bookstore-profile-media-label">Logo</span>
             <div className="bookstore-profile-logo">
-              {savedLogoUrl ? <img src={savedLogoUrl} alt={`Logo de ${bookstore.name}`} /> : <span>Sin logo</span>}
+              {renderLogoUrl ? <img src={renderLogoUrl} alt={`Logo de ${bookstore.name}`} onError={() => markImageFailed("logo", renderLogoUrl)} /> : <span>Sin logo</span>}
             </div>
           </div>
           <div>
             <span className="bookstore-profile-media-label">Banner</span>
             <div className="bookstore-profile-banner">
-              {savedBannerUrl ? <img src={savedBannerUrl} alt={`Banner de ${bookstore.name}`} /> : <span>Sin banner</span>}
+              {renderBannerUrl ? <img src={renderBannerUrl} alt={`Banner de ${bookstore.name}`} onError={() => markImageFailed("banner", renderBannerUrl)} /> : <span>Sin banner</span>}
             </div>
           </div>
         </div>
@@ -142,29 +185,29 @@ export default function BookstoreProfileEditor({ bookstore, onSaved, onError }) 
           <div className="bookstore-profile-upload">
             <span className="bookstore-profile-media-label">Logo</span>
             <div className="bookstore-profile-logo">
-              {visibleLogoUrl ? <img src={visibleLogoUrl} alt="Vista previa del logo" /> : <span>Sin logo</span>}
+              {renderLogoUrl ? <img src={renderLogoUrl} alt="Vista previa del logo" onError={() => markImageFailed("logo", renderLogoUrl)} /> : <span>Sin logo</span>}
             </div>
             <div className="bookstore-profile-preview-actions">
               <label className="secondary-button">
                 Elegir logo
                 <input type="file" accept={PROFILE_IMAGE_ACCEPT} onChange={(event) => selectImage("logo", event)} disabled={isSaving} />
               </label>
-              {visibleLogoUrl ? <button type="button" className="text-link" onClick={() => setDraft((current) => removeProfileImage(current, "logo"))} disabled={isSaving}>Quitar</button> : null}
+              {visibleLogoUrl ? <button type="button" className="text-link" onClick={() => removeImage("logo")} disabled={isSaving}>Quitar</button> : null}
             </div>
-            <small>PNG, JPEG o WebP &middot; m&aacute;ximo 5 MB. Recomendado: 600 x 600 px.</small>
+            <small>PNG, JPEG o WebP &middot; m&aacute;ximo 5 MB. Recomendado: 512 x 512 px.</small>
           </div>
 
           <div className="bookstore-profile-upload">
             <span className="bookstore-profile-media-label">Banner</span>
             <div className="bookstore-profile-banner">
-              {visibleBannerUrl ? <img src={visibleBannerUrl} alt="Vista previa del banner" /> : <span>Sin banner</span>}
+              {renderBannerUrl ? <img src={renderBannerUrl} alt="Vista previa del banner" onError={() => markImageFailed("banner", renderBannerUrl)} /> : <span>Sin banner</span>}
             </div>
             <div className="bookstore-profile-preview-actions">
               <label className="secondary-button">
                 Elegir banner
                 <input type="file" accept={PROFILE_IMAGE_ACCEPT} onChange={(event) => selectImage("banner", event)} disabled={isSaving} />
               </label>
-              {visibleBannerUrl ? <button type="button" className="text-link" onClick={() => setDraft((current) => removeProfileImage(current, "banner"))} disabled={isSaving}>Quitar</button> : null}
+              {visibleBannerUrl ? <button type="button" className="text-link" onClick={() => removeImage("banner")} disabled={isSaving}>Quitar</button> : null}
             </div>
             <small>PNG, JPEG o WebP &middot; m&aacute;ximo 5 MB. Recomendado: 1600 x 600 px.</small>
           </div>

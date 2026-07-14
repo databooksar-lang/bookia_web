@@ -5,6 +5,14 @@ export function displayBookstoreDescription(value) {
   return description || EMPTY_DESCRIPTION;
 }
 
+export function requireRefreshedBookstore(result) {
+  if (!result?.bookstore) {
+    throw new Error("No pudimos actualizar los datos de la librer\u00eda.");
+  }
+
+  return result.bookstore;
+}
+
 export function createProfileDraft(bookstore = {}) {
   return {
     description: bookstore.description ?? "",
