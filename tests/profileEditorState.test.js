@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 
 import {
   buildProfileFormData,
@@ -66,6 +67,23 @@ export function registerProfileEditorStateTests(test) {
     assert.equal(formData.get("remove_banner"), "true");
     assert.equal(formData.get("logo").size, logo.size);
     assert.equal(formData.get("banner").size, banner.size);
+  });
+
+  test("omits image fields from multipart data when no files are selected", () => {
+    const formData = buildProfileFormData(createProfileDraft({ description: "Especializada" }));
+
+    assert.equal(formData.has("logo"), false);
+    assert.equal(formData.has("banner"), false);
+  });
+
+  test("integrates the profile editor and shared description fallback", () => {
+    const dashboardSource = readFileSync(new URL("../src/pages/DashboardPage.jsx", import.meta.url), "utf8");
+    const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+
+    assert.match(dashboardSource, /import BookstoreProfileEditor from ["']\.\.\/components\/BookstoreProfileEditor["']/);
+    assert.match(dashboardSource, /<BookstoreProfileEditor\b/);
+    assert.match(publicPagesSource, /import \{ displayBookstoreDescription \} from ["']\.\.\/profileEditorState["']/);
+    assert.match(publicPagesSource, /displayBookstoreDescription\(store\.description\)/);
   });
 
   test("does not set a JSON content type for FormData", () => {

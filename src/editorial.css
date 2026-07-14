@@ -1525,6 +1525,146 @@ button:disabled {
   box-shadow: none;
 }
 
+.bookstore-profile-section {
+  margin: 28px 0;
+  overflow: hidden;
+}
+
+.bookstore-profile-heading {
+  margin-bottom: 26px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.bookstore-profile-heading > div:first-child {
+  min-width: 0;
+}
+
+.bookstore-profile-heading h2 {
+  margin-bottom: 6px;
+  color: var(--forest-deep);
+  font-size: 2rem;
+}
+
+.bookstore-profile-heading p:not(.section-label) {
+  max-width: 720px;
+  margin: 0;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.bookstore-profile-actions,
+.bookstore-profile-preview-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bookstore-profile-description {
+  margin-bottom: 24px;
+  display: grid;
+  gap: 8px;
+  color: var(--forest-deep);
+  font-weight: 700;
+}
+
+.bookstore-profile-description textarea:disabled {
+  opacity: 0.64;
+  cursor: not-allowed;
+}
+
+.bookstore-profile-media-grid {
+  display: grid;
+  grid-template-columns: minmax(140px, 0.42fr) minmax(0, 1fr);
+  gap: 20px;
+}
+
+.bookstore-profile-media-grid > div {
+  min-width: 0;
+}
+
+.bookstore-profile-media-label {
+  margin-bottom: 8px;
+  display: block;
+  color: var(--forest-deep);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.bookstore-profile-logo,
+.bookstore-profile-banner {
+  width: 100%;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: var(--muted);
+  background: rgba(18, 63, 50, 0.06);
+  border: 1px dashed rgba(18, 63, 50, 0.25);
+  border-radius: 12px;
+}
+
+.bookstore-profile-logo {
+  aspect-ratio: 1;
+}
+
+.bookstore-profile-banner {
+  aspect-ratio: 8 / 3;
+}
+
+.bookstore-profile-logo img,
+.bookstore-profile-banner img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.bookstore-profile-logo > span,
+.bookstore-profile-banner > span {
+  padding: 16px;
+  text-align: center;
+}
+
+.bookstore-profile-upload {
+  display: grid;
+  align-content: start;
+}
+
+.bookstore-profile-upload .bookstore-profile-preview-actions {
+  margin-top: 12px;
+}
+
+.bookstore-profile-upload label.secondary-button {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.bookstore-profile-upload label.secondary-button:has(input:disabled) {
+  opacity: 0.52;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.bookstore-profile-upload input[type="file"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.bookstore-profile-upload small {
+  margin-top: 9px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
 .dashboard-create {
   margin-bottom: 70px;
   border-top: 4px solid var(--forest);
@@ -2246,6 +2386,28 @@ textarea:focus {
 
   .dashboard-form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .bookstore-profile-heading,
+  .bookstore-profile-actions,
+  .bookstore-profile-preview-actions {
+    width: 100%;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .bookstore-profile-media-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bookstore-profile-logo {
+    width: min(100%, 220px);
+  }
+
+  .bookstore-profile-actions .primary-button,
+  .bookstore-profile-actions .secondary-button,
+  .bookstore-profile-preview-actions .secondary-button {
+    width: 100%;
   }
 
   .dashboard-card {
