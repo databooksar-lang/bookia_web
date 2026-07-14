@@ -28,6 +28,8 @@ export default function BookstoreProfileEditor({ bookstore, onSaved, onError }) 
   const visibleBannerUrl = draft.removeBanner ? "" : bannerPreviewUrl || savedBannerUrl;
   const renderLogoUrl = visibleLogoUrl && visibleLogoUrl !== failedLogoUrl ? visibleLogoUrl : "";
   const renderBannerUrl = visibleBannerUrl && visibleBannerUrl !== failedBannerUrl ? visibleBannerUrl : "";
+  const logoUploadLabel = visibleLogoUrl ? "Cambiar logo" : "Subir logo";
+  const bannerUploadLabel = visibleBannerUrl ? "Cambiar banner" : "Subir banner";
 
   useEffect(() => {
     if (!logoFile) {
@@ -184,9 +186,16 @@ export default function BookstoreProfileEditor({ bookstore, onSaved, onError }) 
               {renderLogoUrl ? <img src={renderLogoUrl} alt="Vista previa del logo" onError={() => markImageFailed("logo", renderLogoUrl)} /> : <span>Sin logo</span>}
             </div>
             <div className="bookstore-profile-preview-actions">
-              <label className="secondary-button">
-                Elegir logo
-                <input type="file" accept={PROFILE_IMAGE_ACCEPT} onChange={(event) => selectImage("logo", event)} disabled={isSaving} />
+              <input
+                id={`bookstore-profile-logo-upload-${bookstore.id || "current"}`}
+                className="bookstore-profile-file-input"
+                type="file"
+                accept={PROFILE_IMAGE_ACCEPT}
+                onChange={(event) => selectImage("logo", event)}
+                disabled={isSaving}
+              />
+              <label className="secondary-button bookstore-profile-upload-button" htmlFor={`bookstore-profile-logo-upload-${bookstore.id || "current"}`}>
+                {logoUploadLabel}
               </label>
               {visibleLogoUrl ? <button type="button" className="text-link" onClick={() => removeImage("logo")} disabled={isSaving}>Quitar</button> : null}
             </div>
@@ -199,9 +208,16 @@ export default function BookstoreProfileEditor({ bookstore, onSaved, onError }) 
               {renderBannerUrl ? <img src={renderBannerUrl} alt="Vista previa del banner" onError={() => markImageFailed("banner", renderBannerUrl)} /> : <span>Sin banner</span>}
             </div>
             <div className="bookstore-profile-preview-actions">
-              <label className="secondary-button">
-                Elegir banner
-                <input type="file" accept={PROFILE_IMAGE_ACCEPT} onChange={(event) => selectImage("banner", event)} disabled={isSaving} />
+              <input
+                id={`bookstore-profile-banner-upload-${bookstore.id || "current"}`}
+                className="bookstore-profile-file-input"
+                type="file"
+                accept={PROFILE_IMAGE_ACCEPT}
+                onChange={(event) => selectImage("banner", event)}
+                disabled={isSaving}
+              />
+              <label className="secondary-button bookstore-profile-upload-button" htmlFor={`bookstore-profile-banner-upload-${bookstore.id || "current"}`}>
+                {bannerUploadLabel}
               </label>
               {visibleBannerUrl ? <button type="button" className="text-link" onClick={() => removeImage("banner")} disabled={isSaving}>Quitar</button> : null}
             </div>

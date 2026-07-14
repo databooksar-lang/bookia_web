@@ -103,6 +103,17 @@ export function registerProfileEditorStateTests(test) {
     assert.match(publicPagesSource, /displayBookstoreDescription\(\s*store\.description\s*\)/);
   });
 
+  test("keeps profile image upload actions visible and explicit", () => {
+    const editorSource = readFileSync(new URL("../src/components/BookstoreProfileEditor.jsx", import.meta.url), "utf8");
+
+    assert.match(editorSource, /Subir logo/);
+    assert.match(editorSource, /Cambiar logo/);
+    assert.match(editorSource, /Subir banner/);
+    assert.match(editorSource, /Cambiar banner/);
+    assert.match(editorSource, /htmlFor=/);
+    assert.match(editorSource, /id=\{`bookstore-profile-logo-upload/);
+    assert.match(editorSource, /id=\{`bookstore-profile-banner-upload/);
+  });
   test("does not set a JSON content type for FormData", () => {
     const headers = buildRequestHeaders({ body: new FormData() }, "csrf-token");
     assert.equal(headers["Content-Type"], undefined);

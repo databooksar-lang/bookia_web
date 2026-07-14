@@ -1636,27 +1636,36 @@ button:disabled {
 
 .bookstore-profile-upload .bookstore-profile-preview-actions {
   margin-top: 12px;
+  flex-wrap: wrap;
 }
 
-.bookstore-profile-upload label.secondary-button {
-  position: relative;
-  overflow: hidden;
+.bookstore-profile-upload-button {
+  min-width: 132px;
   cursor: pointer;
 }
 
-.bookstore-profile-upload label.secondary-button:has(input:disabled) {
+.bookstore-profile-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  white-space: nowrap;
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+}
+
+.bookstore-profile-file-input:focus-visible + .bookstore-profile-upload-button {
+  outline: 3px solid rgba(217, 116, 90, 0.34);
+  outline-offset: 3px;
+}
+
+.bookstore-profile-file-input:disabled + .bookstore-profile-upload-button {
   opacity: 0.52;
   cursor: not-allowed;
   pointer-events: none;
-}
-
-.bookstore-profile-upload input[type="file"] {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  cursor: pointer;
 }
 
 .bookstore-profile-upload small {
