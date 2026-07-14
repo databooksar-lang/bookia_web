@@ -1129,6 +1129,10 @@ button:disabled {
   color: #f6a38f;
 }
 
+.store-identity {
+  text-shadow: 0 2px 14px rgba(7, 24, 19, 0.42);
+}
+
 .store-logo {
   width: 82px;
   height: 82px;

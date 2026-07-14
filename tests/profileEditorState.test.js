@@ -114,6 +114,12 @@ export function registerProfileEditorStateTests(test) {
     assert.match(editorSource, /id=\{`bookstore-profile-logo-upload/);
     assert.match(editorSource, /id=\{`bookstore-profile-banner-upload/);
   });
+  test("renders public bookstore banners without a green overlay", () => {
+    const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+
+    assert.doesNotMatch(publicPagesSource, /backgroundImage:\s*`linear-gradient/);
+    assert.match(publicPagesSource, /backgroundImage:\s*`url\(\$\{heroImageUrl\}\)`/);
+  });
   test("does not set a JSON content type for FormData", () => {
     const headers = buildRequestHeaders({ body: new FormData() }, "csrf-token");
     assert.equal(headers["Content-Type"], undefined);
