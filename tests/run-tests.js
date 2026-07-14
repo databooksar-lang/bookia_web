@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { isBookiaApiRoute } from "../src/apiRoutes.js";
 import { buildSingleGenreIds, getSingleGenreValue } from "../src/genreSelection.js";
 import { getGenreSelectorState } from "../src/genreSelectorState.js";
+import { registerProfileEditorStateTests } from "./profileEditorState.test.js";
 
 const tests = [
   ["treats /genres as an API route", () => {
@@ -51,6 +52,8 @@ const tests = [
     assert.deepEqual(buildSingleGenreIds("12"), [12]);
   }],
 ];
+
+registerProfileEditorStateTests((name, fn) => tests.push([name, fn]));
 
 let failures = 0;
 for (const [name, fn] of tests) {

@@ -1,6 +1,7 @@
 import { useEffect, useState, useTransition } from "react";
 
 import { apiFetch, resolveApiUrl } from "../api";
+import BookstoreProfileEditor from "../components/BookstoreProfileEditor";
 import { EmptyState } from "../components/Commerce";
 import { ArrowIcon, BookIcon, SearchIcon } from "../components/Icons";
 import { buildSingleGenreIds, getSingleGenreValue } from "../genreSelection";
@@ -238,6 +239,8 @@ export function DashboardPage({ me, refreshMe }) {
       </header>
 
       {error ? <p className="feedback error">{error}</p> : null}
+
+      <BookstoreProfileEditor bookstore={me.bookstore} onSaved={() => refreshMe({ preserveOnError: true })} onError={setError} />
 
       <DashboardSection
         label="Nuevo titulo"

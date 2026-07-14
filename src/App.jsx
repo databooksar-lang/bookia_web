@@ -11,14 +11,16 @@ export default function App() {
   const { pathname, search } = useLocationState();
   const [me, setMe] = useState(undefined);
 
-  function refreshMe() {
+  function refreshMe({ preserveOnError = false } = {}) {
     return apiFetch("/me")
       .then((data) => {
         setMe(data);
         return data;
       })
       .catch(() => {
-        setMe(null);
+        if (!preserveOnError) {
+          setMe(null);
+        }
         return null;
       });
   }

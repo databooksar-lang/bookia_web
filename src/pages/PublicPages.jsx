@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { apiFetch, resolveApiUrl } from "../api";
 import { buildFacebookHref, buildInstagramHref, buildWebsiteHref, formatDisplayPhone, formatDisplayUrl } from "../formatters";
 import { AppLink, navigate } from "../navigation";
+import { displayBookstoreDescription } from "../profileEditorState";
 import { EmptyState, WhatsAppButton } from "../components/Commerce";
 import { ArrowIcon, BookIcon, LocationIcon, SearchIcon, StoreIcon, WhatsAppIcon } from "../components/Icons";
 
@@ -312,7 +313,7 @@ export function BookstorePage({ slug }) {
   return (
     <section className="store-page">
       <div className={`store-hero${heroImageUrl ? " has-hero" : ""}`} style={heroImageUrl ? { backgroundImage: `linear-gradient(90deg, rgba(11,45,36,.91), rgba(11,45,36,.52)), url(${heroImageUrl})` } : undefined}>
-        <div className="store-identity"><p className="section-label">Libreria en Bookia</p>{logoUrl ? <img className="store-logo" src={logoUrl} alt={`Logo de ${store.name}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : null}<h1>{store.name}</h1><p>{store.description || "Un catalogo local para descubrir nuevas lecturas."}</p>{bookstoreTags.length > 0 ? <div className="store-tags" aria-label="Etiquetas de la libreria">{bookstoreTags.map((tag) => <span key={tag} className="store-tag">{tag}</span>)}</div> : null}</div>
+        <div className="store-identity"><p className="section-label">Libreria en Bookia</p>{logoUrl ? <img className="store-logo" src={logoUrl} alt={`Logo de ${store.name}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : null}<h1>{store.name}</h1><p>{displayBookstoreDescription(store.description)}</p>{bookstoreTags.length > 0 ? <div className="store-tags" aria-label="Etiquetas de la libreria">{bookstoreTags.map((tag) => <span key={tag} className="store-tag">{tag}</span>)}</div> : null}</div>
         {contactItems.length > 0 || hasWhatsApp ? <aside className="store-contact-card"><p className="contact-label">Datos de interes</p>{contactItems.length > 0 ? <dl>{contactItems.map((item) => <div key={item.label}><dt>{item.label}</dt><dd>{item.content}</dd></div>)}</dl> : null}{hasWhatsApp ? <WhatsAppButton phoneCountryCd={store.phone_country_cd} phone={store.phone}><WhatsAppIcon size={19} /> Hablar por WhatsApp</WhatsAppButton> : null}</aside> : null}
       </div>
       <div className="store-catalog">
