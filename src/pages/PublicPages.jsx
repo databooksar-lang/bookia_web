@@ -4,6 +4,7 @@ import { apiFetch, resolveApiUrl } from "../api";
 import { buildFacebookHref, buildInstagramHref, buildWebsiteHref, formatDisplayPhone, formatDisplayUrl } from "../formatters";
 import { AppLink, navigate } from "../navigation";
 import { displayBookstoreDescription } from "../profileEditorState";
+import { displayReadingClubDate } from "../readingClubState";
 import { EmptyState, WhatsAppButton } from "../components/Commerce";
 import { ArrowIcon, BookIcon, LocationIcon, SearchIcon, StoreIcon, WhatsAppIcon } from "../components/Icons";
 
@@ -324,6 +325,7 @@ function BookGenreTags({ item }) {
 export function BookstorePage({ slug }) {
   const [store, setStore] = useState(null);
   const [items, setItems] = useState([]);
+  const [readingClubs, setReadingClubs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedBook, setSelectedBook] = useState(null);
@@ -332,7 +334,7 @@ export function BookstorePage({ slug }) {
 
   useEffect(() => {
     setLoading(true);
-    apiFetch(`/bookstores/${slug}`).then((data) => { setStore(data.bookstore); setItems(data.items); setError(""); }).catch((fetchError) => setError(fetchError.message)).finally(() => setLoading(false));
+    apiFetch(`/bookstores/${slug}`).then((data) => { setStore(data.bookstore); setItems(data.items); setReadingClubs(data.reading_clubs || []); setError(""); }).catch((fetchError) => setError(fetchError.message)).finally(() => setLoading(false));
   }, [slug]);
 
   function openBookDetail(item) {
@@ -413,6 +415,24 @@ export function BookstorePage({ slug }) {
           </div>
         )}
       </div>
+      {readingClubs.length > 0 ? (
+        <section className="store-reading-clubs">
+          <div className="section-heading results-heading"><div><p className="section-label">Club de lectura</p><h2>Encuentros de {store.name}</h2><p>{readingClubs.length} {readingClubs.length === 1 ? "club publicado" : "clubes publicados"}</p></div></div>
+          <div className="reading-club-public-list">
+            {readingClubs.map((club) => (
+              <article key={club.id} className="reading-club-public-card">
+                <div className="store-tags" aria-label="Genero del club"><span className="store-tag">{club.genre?.name || "Sin genero"}</span></div>
+                <h3>{club.title}</h3>
+                <p>{club.description}</p>
+                <dl>
+                  <div><dt>Fecha</dt><dd>{displayReadingClubDate(club.meeting_date)}</dd></div>
+                  {club.location ? <div><dt>Lugar</dt><dd>{club.location}</dd></div> : null}
+                </dl>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
       {selectedBook ? (
         <div className="book-detail-modal" role="dialog" aria-modal="true" aria-labelledby="book-detail-title" onClick={closeBookDetail}>
           <div className="book-detail-modal-card" onClick={(event) => event.stopPropagation()}>

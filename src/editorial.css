@@ -1227,6 +1227,65 @@ button:disabled {
   padding: 90px 0 0;
 }
 
+.store-reading-clubs {
+  padding: 80px 0 0;
+}
+
+.reading-club-public-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.reading-club-public-card {
+  padding: 24px;
+  display: grid;
+  gap: 14px;
+  background: rgba(255, 250, 240, 0.72);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.reading-club-public-card h3 {
+  margin: 0;
+  color: var(--forest-deep);
+  font-size: 1.45rem;
+  line-height: 1.15;
+}
+
+.reading-club-public-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.reading-club-public-card dl {
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.reading-club-public-card dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(30, 36, 31, 0.1);
+}
+
+.reading-club-public-card dt {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.reading-club-public-card dd {
+  margin: 0;
+  color: var(--forest-deep);
+  text-align: right;
+  font-weight: 800;
+}
 .book-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1894,6 +1953,40 @@ button:disabled {
   grid-column: 1 / -1;
 }
 
+.dashboard-checkbox-field {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  color: var(--forest-deep);
+  font-weight: 700;
+}
+
+.dashboard-checkbox-field input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--forest);
+}
+
+.reading-club-list {
+  margin-top: 24px;
+}
+
+.reading-club-item {
+  display: grid;
+  gap: 18px;
+}
+
+.reading-club-summary {
+  grid-template-columns: auto 1fr;
+}
+
+.status-hidden {
+  color: var(--muted);
+  background: rgba(30, 36, 31, 0.09);
+}
 .dashboard-genre-status {
   display: flex;
   flex-direction: column;
@@ -2348,6 +2441,18 @@ textarea:focus {
 @keyframes menu-enter { from { opacity: 0; transform: translateY(-8px); } }
 
 @media (max-width: 620px) {
+  .reading-club-public-list {
+    grid-template-columns: 1fr;
+  }
+
+  .reading-club-public-card dl > div {
+    display: grid;
+    gap: 4px;
+  }
+
+  .reading-club-public-card dd {
+    text-align: left;
+  }
   .header-inner,
   .hero,
   .home-section,
