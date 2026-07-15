@@ -1298,6 +1298,10 @@ button:disabled {
   text-transform: capitalize;
 }
 
+.status-featured {
+  color: #9c351f;
+  background: rgba(217, 116, 90, 0.18);
+}
 .status-reserved { color: #825f09; background: rgba(216, 182, 76, 0.18); }
 .status-sold_out,
 .status-hidden { color: #7f4c44; background: rgba(126, 75, 67, 0.11); }

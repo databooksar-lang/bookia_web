@@ -378,6 +378,7 @@ export function BookstorePage({ slug }) {
                 <BookCover item={item} />
                 <div>
                   <span className={`status-pill status-${item.availability_status}`}>{bookAvailabilityLabel(item.availability_status)}</span>
+                  {item.is_featured ? <span className="status-pill status-featured">Destacado</span> : null}
                   <h3>{item.title}</h3>
                   <p>{item.author || "Autor no visible"}</p>
                   <BookGenreTags item={item} />
@@ -398,6 +399,7 @@ export function BookstorePage({ slug }) {
               <div className="book-detail-copy">
                 <div className="book-detail-status-row">
                   <span className={`status-pill status-${selectedBook.availability_status}`}>{bookAvailabilityLabel(selectedBook.availability_status)}</span>
+                  {selectedBook.is_featured ? <span className="status-pill status-featured">Destacado</span> : null}
                   <span className="status-pill">{bookStatusLabel(selectedBook.book_status)}</span>
                 </div>
                 <h2 id="book-detail-title">{selectedBook.title}</h2>

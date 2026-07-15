@@ -146,6 +146,14 @@ export function registerProfileEditorStateTests(test) {
     assert.match(publicPagesSource, /Sin genero/);
     assert.match(publicPagesSource, /BOOK_STATUS_LABELS/);
   });
+  test("marks featured books in the public bookstore view and detail modal", () => {
+    const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+    const editorialSource = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+    assert.match(publicPagesSource, /item\.is_featured \? <span className="status-pill status-featured">Destacado<\/span> : null/);
+    assert.match(publicPagesSource, /selectedBook\.is_featured \? <span className="status-pill status-featured">Destacado<\/span> : null/);
+    assert.match(editorialSource, /\.status-featured/);
+  });
   test("does not set a JSON content type for FormData", () => {
     const headers = buildRequestHeaders({ body: new FormData() }, "csrf-token");
     assert.equal(headers["Content-Type"], undefined);
