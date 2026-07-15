@@ -171,6 +171,13 @@ export function registerProfileEditorStateTests(test) {
     assert.match(dashboardSource, /\/dashboard\/catalog\/\$\{itemId\}\/images/);
   });
 
+  test("dashboard catalog current cover is shown without gallery actions", () => {
+    const dashboardSource = readFileSync(new URL("../src/pages/DashboardPage.jsx", import.meta.url), "utf8");
+
+    assert.match(dashboardSource, /image\.source === "current_cover"/);
+    assert.match(dashboardSource, /image\.source === "catalog_image"/);
+    assert.match(dashboardSource, /current_cover[\s\S]*Principal/);
+  });
   test("public book detail modal renders a gallery when images are available", () => {
     const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
     const editorialSource = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
