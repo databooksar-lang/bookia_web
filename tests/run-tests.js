@@ -5,6 +5,7 @@ import { buildSingleGenreIds, getSingleGenreValue } from "../src/genreSelection.
 import { getGenreSelectorState } from "../src/genreSelectorState.js";
 import { registerProfileEditorStateTests } from "./profileEditorState.test.js";
 import { registerReadingClubStateTests } from "./readingClubState.test.js";
+import { registerAiAutocompleteStateTests } from "./aiAutocompleteState.test.js";
 
 const tests = [
   ["treats /genres as an API route", () => {
@@ -56,6 +57,7 @@ const tests = [
 
 registerProfileEditorStateTests((name, fn) => tests.push([name, fn]));
 registerReadingClubStateTests((name, fn) => tests.push([name, fn]));
+registerAiAutocompleteStateTests((name, fn) => tests.push([name, fn]));
 
 let failures = 0;
 for (const [name, fn] of tests) {
