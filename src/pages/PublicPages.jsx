@@ -352,7 +352,8 @@ export function BookstorePage({ slug }) {
 
   return (
     <section className="store-page">
-      <div className={`store-hero${heroImageUrl ? " has-hero" : ""}`} style={heroImageUrl ? { backgroundImage: `linear-gradient(90deg, rgba(0,0,0,.42), rgba(0,0,0,.18)), url(${heroImageUrl})` } : undefined}>
+      <div className={`store-hero${heroImageUrl ? " has-hero" : ""}`} style={heroImageUrl ? { backgroundImage: `url(${heroImageUrl})` } : undefined} />
+      <div className="store-profile-panel">
         <div className="store-identity"><p className="section-label">Libreria en Bookia</p>{logoUrl ? <img className="store-logo" src={logoUrl} alt={`Logo de ${store.name}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : null}<h1>{store.name}</h1><p>{displayBookstoreDescription(store.description)}</p>{bookstoreTags.length > 0 ? <div className="store-tags" aria-label="Etiquetas de la libreria">{bookstoreTags.map((tag) => <span key={tag} className="store-tag">{tag}</span>)}</div> : null}</div>
         {contactItems.length > 0 || hasWhatsApp ? <aside className="store-contact-card"><p className="contact-label">Datos de interes</p>{contactItems.length > 0 ? <dl>{contactItems.map((item) => <div key={item.label}><dt>{item.label}</dt><dd>{item.content}</dd></div>)}</dl> : null}{hasWhatsApp ? <WhatsAppButton phoneCountryCd={store.phone_country_cd} phone={store.phone}><WhatsAppIcon size={19} /> Hablar por WhatsApp</WhatsAppButton> : null}</aside> : null}
       </div>
@@ -378,6 +379,7 @@ export function BookstorePage({ slug }) {
                 <BookCover item={item} />
                 <div>
                   <span className={`status-pill status-${item.availability_status}`}>{bookAvailabilityLabel(item.availability_status)}</span>
+                  {item.is_featured ? <span className="status-pill status-featured">Destacado</span> : null}
                   <h3>{item.title}</h3>
                   <p>{item.author || "Autor no visible"}</p>
                   <BookGenreTags item={item} />
@@ -398,6 +400,7 @@ export function BookstorePage({ slug }) {
               <div className="book-detail-copy">
                 <div className="book-detail-status-row">
                   <span className={`status-pill status-${selectedBook.availability_status}`}>{bookAvailabilityLabel(selectedBook.availability_status)}</span>
+                  {selectedBook.is_featured ? <span className="status-pill status-featured">Destacado</span> : null}
                   <span className="status-pill">{bookStatusLabel(selectedBook.book_status)}</span>
                 </div>
                 <h2 id="book-detail-title">{selectedBook.title}</h2>
