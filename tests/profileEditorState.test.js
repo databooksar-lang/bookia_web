@@ -126,12 +126,17 @@ export function registerProfileEditorStateTests(test) {
     assert.match(editorSource, /id=\{`bookstore-profile-logo-upload/);
     assert.match(editorSource, /id=\{`bookstore-profile-banner-upload/);
   });
-  test("renders public bookstore banners with only a neutral readability overlay", () => {
+  test("renders public bookstore banner separately from the green profile panel", () => {
     const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+    const editorialSource = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
 
-    assert.match(publicPagesSource, /backgroundImage:\s*`linear-gradient\(90deg, rgba\(0,0,0,\.42\), rgba\(0,0,0,\.18\)\), url\(\$\{heroImageUrl\}\)`/);
-    assert.doesNotMatch(publicPagesSource, /rgba\(11,45,36/);
-    assert.doesNotMatch(publicPagesSource, /rgba\(18,63,50/);
+    assert.match(publicPagesSource, /<div className=\{`store-hero\$\{heroImageUrl \? " has-hero" : ""\}`\} style=\{heroImageUrl \? \{ backgroundImage: `url\(\$\{heroImageUrl\}\)` \} : undefined\} \/>/);
+    assert.match(publicPagesSource, /<div className="store-profile-panel">/);
+    assert.match(publicPagesSource, /<div className="store-identity">/);
+    assert.match(publicPagesSource, /<aside className="store-contact-card">/);
+    assert.match(editorialSource, /\.store-profile-panel/);
+    assert.match(editorialSource, /height:\s*clamp\(220px, 32vw, 380px\)/);
+    assert.doesNotMatch(publicPagesSource, /linear-gradient\(90deg, rgba\(0,0,0/);
   });
   test("opens public bookstore book details from clickable cards", () => {
     const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
