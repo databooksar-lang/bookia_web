@@ -3,10 +3,11 @@ import { useEffect, useState, useTransition } from "react";
 import { apiFetch, resolveApiUrl } from "../api";
 import BookstoreProfileEditor from "../components/BookstoreProfileEditor";
 import { EmptyState } from "../components/Commerce";
-import { ArrowIcon, BookIcon, SearchIcon } from "../components/Icons";
+import { BookIcon, SearchIcon } from "../components/Icons";
 import { buildSingleGenreIds, getSingleGenreValue } from "../genreSelection";
 import { getGenreSelectorState } from "../genreSelectorState";
 import { navigate } from "../navigation";
+import { formatCurrentPlanLabel } from "../planLabels";
 
 const EMPTY_ITEM = {
   title: "",
@@ -117,6 +118,7 @@ export function DashboardPage({ me, refreshMe }) {
   const activeItems = items.filter((item) => item.availability_status !== "hidden");
   const hiddenItems = items.filter((item) => item.availability_status === "hidden");
   const hasActiveFilters = Boolean(titleQuery.trim() || authorQuery.trim());
+  const currentPlanLabel = formatCurrentPlanLabel(me?.current_plan_code);
 
   function loadCatalog(filters = {}) {
     const params = new URLSearchParams();
@@ -268,8 +270,16 @@ export function DashboardPage({ me, refreshMe }) {
   return (
     <section className="dashboard-shell">
       <header className="dashboard-top">
-        <div><p className="section-label">Gestiona tu vidriera</p><h1>{me.bookstore.name}</h1><p>Gestiona tu vidriera y lo que ven los lectores en Bookia.</p></div>
-        <div className="dashboard-actions"><button className="secondary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver vidriera digital <ArrowIcon /></button><button className="text-link" onClick={logout}>Cerrar sesion</button></div>
+        <div className="dashboard-plan-summary">
+          <p className="section-label">Gestiona tu vidriera</p>
+          <h1>{me.bookstore.name}</h1>
+          <p className="dashboard-plan-label">{currentPlanLabel}</p>
+          <div className="dashboard-plan-links">
+            <button className="text-link" type="button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver vidriera digital</button>
+            <button className="text-link" type="button" onClick={logout}>Cerrar sesion</button>
+          </div>
+        </div>
+        <button className="primary-button dashboard-upgrade-button" type="button">Mejora tu plan</button>
       </header>
 
       {error ? <p className="feedback error">{error}</p> : null}
