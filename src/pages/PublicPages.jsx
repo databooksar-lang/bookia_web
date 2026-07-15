@@ -30,6 +30,16 @@ function BookCover({ item, className = "book-cover", interactive = false, onOpen
   );
 }
 
+function bookImageGallery(item) {
+  const galleryImages = (item?.images || [])
+    .slice()
+    .sort((left, right) => (left.sort_order - right.sort_order) || (left.id - right.id))
+    .map((image) => ({ id: image.id, url: image.url, isPrimary: image.is_primary }));
+  if (galleryImages.length > 0) {
+    return galleryImages;
+  }
+  return item?.cover_image_url ? [{ id: "cover", url: item.cover_image_url, isPrimary: true }] : [];
+}
 function HeroSearch({ initialQuery = "", initialField = "general", onSearch }) {
   const [query, setQuery] = useState(initialQuery);
   const [field, setField] = useState(initialField);
@@ -317,6 +327,7 @@ export function BookstorePage({ slug }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedBook, setSelectedBook] = useState(null);
+  const [selectedBookImageUrl, setSelectedBookImageUrl] = useState(null);
   const visibleItems = items.filter((item) => item.availability_status !== "hidden");
 
   useEffect(() => {
@@ -324,9 +335,19 @@ export function BookstorePage({ slug }) {
     apiFetch(`/bookstores/${slug}`).then((data) => { setStore(data.bookstore); setItems(data.items); setError(""); }).catch((fetchError) => setError(fetchError.message)).finally(() => setLoading(false));
   }, [slug]);
 
+  function openBookDetail(item) {
+    const gallery = bookImageGallery(item);
+    openBookDetail(item);
+    setSelectedBookImageUrl(gallery[0]?.url ? resolveApiUrl(gallery[0].url) : null);
+  }
+
+  function closeBookDetail() {
+    setSelectedBook(null);
+    setSelectedBookImageUrl(null);
+  }
   useEffect(() => {
     if (!selectedBook) return undefined;
-    const onKeyDown = (event) => event.key === "Escape" && setSelectedBook(null);
+    const onKeyDown = (event) => event.key === "Escape" && closeBookDetail();
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [selectedBook]);
@@ -342,6 +363,7 @@ export function BookstorePage({ slug }) {
   const facebookHref = buildFacebookHref(store.facebook_handle);
   const websiteHref = buildWebsiteHref(store.website_url);
   const bookstoreTags = [store.tag_1, store.tag_2].map((tag) => String(tag || '').trim()).filter(Boolean);
+  const selectedBookGallery = selectedBook ? bookImageGallery(selectedBook) : [];
   const contactItems = [
     phoneLabel ? { label: "Telefono", content: phoneLabel } : null,
     instagramHref ? { label: "Instagram", content: <ContactLink href={instagramHref}>{formatDisplayUrl(instagramHref)}</ContactLink> } : null,
@@ -368,11 +390,11 @@ export function BookstorePage({ slug }) {
                 role="button"
                 tabIndex={0}
                 aria-label={`Ver detalles de ${item.title}`}
-                onClick={() => setSelectedBook(item)}
+                onClick={() => openBookDetail(item)}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" || event.key === " ") {
                     event.preventDefault();
-                    setSelectedBook(item);
+                    openBookDetail(item);
                   }
                 }}
               >
@@ -392,11 +414,25 @@ export function BookstorePage({ slug }) {
         )}
       </div>
       {selectedBook ? (
-        <div className="book-detail-modal" role="dialog" aria-modal="true" aria-labelledby="book-detail-title" onClick={() => setSelectedBook(null)}>
+        <div className="book-detail-modal" role="dialog" aria-modal="true" aria-labelledby="book-detail-title" onClick={closeBookDetail}>
           <div className="book-detail-modal-card" onClick={(event) => event.stopPropagation()}>
-            <button type="button" className="book-detail-modal-close" onClick={() => setSelectedBook(null)}>Cerrar</button>
+            <button type="button" className="book-detail-modal-close" onClick={closeBookDetail}>Cerrar</button>
             <div className="book-detail-modal-layout">
-              <BookCover item={selectedBook} className="book-detail-cover" />
+              <div className="book-detail-gallery">
+                {selectedBookImageUrl ? <img className="book-detail-cover" src={selectedBookImageUrl} alt={`Foto de ${selectedBook.title}`} /> : <BookCover item={selectedBook} className="book-detail-cover" />}
+                {selectedBookGallery.length > 1 ? (
+                  <div className="book-detail-thumbnails" aria-label="Fotos del libro">
+                    {selectedBookGallery.map((image) => {
+                      const thumbnailUrl = resolveApiUrl(image.url);
+                      return (
+                        <button key={image.id} type="button" className={`book-detail-thumbnail${thumbnailUrl === selectedBookImageUrl ? " is-active" : ""}`} onClick={() => setSelectedBookImageUrl(thumbnailUrl)} aria-label={`Ver foto de ${selectedBook.title}`}>
+                          <img src={thumbnailUrl} alt="" />
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : null}
+              </div>
               <div className="book-detail-copy">
                 <div className="book-detail-status-row">
                   <span className={`status-pill status-${selectedBook.availability_status}`}>{bookAvailabilityLabel(selectedBook.availability_status)}</span>

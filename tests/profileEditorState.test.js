@@ -142,7 +142,7 @@ export function registerProfileEditorStateTests(test) {
     const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
 
     assert.match(publicPagesSource, /const \[selectedBook, setSelectedBook\] = useState\(null\)/);
-    assert.match(publicPagesSource, /onClick=\{\(\) => setSelectedBook\(item\)\}/);
+    assert.match(publicPagesSource, /onClick=\{\(\) => openBookDetail\(item\)\}/);
     assert.match(publicPagesSource, /role="dialog"/);
     assert.match(publicPagesSource, /aria-modal="true"/);
     assert.match(publicPagesSource, /event\.key === "Escape"/);
@@ -158,6 +158,29 @@ export function registerProfileEditorStateTests(test) {
     assert.match(publicPagesSource, /item\.is_featured \? <span className="status-pill status-featured">Destacado<\/span> : null/);
     assert.match(publicPagesSource, /selectedBook\.is_featured \? <span className="status-pill status-featured">Destacado<\/span> : null/);
     assert.match(editorialSource, /\.status-featured/);
+  });
+  test("dashboard catalog editor exposes gallery upload controls", () => {
+    const dashboardSource = readFileSync(new URL("../src/pages/DashboardPage.jsx", import.meta.url), "utf8");
+
+    assert.match(dashboardSource, /Fotos del libro/);
+    assert.match(dashboardSource, /type="file"/);
+    assert.match(dashboardSource, /multiple/);
+    assert.match(dashboardSource, /accept="image\/png,image\/jpeg,image\/webp"/);
+    assert.match(dashboardSource, /Marcar principal/);
+    assert.match(dashboardSource, /Quitar foto/);
+    assert.match(dashboardSource, /\/dashboard\/catalog\/\$\{itemId\}\/images/);
+  });
+
+  test("public book detail modal renders a gallery when images are available", () => {
+    const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+    const editorialSource = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+    assert.match(publicPagesSource, /bookImageGallery\(selectedBook\)/);
+    assert.match(publicPagesSource, /book-detail-gallery/);
+    assert.match(publicPagesSource, /book-detail-thumbnails/);
+    assert.match(publicPagesSource, /selectedBookImageUrl/);
+    assert.match(editorialSource, /\.book-detail-gallery/);
+    assert.match(editorialSource, /\.book-detail-thumbnails/);
   });
   test("does not set a JSON content type for FormData", () => {
     const headers = buildRequestHeaders({ body: new FormData() }, "csrf-token");
