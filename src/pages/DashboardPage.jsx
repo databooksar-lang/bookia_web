@@ -1,6 +1,7 @@
 import { useEffect, useState, useTransition } from "react";
 
 import { apiFetch, resolveApiUrl } from "../api";
+import { getAiAutocompleteSourceState, mergeAiAutocompleteSuggestion } from "../aiAutocompleteState";
 import BookstoreProfileEditor from "../components/BookstoreProfileEditor";
 import { EmptyState } from "../components/Commerce";
 import { ArrowIcon, BookIcon, SearchIcon } from "../components/Icons";
@@ -74,6 +75,19 @@ function normalizeBookStatus(value) {
   return value === "nuevo" || value === "usado" ? value : "usado";
 }
 
+function buildDraftFromCatalogItem(item) {
+  return {
+    title: item.title || "",
+    author: item.author || "",
+    publisher: item.publisher || "",
+    language: item.language || "",
+    description: item.description || "",
+    genre_ids: item.genre_ids || [],
+    book_status: normalizeBookStatus(item.book_status),
+    availability_status: normalizeEditableAvailability(item.availability_status),
+  };
+}
+
 function GenreSelector({ genres, genresLoading = false, genresError = "", selectedGenreIds, onChange, legend = "Generos" }) {
   const state = getGenreSelectorState({ genresLoading, genresError, genres });
 
@@ -138,6 +152,8 @@ export function DashboardPage({ me, refreshMe }) {
   const [createBusy, startCreateTransition] = useTransition();
   const [saveBusy, startSaveTransition] = useTransition();
   const [imageBusyId, setImageBusyId] = useState(null);
+  const [aiBusyId, setAiBusyId] = useState(null);
+  const [aiSuggestionsByItemId, setAiSuggestionsByItemId] = useState({});
   const [readingClubs, setReadingClubs] = useState([]);
   const [readingClubsLoading, setReadingClubsLoading] = useState(false);
   const [newReadingClub, setNewReadingClub] = useState(createReadingClubDraft());
@@ -207,6 +223,33 @@ export function DashboardPage({ me, refreshMe }) {
   function hideItem(itemId) {
     updateAvailability(itemId, "hidden");
   }
+
+  function autocompleteItem(item) {
+    const isCurrentEditing = editingItemId === item.id;
+    const baseDraft = isCurrentEditing ? draftItem : buildDraftFromCatalogItem(item);
+    setAiBusyId(item.id);
+    apiFetch(`/dashboard/catalog/${item.id}/ai-autocomplete`, {
+      method: "POST",
+      body: JSON.stringify({
+        title: baseDraft.title,
+        author: baseDraft.author,
+        publisher: baseDraft.publisher || null,
+        language: baseDraft.language || null,
+        description: baseDraft.description || null,
+        genre_ids: baseDraft.genre_ids || [],
+      }),
+    })
+      .then((data) => {
+        const suggestion = data?.suggestion || {};
+        setEditingItemId(item.id);
+        setDraftItem((current) => mergeAiAutocompleteSuggestion(isCurrentEditing ? current : baseDraft, suggestion));
+        setAiSuggestionsByItemId((current) => ({ ...current, [item.id]: suggestion }));
+        setError("");
+      })
+      .catch((fetchError) => setError(fetchError.message))
+      .finally(() => setAiBusyId(null));
+  }
+
   function uploadItemImages(itemId, files) {
     const selectedFiles = Array.from(files || []);
     if (selectedFiles.length === 0) return;
@@ -237,16 +280,7 @@ export function DashboardPage({ me, refreshMe }) {
 
   function startEditing(item) {
     setEditingItemId(item.id);
-    setDraftItem({
-      title: item.title || "",
-      author: item.author || "",
-      publisher: item.publisher || "",
-      language: item.language || "",
-      description: item.description || "",
-      genre_ids: item.genre_ids || [],
-      book_status: normalizeBookStatus(item.book_status),
-      availability_status: normalizeEditableAvailability(item.availability_status),
-    });
+    setDraftItem(buildDraftFromCatalogItem(item));
   }
 
   function cancelEditing() {
@@ -407,6 +441,9 @@ export function DashboardPage({ me, refreshMe }) {
           const isEditing = editingItemId === item.id;
           const statusLabel = AVAILABILITY_LABELS[item.availability_status] || AVAILABILITY_LABELS[normalizeEditableAvailability(item.availability_status)];
           const bookStatusLabel = BOOK_STATUS_LABELS[normalizeBookStatus(item.book_status)] || BOOK_STATUS_LABELS.usado;
+          const aiSuggestion = aiSuggestionsByItemId[item.id];
+          const aiSourceState = getAiAutocompleteSourceState(aiSuggestion);
+          const isAiBusy = aiBusyId === item.id;
           return (
             <article key={item.id} className={`dashboard-card catalog-item${isEditing ? " is-editing" : ""}`}>
               <div className="catalog-item-summary">{coverUrl ? <img src={coverUrl} alt={`Tapa de ${item.title}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : <span className="catalog-cover-placeholder"><BookIcon /></span>}<div><span className="catalog-id">Libro #{item.id}</span>{item.is_featured ? <span className="status-pill">Destacado</span> : null}<h3>{item.title}</h3><p>{item.author || "Autor no visible"}</p><p>Estado: {isEditing ? BOOK_STATUS_LABELS[normalizeBookStatus(draftItem.book_status)] : bookStatusLabel}</p></div>{isEditing ? <span className={`status-pill status-${draftItem.availability_status}`}>{AVAILABILITY_LABELS[draftItem.availability_status] || statusLabel}</span> : <span className={`status-pill status-${normalizeEditableAvailability(item.availability_status)}`}>{statusLabel}</span>}</div>
@@ -443,7 +480,14 @@ export function DashboardPage({ me, refreshMe }) {
                     </div>
                   ) : <p className="catalog-image-empty">Todavia no cargaste fotos propias para este libro.</p>}
                 </div>
-              ) : null}              <div className="card-actions"><div className="card-actions-main">{isEditing ? <button type="button" className="secondary-button" onClick={cancelEditing}>Cancelar</button> : <><button type="button" className="secondary-button" onClick={() => startEditing(item)}>Editar</button><button type="button" className="secondary-button" onClick={() => toggleFeatured(item)}>{item.is_featured ? "Quitar destacado" : "Destacar"}</button></>}{isEditing ? <button type="button" className="primary-button" onClick={() => saveItem(item.id, item.availability_status)} disabled={saveBusy}>{saveBusy ? "Guardando..." : "Guardar"}</button> : null}</div><button type="button" className="danger-button" onClick={() => hideItem(item.id)}>Eliminar</button></div>
+              ) : null}
+              {isEditing && aiSourceState.shouldShow ? (
+                <div className="catalog-ai-sources">
+                  <span>Fuentes consultadas</span>
+                  {aiSourceState.sources.map((source) => <a key={source.url} href={source.url} target="_blank" rel="noreferrer">{source.title}</a>)}
+                </div>
+              ) : null}
+              <div className="card-actions"><div className="card-actions-main">{isEditing ? <button type="button" className="secondary-button" onClick={cancelEditing}>Cancelar</button> : <><button type="button" className="secondary-button" onClick={() => startEditing(item)}>Editar</button><button type="button" className="secondary-button" onClick={() => toggleFeatured(item)}>{item.is_featured ? "Quitar destacado" : "Destacar"}</button></>}<button type="button" className="secondary-button" onClick={() => autocompleteItem(item)} disabled={isAiBusy}>{isAiBusy ? "Autocompletando..." : "Autocompletar con IA"}</button>{isEditing ? <button type="button" className="primary-button" onClick={() => saveItem(item.id, item.availability_status)} disabled={saveBusy}>{saveBusy ? "Guardando..." : "Guardar"}</button> : null}</div><button type="button" className="danger-button" onClick={() => hideItem(item.id)}>Eliminar</button></div>
             </article>
           );
         })}</div> : null}

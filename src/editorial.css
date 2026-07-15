@@ -2133,6 +2133,26 @@ textarea:focus {
   line-height: 1.6;
 }
 
+
+.catalog-ai-sources {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.catalog-ai-sources span {
+  color: var(--forest-deep);
+  font-weight: 700;
+}
+
+.catalog-ai-sources a {
+  color: var(--forest);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 .catalog-item-readonly {
   display: grid;
   gap: 10px;
