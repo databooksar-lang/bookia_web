@@ -6,6 +6,7 @@ import { EmptyState } from "../components/Commerce";
 import { ArrowIcon, BookIcon, SearchIcon } from "../components/Icons";
 import { buildSingleGenreIds, getSingleGenreValue } from "../genreSelection";
 import { getGenreSelectorState } from "../genreSelectorState";
+import { buildReadingClubPayload, createReadingClubDraft, displayReadingClubDate } from "../readingClubState";
 import { navigate } from "../navigation";
 
 const EMPTY_ITEM = {
@@ -96,6 +97,29 @@ function GenreSelector({ genres, genresLoading = false, genresError = "", select
   );
 }
 
+function ReadingClubGenreField({ genres, genresLoading, genresError, value, onChange }) {
+  const state = getGenreSelectorState({ genresLoading, genresError, genres });
+
+  if (state.kind !== "ready") {
+    return (
+      <div className={`dashboard-field-wide dashboard-genre-status is-${state.kind}`} role={state.kind === "error" ? "alert" : undefined}>
+        <span className="dashboard-genre-status-label">Genero *</span>
+        <small>{state.message}</small>
+      </div>
+    );
+  }
+
+  return (
+    <label>
+      Genero *
+      <select value={value} onChange={(event) => onChange(event.target.value)} required>
+        <option value="">Seleccionar genero</option>
+        {genres.map((genre) => <option key={genre.id} value={genre.id}>{genre.name}</option>)}
+      </select>
+    </label>
+  );
+}
+
 export function DashboardPage({ me, refreshMe }) {
   const [items, setItems] = useState([]);
   const [titleQuery, setTitleQuery] = useState("");
@@ -114,9 +138,24 @@ export function DashboardPage({ me, refreshMe }) {
   const [createBusy, startCreateTransition] = useTransition();
   const [saveBusy, startSaveTransition] = useTransition();
   const [imageBusyId, setImageBusyId] = useState(null);
+  const [readingClubs, setReadingClubs] = useState([]);
+  const [readingClubsLoading, setReadingClubsLoading] = useState(false);
+  const [newReadingClub, setNewReadingClub] = useState(createReadingClubDraft());
+  const [editingReadingClubId, setEditingReadingClubId] = useState(null);
+  const [draftReadingClub, setDraftReadingClub] = useState(createReadingClubDraft());
+  const [isReadingClubsOpen, setIsReadingClubsOpen] = useState(false);
+  const [readingClubBusy, startReadingClubTransition] = useTransition();
   const activeItems = items.filter((item) => item.availability_status !== "hidden");
   const hiddenItems = items.filter((item) => item.availability_status === "hidden");
   const hasActiveFilters = Boolean(titleQuery.trim() || authorQuery.trim());
+
+  function loadReadingClubs() {
+    setReadingClubsLoading(true);
+    apiFetch("/dashboard/reading-clubs")
+      .then((data) => { setReadingClubs(data.items || []); setError(""); })
+      .catch((fetchError) => setError(fetchError.message))
+      .finally(() => setReadingClubsLoading(false));
+  }
 
   function loadCatalog(filters = {}) {
     const params = new URLSearchParams();
@@ -143,7 +182,7 @@ export function DashboardPage({ me, refreshMe }) {
       .finally(() => setGenresLoading(false));
   }, []);
 
-  useEffect(() => { if (me) loadCatalog(); }, [me]);
+  useEffect(() => { if (me) { loadCatalog(); loadReadingClubs(); } }, [me]);
 
   if (me === undefined) {
     return <div className="page-state"><div className="loading-mark" /><p>Preparando tu panel...</p></div>;
@@ -255,6 +294,42 @@ export function DashboardPage({ me, refreshMe }) {
         setIsActiveOpen(true);
         loadCatalog();
       }).catch((fetchError) => setError(fetchError.message));
+    });
+  }
+
+  function createReadingClub(event) {
+    event.preventDefault();
+    startReadingClubTransition(() => {
+      apiFetch("/dashboard/reading-clubs", { method: "POST", body: JSON.stringify(buildReadingClubPayload(newReadingClub)) })
+        .then(() => {
+          setNewReadingClub(createReadingClubDraft());
+          setError("");
+          setIsReadingClubsOpen(true);
+          loadReadingClubs();
+        })
+        .catch((fetchError) => setError(fetchError.message));
+    });
+  }
+
+  function startEditingReadingClub(club) {
+    setEditingReadingClubId(club.id);
+    setDraftReadingClub(createReadingClubDraft(club));
+  }
+
+  function cancelEditingReadingClub() {
+    setEditingReadingClubId(null);
+    setDraftReadingClub(createReadingClubDraft());
+  }
+
+  function saveReadingClub(clubId) {
+    startReadingClubTransition(() => {
+      apiFetch(`/dashboard/reading-clubs/${clubId}`, { method: "PATCH", body: JSON.stringify(buildReadingClubPayload(draftReadingClub)) })
+        .then(() => {
+          cancelEditingReadingClub();
+          setError("");
+          loadReadingClubs();
+        })
+        .catch((fetchError) => setError(fetchError.message));
     });
   }
 
@@ -404,6 +479,59 @@ export function DashboardPage({ me, refreshMe }) {
           })}</div>
         </DashboardSection>
       ) : null}
+
+      <DashboardSection
+        label="Encuentros"
+        title="Club de lectura"
+        description="Carga los clubes que organiza tu libreria y controla cuales aparecen en la vidriera digital."
+        countLabel={`${readingClubs.length} ${readingClubs.length === 1 ? "club" : "clubes"}`}
+        isOpen={isReadingClubsOpen}
+        onToggle={() => setIsReadingClubsOpen((current) => !current)}
+      >
+        <form onSubmit={createReadingClub}>
+          <div className="dashboard-card-head dashboard-card-head-inline">
+            <p>Titulo, descripcion y genero son obligatorios. Fecha y lugar pueden quedar a confirmar.</p>
+            <button className="primary-button" type="submit" disabled={readingClubBusy}>{readingClubBusy ? "Guardando..." : "Crear club"}</button>
+          </div>
+          <div className="dashboard-form-grid dashboard-form-grid-extended">
+            <label>Titulo *<input value={newReadingClub.title} onChange={(event) => setNewReadingClub((current) => ({ ...current, title: event.target.value }))} required /></label>
+            <ReadingClubGenreField genres={genres} genresLoading={genresLoading} genresError={genresError} value={newReadingClub.genre_id} onChange={(genreId) => setNewReadingClub((current) => ({ ...current, genre_id: genreId }))} />
+            <label>Fecha<input type="date" value={newReadingClub.meeting_date} onChange={(event) => setNewReadingClub((current) => ({ ...current, meeting_date: event.target.value }))} /></label>
+            <label>Lugar<input value={newReadingClub.location} onChange={(event) => setNewReadingClub((current) => ({ ...current, location: event.target.value }))} placeholder="Ej: Sala del fondo" /></label>
+            <label className="dashboard-field-wide">Descripcion *<textarea value={newReadingClub.description} onChange={(event) => setNewReadingClub((current) => ({ ...current, description: event.target.value }))} rows={4} required /></label>
+            <label className="dashboard-checkbox-field"><input type="checkbox" checked={newReadingClub.is_visible} onChange={(event) => setNewReadingClub((current) => ({ ...current, is_visible: event.target.checked }))} /> Publicar en vidriera digital</label>
+          </div>
+        </form>
+
+        {readingClubsLoading ? <div className="loading-list"><span /><span /><span /></div> : null}
+        {!readingClubsLoading && readingClubs.length === 0 ? <EmptyState title="Todavia no hay clubes cargados">Cuando crees un club visible, va a aparecer en la vidriera digital.</EmptyState> : null}
+        {!readingClubsLoading && readingClubs.length > 0 ? <div className="dashboard-list reading-club-list">{readingClubs.map((club) => {
+          const isEditingClub = editingReadingClubId === club.id;
+          return (
+            <article key={club.id} className="dashboard-card reading-club-item">
+              {isEditingClub ? (
+                <div className="dashboard-form-grid dashboard-form-grid-extended">
+                  <label>Titulo *<input value={draftReadingClub.title} onChange={(event) => setDraftReadingClub((current) => ({ ...current, title: event.target.value }))} required /></label>
+                  <ReadingClubGenreField genres={genres} genresLoading={genresLoading} genresError={genresError} value={draftReadingClub.genre_id} onChange={(genreId) => setDraftReadingClub((current) => ({ ...current, genre_id: genreId }))} />
+                  <label>Fecha<input type="date" value={draftReadingClub.meeting_date} onChange={(event) => setDraftReadingClub((current) => ({ ...current, meeting_date: event.target.value }))} /></label>
+                  <label>Lugar<input value={draftReadingClub.location} onChange={(event) => setDraftReadingClub((current) => ({ ...current, location: event.target.value }))} /></label>
+                  <label className="dashboard-field-wide">Descripcion *<textarea value={draftReadingClub.description} onChange={(event) => setDraftReadingClub((current) => ({ ...current, description: event.target.value }))} rows={4} required /></label>
+                  <label className="dashboard-checkbox-field"><input type="checkbox" checked={draftReadingClub.is_visible} onChange={(event) => setDraftReadingClub((current) => ({ ...current, is_visible: event.target.checked }))} /> Publicar en vidriera digital</label>
+                </div>
+              ) : (
+                <>
+                  <div className="catalog-item-summary reading-club-summary">
+                    <span className={`status-pill${club.is_visible ? "" : " status-hidden"}`}>{club.is_visible ? "Publicado" : "Oculto"}</span>
+                    <div><span className="catalog-id">{club.genre?.name || "Sin genero"}</span><h3>{club.title}</h3><p>{displayReadingClubDate(club.meeting_date)}{club.location ? ` / ${club.location}` : ""}</p></div>
+                  </div>
+                  <p className="catalog-item-description">{club.description}</p>
+                </>
+              )}
+              <div className="card-actions"><div className="card-actions-main">{isEditingClub ? <button type="button" className="secondary-button" onClick={cancelEditingReadingClub}>Cancelar</button> : <button type="button" className="secondary-button" onClick={() => startEditingReadingClub(club)}>Editar</button>}{isEditingClub ? <button type="button" className="primary-button" onClick={() => saveReadingClub(club.id)} disabled={readingClubBusy}>{readingClubBusy ? "Guardando..." : "Guardar"}</button> : null}</div></div>
+            </article>
+          );
+        })}</div> : null}
+      </DashboardSection>
     </section>
   );
 }
