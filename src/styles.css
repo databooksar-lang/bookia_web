@@ -109,21 +109,10 @@ main {
 }
 
 .hero,
-.store-hero {
+.store-hero,
+.dashboard-top {
   display: grid;
   gap: 1.2rem;
-}
-
-.dashboard-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  background: var(--surface-strong);
-  border: 1px solid var(--stroke);
-  border-radius: 1.25rem;
 }
 
 .hero {
@@ -142,42 +131,11 @@ main {
 
 .hero-copy h1,
 .store-hero h1,
-.auth-card h1 {
+.auth-card h1,
+.dashboard-top h1 {
   font-size: clamp(2rem, 5vw, 4rem);
   line-height: 0.98;
   margin: 0 0 0.8rem;
-}
-
-.dashboard-top h1 {
-  font-size: clamp(1.65rem, 4vw, 2.65rem);
-  line-height: 1;
-  margin: 0.2rem 0 0;
-}
-
-.dashboard-plan-summary {
-  min-width: 0;
-}
-
-.dashboard-plan-label {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2rem;
-  margin: 0.75rem 0 0;
-  padding: 0.35rem 0.7rem;
-  border-radius: 999px;
-  background: rgba(178, 92, 47, 0.12);
-  color: var(--accent-dark);
-  font-weight: 800;
-}
-
-.dashboard-upgrade-button {
-  flex-shrink: 0;
-}
-.dashboard-plan-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.8rem;
-  margin-top: 0.75rem;
 }
 
 .eyebrow {
@@ -589,25 +547,13 @@ select {
 
   .hero-copy h1,
   .store-hero h1,
-  .auth-card h1 {
-    font-size: 2.35rem;
-  }
-
+  .auth-card h1,
   .dashboard-top h1 {
-    font-size: 2rem;
+    font-size: 2.35rem;
   }
 
   .auth-title-compact {
     font-size: 2.05rem;
-  }
-
-  .dashboard-top {
-    align-items: stretch;
-    display: grid;
-  }
-
-  .dashboard-upgrade-button {
-    width: 100%;
   }
 
   .header-links,
@@ -668,3 +614,4 @@ select {
     text-transform: uppercase;
   }
 }
+

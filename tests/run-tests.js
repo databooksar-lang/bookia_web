@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import { isBookiaApiRoute } from "../src/apiRoutes.js";
 import { buildSingleGenreIds, getSingleGenreValue } from "../src/genreSelection.js";
 import { getGenreSelectorState } from "../src/genreSelectorState.js";
-import { formatCurrentPlanLabel } from "../src/planLabels.js";
 import { registerProfileEditorStateTests } from "./profileEditorState.test.js";
 
 const tests = [
@@ -51,15 +50,6 @@ const tests = [
   }],
   ["builds a single-item genre_ids array from the selected option", () => {
     assert.deepEqual(buildSingleGenreIds("12"), [12]);
-  }],
-  ["formats known dashboard plan labels", () => {
-    assert.equal(formatCurrentPlanLabel("starter"), "Plan Starter");
-    assert.equal(formatCurrentPlanLabel("plus_ai"), "Plan Plus AI");
-    assert.equal(formatCurrentPlanLabel("pro"), "Plan Pro");
-  }],
-  ["formats missing and unknown dashboard plan labels", () => {
-    assert.equal(formatCurrentPlanLabel(null), "Sin plan configurado");
-    assert.equal(formatCurrentPlanLabel("enterprise"), "Plan enterprise");
   }],
 ];
 
