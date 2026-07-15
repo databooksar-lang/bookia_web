@@ -37,6 +37,8 @@ const EDITABLE_BOOK_STATUS_OPTIONS = [
   { value: "nuevo", label: "Nuevo" },
   { value: "usado", label: "Usado" },
 ];
+const CATALOG_IMAGE_ACCEPT = "image/png,image/jpeg,image/webp";
+const MAX_CATALOG_IMAGES = 3;
 
 function DashboardSection({ label, title, description, countLabel, isOpen, onToggle, children, className = "" }) {
   return (
@@ -111,6 +113,7 @@ export function DashboardPage({ me, refreshMe }) {
   const [isHiddenOpen, setIsHiddenOpen] = useState(false);
   const [createBusy, startCreateTransition] = useTransition();
   const [saveBusy, startSaveTransition] = useTransition();
+  const [imageBusyId, setImageBusyId] = useState(null);
   const activeItems = items.filter((item) => item.availability_status !== "hidden");
   const hiddenItems = items.filter((item) => item.availability_status === "hidden");
   const hasActiveFilters = Boolean(titleQuery.trim() || authorQuery.trim());
@@ -164,6 +167,33 @@ export function DashboardPage({ me, refreshMe }) {
 
   function hideItem(itemId) {
     updateAvailability(itemId, "hidden");
+  }
+  function uploadItemImages(itemId, files) {
+    const selectedFiles = Array.from(files || []);
+    if (selectedFiles.length === 0) return;
+    const formData = new FormData();
+    selectedFiles.forEach((file) => formData.append("images", file));
+    setImageBusyId(itemId);
+    apiFetch(`/dashboard/catalog/${itemId}/images`, { method: "POST", body: formData })
+      .then(() => { setError(""); loadCatalog(); })
+      .catch((fetchError) => setError(fetchError.message))
+      .finally(() => setImageBusyId(null));
+  }
+
+  function markPrimaryImage(itemId, imageId) {
+    setImageBusyId(itemId);
+    apiFetch(`/dashboard/catalog/${itemId}/images/${imageId}`, { method: "PATCH", body: JSON.stringify({ is_primary: true }) })
+      .then(() => { setError(""); loadCatalog(); })
+      .catch((fetchError) => setError(fetchError.message))
+      .finally(() => setImageBusyId(null));
+  }
+
+  function deleteItemImage(itemId, imageId) {
+    setImageBusyId(itemId);
+    apiFetch(`/dashboard/catalog/${itemId}/images/${imageId}`, { method: "DELETE" })
+      .then(() => { setError(""); loadCatalog(); })
+      .catch((fetchError) => setError(fetchError.message))
+      .finally(() => setImageBusyId(null));
   }
 
   function startEditing(item) {
@@ -308,7 +338,33 @@ export function DashboardPage({ me, refreshMe }) {
               {item.genres?.length ? <div className="store-tags" aria-label="Generos del libro">{item.genres.map((genre) => <span key={genre.id} className="store-tag">{genre.name}</span>)}</div> : null}
               {item.description ? <p className="catalog-item-description">{item.description}</p> : null}
               {isEditing ? <div className="dashboard-form-grid dashboard-form-grid-extended"><label>Titulo<input value={draftItem.title} onChange={(event) => setDraftItem((current) => ({ ...current, title: event.target.value }))} /></label><label>Autor<input value={draftItem.author} onChange={(event) => setDraftItem((current) => ({ ...current, author: event.target.value }))} /></label><label>Disponibilidad<select value={draftItem.availability_status} onChange={(event) => setDraftItem((current) => ({ ...current, availability_status: event.target.value }))}>{EDITABLE_AVAILABILITY_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label><label>Editorial<input value={draftItem.publisher} onChange={(event) => setDraftItem((current) => ({ ...current, publisher: event.target.value }))} /></label><label>Idioma<input value={draftItem.language} onChange={(event) => setDraftItem((current) => ({ ...current, language: event.target.value }))} /></label><label>Estado<select value={draftItem.book_status} onChange={(event) => setDraftItem((current) => ({ ...current, book_status: event.target.value }))}>{EDITABLE_BOOK_STATUS_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label><GenreSelector genres={genres} genresLoading={genresLoading} genresError={genresError} selectedGenreIds={draftItem.genre_ids || []} onChange={(genreIds) => setDraftItem((current) => ({ ...current, genre_ids: genreIds }))} /><label className="dashboard-field-wide">Descripcion<textarea value={draftItem.description} onChange={(event) => setDraftItem((current) => ({ ...current, description: event.target.value }))} rows={4} /></label></div> : null}
-              <div className="card-actions"><div className="card-actions-main">{isEditing ? <button type="button" className="secondary-button" onClick={cancelEditing}>Cancelar</button> : <><button type="button" className="secondary-button" onClick={() => startEditing(item)}>Editar</button><button type="button" className="secondary-button" onClick={() => toggleFeatured(item)}>{item.is_featured ? "Quitar destacado" : "Destacar"}</button></>}{isEditing ? <button type="button" className="primary-button" onClick={() => saveItem(item.id, item.availability_status)} disabled={saveBusy}>{saveBusy ? "Guardando..." : "Guardar"}</button> : null}</div><button type="button" className="danger-button" onClick={() => hideItem(item.id)}>Eliminar</button></div>
+              {isEditing ? (
+                <div className="catalog-image-editor">
+                  <div className="catalog-image-editor-head">
+                    <div><h4>Fotos del libro</h4><p>{(item.images || []).length} de {MAX_CATALOG_IMAGES} imagenes cargadas.</p></div>
+                    <label className={`secondary-button${(item.images || []).length >= MAX_CATALOG_IMAGES || imageBusyId === item.id ? " button-disabled" : ""}`}>
+                      {imageBusyId === item.id ? "Subiendo..." : "Subir fotos"}
+                      <input type="file" accept="image/png,image/jpeg,image/webp" multiple disabled={(item.images || []).length >= MAX_CATALOG_IMAGES || imageBusyId === item.id} onChange={(event) => { uploadItemImages(item.id, event.target.files); event.target.value = ""; }} />
+                    </label>
+                  </div>
+                  {(item.images || []).length ? (
+                    <div className="catalog-image-list">
+                      {item.images.map((image) => {
+                        const imageUrl = resolveApiUrl(image.url);
+                        return (
+                          <div key={image.id} className="catalog-image-thumb">
+                            <img src={imageUrl} alt={`Foto de ${item.title}`} />
+                            <div>
+                              {image.is_primary ? <span className="status-pill">Principal</span> : <button type="button" className="secondary-button" onClick={() => markPrimaryImage(item.id, image.id)} disabled={imageBusyId === item.id}>Marcar principal</button>}
+                              <button type="button" className="danger-button" onClick={() => deleteItemImage(item.id, image.id)} disabled={imageBusyId === item.id}>Quitar foto</button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : <p className="catalog-image-empty">Todavia no cargaste fotos propias para este libro.</p>}
+                </div>
+              ) : null}              <div className="card-actions"><div className="card-actions-main">{isEditing ? <button type="button" className="secondary-button" onClick={cancelEditing}>Cancelar</button> : <><button type="button" className="secondary-button" onClick={() => startEditing(item)}>Editar</button><button type="button" className="secondary-button" onClick={() => toggleFeatured(item)}>{item.is_featured ? "Quitar destacado" : "Destacar"}</button></>}{isEditing ? <button type="button" className="primary-button" onClick={() => saveItem(item.id, item.availability_status)} disabled={saveBusy}>{saveBusy ? "Guardando..." : "Guardar"}</button> : null}</div><button type="button" className="danger-button" onClick={() => hideItem(item.id)}>Eliminar</button></div>
             </article>
           );
         })}</div> : null}
