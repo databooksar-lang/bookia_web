@@ -279,17 +279,57 @@ export function AboutPage() {
   );
 }
 
+const AVAILABILITY_LABELS = {
+  available: "Disponible",
+  reserved: "Reservado",
+  sold_out: "Agotado",
+  hidden: "Oculto",
+};
+
+const BOOK_STATUS_LABELS = {
+  nuevo: "Nuevo",
+  usado: "Usado",
+};
+
+function bookStatusLabel(value) {
+  return BOOK_STATUS_LABELS[value] || BOOK_STATUS_LABELS.usado;
+}
+
+function bookAvailabilityLabel(value) {
+  return AVAILABILITY_LABELS[value] || value;
+}
+
+function bookEditionLine(item) {
+  return [item.publisher, item.language].filter(Boolean).join(" / ") || "Edicion no visible";
+}
+
+function BookGenreTags({ item }) {
+  return (
+    <div className="store-tags" aria-label="Generos del libro">
+      {item.genres?.length ? item.genres.map((genre) => <span key={genre.id} className="store-tag">{genre.name}</span>) : <span className="store-tag">Sin genero</span>}
+    </div>
+  );
+}
+
 export function BookstorePage({ slug }) {
   const [store, setStore] = useState(null);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedBook, setSelectedBook] = useState(null);
   const visibleItems = items.filter((item) => item.availability_status !== "hidden");
 
   useEffect(() => {
     setLoading(true);
     apiFetch(`/bookstores/${slug}`).then((data) => { setStore(data.bookstore); setItems(data.items); setError(""); }).catch((fetchError) => setError(fetchError.message)).finally(() => setLoading(false));
   }, [slug]);
+
+  useEffect(() => {
+    if (!selectedBook) return undefined;
+    const onKeyDown = (event) => event.key === "Escape" && setSelectedBook(null);
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [selectedBook]);
 
   if (loading) return <div className="page-state"><div className="loading-mark" /><p>Cargando libreria...</p></div>;
   if (error || !store) return <div className="page-state"><EmptyState title="No encontramos esa libreria">{error || "Revisa el enlace o volve a la busqueda."}</EmptyState><button className="secondary-button" onClick={() => navigate("/")}>Volver a buscar</button></div>;
@@ -318,9 +358,65 @@ export function BookstorePage({ slug }) {
       </div>
       <div className="store-catalog">
         <div className="section-heading results-heading"><div><p className="section-label">Estantes disponibles</p><h2>Catalogo de {store.name}</h2><p>{visibleItems.length} {visibleItems.length === 1 ? "libro publicado" : "libros publicados"}</p></div><button className="secondary-button" onClick={() => navigate("/")}>Volver a buscar</button></div>
-        {visibleItems.length === 0 ? <EmptyState title="Este catalogo se esta preparando">Volve pronto para descubrir sus libros.</EmptyState> : <div className="book-grid">{visibleItems.map((item) => <article key={item.id} className="book-card"><BookCover item={item} /><div><span className={`status-pill status-${item.availability_status}`}>{({ available: "Disponible", reserved: "Reservado", sold_out: "Agotado", hidden: "Oculto" })[item.availability_status] || item.availability_status}</span><h3>{item.title}</h3><p>{item.author || "Autor no visible"}</p>{item.genres?.length ? <div className="store-tags" aria-label="Generos del libro">{item.genres.map((genre) => <span key={genre.id} className="store-tag">{genre.name}</span>)}</div> : null}{item.description ? <p className="book-card-description">{item.description}</p> : null}<small>{item.publisher || "Editorial no visible"}{item.language ? ` ? ${item.language}` : ""}</small></div></article>)}</div>}
+        {visibleItems.length === 0 ? <EmptyState title="Este catalogo se esta preparando">Volve pronto para descubrir sus libros.</EmptyState> : (
+          <div className="book-grid">
+            {visibleItems.map((item) => (
+              <article
+                key={item.id}
+                className="book-card"
+                role="button"
+                tabIndex={0}
+                aria-label={`Ver detalles de ${item.title}`}
+                onClick={() => setSelectedBook(item)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    setSelectedBook(item);
+                  }
+                }}
+              >
+                <BookCover item={item} />
+                <div>
+                  <span className={`status-pill status-${item.availability_status}`}>{bookAvailabilityLabel(item.availability_status)}</span>
+                  <h3>{item.title}</h3>
+                  <p>{item.author || "Autor no visible"}</p>
+                  <BookGenreTags item={item} />
+                  {item.description ? <p className="book-card-description">{item.description}</p> : <p className="book-card-description">Sin descripcion visible.</p>}
+                  <small>{bookEditionLine(item)} / {bookStatusLabel(item.book_status)}</small>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
       </div>
+      {selectedBook ? (
+        <div className="book-detail-modal" role="dialog" aria-modal="true" aria-labelledby="book-detail-title" onClick={() => setSelectedBook(null)}>
+          <div className="book-detail-modal-card" onClick={(event) => event.stopPropagation()}>
+            <button type="button" className="book-detail-modal-close" onClick={() => setSelectedBook(null)}>Cerrar</button>
+            <div className="book-detail-modal-layout">
+              <BookCover item={selectedBook} className="book-detail-cover" />
+              <div className="book-detail-copy">
+                <div className="book-detail-status-row">
+                  <span className={`status-pill status-${selectedBook.availability_status}`}>{bookAvailabilityLabel(selectedBook.availability_status)}</span>
+                  <span className="status-pill">{bookStatusLabel(selectedBook.book_status)}</span>
+                </div>
+                <h2 id="book-detail-title">{selectedBook.title}</h2>
+                <p className="book-detail-author">{selectedBook.author || "Autor no visible"}</p>
+                <BookGenreTags item={selectedBook} />
+                <div className="book-detail-section">
+                  <span>Descripcion</span>
+                  <p>{selectedBook.description || "Sin descripcion visible."}</p>
+                </div>
+                <dl className="book-detail-meta">
+                  <div><dt>Editorial</dt><dd>{selectedBook.publisher || "Editorial no visible"}</dd></div>
+                  <div><dt>Idioma</dt><dd>{selectedBook.language || "Idioma no visible"}</dd></div>
+                  <div><dt>Edicion</dt><dd>{bookEditionLine(selectedBook)}</dd></div>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }
-

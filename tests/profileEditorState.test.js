@@ -133,6 +133,19 @@ export function registerProfileEditorStateTests(test) {
     assert.doesNotMatch(publicPagesSource, /rgba\(11,45,36/);
     assert.doesNotMatch(publicPagesSource, /rgba\(18,63,50/);
   });
+  test("opens public bookstore book details from clickable cards", () => {
+    const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+
+    assert.match(publicPagesSource, /const \[selectedBook, setSelectedBook\] = useState\(null\)/);
+    assert.match(publicPagesSource, /onClick=\{\(\) => setSelectedBook\(item\)\}/);
+    assert.match(publicPagesSource, /role="dialog"/);
+    assert.match(publicPagesSource, /aria-modal="true"/);
+    assert.match(publicPagesSource, /event\.key === "Escape"/);
+    assert.match(publicPagesSource, /book-card-description/);
+    assert.match(publicPagesSource, /item\.genres\?\.length/);
+    assert.match(publicPagesSource, /Sin genero/);
+    assert.match(publicPagesSource, /BOOK_STATUS_LABELS/);
+  });
   test("does not set a JSON content type for FormData", () => {
     const headers = buildRequestHeaders({ body: new FormData() }, "csrf-token");
     assert.equal(headers["Content-Type"], undefined);
