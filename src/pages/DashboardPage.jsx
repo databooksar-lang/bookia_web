@@ -351,12 +351,16 @@ export function DashboardPage({ me, refreshMe }) {
                     <div className="catalog-image-list">
                       {item.images.map((image) => {
                         const imageUrl = resolveApiUrl(image.url);
+                        const isCurrentCover = image.source === "current_cover";
+                        const isCatalogImage = image.source === "catalog_image";
                         return (
                           <div key={image.id} className="catalog-image-thumb">
                             <img src={imageUrl} alt={`Foto de ${item.title}`} />
                             <div>
-                              {image.is_primary ? <span className="status-pill">Principal</span> : <button type="button" className="secondary-button" onClick={() => markPrimaryImage(item.id, image.id)} disabled={imageBusyId === item.id}>Marcar principal</button>}
-                              <button type="button" className="danger-button" onClick={() => deleteItemImage(item.id, image.id)} disabled={imageBusyId === item.id}>Quitar foto</button>
+                              {image.is_primary ? <span className="status-pill">Principal</span> : null}
+                              {isCatalogImage && !image.is_primary ? <button type="button" className="secondary-button" onClick={() => markPrimaryImage(item.id, image.id)} disabled={imageBusyId === item.id}>Marcar principal</button> : null}
+                              {isCatalogImage ? <button type="button" className="danger-button" onClick={() => deleteItemImage(item.id, image.id)} disabled={imageBusyId === item.id}>Quitar foto</button> : null}
+                              {isCurrentCover ? <span className="status-pill">Foto actual</span> : null}
                             </div>
                           </div>
                         );
