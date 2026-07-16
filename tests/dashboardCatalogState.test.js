@@ -89,6 +89,35 @@ export function registerDashboardCatalogStateTests(register) {
     assert.match(source, /hasCatalogItemAvailabilityChanged\(item, draftItem\)/);
     assert.match(source, /onClick=\{\(\) => saveItem\(item\)\}/);
   });
+
+  register("dashboard applies AI autocomplete as an explicit replacement before saving", () => {
+    const source = readFileSync(new URL("../src/pages/DashboardPage.jsx", import.meta.url), "utf8");
+
+    assert.match(source, /mergeAiAutocompleteSuggestion\([^)]*\{ overwriteExisting: true \}\)/s);
+  });
+
+  register("saves description and genre produced by an AI-applied draft", () => {
+    const original = {
+      title: "rayuela",
+      author: "julio cortazar",
+      publisher: "sudamericana",
+      language: "es",
+      description: "descripcion vieja",
+      genre_ids: [7],
+      book_status: "usado",
+      availability_status: "available",
+    };
+    const draft = {
+      ...original,
+      description: "descripcion ia",
+      genre_ids: [12],
+    };
+
+    assert.deepEqual(buildCatalogItemUpdatePayload(original, draft), {
+      description: "descripcion ia",
+      genre_ids: [12],
+    });
+  });
   register("keeps availability out of catalog patch and detects separate availability update", () => {
     const original = {
       title: "rayuela",

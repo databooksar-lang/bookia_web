@@ -21,6 +21,26 @@ export function registerAiAutocompleteStateTests(register) {
     if (JSON.stringify(result.genre_ids) !== JSON.stringify([7])) throw new Error("genre ids should be preserved");
   });
 
+  register("overwrites existing description and genre when applying an explicit AI replacement", () => {
+    const draft = { title: "Rayuela", description: "Descripcion vieja.", genre_ids: [7] };
+    const suggestion = { description: "Descripcion IA.", genre_id: 12 };
+
+    const result = mergeAiAutocompleteSuggestion(draft, suggestion, { overwriteExisting: true });
+
+    if (result.description !== "Descripcion IA.") throw new Error("description should be overwritten");
+    if (JSON.stringify(result.genre_ids) !== JSON.stringify([12])) throw new Error("genre ids should be overwritten");
+  });
+
+  register("does not clear existing description or genre when AI replacement has empty values", () => {
+    const draft = { title: "Rayuela", description: "Descripcion vieja.", genre_ids: [7] };
+    const suggestion = { description: "   ", genre_id: null };
+
+    const result = mergeAiAutocompleteSuggestion(draft, suggestion, { overwriteExisting: true });
+
+    if (result.description !== "Descripcion vieja.") throw new Error("description should not be cleared");
+    if (JSON.stringify(result.genre_ids) !== JSON.stringify([7])) throw new Error("genre ids should not be cleared");
+  });
+
   register("exposes source links only when web search was used", () => {
     const state = getAiAutocompleteSourceState({
       used_web: true,
