@@ -216,7 +216,7 @@ export function DashboardPage({ me, refreshMe }) {
       .then((data) => {
         const suggestion = data?.suggestion || {};
         setEditingItemId(item.id);
-        setDraftItem((current) => mergeAiAutocompleteSuggestion(isCurrentEditing ? current : baseDraft, suggestion));
+        setDraftItem((current) => mergeAiAutocompleteSuggestion(isCurrentEditing ? current : baseDraft, suggestion, { overwriteExisting: true }));
         setAiSuggestionsByItemId((current) => ({ ...current, [item.id]: suggestion }));
         setError("");
       })
