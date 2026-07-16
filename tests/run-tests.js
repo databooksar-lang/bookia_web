@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 
 import { isBookiaApiRoute } from "../src/apiRoutes.js";
 import { resolveApiUrl } from "../src/api.js";
@@ -26,6 +27,19 @@ const tests = [
   }],
   ["does not duplicate the /api prefix for already-prefixed paths", () => {
     assert.equal(resolveApiUrl("/api/me"), "/api/me");
+  }],
+  ["generates a same-origin Caddy proxy when BOOKIA_API_UPSTREAM_URL is configured", () => {
+    const entrypoint = readFileSync(new URL("../docker-entrypoint.sh", import.meta.url), "utf8");
+    assert.match(entrypoint, /if \[ -n "\$\{BOOKIA_API_UPSTREAM_URL:-\}" \]/);
+    assert.match(entrypoint, /uri strip_prefix \/api/);
+    assert.match(entrypoint, /reverse_proxy \$\{BOOKIA_API_UPSTREAM_URL\}/);
+    assert.match(entrypoint, /api_base_url="\/api"/);
+  }],
+  ["returns a JSON deployment error for /api when the Caddy proxy is missing", () => {
+    const entrypoint = readFileSync(new URL("../docker-entrypoint.sh", import.meta.url), "utf8");
+    assert.match(entrypoint, /header Content-Type application\/json/);
+    assert.match(entrypoint, /BOOKIA_API_UPSTREAM_URL no esta configurada/);
+    assert.match(entrypoint, /respond .* 503/);
   }],
   ["returns loading state while genres are being fetched", () => {
     assert.deepEqual(
