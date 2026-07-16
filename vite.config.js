@@ -10,15 +10,11 @@ export default defineConfig({
     port: 5173,
     host: "0.0.0.0",
     proxy: {
-      "/search": "http://127.0.0.1:8000",
-      "/bookstores": "http://127.0.0.1:8000",
-      "/genres": "http://127.0.0.1:8000",
-      "/auth": "http://127.0.0.1:8000",
-      "/me": "http://127.0.0.1:8000",
-      "/dashboard": "http://127.0.0.1:8000",
-      "/catalog": "http://127.0.0.1:8000",
-      "/media": "http://127.0.0.1:8000",
-      "/static": "http://127.0.0.1:8000",
+      "/api": {
+        target: "http://127.0.0.1:8000",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, "") || "/",
+      },
     },
   },
 });

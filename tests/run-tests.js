@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 
 import { isBookiaApiRoute } from "../src/apiRoutes.js";
+import { resolveApiUrl } from "../src/api.js";
 import { buildSingleGenreIds, getSingleGenreValue } from "../src/genreSelection.js";
 import { getGenreSelectorState } from "../src/genreSelectorState.js";
 import { registerProfileEditorStateTests } from "./profileEditorState.test.js";
@@ -14,8 +15,17 @@ const tests = [
     assert.equal(isBookiaApiRoute("/genres?active=true"), true);
   }],
   ["keeps non-api frontend routes out of API detection", () => {
-    assert.equal(isBookiaApiRoute("/dashboard"), true);
+    assert.equal(isBookiaApiRoute("/dashboard"), false);
+    assert.equal(isBookiaApiRoute("/bookstores/eterna-cadencia"), false);
     assert.equal(isBookiaApiRoute("/plans"), false);
+  }],
+  ["resolves same-origin API calls through the /api proxy by default", () => {
+    assert.equal(resolveApiUrl("/me"), "/api/me");
+    assert.equal(resolveApiUrl("/bookstores/eterna-cadencia"), "/api/bookstores/eterna-cadencia");
+    assert.equal(resolveApiUrl("/catalog/12/cover"), "/api/catalog/12/cover");
+  }],
+  ["does not duplicate the /api prefix for already-prefixed paths", () => {
+    assert.equal(resolveApiUrl("/api/me"), "/api/me");
   }],
   ["returns loading state while genres are being fetched", () => {
     assert.deepEqual(
@@ -61,10 +71,23 @@ registerReadingClubStateTests((name, fn) => tests.push([name, fn]));
 registerAiAutocompleteStateTests((name, fn) => tests.push([name, fn]));
 registerDashboardCatalogStateTests((name, fn) => tests.push([name, fn]));
 
+tests.push(["resolves API calls against an external runtime base", async () => {
+  const previousConfig = globalThis.__BOOKIA_CONFIG__;
+  globalThis.__BOOKIA_CONFIG__ = { apiBaseUrl: "https://api.bookia.example/" };
+  try {
+    const moduleUrl = new URL(`../src/api.js?external-base=${Date.now()}`, import.meta.url);
+    const { resolveApiUrl: resolveWithExternalBase } = await import(moduleUrl);
+    assert.equal(resolveWithExternalBase("/me"), "https://api.bookia.example/me");
+    assert.equal(resolveWithExternalBase("/catalog/12/cover"), "https://api.bookia.example/catalog/12/cover");
+  } finally {
+    globalThis.__BOOKIA_CONFIG__ = previousConfig;
+  }
+}]);
+
 let failures = 0;
 for (const [name, fn] of tests) {
   try {
-    fn();
+    await fn();
     console.log(`PASS ${name}`);
   } catch (error) {
     failures += 1;
