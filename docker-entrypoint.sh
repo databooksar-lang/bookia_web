@@ -16,6 +16,14 @@ if [ -n "${BOOKIA_API_UPSTREAM_URL:-}" ]; then
 EOF
   api_base_url="/api"
 else
+  cat >> /etc/caddy/Caddyfile <<EOF
+  @api path /api /api/*
+  handle @api {
+    header Content-Type application/json
+    respond "{\"detail\":\"BOOKIA_API_UPSTREAM_URL no esta configurada; el proxy /api no puede llegar al backend.\"}" 503
+  }
+
+EOF
   api_base_url="${VITE_API_BASE_URL:-/api}"
 fi
 

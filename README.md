@@ -45,19 +45,7 @@ La recomendacion para Railway es desplegar este repo con el `Dockerfile` incluid
 
 ### Variables de entorno en Railway
 
-Define al menos:
-
-```env
-VITE_API_BASE_URL=https://api.bookia.com
-```
-
-Notas:
-
-- Usa el dominio publico real de tu backend de Railway.
-- Para Railway no hace falta definir `VITE_BASE_PATH`; el valor por defecto `/` ya es correcto.
-- Este frontend ahora tambien lee `VITE_API_BASE_URL` en runtime al iniciar el contenedor, para evitar builds publicados con la API vacia o desactualizada.
-
-Si el login de librerias responde "aceptado" pero luego no recupera la sesion, conviene evitar cookies cross-site y publicar el frontend con proxy same-origin hacia la API:
+Para Railway, la configuracion recomendada es usar proxy same-origin hacia la API:
 
 ```env
 BOOKIA_API_UPSTREAM_URL=https://api.bookia.com
@@ -67,7 +55,21 @@ Con esa variable:
 
 - Caddy proxyea solo `/api` y `/api/*` al backend, quitando el prefijo `/api` antes de reenviar la request.
 - El navegador ve las llamadas como mismo origen bajo `/api`, por lo que la cookie de sesion deja de depender de una configuracion cross-site delicada.
-- `VITE_API_BASE_URL` puede quedar vacia o mantenerse como respaldo, pero el contenedor va a priorizar `/api` cuando `BOOKIA_API_UPSTREAM_URL` este configurada.
+- `runtime-config.js` queda con `apiBaseUrl: "/api"` al iniciar el contenedor.
+- En el backend, `SESSION_COOKIE_SAMESITE=lax` alcanza para este flujo porque el navegador consulta la API desde el mismo origen del frontend.
+
+Si no puedes usar proxy same-origin, define una base externa para que el frontend llame directo al backend:
+
+```env
+VITE_API_BASE_URL=https://api.bookia.com
+```
+
+Notas:
+
+- Usa el dominio publico real de tu backend de Railway.
+- Para Railway no hace falta definir `VITE_BASE_PATH`; el valor por defecto `/` ya es correcto.
+- Este frontend lee `VITE_API_BASE_URL` en runtime al iniciar el contenedor, para evitar builds publicados con la API vacia o desactualizada.
+- Si falta `BOOKIA_API_UPSTREAM_URL` y el frontend intenta usar `/api`, Caddy responde JSON `503` en `/api/*` en vez de servir la SPA o devolver un 405 sin contexto.
 
 ### Pasos en Railway
 
