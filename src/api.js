@@ -1,8 +1,21 @@
 import { isBookiaApiRoute } from "./apiRoutes.js";
 
+const DEFAULT_SAME_ORIGIN_API_BASE = "/api";
 const RUNTIME_API_BASE = globalThis.__BOOKIA_CONFIG__?.apiBaseUrl || "";
 const BUILD_API_BASE = import.meta.env?.VITE_API_BASE_URL || "";
-const API_BASE = (RUNTIME_API_BASE || BUILD_API_BASE).replace(/\/$/, "");
+const API_BASE = normalizeApiBase(RUNTIME_API_BASE || BUILD_API_BASE || DEFAULT_SAME_ORIGIN_API_BASE);
+
+function normalizeApiBase(value) {
+  const trimmed = String(value || "").trim();
+  if (!trimmed || trimmed === "/") {
+    return "";
+  }
+  return trimmed.replace(/\/+$/, "");
+}
+
+function isDefaultApiPath(path) {
+  return path === DEFAULT_SAME_ORIGIN_API_BASE || path.startsWith(`${DEFAULT_SAME_ORIGIN_API_BASE}/`);
+}
 
 function readCookie(name) {
   if (typeof document === "undefined") {
@@ -21,7 +34,7 @@ function readCookie(name) {
 function buildInvalidApiResponseMessage(path, response, contentType) {
   const resolvedPath = resolveApiUrl(path);
   const isHtmlResponse = contentType.includes("text/html");
-  const looksLikeApiRoute = isBookiaApiRoute(path);
+  const looksLikeApiRoute = isBookiaApiRoute(path) || isBookiaApiRoute(resolvedPath);
 
   if (isHtmlResponse && looksLikeApiRoute) {
     if (!API_BASE) {
@@ -36,7 +49,8 @@ function buildInvalidApiResponseMessage(path, response, contentType) {
 function buildNonJsonErrorMessage(path, response, contentType, bodyText) {
   const trimmedBody = bodyText.trim();
   const looksLikeHtml = contentType.includes("text/html") || /^<!doctype html/i.test(trimmedBody) || /^<html/i.test(trimmedBody);
-  const looksLikeApiRoute = isBookiaApiRoute(path);
+  const resolvedPath = resolveApiUrl(path);
+  const looksLikeApiRoute = isBookiaApiRoute(path) || isBookiaApiRoute(resolvedPath);
 
   if (looksLikeHtml && looksLikeApiRoute) {
     return buildInvalidApiResponseMessage(path, response, contentType || "text/html");
@@ -47,7 +61,7 @@ function buildNonJsonErrorMessage(path, response, contentType, bodyText) {
   }
 
   if (response.status >= 500) {
-    return `La API respondio con error ${response.status}. Revisa el backend o el proxy de /auth/login.`;
+    return `La API respondio con error ${response.status}. Revisa el backend o el proxy de /api/auth/login.`;
   }
 
   return `La API respondio ${response.status} sin un error legible (${contentType || "sin content-type"}).`;
@@ -63,6 +77,10 @@ export function resolveApiUrl(path) {
   }
 
   if (!API_BASE) {
+    return path;
+  }
+
+  if (API_BASE === DEFAULT_SAME_ORIGIN_API_BASE && path.startsWith("/") && isDefaultApiPath(path)) {
     return path;
   }
 

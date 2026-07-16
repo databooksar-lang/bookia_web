@@ -17,7 +17,7 @@ VITE_API_BASE_URL=http://127.0.0.1:8000
 
 Notas:
 
-- En desarrollo con `npm run dev`, el proxy de Vite ya redirige `/search`, `/bookstores`, `/genres`, `/auth`, `/me`, `/dashboard` y `/catalog` al backend local.
+- En desarrollo con `npm run dev`, el proxy de Vite redirige `/api/*` al backend local quitando el prefijo `/api`.
 - En cualquier despliegue separado del backend, `VITE_API_BASE_URL` debe apuntar al host publico de la API.
 
 ## Desarrollo local
@@ -65,15 +65,15 @@ BOOKIA_API_UPSTREAM_URL=https://api.bookia.com
 
 Con esa variable:
 
-- Caddy proxyea `/auth`, `/me`, `/dashboard`, `/catalog`, `/search`, `/bookstores`, `/genres`, `/media` y `/static` al backend.
-- El navegador ve las llamadas como mismo origen, por lo que la cookie de sesion deja de depender de una configuracion cross-site delicada.
-- `VITE_API_BASE_URL` puede quedar vacia o mantenerse como respaldo, pero el contenedor va a priorizar el proxy same-origin.
+- Caddy proxyea solo `/api` y `/api/*` al backend, quitando el prefijo `/api` antes de reenviar la request.
+- El navegador ve las llamadas como mismo origen bajo `/api`, por lo que la cookie de sesion deja de depender de una configuracion cross-site delicada.
+- `VITE_API_BASE_URL` puede quedar vacia o mantenerse como respaldo, pero el contenedor va a priorizar `/api` cuando `BOOKIA_API_UPSTREAM_URL` este configurada.
 
 ### Pasos en Railway
 
 1. Crea un nuevo servicio y conecta este repositorio.
 2. Deja que Railway detecte el `Dockerfile`.
-3. Agrega `VITE_API_BASE_URL` en las variables del servicio.
+3. Agrega `VITE_API_BASE_URL` si vas a consultar una API cross-origin, o `BOOKIA_API_UPSTREAM_URL` si vas a usar el proxy same-origin `/api`.
 4. Publica el frontend en tu dominio, por ejemplo `bookia.com` o `www.bookia.com`.
 5. Verifica que al refrescar rutas internas la app siga cargando sin `404`.
 
@@ -86,11 +86,11 @@ Con esa variable:
 
 ## Integracion con el backend
 
-- Los `fetch` usan `VITE_API_BASE_URL` cuando existe.
-- Las tapas del catalogo se resuelven contra la misma base usando el helper compartido de `src/api.js`.
+- Los `fetch` usan `/api` por defecto y `VITE_API_BASE_URL` cuando existe una base externa.
+- Las tapas, logos y banners se resuelven contra la misma base usando el helper compartido de `src/api.js`.
 - El backend debe permitir el origen del frontend en `FRONTEND_ORIGINS`.
 - Como el frontend usa `credentials: "include"`, revisa tambien `SESSION_COOKIE_SECURE`, la politica `SESSION_COOKIE_SAMESITE` y `SESSION_COOKIE_DOMAIN` solo si realmente necesitas compartir cookies entre subdominios.
-- Si despliegas este frontend con `BOOKIA_API_UPSTREAM_URL`, las llamadas a la API salen por el mismo origen del frontend y normalmente ya no hace falta depender de cookies cross-site.
+- Si despliegas este frontend con `BOOKIA_API_UPSTREAM_URL`, las llamadas a la API salen por el mismo origen del frontend bajo `/api` y normalmente ya no hace falta depender de cookies cross-site.
 
 
 - Si una tapa falla al cargar, el buscador la oculta para evitar imagenes rotas visibles.
