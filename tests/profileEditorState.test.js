@@ -135,7 +135,7 @@ export function registerProfileEditorStateTests(test) {
     assert.match(publicPagesSource, /<div className="store-identity">/);
     assert.match(publicPagesSource, /<aside className="store-contact-card">/);
     assert.match(editorialSource, /\.store-profile-panel/);
-    assert.match(editorialSource, /height:\s*clamp\(220px, 32vw, 380px\)/);
+    assert.match(editorialSource, /height:\s*clamp\(200px, 28vw, 340px\)/);
     assert.doesNotMatch(publicPagesSource, /linear-gradient\(90deg, rgba\(0,0,0/);
   });
   test("opens public bookstore book details from clickable cards", () => {

@@ -95,6 +95,12 @@ export function registerDashboardCatalogStateTests(register) {
 
     assert.match(source, /mergeAiAutocompleteSuggestion\([^)]*\{ overwriteExisting: true \}\)/s);
   });
+  register("dashboard AI autocomplete button includes a magic emoji", () => {
+    const source = readFileSync(new URL("../src/pages/DashboardPage.jsx", import.meta.url), "utf8");
+
+    assert.match(source, /"\\uD83E\\uDE84 Autocompletar con IA"/);
+  });
+
 
   register("saves description and genre produced by an AI-applied draft", () => {
     const original = {
