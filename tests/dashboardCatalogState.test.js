@@ -95,10 +95,12 @@ export function registerDashboardCatalogStateTests(register) {
 
     assert.match(source, /mergeAiAutocompleteSuggestion\([^)]*\{ overwriteExisting: true \}\)/s);
   });
-  register("dashboard AI autocomplete button includes a magic emoji", () => {
+  register("dashboard AI autocomplete button uses a stable SVG icon", () => {
     const source = readFileSync(new URL("../src/pages/DashboardPage.jsx", import.meta.url), "utf8");
 
-    assert.match(source, /"\\uD83E\\uDE84 Autocompletar con IA"/);
+    assert.match(source, /import \{ ArrowIcon, BookIcon, SearchIcon, SparkleIcon \} from "\.\.\/components\/Icons"/);
+    assert.match(source, /<SparkleIcon size=\{16\} \/>/);
+    assert.doesNotMatch(source, /\\uD83E\\uDE84/);
   });
 
 

@@ -2161,12 +2161,20 @@ textarea:focus {
   gap: 24px;
 }
 
+.dashboard-list-active .catalog-item {
+  gap: 14px;
+}
+
 
 
 .catalog-item-description {
   margin: -6px 0 0;
   color: var(--muted);
   line-height: 1.6;
+}
+
+.dashboard-list-active .catalog-item-description {
+  margin-top: -2px;
 }
 
 
