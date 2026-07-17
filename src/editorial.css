@@ -2262,6 +2262,28 @@ textarea:focus {
   gap: 12px;
 }
 
+.dashboard-list-active .card-actions {
+  align-items: center;
+  justify-content: flex-start;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+}
+
+.dashboard-list-active .card-actions-main {
+  width: max-content;
+  flex: 0 0 auto;
+  flex-direction: row;
+}
+
+.dashboard-list-active .card-actions > .danger-button {
+  flex: 0 0 auto;
+}
+
+.dashboard-list-active .card-actions button {
+  white-space: nowrap;
+}
+
 .site-footer {
   color: var(--cream);
   background: var(--forest-deep);
