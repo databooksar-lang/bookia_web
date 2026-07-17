@@ -91,18 +91,30 @@ function SearchResults({ filters, stores, genres }) {
   const [items, setItems] = useState([]);
   const [selectedStore, setSelectedStore] = useState("");
   const [selectedGenre, setSelectedGenre] = useState("");
-  const [selectedCover, setSelectedCover] = useState(null);
+  const [selectedBook, setSelectedBook] = useState(null);
+  const [selectedBookImageUrl, setSelectedBookImageUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const hasSearched = filters !== null;
   const visibleItems = items.filter((item) => item.availability_status !== "hidden");
 
+  function openBookDetail(item) {
+    const gallery = bookImageGallery(item);
+    setSelectedBook(item);
+    setSelectedBookImageUrl(gallery[0]?.url ? resolveApiUrl(gallery[0].url) : null);
+  }
+
+  function closeBookDetail() {
+    setSelectedBook(null);
+    setSelectedBookImageUrl(null);
+  }
+
   useEffect(() => {
-    if (!selectedCover) return undefined;
-    const onKeyDown = (event) => event.key === "Escape" && setSelectedCover(null);
+    if (!selectedBook) return undefined;
+    const onKeyDown = (event) => event.key === "Escape" && closeBookDetail();
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [selectedCover]);
+  }, [selectedBook]);
 
   useEffect(() => {
     if (!hasSearched) {
@@ -110,7 +122,7 @@ function SearchResults({ filters, stores, genres }) {
       setSelectedStore("");
       setSelectedGenre("");
       setError("");
-      setSelectedCover(null);
+      closeBookDetail();
       return;
     }
 
@@ -167,13 +179,15 @@ function SearchResults({ filters, stores, genres }) {
         <div className="search-results-list" role="list">
           {visibleItems.map((item) => (
             <article key={item.id} className="search-result-row" role="listitem">
-              <BookCover item={item} className="search-result-cover" interactive onOpen={setSelectedCover} />
-              <div className="search-result-main">
-                <p className="result-kicker">{item.publisher || "Editorial no visible"}</p>
-                <h3>{item.title}</h3>
-                <p>{item.author || "Autor no visible"}</p>
-                {item.genres?.length ? <div className="store-tags" aria-label="Generos del libro">{item.genres.map((genre) => <span key={genre.id} className="store-tag">{genre.name}</span>)}</div> : null}
-              </div>
+              <button type="button" className="search-result-book-button" aria-label={`Ver detalles de ${item.title}`} onClick={() => openBookDetail(item)}>
+                <BookCover item={item} className="search-result-cover" />
+                <span className="search-result-main">
+                  <span className="result-kicker">{item.publisher || "Editorial no visible"}</span>
+                  <strong>{item.title}</strong>
+                  <span>{item.author || "Autor no visible"}</span>
+                  {item.genres?.length ? <span className="store-tags" aria-label="Generos del libro">{item.genres.map((genre) => <span key={genre.id} className="store-tag">{genre.name}</span>)}</span> : null}
+                </span>
+              </button>
               <div className="search-result-store-info">
                 <span>Libreria</span>
                 <AppLink href={`/bookstores/${item.bookstore.slug}`}>{item.bookstore.name} <ArrowIcon size={15} /></AppLink>
@@ -185,14 +199,7 @@ function SearchResults({ filters, stores, genres }) {
           ))}
         </div>
       ) : null}
-      {selectedCover ? (
-        <div className="search-cover-modal" role="dialog" aria-modal="true" aria-label={`Tapa ampliada de ${selectedCover.title}`} onClick={() => setSelectedCover(null)}>
-          <div className="search-cover-modal-card" onClick={(event) => event.stopPropagation()}>
-            <button type="button" className="search-cover-modal-close" onClick={() => setSelectedCover(null)}>Cerrar</button>
-            <img className="search-cover-modal-image" src={selectedCover.url} alt={`Tapa ampliada de ${selectedCover.title}`} />
-          </div>
-        </div>
-      ) : null}
+      <BookDetailModal selectedBook={selectedBook} selectedBookImageUrl={selectedBookImageUrl} onImageChange={setSelectedBookImageUrl} onClose={closeBookDetail} />
     </section>
   );
 }
@@ -322,6 +329,64 @@ function BookGenreTags({ item }) {
   );
 }
 
+function BookDetailModal({ selectedBook, selectedBookImageUrl, onImageChange, onClose }) {
+  if (!selectedBook) return null;
+
+  const selectedBookGallery = bookImageGallery(selectedBook);
+  const bookstore = selectedBook.bookstore;
+  const hasBookstoreContact = Boolean(formatDisplayPhone(bookstore?.phone_country_cd, bookstore?.phone));
+
+  return (
+    <div className="book-detail-modal" role="dialog" aria-modal="true" aria-labelledby="book-detail-title" onClick={onClose}>
+      <div className="book-detail-modal-card" onClick={(event) => event.stopPropagation()}>
+        <button type="button" className="book-detail-modal-close" onClick={onClose}>Cerrar</button>
+        <div className="book-detail-modal-layout">
+          <div className="book-detail-gallery">
+            {selectedBookImageUrl ? <img className="book-detail-cover" src={selectedBookImageUrl} alt={`Foto de ${selectedBook.title}`} /> : <BookCover item={selectedBook} className="book-detail-cover" />}
+            {selectedBookGallery.length > 1 ? (
+              <div className="book-detail-thumbnails" aria-label="Fotos del libro">
+                {selectedBookGallery.map((image) => {
+                  const thumbnailUrl = resolveApiUrl(image.url);
+                  return (
+                    <button key={image.id} type="button" className={`book-detail-thumbnail${thumbnailUrl === selectedBookImageUrl ? " is-active" : ""}`} onClick={() => onImageChange(thumbnailUrl)} aria-label={`Ver foto de ${selectedBook.title}`}>
+                      <img src={thumbnailUrl} alt="" />
+                    </button>
+                  );
+                })}
+              </div>
+            ) : null}
+          </div>
+          <div className="book-detail-copy">
+            <div className="book-detail-status-row">
+              <span className={`status-pill status-${selectedBook.availability_status}`}>{bookAvailabilityLabel(selectedBook.availability_status)}</span>
+              {selectedBook.is_featured ? <span className="status-pill status-featured">Destacado</span> : null}
+              <span className="status-pill">{bookStatusLabel(selectedBook.book_status)}</span>
+            </div>
+            <h2 id="book-detail-title">{selectedBook.title}</h2>
+            <p className="book-detail-author">{selectedBook.author || "Autor no visible"}</p>
+            <BookGenreTags item={selectedBook} />
+            <div className="book-detail-section">
+              <span>Descripcion</span>
+              <p>{selectedBook.description || "Sin descripcion visible."}</p>
+            </div>
+            <dl className="book-detail-meta">
+              <div><dt>Editorial</dt><dd>{selectedBook.publisher || "Editorial no visible"}</dd></div>
+              <div><dt>Idioma</dt><dd>{selectedBook.language || "Idioma no visible"}</dd></div>
+              <div><dt>Edicion</dt><dd>{bookEditionLine(selectedBook)}</dd></div>
+              <div><dt>Libreria</dt><dd>{bookstore ? <AppLink className="book-detail-store-link" href={`/bookstores/${bookstore.slug}`}>{bookstore.name} <ArrowIcon size={14} /></AppLink> : "Libreria no visible"}</dd></div>
+            </dl>
+            {hasBookstoreContact ? (
+              <WhatsAppButton className="primary-button book-detail-whatsapp" phoneCountryCd={bookstore.phone_country_cd} phone={bookstore.phone}>
+                <WhatsAppIcon size={19} /> Contactar por WhatsApp
+              </WhatsAppButton>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function BookstorePage({ slug }) {
   const [store, setStore] = useState(null);
   const [items, setItems] = useState([]);
@@ -339,7 +404,7 @@ export function BookstorePage({ slug }) {
 
   function openBookDetail(item) {
     const gallery = bookImageGallery(item);
-    openBookDetail(item);
+    setSelectedBook(item);
     setSelectedBookImageUrl(gallery[0]?.url ? resolveApiUrl(gallery[0].url) : null);
   }
 
@@ -365,7 +430,6 @@ export function BookstorePage({ slug }) {
   const facebookHref = buildFacebookHref(store.facebook_handle);
   const websiteHref = buildWebsiteHref(store.website_url);
   const bookstoreTags = [store.tag_1, store.tag_2].map((tag) => String(tag || '').trim()).filter(Boolean);
-  const selectedBookGallery = selectedBook ? bookImageGallery(selectedBook) : [];
   const contactItems = [
     phoneLabel ? { label: "Telefono", content: phoneLabel } : null,
     instagramHref ? { label: "Instagram", content: <ContactLink href={instagramHref}>{formatDisplayUrl(instagramHref)}</ContactLink> } : null,
@@ -433,49 +497,7 @@ export function BookstorePage({ slug }) {
           </div>
         </section>
       ) : null}
-      {selectedBook ? (
-        <div className="book-detail-modal" role="dialog" aria-modal="true" aria-labelledby="book-detail-title" onClick={closeBookDetail}>
-          <div className="book-detail-modal-card" onClick={(event) => event.stopPropagation()}>
-            <button type="button" className="book-detail-modal-close" onClick={closeBookDetail}>Cerrar</button>
-            <div className="book-detail-modal-layout">
-              <div className="book-detail-gallery">
-                {selectedBookImageUrl ? <img className="book-detail-cover" src={selectedBookImageUrl} alt={`Foto de ${selectedBook.title}`} /> : <BookCover item={selectedBook} className="book-detail-cover" />}
-                {selectedBookGallery.length > 1 ? (
-                  <div className="book-detail-thumbnails" aria-label="Fotos del libro">
-                    {selectedBookGallery.map((image) => {
-                      const thumbnailUrl = resolveApiUrl(image.url);
-                      return (
-                        <button key={image.id} type="button" className={`book-detail-thumbnail${thumbnailUrl === selectedBookImageUrl ? " is-active" : ""}`} onClick={() => setSelectedBookImageUrl(thumbnailUrl)} aria-label={`Ver foto de ${selectedBook.title}`}>
-                          <img src={thumbnailUrl} alt="" />
-                        </button>
-                      );
-                    })}
-                  </div>
-                ) : null}
-              </div>
-              <div className="book-detail-copy">
-                <div className="book-detail-status-row">
-                  <span className={`status-pill status-${selectedBook.availability_status}`}>{bookAvailabilityLabel(selectedBook.availability_status)}</span>
-                  {selectedBook.is_featured ? <span className="status-pill status-featured">Destacado</span> : null}
-                  <span className="status-pill">{bookStatusLabel(selectedBook.book_status)}</span>
-                </div>
-                <h2 id="book-detail-title">{selectedBook.title}</h2>
-                <p className="book-detail-author">{selectedBook.author || "Autor no visible"}</p>
-                <BookGenreTags item={selectedBook} />
-                <div className="book-detail-section">
-                  <span>Descripcion</span>
-                  <p>{selectedBook.description || "Sin descripcion visible."}</p>
-                </div>
-                <dl className="book-detail-meta">
-                  <div><dt>Editorial</dt><dd>{selectedBook.publisher || "Editorial no visible"}</dd></div>
-                  <div><dt>Idioma</dt><dd>{selectedBook.language || "Idioma no visible"}</dd></div>
-                  <div><dt>Edicion</dt><dd>{bookEditionLine(selectedBook)}</dd></div>
-                </dl>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <BookDetailModal selectedBook={selectedBook} selectedBookImageUrl={selectedBookImageUrl} onImageChange={setSelectedBookImageUrl} onClose={closeBookDetail} />
     </section>
   );
 }

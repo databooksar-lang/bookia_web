@@ -142,6 +142,8 @@ export function registerProfileEditorStateTests(test) {
     const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
 
     assert.match(publicPagesSource, /const \[selectedBook, setSelectedBook\] = useState\(null\)/);
+    assert.match(publicPagesSource, /function openBookDetail\(item\) \{[\s\S]*?setSelectedBook\(item\)/);
+    assert.doesNotMatch(publicPagesSource, /function openBookDetail\(item\) \{\s*const gallery = bookImageGallery\(item\);\s*openBookDetail\(item\);/);
     assert.match(publicPagesSource, /onClick=\{\(\) => openBookDetail\(item\)\}/);
     assert.match(publicPagesSource, /role="dialog"/);
     assert.match(publicPagesSource, /aria-modal="true"/);
@@ -150,6 +152,22 @@ export function registerProfileEditorStateTests(test) {
     assert.match(publicPagesSource, /item\.genres\?\.length/);
     assert.match(publicPagesSource, /Sin genero/);
     assert.match(publicPagesSource, /BOOK_STATUS_LABELS/);
+  });
+  test("search results open the shared public book detail modal", () => {
+    const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+    const searchResultsStart = publicPagesSource.indexOf("function SearchResults");
+    const searchResultsEnd = publicPagesSource.indexOf("function BenefitsStrip", searchResultsStart);
+    const searchResultsSource = publicPagesSource.slice(searchResultsStart, searchResultsEnd);
+
+    assert.ok(searchResultsStart >= 0);
+    assert.ok(searchResultsEnd > searchResultsStart);
+    assert.match(publicPagesSource, /function BookDetailModal\(/);
+    assert.match(searchResultsSource, /const \[selectedBook, setSelectedBook\] = useState\(null\)/);
+    assert.match(searchResultsSource, /className="search-result-book-button"/);
+    assert.match(searchResultsSource, /onClick=\{\(\) => openBookDetail\(item\)\}/);
+    assert.match(searchResultsSource, /<BookDetailModal/);
+    assert.doesNotMatch(searchResultsSource, /selectedCover/);
+    assert.doesNotMatch(searchResultsSource, /search-cover-modal/);
   });
   test("marks featured books in the public bookstore view and detail modal", () => {
     const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
