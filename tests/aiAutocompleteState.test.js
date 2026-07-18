@@ -1,6 +1,12 @@
 import { mergeAiAutocompleteSuggestion, getAiAutocompleteSourceState } from "../src/aiAutocompleteState.js";
+import { canUseAiAutocomplete } from "../src/aiAutocompleteAccess.js";
 
 export function registerAiAutocompleteStateTests(register) {
+  register("allows AI autocomplete only for plus_ai", () => {
+    if (!canUseAiAutocomplete("plus_ai")) throw new Error("plus_ai should have access");
+    if (canUseAiAutocomplete("starter")) throw new Error("starter should not have access");
+    if (canUseAiAutocomplete(null)) throw new Error("missing plan should not have access");
+  });
   register("fills empty description and genre from an AI suggestion", () => {
     const draft = { title: "Rayuela", description: "", genre_ids: [] };
     const suggestion = { description: "Novela experimental.", genre_id: 12 };
