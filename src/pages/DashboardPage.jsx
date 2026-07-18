@@ -139,7 +139,7 @@ export function DashboardPage({ me, refreshMe }) {
   const activeItems = items.filter((item) => item.availability_status !== "hidden");
   const hiddenItems = items.filter((item) => item.availability_status === "hidden");
   const hasActiveFilters = Boolean(titleQuery.trim() || authorQuery.trim());
-  const canAutocompleteWithAi = canUseAiAutocomplete(me.current_plan_code);
+  const canAutocompleteWithAi = canUseAiAutocomplete(me?.current_plan_code);
 
   function loadReadingClubs() {
     setReadingClubsLoading(true);
