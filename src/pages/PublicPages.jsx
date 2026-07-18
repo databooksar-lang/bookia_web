@@ -228,10 +228,6 @@ export function HomePage() {
       <BenefitsStrip />
       <SearchResults filters={searchFilters} stores={stores} />
       <BookstoresSection stores={stores} loading={storesLoading} />
-      <section className="home-section how-section">
-        <div className="how-intro"><p className="section-label">Simple y local</p><h2>Una busqueda.<br />Muchas historias posibles.</h2><p>Bookia acerca catalogos que antes estaban dispersos para que encontrar un libro vuelva a sentirse como un descubrimiento.</p></div>
-        <ol className="how-list"><li><span>01</span><div><h3>Busca lo que queres leer</h3><p>Por titulo, autor o editorial.</p></div></li><li><span>02</span><div><h3>Elegi donde encontrarlo</h3><p>Compara librerias y vendedores locales.</p></div></li><li><span>03</span><div><h3>Habla directamente</h3><p>Consulta disponibilidad por WhatsApp.</p></div></li></ol>
-      </section>
       <section className="bookstore-cta"><div><p className="section-label">Para librerias</p><h2>Tu catalogo merece una vidriera mas grande.</h2><p>Suma tu libreria a Bookia y acerca tus libros a personas que ya los estan buscando.</p></div><AppLink className="light-button" href="/plans">Conoce la propuesta <ArrowIcon /></AppLink></section>
     </>
   );

@@ -100,6 +100,14 @@ tests.push(["resolves API calls against an external runtime base", async () => {
   }
 }]);
 
+tests.push(["does not render the removed Simple y local section on the home page", () => {
+  const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+  assert.doesNotMatch(publicPagesSource, /how-section|Simple y local|Una busqueda/);
+  assert.doesNotMatch(editorialStyles, /\.how-/);
+}]);
+
 let failures = 0;
 for (const [name, fn] of tests) {
   try {
