@@ -37,6 +37,11 @@ const tests = [
     assert.match(entrypoint, /reverse_proxy \$\{BOOKIA_API_UPSTREAM_URL\}/);
     assert.match(entrypoint, /api_base_url="\/api"/);
   }],
+  ["proxies admin pages to the API without stripping their path", () => {
+    const entrypoint = readFileSync(new URL("../docker-entrypoint.sh", import.meta.url), "utf8");
+    assert.match(entrypoint, /@admin path \/admin \/admin\/\*/);
+    assert.match(entrypoint, /handle @admin \{\s*reverse_proxy \$\{BOOKIA_API_UPSTREAM_URL\}\s*\}/);
+  }],
   ["returns a JSON deployment error for /api when the Caddy proxy is missing", () => {
     const entrypoint = readFileSync(new URL("../docker-entrypoint.sh", import.meta.url), "utf8");
     assert.match(entrypoint, /header Content-Type application\/json/);
