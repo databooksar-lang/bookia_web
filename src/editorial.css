@@ -3005,6 +3005,7 @@ textarea:focus {
 .plans-hero-art { align-self: stretch; position: relative; z-index: 2; display: flex; align-items: end; justify-content: flex-start; overflow: visible; pointer-events: none; }
 .plans-hero-art img { width: 168%; max-width: none; height: auto; object-fit: contain; transform: translate(-48%, 7%); }
 .plans-pricing { width: min(1280px, calc(100% - 48px)); margin: 0 auto 28px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.plans-pricing-status { grid-column: 1 / -1; margin: 0; padding: 13px 18px; color: var(--coral-dark); background: #f8ddd5; border: 1px solid rgba(189, 67, 43, .2); border-radius: 12px; font-weight: 700; }
 .plans-plan { min-height: 345px; padding: 32px; display: flex; flex-direction: column; border: 1px solid #d6c8b3; border-radius: 18px; background: #fffdf8; transition: transform .2s ease, box-shadow .2s ease; }
 .plans-plan:hover { transform: translateY(-5px); box-shadow: 0 18px 30px rgba(5, 54, 42, .12); }
 .plans-plan-head { display: flex; align-items: center; justify-content: space-between; color: var(--forest-deep); font-family: Georgia, serif; font-size: 2rem; }

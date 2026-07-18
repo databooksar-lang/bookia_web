@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { apiFetch, resolveApiUrl } from "../api";
+import { formatCommercialPrice, getCommercialPrices } from "../plansPricingState";
 import { buildFacebookHref, buildInstagramHref, buildWebsiteHref, formatDisplayPhone, formatDisplayUrl } from "../formatters";
 import { AppLink, navigate } from "../navigation";
 import { displayBookstoreDescription } from "../profileEditorState";
@@ -234,10 +235,26 @@ export function HomePage() {
 }
 
 export function PlansPage() {
+  const [pricingState, setPricingState] = useState({ loading: true, prices: null, error: "" });
+
+  useEffect(() => {
+    apiFetch("/commercial-prices")
+      .then((data) => {
+        const prices = getCommercialPrices(data.items);
+        if (!prices) throw new Error("La respuesta de precios esta incompleta.");
+        setPricingState({ loading: false, prices, error: "" });
+      })
+      .catch(() => setPricingState({ loading: false, prices: null, error: "No pudimos cargar los precios en este momento." }));
+  }, []);
+
+  const priceLabel = (offeringCode) => {
+    if (pricingState.loading) return "Cargando...";
+    return pricingState.prices ? formatCommercialPrice(pricingState.prices[offeringCode]) : "Precio no disponible";
+  };
   const plans = [
-    { name: "Prueba gratis", price: "ARS 0", detail: "por 30 dias", limit: "Hasta 10 libros", benefits: ["IA incluida", "Todas las funcionalidades"], tone: "trial" },
-    { name: "Base", price: "ARS 20.000", detail: "/mes", limit: "Hasta 50 libros", benefits: ["Perfil publico", "Carga manual"], tone: "base" },
-    { name: "IA", price: "ARS 30.000", detail: "/mes", limit: "Hasta 50 libros", benefits: ["Carga desde foto", "Autocompletado con IA"], tone: "featured", featured: true },
+    { name: "Prueba gratis", price: priceLabel("trial"), detail: "por 30 dias", limit: "Hasta 10 libros", benefits: ["IA incluida", "Todas las funcionalidades"], tone: "trial" },
+    { name: "Base", price: priceLabel("base"), detail: "/mes", limit: "Hasta 50 libros", benefits: ["Perfil publico", "Carga manual"], tone: "base" },
+    { name: "IA", price: priceLabel("plus_ai"), detail: "/mes", limit: "Hasta 50 libros", benefits: ["Carga desde foto", "Autocompletado con IA"], tone: "featured", featured: true },
   ];
 
   return (
@@ -247,6 +264,7 @@ export function PlansPage() {
         <div className="plans-hero-art" aria-hidden="true"><img src="/images/plans-books.png" alt="" /></div>
       </section>
       <section className="plans-pricing" aria-label="Planes de Bookia">
+        {pricingState.error ? <p className="plans-pricing-status" role="status">{pricingState.error}</p> : null}
         {plans.map((plan) => <article key={plan.name} className={`plans-plan plans-plan-${plan.tone}${plan.featured ? " plans-featured" : ""}`}>
           <div className="plans-plan-head"><span>{plan.name}</span>{plan.featured ? <strong>Mas elegido</strong> : null}</div>
           <p className="plans-price">{plan.price}<small>{plan.detail}</small></p>
@@ -256,14 +274,13 @@ export function PlansPage() {
       </section>
       <section className="plans-growth-band" aria-label="Ampliaciones de catalogo">
         <div className="plans-growth-title"><span aria-hidden="true">▥</span><div><p className="plans-growth-kicker">Adicionales de catalogo</p><h2>Hace crecer<br />tu catalogo</h2></div></div>
-        <div><p>Hasta</p><strong>100 <small>libros</small></strong><span>+ ARS 5.000/mes</span></div>
-        <div><p>Hasta</p><strong>200 <small>libros</small></strong><span>+ ARS 10.000/mes</span></div>
+        <div><p>Hasta</p><strong>100 <small>libros</small></strong><span>+ {priceLabel("catalog_100")}/mes</span></div>
+        <div><p>Hasta</p><strong>200 <small>libros</small></strong><span>+ {priceLabel("catalog_200")}/mes</span></div>
       </section>
       <section className="plans-cta"><div><p className="section-label">Sin letra chica</p><h2>Proba Bookia durante <em>30 dias.</em></h2></div><AppLink href="/login" className="primary-button">Ingresar como libreria <ArrowIcon /></AppLink></section>
     </div>
   );
 }
-
 export function AboutPage() {
   return (
     <div className="editorial-page about-page">
