@@ -10,6 +10,7 @@ import { registerReadingClubStateTests } from "./readingClubState.test.js";
 import { registerAiAutocompleteStateTests } from "./aiAutocompleteState.test.js";
 import { registerDashboardCatalogStateTests } from "./dashboardCatalogState.test.js";
 import { registerPublicSearchStateTests } from "./publicSearchState.test.js";
+import { registerPlansPricingStateTests } from "./plansPricingState.test.js";
 
 const tests = [
   ["treats /genres as an API route", () => {
@@ -86,6 +87,7 @@ registerReadingClubStateTests((name, fn) => tests.push([name, fn]));
 registerAiAutocompleteStateTests((name, fn) => tests.push([name, fn]));
 registerDashboardCatalogStateTests((name, fn) => tests.push([name, fn]));
 registerPublicSearchStateTests((name, fn) => tests.push([name, fn]));
+registerPlansPricingStateTests((name, fn) => tests.push([name, fn]));
 
 tests.push(["resolves API calls against an external runtime base", async () => {
   const previousConfig = globalThis.__BOOKIA_CONFIG__;
@@ -109,6 +111,19 @@ tests.push(["does not render the removed Simple y local section on the home page
 }]);
 
 let failures = 0;
+tests.push(["renders the visual pricing composition with catalog growth band", () => {
+  const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+  assert.match(publicPagesSource, /plans-hero-art/);
+  assert.match(publicPagesSource, /plans-featured/);
+  assert.match(publicPagesSource, /plans-growth-band/);
+  assert.match(publicPagesSource, /Adicionales de catalogo/);
+  assert.match(editorialStyles, /\.plans-pricing/);
+  assert.match(editorialStyles, /\.plans-growth-band/);
+  assert.match(editorialStyles, /\.plans-page \.plans-cta \{[^}]*background: #f3d4c8/);
+  assert.match(editorialStyles, /\.plans-hero-art/);
+  assert.doesNotMatch(editorialStyles, /\.plans-hero-art \{[^}]*background: var\(--forest-deep\)/);
+}]);
 for (const [name, fn] of tests) {
   try {
     await fn();
