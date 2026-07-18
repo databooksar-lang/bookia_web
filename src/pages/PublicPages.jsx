@@ -5,6 +5,7 @@ import { buildFacebookHref, buildInstagramHref, buildWebsiteHref, formatDisplayP
 import { AppLink, navigate } from "../navigation";
 import { displayBookstoreDescription } from "../profileEditorState";
 import { displayReadingClubDate } from "../readingClubState";
+import { buildPublicSearchParams } from "../publicSearchState";
 import { EmptyState, WhatsAppButton } from "../components/Commerce";
 import { ArrowIcon, BookIcon, LocationIcon, SearchIcon, StoreIcon, WhatsAppIcon } from "../components/Icons";
 
@@ -41,56 +42,29 @@ function bookImageGallery(item) {
   }
   return item?.cover_image_url ? [{ id: "cover", url: item.cover_image_url, isPrimary: true }] : [];
 }
-function HeroSearch({ initialQuery = "", initialField = "general", onSearch }) {
-  const [query, setQuery] = useState(initialQuery);
-  const [field, setField] = useState(initialField);
-
-  function submit(event) {
-    event.preventDefault();
-    onSearch({ query, field });
-  }
-
+function HeroSearch({ initialFilters, genres, genresLoading, onSearch }) {
+  const [filters, setFilters] = useState(() => ({ title: initialFilters.title || "", author: initialFilters.author || "", publisher: initialFilters.publisher || "", language: initialFilters.language || "", genreSlug: initialFilters.genreSlug || "" }));
+  function submit(event) { event.preventDefault(); onSearch(filters); }
+  function updateFilter(name) { return (event) => setFilters((current) => ({ ...current, [name]: event.target.value })); }
   return (
     <section className="hero">
-      <div className="hero-copy">
-        <p className="section-label">Tu proxima lectura esta cerca</p>
-        <h1>El libro que buscas, <em>mas cerca</em> de lo que imaginas.</h1>
-        <p className="hero-lead">Bookia reune catalogos de librerias, vendedores de usados y emprendimientos para que encuentres tu proxima historia en tu comunidad.</p>
-        <form className="search-panel" onSubmit={submit} aria-label="Buscar libros">
-          <label className="search-field search-field-type">
-            <span>Buscar por</span>
-            <select value={field} onChange={(event) => setField(event.target.value)}>
-              <option value="general">Titulo, autor o editorial</option>
-              <option value="title">Solo titulo</option>
-              <option value="author">Autor</option>
-              <option value="publisher">Editorial</option>
-            </select>
-          </label>
-          <label className="search-field search-field-query">
-            <span>Palabra clave</span>
-            <span className="input-with-icon">
-              <SearchIcon />
-              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Ej: Rayuela, Borges o Sudamericana" />
-            </span>
-          </label>
-          <button className="primary-button search-submit" type="submit">Buscar libros <ArrowIcon /></button>
-        </form>
-      </div>
-      <div className="hero-books" aria-hidden="true">
-        <span className="hero-book hero-book-one"><small>Historias</small><strong>que nos<br />encuentran</strong></span>
-        <span className="hero-book hero-book-two"><small>Autores</small><strong>de aca<br />y de alla</strong></span>
-        <span className="hero-book hero-book-three"><small>Lecturas</small><strong>para cada<br />momento</strong></span>
-        <span className="hero-leaf hero-leaf-one" />
-        <span className="hero-leaf hero-leaf-two" />
-      </div>
+      <div className="hero-copy"><p className="section-label">Tu proxima lectura esta cerca</p><h1>El libro que buscas, <em>mas cerca</em> de lo que imaginas.</h1><p className="hero-lead">Bookia reune catalogos de librerias, vendedores de usados y emprendimientos para que encuentres tu proxima historia en tu comunidad.</p></div>
+      <div className="hero-books" aria-hidden="true"><span className="hero-book hero-book-one"><small>Historias</small><strong>que nos<br />encuentran</strong></span><span className="hero-book hero-book-two"><small>Autores</small><strong>de aca<br />y de alla</strong></span><span className="hero-book hero-book-three"><small>Lecturas</small><strong>para cada<br />momento</strong></span><span className="hero-leaf hero-leaf-one" /><span className="hero-leaf hero-leaf-two" /></div>
+      <form className="search-panel" onSubmit={submit} aria-label="Buscar libros">
+        <label className="search-field search-field-title"><span>Nombre del libro</span><span className="input-with-icon"><SearchIcon /><input value={filters.title} onChange={updateFilter("title")} placeholder="Ej: Rayuela" /></span></label>
+        <label className="search-field search-field-author"><span>Autor</span><input value={filters.author} onChange={updateFilter("author")} placeholder="Ej: Julio Cortazar" /></label>
+        <label className="search-field search-field-publisher"><span>Editorial</span><input value={filters.publisher} onChange={updateFilter("publisher")} placeholder="Ej: Sudamericana" /></label>
+        <label className="search-field search-field-language"><span>Idioma</span><input value={filters.language} onChange={updateFilter("language")} placeholder="Ej: Espanol" /></label>
+        <label className="search-field search-field-genre"><span>Genero</span><select value={filters.genreSlug} onChange={updateFilter("genreSlug")} disabled={genresLoading}><option value="">{genresLoading ? "Cargando generos..." : "Todos los generos"}</option>{genres.map((genre) => <option key={genre.id} value={genre.slug}>{genre.name}</option>)}</select></label>
+        <button className="primary-button search-submit" type="submit">Buscar libros <ArrowIcon /></button>
+      </form>
     </section>
   );
 }
 
-function SearchResults({ filters, stores, genres }) {
+function SearchResults({ filters, stores }) {
   const [items, setItems] = useState([]);
   const [selectedStore, setSelectedStore] = useState("");
-  const [selectedGenre, setSelectedGenre] = useState("");
   const [selectedBook, setSelectedBook] = useState(null);
   const [selectedBookImageUrl, setSelectedBookImageUrl] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -120,17 +94,13 @@ function SearchResults({ filters, stores, genres }) {
     if (!hasSearched) {
       setItems([]);
       setSelectedStore("");
-      setSelectedGenre("");
       setError("");
       closeBookDetail();
       return;
     }
 
-    const params = new URLSearchParams();
-    if (filters.query) params.set("query", filters.query);
-    if (filters.field) params.set("field", filters.field);
+    const params = buildPublicSearchParams(filters);
     if (selectedStore) params.set("bookstore", selectedStore);
-    if (selectedGenre) params.set("genre_slug", selectedGenre);
 
     setLoading(true);
     apiFetch(`/search?${params.toString()}`)
@@ -143,7 +113,7 @@ function SearchResults({ filters, stores, genres }) {
         setError(fetchError.message);
       })
       .finally(() => setLoading(false));
-  }, [filters, hasSearched, selectedStore, selectedGenre]);
+  }, [filters, hasSearched, selectedStore]);
 
   if (!hasSearched) return null;
 
@@ -163,18 +133,12 @@ function SearchResults({ filters, stores, genres }) {
               {stores.map((store) => <option key={store.id} value={store.slug}>{store.name}</option>)}
             </select>
           </label>
-          <label className="compact-filter">
-            <span>Genero</span>
-            <select value={selectedGenre} onChange={(event) => setSelectedGenre(event.target.value)}>
-              <option value="">Todos los generos</option>
-              {genres.map((genre) => <option key={genre.id} value={genre.slug}>{genre.name}</option>)}
-            </select>
-          </label>
+
         </div>
       </div>
       {error ? <p className="feedback error">{error}</p> : null}
       {loading ? <div className="loading-list" aria-label="Cargando resultados"><span /><span /><span /></div> : null}
-      {!loading && !error && visibleItems.length === 0 ? <EmptyState title="No encontramos coincidencias">Proba con otro titulo, autor o editorial, o busca en todas las librerias.</EmptyState> : null}
+      {!loading && !error && visibleItems.length === 0 ? <EmptyState title="No encontramos coincidencias">Proba con otro nombre de libro, autor, editorial, idioma o genero, o busca en todas las librerias.</EmptyState> : null}
       {!loading && visibleItems.length > 0 ? (
         <div className="search-results-list" role="list">
           {visibleItems.map((item) => (
@@ -248,20 +212,21 @@ function ContactLink({ href, children }) {
 export function HomePage() {
   const [stores, setStores] = useState([]);
   const [genres, setGenres] = useState([]);
+  const [genresLoading, setGenresLoading] = useState(true);
   const [storesLoading, setStoresLoading] = useState(true);
-  const [draftFilters, setDraftFilters] = useState({ query: "", field: "general" });
+  const [draftFilters, setDraftFilters] = useState({ title: "", author: "", publisher: "", language: "", genreSlug: "" });
   const [searchFilters, setSearchFilters] = useState(null);
 
   useEffect(() => {
     apiFetch("/bookstores").then((data) => setStores(data.items)).catch(() => setStores([])).finally(() => setStoresLoading(false));
-    apiFetch("/genres").then((data) => setGenres(data.items || [])).catch(() => setGenres([]));
+    apiFetch("/genres").then((data) => setGenres(data.items || [])).catch(() => setGenres([])).finally(() => setGenresLoading(false));
   }, []);
 
   return (
     <>
-      <HeroSearch initialQuery={draftFilters.query} initialField={draftFilters.field} onSearch={(nextFilters) => { setDraftFilters(nextFilters); setSearchFilters(nextFilters); setTimeout(() => document.getElementById("resultados")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0); }} />
+      <HeroSearch initialFilters={draftFilters} genres={genres} genresLoading={genresLoading} onSearch={(nextFilters) => { setDraftFilters(nextFilters); setSearchFilters(nextFilters); setTimeout(() => document.getElementById("resultados")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0); }} />
       <BenefitsStrip />
-      <SearchResults filters={searchFilters} stores={stores} genres={genres} />
+      <SearchResults filters={searchFilters} stores={stores} />
       <BookstoresSection stores={stores} loading={storesLoading} />
       <section className="home-section how-section">
         <div className="how-intro"><p className="section-label">Simple y local</p><h2>Una busqueda.<br />Muchas historias posibles.</h2><p>Bookia acerca catalogos que antes estaban dispersos para que encontrar un libro vuelva a sentirse como un descubrimiento.</p></div>
