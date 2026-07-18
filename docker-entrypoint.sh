@@ -13,6 +13,11 @@ if [ -n "${BOOKIA_API_UPSTREAM_URL:-}" ]; then
     reverse_proxy ${BOOKIA_API_UPSTREAM_URL}
   }
 
+  @admin path /admin /admin/*
+  handle @admin {
+    reverse_proxy ${BOOKIA_API_UPSTREAM_URL}
+  }
+
 EOF
   api_base_url="/api"
 else
