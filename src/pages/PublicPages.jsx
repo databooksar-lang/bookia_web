@@ -228,10 +228,6 @@ export function HomePage() {
       <BenefitsStrip />
       <SearchResults filters={searchFilters} stores={stores} />
       <BookstoresSection stores={stores} loading={storesLoading} />
-      <section className="home-section how-section">
-        <div className="how-intro"><p className="section-label">Simple y local</p><h2>Una busqueda.<br />Muchas historias posibles.</h2><p>Bookia acerca catalogos que antes estaban dispersos para que encontrar un libro vuelva a sentirse como un descubrimiento.</p></div>
-        <ol className="how-list"><li><span>01</span><div><h3>Busca lo que queres leer</h3><p>Por titulo, autor o editorial.</p></div></li><li><span>02</span><div><h3>Elegi donde encontrarlo</h3><p>Compara librerias y vendedores locales.</p></div></li><li><span>03</span><div><h3>Habla directamente</h3><p>Consulta disponibilidad por WhatsApp.</p></div></li></ol>
-      </section>
       <section className="bookstore-cta"><div><p className="section-label">Para librerias</p><h2>Tu catalogo merece una vidriera mas grande.</h2><p>Suma tu libreria a Bookia y acerca tus libros a personas que ya los estan buscando.</p></div><AppLink className="light-button" href="/plans">Conoce la propuesta <ArrowIcon /></AppLink></section>
     </>
   );
@@ -240,13 +236,18 @@ export function HomePage() {
 export function PlansPage() {
   return (
     <div className="editorial-page plans-page">
-      <section className="page-hero"><p className="section-label">Bookia para librerias</p><h1>Tu catalogo, donde ya estan buscando lectores.</h1><p>Una presencia digital simple para mostrar lo que tenes, mantenerlo actualizado y recibir consultas directas.</p></section>
-      <section className="plan-benefits">
-        <article><span>01</span><StoreIcon size={28} /><h2>Presencia digital</h2><p>Una ficha propia para contar quienes son, donde estan y que libros ofrecen.</p></article>
-        <article><span>02</span><BookIcon size={28} /><h2>Catalogo al dia</h2><p>Gestiona titulos y disponibilidad desde un panel claro, sin procesos complicados.</p></article>
-        <article><span>03</span><WhatsAppIcon size={28} /><h2>Contacto directo</h2><p>Cada consulta llega a la libreria por WhatsApp, sin intermediarios innecesarios.</p></article>
+      <section className="page-hero"><p className="section-label">Planes para librerias</p><h1>Una vidriera que crece con tu catalogo.</h1><p>Empeza sin costo, elegi la forma de carga que mejor funciona para vos y amplia tu catalogo cuando lo necesites.</p></section>
+      <section className="plan-benefits plans-pricing">
+        <article><span>Prueba</span><h2>Prueba gratis</h2><p>ARS 0 por 30 dias</p><p>Hasta 10 libros y todas las funcionalidades, incluida la carga asistida con IA.</p></article>
+        <article><span>Base</span><h2>ARS 20.000/mes</h2><p>Hasta 50 libros</p><p>Perfil publico, catalogo y carga manual de libros.</p></article>
+        <article><span>IA</span><h2>ARS 30.000/mes</h2><p>Hasta 50 libros</p><p>Todo Base, mas carga desde foto y autocompletado con IA.</p></article>
       </section>
-      <section className="plans-cta"><div><p className="section-label">Empeza por tu catalogo</p><h2>Hagamos que mas lectores encuentren tus libros.</h2></div><AppLink href="/login" className="primary-button">Ingresar como libreria <ArrowIcon /></AppLink></section>
+      <section className="plan-benefits plans-capacity">
+        <article><span>Catalogo</span><h2>Hasta 100 libros</h2><p>ARS 5.000/mes adicionales.</p></article>
+        <article><span>Catalogo</span><h2>Hasta 200 libros</h2><p>ARS 10.000/mes adicionales.</p></article>
+        <article><span>Sin sorpresas</span><h2>IA incluida</h2><p>El unico adicional es por capacidad total de catalogo.</p></article>
+      </section>
+      <section className="plans-cta"><div><p className="section-label">Empeza por tu catalogo</p><h2>Proba Bookia durante 30 dias.</h2></div><AppLink href="/login" className="primary-button">Ingresar como libreria <ArrowIcon /></AppLink></section>
     </div>
   );
 }

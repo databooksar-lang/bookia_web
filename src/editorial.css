@@ -832,44 +832,6 @@ button:disabled {
   white-space: nowrap;
 }
 
-.how-section {
-  display: grid;
-  grid-template-columns: 0.9fr 1.1fr;
-  gap: clamp(50px, 9vw, 140px);
-  border-top: 1px solid var(--line);
-}
-
-.how-intro h2 {
-  margin-bottom: 22px;
-  color: var(--forest-deep);
-  font-size: clamp(2.4rem, 4vw, 4.4rem);
-  line-height: 1;
-}
-
-.how-intro > p:last-child {
-  max-width: 500px;
-  color: var(--muted);
-}
-
-.how-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.how-list li {
-  padding: 26px 0;
-  display: grid;
-  grid-template-columns: 54px 1fr;
-  gap: 18px;
-  border-bottom: 1px solid var(--line);
-}
-
-.how-list li:first-child {
-  border-top: 1px solid var(--line);
-}
-
-.how-list > li > span,
 .plan-benefits article > span,
 .about-values article > span {
   color: var(--coral-dark);
@@ -878,16 +840,6 @@ button:disabled {
   letter-spacing: 0.08em;
 }
 
-.how-list h3 {
-  margin: 0 0 4px;
-  color: var(--forest-deep);
-  font-size: 1.35rem;
-}
-
-.how-list p {
-  margin: 0;
-  color: var(--muted);
-}
 
 .bookstore-cta {
   width: min(1280px, calc(100% - 48px));
@@ -2495,7 +2447,6 @@ textarea:focus {
     border-right: 0;
   }
 
-  .how-section,
   .about-statement,
   .store-profile-panel,
   .auth-shell {
