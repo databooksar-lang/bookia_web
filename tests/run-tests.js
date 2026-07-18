@@ -109,6 +109,16 @@ tests.push(["does not render the removed Simple y local section on the home page
 }]);
 
 let failures = 0;
+tests.push(["renders the visual pricing composition with catalog growth band", () => {
+  const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+  assert.match(publicPagesSource, /plans-hero-art/);
+  assert.match(publicPagesSource, /plans-featured/);
+  assert.match(publicPagesSource, /plans-growth-band/);
+  assert.match(editorialStyles, /\.plans-pricing/);
+  assert.match(editorialStyles, /\.plans-growth-band/);
+  assert.match(editorialStyles, /\.plans-hero-art/);
+}]);
 for (const [name, fn] of tests) {
   try {
     await fn();

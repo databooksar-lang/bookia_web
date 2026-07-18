@@ -234,20 +234,32 @@ export function HomePage() {
 }
 
 export function PlansPage() {
+  const plans = [
+    { name: "Prueba gratis", price: "ARS 0", detail: "por 30 dias", limit: "Hasta 10 libros", benefits: ["IA incluida", "Todas las funcionalidades"], tone: "trial" },
+    { name: "Base", price: "ARS 20.000", detail: "/mes", limit: "Hasta 50 libros", benefits: ["Perfil publico", "Carga manual"], tone: "base" },
+    { name: "IA", price: "ARS 30.000", detail: "/mes", limit: "Hasta 50 libros", benefits: ["Carga desde foto", "Autocompletado con IA"], tone: "featured", featured: true },
+  ];
+
   return (
     <div className="editorial-page plans-page">
-      <section className="page-hero"><p className="section-label">Planes para librerias</p><h1>Una vidriera que crece con tu catalogo.</h1><p>Empeza sin costo, elegi la forma de carga que mejor funciona para vos y amplia tu catalogo cuando lo necesites.</p></section>
-      <section className="plan-benefits plans-pricing">
-        <article><span>Prueba</span><h2>Prueba gratis</h2><p>ARS 0 por 30 dias</p><p>Hasta 10 libros y todas las funcionalidades, incluida la carga asistida con IA.</p></article>
-        <article><span>Base</span><h2>ARS 20.000/mes</h2><p>Hasta 50 libros</p><p>Perfil publico, catalogo y carga manual de libros.</p></article>
-        <article><span>IA</span><h2>ARS 30.000/mes</h2><p>Hasta 50 libros</p><p>Todo Base, mas carga desde foto y autocompletado con IA.</p></article>
+      <section className="plans-hero">
+        <div className="plans-hero-copy"><p className="section-label">Planes para librerias</p><h1>Una vidriera que crece con tu catalogo<span>.</span></h1><p>Empeza sin costo, mostra tus libros y elegi la forma de carga que mejor funciona para vos.</p></div>
+        <div className="plans-hero-art" aria-hidden="true"><img src="/images/plans-books.png" alt="" /></div>
       </section>
-      <section className="plan-benefits plans-capacity">
-        <article><span>Catalogo</span><h2>Hasta 100 libros</h2><p>ARS 5.000/mes adicionales.</p></article>
-        <article><span>Catalogo</span><h2>Hasta 200 libros</h2><p>ARS 10.000/mes adicionales.</p></article>
-        <article><span>Sin sorpresas</span><h2>IA incluida</h2><p>El unico adicional es por capacidad total de catalogo.</p></article>
+      <section className="plans-pricing" aria-label="Planes de Bookia">
+        {plans.map((plan) => <article key={plan.name} className={`plans-plan plans-plan-${plan.tone}${plan.featured ? " plans-featured" : ""}`}>
+          <div className="plans-plan-head"><span>{plan.name}</span>{plan.featured ? <strong>Mas elegido</strong> : null}</div>
+          <p className="plans-price">{plan.price}<small>{plan.detail}</small></p>
+          <p className="plans-limit">{plan.limit}</p>
+          <ul>{plan.benefits.map((benefit) => <li key={benefit}><b>✓</b>{benefit}</li>)}</ul>
+        </article>)}
       </section>
-      <section className="plans-cta"><div><p className="section-label">Empeza por tu catalogo</p><h2>Proba Bookia durante 30 dias.</h2></div><AppLink href="/login" className="primary-button">Ingresar como libreria <ArrowIcon /></AppLink></section>
+      <section className="plans-growth-band" aria-label="Ampliaciones de catalogo">
+        <div className="plans-growth-title"><span aria-hidden="true">▥</span><h2>Hace crecer<br />tu catalogo</h2></div>
+        <div><p>Hasta</p><strong>100 <small>libros</small></strong><span>+ ARS 5.000/mes</span></div>
+        <div><p>Hasta</p><strong>200 <small>libros</small></strong><span>+ ARS 10.000/mes</span></div>
+      </section>
+      <section className="plans-cta"><div><p className="section-label">Sin letra chica</p><h2>Proba Bookia durante <em>30 dias.</em></h2></div><AppLink href="/login" className="primary-button">Ingresar como libreria <ArrowIcon /></AppLink></section>
     </div>
   );
 }
