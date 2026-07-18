@@ -177,15 +177,16 @@ export function registerProfileEditorStateTests(test) {
     assert.match(publicPagesSource, /selectedBook\.is_featured \? <span className="status-pill status-featured">Destacado<\/span> : null/);
     assert.match(editorialSource, /\.status-featured/);
   });
-  test("keeps active catalog actions in one compact row without horizontal scrolling", () => {
+  test("wraps active catalog actions without horizontal scrolling when space is limited", () => {
     const editorialSource = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
 
     const activeActionsRule = editorialSource.match(/\.dashboard-list-active \.card-actions\s*\{[^}]*\}/s)?.[0] || "";
-    assert.match(activeActionsRule, /flex-wrap:\s*nowrap;/);
-    assert.match(activeActionsRule, /overflow-x:\s*visible;/);
+    assert.match(activeActionsRule, /flex-wrap:\s*wrap;/);
+    assert.doesNotMatch(activeActionsRule, /overflow-x:/);
     assert.match(activeActionsRule, /gap:\s*clamp\(/);
-    assert.match(editorialSource, /\.dashboard-list-active \.card-actions-main\s*\{[^}]*flex:\s*1 1 0;[^}]*min-width:\s*0;/s);
-    assert.match(editorialSource, /\.dashboard-list-active \.card-actions button\s*\{[^}]*min-width:\s*0;[^}]*font-size:\s*clamp\(/s);
+    assert.match(editorialSource, /\.dashboard-list-active \.card-actions-main\s*\{[^}]*flex:\s*1 1 20rem;[^}]*flex-wrap:\s*wrap;/s);
+    assert.match(editorialSource, /\.dashboard-list-active \.card-actions > \.danger-button\s*\{[^}]*flex:\s*1 1 6rem;[^}]*min-width:\s*6rem;/s);
+    assert.match(editorialSource, /\.dashboard-list-active \.card-actions button\s*\{[^}]*flex:\s*1 1 6\.25rem;[^}]*min-width:\s*6\.25rem;[^}]*font-size:\s*clamp\(/s);
     assert.doesNotMatch(editorialSource, /\.site-footer\s*\{\s*\.dashboard-list-active/);
     assert.match(editorialSource, /\.site-footer\s*\{\s*color: var\(--cream\);\s*background: var\(--forest-deep\);/);
   });

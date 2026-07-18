@@ -2266,32 +2266,32 @@ textarea:focus {
   align-items: center;
   justify-content: flex-start;
   flex-direction: row;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: clamp(4px, 1.5vw, 12px);
   min-width: 0;
-  overflow-x: visible;
 }
 
 .dashboard-list-active .card-actions-main {
   width: auto;
-  flex: 1 1 0;
+  flex: 1 1 20rem;
   min-width: 0;
   flex-direction: row;
+  flex-wrap: wrap;
   gap: inherit;
 }
 
 .dashboard-list-active .card-actions > .danger-button {
-  flex: 1 1 0;
-  min-width: 0;
+  flex: 1 1 6rem;
+  min-width: 6rem;
 }
 
 .dashboard-list-active .card-actions button {
-  flex: 1 1 0;
-  min-width: 0;
-  min-height: clamp(2rem, 8vw, 2.625rem);
-  padding: clamp(4px, 1.8vw, 10px) clamp(3px, 2vw, 11px);
+  flex: 1 1 6.25rem;
+  min-width: 6.25rem;
+  min-height: clamp(2.5rem, 8vw, 2.75rem);
+  padding: clamp(6px, 1.8vw, 10px) clamp(7px, 2vw, 11px);
   gap: clamp(2px, 1vw, 7px);
-  font-size: clamp(0.56rem, 2.2vw, 0.82rem);
+  font-size: clamp(0.72rem, 2.2vw, 0.82rem);
   line-height: 1.05;
   white-space: normal;
 }
