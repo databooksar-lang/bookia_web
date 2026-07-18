@@ -2,6 +2,7 @@ import { useEffect, useState, useTransition } from "react";
 
 import { apiFetch, resolveApiUrl } from "../api";
 import { getAiAutocompleteSourceState, mergeAiAutocompleteSuggestion } from "../aiAutocompleteState";
+import { canUseAiAutocomplete } from "../aiAutocompleteAccess";
 import { buildCatalogItemUpdatePayload, buildDraftFromCatalogItem, hasCatalogItemAvailabilityChanged, normalizeBookStatus, normalizeEditableAvailability } from "../dashboardCatalogState";
 import BookstoreProfileEditor from "../components/BookstoreProfileEditor";
 import { EmptyState } from "../components/Commerce";
@@ -138,6 +139,7 @@ export function DashboardPage({ me, refreshMe }) {
   const activeItems = items.filter((item) => item.availability_status !== "hidden");
   const hiddenItems = items.filter((item) => item.availability_status === "hidden");
   const hasActiveFilters = Boolean(titleQuery.trim() || authorQuery.trim());
+  const canAutocompleteWithAi = canUseAiAutocomplete(me.current_plan_code);
 
   function loadReadingClubs() {
     setReadingClubsLoading(true);
@@ -458,7 +460,7 @@ export function DashboardPage({ me, refreshMe }) {
                   {aiSourceState.sources.map((source) => <a key={source.url} href={source.url} target="_blank" rel="noreferrer">{source.title}</a>)}
                 </div>
               ) : null}
-              <div className="card-actions"><div className="card-actions-main">{isEditing ? <button type="button" className="secondary-button" onClick={cancelEditing}>Cancelar</button> : <><button type="button" className="secondary-button" onClick={() => startEditing(item)}>Editar</button><button type="button" className="secondary-button" onClick={() => toggleFeatured(item)}>{item.is_featured ? "Quitar destacado" : "Destacar"}</button></>}<button type="button" className="secondary-button" onClick={() => autocompleteItem(item)} disabled={isAiBusy}>{isAiBusy ? <><SparkleIcon size={16} /> Autocompletando...</> : <><SparkleIcon size={16} /> Autocompletar con IA</>}</button>{isEditing ? <button type="button" className="primary-button" onClick={() => saveItem(item)} disabled={saveBusy}>{saveBusy ? "Guardando..." : "Guardar"}</button> : null}</div><button type="button" className="danger-button" onClick={() => hideItem(item.id)}>Eliminar</button></div>
+              <div className="card-actions"><div className="card-actions-main">{isEditing ? <button type="button" className="secondary-button" onClick={cancelEditing}>Cancelar</button> : <><button type="button" className="secondary-button" onClick={() => startEditing(item)}>Editar</button><button type="button" className="secondary-button" onClick={() => toggleFeatured(item)}>{item.is_featured ? "Quitar destacado" : "Destacar"}</button></>}{canAutocompleteWithAi ? <button type="button" className="secondary-button" onClick={() => autocompleteItem(item)} disabled={isAiBusy}>{isAiBusy ? <><SparkleIcon size={16} /> Autocompletando...</> : <><SparkleIcon size={16} /> Autocompletar con IA</>}</button> : null}{isEditing ? <button type="button" className="primary-button" onClick={() => saveItem(item)} disabled={saveBusy}>{saveBusy ? "Guardando..." : "Guardar"}</button> : null}</div><button type="button" className="danger-button" onClick={() => hideItem(item.id)}>Eliminar</button></div>
             </article>
           );
         })}</div> : null}
