@@ -255,7 +255,7 @@ export function PlansPage() {
         </article>)}
       </section>
       <section className="plans-growth-band" aria-label="Ampliaciones de catalogo">
-        <div className="plans-growth-title"><span aria-hidden="true">▥</span><h2>Hace crecer<br />tu catalogo</h2></div>
+        <div className="plans-growth-title"><span aria-hidden="true">▥</span><div><p className="plans-growth-kicker">Adicionales de catalogo</p><h2>Hace crecer<br />tu catalogo</h2></div></div>
         <div><p>Hasta</p><strong>100 <small>libros</small></strong><span>+ ARS 5.000/mes</span></div>
         <div><p>Hasta</p><strong>200 <small>libros</small></strong><span>+ ARS 10.000/mes</span></div>
       </section>

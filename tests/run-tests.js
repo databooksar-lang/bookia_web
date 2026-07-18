@@ -115,8 +115,10 @@ tests.push(["renders the visual pricing composition with catalog growth band", (
   assert.match(publicPagesSource, /plans-hero-art/);
   assert.match(publicPagesSource, /plans-featured/);
   assert.match(publicPagesSource, /plans-growth-band/);
+  assert.match(publicPagesSource, /Adicionales de catalogo/);
   assert.match(editorialStyles, /\.plans-pricing/);
   assert.match(editorialStyles, /\.plans-growth-band/);
+  assert.match(editorialStyles, /\.plans-page \.plans-cta \{[^}]*background: #f3d4c8/);
   assert.match(editorialStyles, /\.plans-hero-art/);
   assert.doesNotMatch(editorialStyles, /\.plans-hero-art \{[^}]*background: var\(--forest-deep\)/);
 }]);
