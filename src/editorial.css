@@ -2296,6 +2296,11 @@ textarea:focus {
   white-space: normal;
 }
 
+.dashboard-list-active .card-actions button:has(svg) {
+  flex: 2 1 16rem;
+  min-width: 16rem;
+}
+
 .dashboard-list-active .card-actions button svg {
   width: clamp(10px, 3vw, 16px);
   height: clamp(10px, 3vw, 16px);
