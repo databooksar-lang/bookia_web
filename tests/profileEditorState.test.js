@@ -177,6 +177,14 @@ export function registerProfileEditorStateTests(test) {
     assert.match(publicPagesSource, /selectedBook\.is_featured \? <span className="status-pill status-featured">Destacado<\/span> : null/);
     assert.match(editorialSource, /\.status-featured/);
   });
+  test("keeps active catalog actions in one horizontally scrollable row", () => {
+    const editorialSource = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+    assert.match(editorialSource, /\.dashboard-list-active \.card-actions\s*\{[^}]*flex-wrap:\s*nowrap;[^}]*overflow-x:\s*auto;/s);
+    assert.match(editorialSource, /\.dashboard-list-active \.card-actions-main\s*\{[^}]*flex-direction:\s*row;/s);
+    assert.doesNotMatch(editorialSource, /\.site-footer\s*\{\s*\.dashboard-list-active/);
+    assert.match(editorialSource, /\.site-footer\s*\{\s*color: var\(--cream\);\s*background: var\(--forest-deep\);/);
+  });
   test("dashboard catalog editor exposes gallery upload controls", () => {
     const dashboardSource = readFileSync(new URL("../src/pages/DashboardPage.jsx", import.meta.url), "utf8");
 
