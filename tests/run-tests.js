@@ -118,6 +118,7 @@ tests.push(["renders the visual pricing composition with catalog growth band", (
   assert.match(editorialStyles, /\.plans-pricing/);
   assert.match(editorialStyles, /\.plans-growth-band/);
   assert.match(editorialStyles, /\.plans-hero-art/);
+  assert.doesNotMatch(editorialStyles, /\.plans-hero-art \{[^}]*background: var\(--forest-deep\)/);
 }]);
 for (const [name, fn] of tests) {
   try {
