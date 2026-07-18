@@ -9,6 +9,7 @@ import { registerProfileEditorStateTests } from "./profileEditorState.test.js";
 import { registerReadingClubStateTests } from "./readingClubState.test.js";
 import { registerAiAutocompleteStateTests } from "./aiAutocompleteState.test.js";
 import { registerDashboardCatalogStateTests } from "./dashboardCatalogState.test.js";
+import { registerPublicSearchStateTests } from "./publicSearchState.test.js";
 
 const tests = [
   ["treats /genres as an API route", () => {
@@ -84,6 +85,7 @@ registerProfileEditorStateTests((name, fn) => tests.push([name, fn]));
 registerReadingClubStateTests((name, fn) => tests.push([name, fn]));
 registerAiAutocompleteStateTests((name, fn) => tests.push([name, fn]));
 registerDashboardCatalogStateTests((name, fn) => tests.push([name, fn]));
+registerPublicSearchStateTests((name, fn) => tests.push([name, fn]));
 
 tests.push(["resolves API calls against an external runtime base", async () => {
   const previousConfig = globalThis.__BOOKIA_CONFIG__;
