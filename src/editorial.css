@@ -2267,21 +2267,39 @@ textarea:focus {
   justify-content: flex-start;
   flex-direction: row;
   flex-wrap: nowrap;
-  overflow-x: auto;
+  gap: clamp(4px, 1.5vw, 12px);
+  min-width: 0;
+  overflow-x: visible;
 }
 
 .dashboard-list-active .card-actions-main {
-  width: max-content;
-  flex: 0 0 auto;
+  width: auto;
+  flex: 1 1 0;
+  min-width: 0;
   flex-direction: row;
+  gap: inherit;
 }
 
 .dashboard-list-active .card-actions > .danger-button {
-  flex: 0 0 auto;
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .dashboard-list-active .card-actions button {
-  white-space: nowrap;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: clamp(2rem, 8vw, 2.625rem);
+  padding: clamp(4px, 1.8vw, 10px) clamp(3px, 2vw, 11px);
+  gap: clamp(2px, 1vw, 7px);
+  font-size: clamp(0.56rem, 2.2vw, 0.82rem);
+  line-height: 1.05;
+  white-space: normal;
+}
+
+.dashboard-list-active .card-actions button svg {
+  width: clamp(10px, 3vw, 16px);
+  height: clamp(10px, 3vw, 16px);
+  flex: 0 0 auto;
 }
 
 .site-footer {

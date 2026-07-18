@@ -177,11 +177,15 @@ export function registerProfileEditorStateTests(test) {
     assert.match(publicPagesSource, /selectedBook\.is_featured \? <span className="status-pill status-featured">Destacado<\/span> : null/);
     assert.match(editorialSource, /\.status-featured/);
   });
-  test("keeps active catalog actions in one horizontally scrollable row", () => {
+  test("keeps active catalog actions in one compact row without horizontal scrolling", () => {
     const editorialSource = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
 
-    assert.match(editorialSource, /\.dashboard-list-active \.card-actions\s*\{[^}]*flex-wrap:\s*nowrap;[^}]*overflow-x:\s*auto;/s);
-    assert.match(editorialSource, /\.dashboard-list-active \.card-actions-main\s*\{[^}]*flex-direction:\s*row;/s);
+    const activeActionsRule = editorialSource.match(/\.dashboard-list-active \.card-actions\s*\{[^}]*\}/s)?.[0] || "";
+    assert.match(activeActionsRule, /flex-wrap:\s*nowrap;/);
+    assert.match(activeActionsRule, /overflow-x:\s*visible;/);
+    assert.match(activeActionsRule, /gap:\s*clamp\(/);
+    assert.match(editorialSource, /\.dashboard-list-active \.card-actions-main\s*\{[^}]*flex:\s*1 1 0;[^}]*min-width:\s*0;/s);
+    assert.match(editorialSource, /\.dashboard-list-active \.card-actions button\s*\{[^}]*min-width:\s*0;[^}]*font-size:\s*clamp\(/s);
     assert.doesNotMatch(editorialSource, /\.site-footer\s*\{\s*\.dashboard-list-active/);
     assert.match(editorialSource, /\.site-footer\s*\{\s*color: var\(--cream\);\s*background: var\(--forest-deep\);/);
   });
