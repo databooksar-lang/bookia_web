@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import { apiFetch, resolveApiUrl } from "../api";
 import { formatCommercialPrice, getCommercialPrices } from "../plansPricingState";
-import { buildFacebookHref, buildInstagramHref, buildWebsiteHref, formatDisplayPhone, formatDisplayUrl } from "../formatters";
+import { buildFacebookHref, buildInstagramHref, buildWebsiteHref, buildWhatsAppHref, formatDisplayPhone, formatDisplayUrl } from "../formatters";
 import { AppLink, navigate } from "../navigation";
 import { displayBookstoreDescription } from "../profileEditorState";
 import { displayReadingClubDate } from "../readingClubState";
@@ -157,7 +157,7 @@ function SearchResults({ filters, stores }) {
                 <span>Libreria</span>
                 <AppLink href={`/bookstores/${item.bookstore.slug}`}>{item.bookstore.name} <ArrowIcon size={15} /></AppLink>
               </div>
-              <WhatsAppButton className="primary-button search-result-whatsapp" phoneCountryCd={item.bookstore.phone_country_cd} phone={item.bookstore.phone}>
+              <WhatsAppButton className="primary-button search-result-whatsapp" whatsappPhone={item.bookstore.whatsapp_phone} phoneCountryCd={item.bookstore.phone_country_cd} phone={item.bookstore.phone}>
                 <WhatsAppIcon size={19} /> Contactar
               </WhatsAppButton>
             </article>
@@ -206,6 +206,43 @@ function BookstoresSection({ stores, loading }) {
   );
 }
 
+function NewsletterSignup() {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState("idle");
+  const [message, setMessage] = useState("");
+
+  function submit(event) {
+    event.preventDefault();
+    setStatus("submitting");
+    setMessage("");
+    apiFetch("/newsletter-subscribers", { method: "POST", body: JSON.stringify({ email }) })
+      .then((data) => {
+        setEmail("");
+        setStatus("success");
+        setMessage(data.detail || "Listo, te sumamos a las novedades de Bookia.");
+      })
+      .catch((error) => {
+        setStatus("error");
+        setMessage(error.message || "No pudimos guardar tu correo. Intenta nuevamente.");
+      });
+  }
+
+  return (
+    <section className="newsletter-signup" aria-labelledby="newsletter-title">
+      <div>
+        <p className="section-label">Para seguir leyendo</p>
+        <h2 id="newsletter-title">Que las buenas historias tambien lleguen a tu correo.</h2>
+        <p>Recibi novedades de Bookia, librerias para descubrir y lecturas que valen la pena. Sin ruido: solo hallazgos para seguir leyendo.</p>
+      </div>
+      <form className="newsletter-form" onSubmit={submit}>
+        <label><span>Tu correo electronico</span><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" placeholder="lector@ejemplo.com" required disabled={status === "submitting"} /></label>
+        <button className="primary-button" type="submit" disabled={status === "submitting"}>{status === "submitting" ? "Sumando..." : "Quiero recibir novedades"} <ArrowIcon /></button>
+        {message ? <p className={`feedback ${status}`} role="status" aria-live="polite">{message}</p> : null}
+      </form>
+    </section>
+  );
+}
+
 function ContactLink({ href, children }) {
   return <a href={href} target="_blank" rel="noreferrer">{children}</a>;
 }
@@ -229,6 +266,7 @@ export function HomePage() {
       <BenefitsStrip />
       <SearchResults filters={searchFilters} stores={stores} />
       <BookstoresSection stores={stores} loading={storesLoading} />
+      <NewsletterSignup />
       <section className="bookstore-cta"><div><p className="section-label">Para librerias</p><h2>Tu catalogo merece una vidriera mas grande.</h2><p>Suma tu libreria a Bookia y acerca tus libros a personas que ya los estan buscando.</p></div><AppLink className="light-button" href="/plans">Conoce la propuesta <ArrowIcon /></AppLink></section>
     </>
   );
@@ -329,7 +367,7 @@ function BookDetailModal({ selectedBook, selectedBookImageUrl, onImageChange, on
 
   const selectedBookGallery = bookImageGallery(selectedBook);
   const bookstore = selectedBook.bookstore;
-  const hasBookstoreContact = Boolean(formatDisplayPhone(bookstore?.phone_country_cd, bookstore?.phone));
+  const hasBookstoreContact = Boolean(buildWhatsAppHref(bookstore?.whatsapp_phone, bookstore?.phone_country_cd, bookstore?.phone));
 
   return (
     <div className="book-detail-modal" role="dialog" aria-modal="true" aria-labelledby="book-detail-title" onClick={onClose}>
@@ -371,7 +409,7 @@ function BookDetailModal({ selectedBook, selectedBookImageUrl, onImageChange, on
               <div><dt>Libreria</dt><dd>{bookstore ? <AppLink className="book-detail-store-link" href={`/bookstores/${bookstore.slug}`}>{bookstore.name} <ArrowIcon size={14} /></AppLink> : "Libreria no visible"}</dd></div>
             </dl>
             {hasBookstoreContact ? (
-              <WhatsAppButton className="primary-button book-detail-whatsapp" phoneCountryCd={bookstore.phone_country_cd} phone={bookstore.phone}>
+              <WhatsAppButton className="primary-button book-detail-whatsapp" whatsappPhone={bookstore.whatsapp_phone} phoneCountryCd={bookstore.phone_country_cd} phone={bookstore.phone}>
                 <WhatsAppIcon size={19} /> Contactar por WhatsApp
               </WhatsAppButton>
             ) : null}
@@ -420,13 +458,14 @@ export function BookstorePage({ slug }) {
   const heroImageUrl = resolveApiUrl(store.hero_image_url);
   const logoUrl = resolveApiUrl(store.logo_url);
   const phoneLabel = formatDisplayPhone(store.phone_country_cd, store.phone);
-  const hasWhatsApp = Boolean(phoneLabel);
+  const hasWhatsApp = Boolean(buildWhatsAppHref(store.whatsapp_phone, store.phone_country_cd, store.phone));
   const instagramHref = buildInstagramHref(store.instagram_handle);
   const facebookHref = buildFacebookHref(store.facebook_handle);
   const websiteHref = buildWebsiteHref(store.website_url);
   const bookstoreTags = [store.tag_1, store.tag_2].map((tag) => String(tag || '').trim()).filter(Boolean);
   const contactItems = [
     phoneLabel ? { label: "Telefono", content: phoneLabel } : null,
+    store.correo && String(store.correo).trim() ? { label: "Correo", content: <a href={`mailto:${store.correo}`}>{store.correo}</a> } : null,
     instagramHref ? { label: "Instagram", content: <ContactLink href={instagramHref}>{formatDisplayUrl(instagramHref)}</ContactLink> } : null,
     facebookHref ? { label: "Facebook", content: <ContactLink href={facebookHref}>{formatDisplayUrl(facebookHref)}</ContactLink> } : null,
     websiteHref ? { label: "Sitio web", content: <ContactLink href={websiteHref}>{formatDisplayUrl(websiteHref)}</ContactLink> } : null,
@@ -438,7 +477,7 @@ export function BookstorePage({ slug }) {
       <div className={`store-hero${heroImageUrl ? " has-hero" : ""}`} style={heroImageUrl ? { backgroundImage: `url(${heroImageUrl})` } : undefined} />
       <div className="store-profile-panel">
         <div className="store-identity"><p className="section-label">Libreria en Bookia</p>{logoUrl ? <img className="store-logo" src={logoUrl} alt={`Logo de ${store.name}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : null}<h1>{store.name}</h1><p>{displayBookstoreDescription(store.description)}</p>{bookstoreTags.length > 0 ? <div className="store-tags" aria-label="Etiquetas de la libreria">{bookstoreTags.map((tag) => <span key={tag} className="store-tag">{tag}</span>)}</div> : null}</div>
-        {contactItems.length > 0 || hasWhatsApp ? <aside className="store-contact-card"><p className="contact-label">Datos de interes</p>{contactItems.length > 0 ? <dl>{contactItems.map((item) => <div key={item.label}><dt>{item.label}</dt><dd>{item.content}</dd></div>)}</dl> : null}{hasWhatsApp ? <WhatsAppButton phoneCountryCd={store.phone_country_cd} phone={store.phone}><WhatsAppIcon size={19} /> Hablar por WhatsApp</WhatsAppButton> : null}</aside> : null}
+        {contactItems.length > 0 || hasWhatsApp ? <aside className="store-contact-card"><p className="contact-label">Datos de interes</p>{contactItems.length > 0 ? <dl>{contactItems.map((item) => <div key={item.label}><dt>{item.label}</dt><dd>{item.content}</dd></div>)}</dl> : null}{hasWhatsApp ? <WhatsAppButton whatsappPhone={store.whatsapp_phone} phoneCountryCd={store.phone_country_cd} phone={store.phone}><WhatsAppIcon size={19} /> Hablar por WhatsApp</WhatsAppButton> : null}</aside> : null}
       </div>
       <div className="store-catalog">
         <div className="section-heading results-heading"><div><p className="section-label">Estantes disponibles</p><h2>Catalogo de {store.name}</h2><p>{visibleItems.length} {visibleItems.length === 1 ? "libro publicado" : "libros publicados"}</p></div><button className="secondary-button" onClick={() => navigate("/")}>Volver a buscar</button></div>

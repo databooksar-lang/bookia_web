@@ -119,6 +119,14 @@ tests.push(["does not render the removed Simple y local section on the home page
 }]);
 
 let failures = 0;
+tests.push(["renders the newsletter signup block below the bookstore section", () => {
+  const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+
+  assert.match(publicPagesSource, /Que las buenas historias tambien lleguen a tu correo\./);
+  assert.match(publicPagesSource, /newsletter-subscribers/);
+  assert.match(publicPagesSource, /Tu correo electronico/);
+  assert.match(publicPagesSource, /Quiero recibir novedades/);
+}]);
 tests.push(["emits one session-expiry event for repeated unauthorized API responses", async () => {
   const previousFetch = globalThis.fetch;
   const previousDocument = globalThis.document;
