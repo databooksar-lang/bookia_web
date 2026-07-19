@@ -4,6 +4,24 @@ const DEFAULT_SAME_ORIGIN_API_BASE = "/api";
 const RUNTIME_API_BASE = globalThis.__BOOKIA_CONFIG__?.apiBaseUrl || "";
 const BUILD_API_BASE = import.meta.env?.VITE_API_BASE_URL || "";
 const API_BASE = normalizeApiBase(RUNTIME_API_BASE || BUILD_API_BASE || DEFAULT_SAME_ORIGIN_API_BASE);
+const sessionExpiryListeners = new Set();
+let sessionExpiryHandled = false;
+
+export function subscribeToSessionExpiry(listener) {
+  sessionExpiryListeners.add(listener);
+  return () => sessionExpiryListeners.delete(listener);
+}
+
+export function resetSessionExpiryForTests() {
+  sessionExpiryHandled = false;
+}
+
+function notifySessionExpiry(path) {
+  if (sessionExpiryHandled || String(path).startsWith("/auth/") || !readCookie("bookia_csrf")) return;
+  sessionExpiryHandled = true;
+  sessionExpiryListeners.forEach((listener) => listener());
+}
+
 
 function normalizeApiBase(value) {
   const trimmed = String(value || "").trim();
@@ -122,6 +140,10 @@ export async function apiFetch(path, options = {}) {
   }
 
   const contentType = response.headers.get("content-type") || "";
+  if (response.status === 401) {
+    notifySessionExpiry(path);
+  }
+
   const expectsJson = contentType.includes("application/json");
 
   if (!expectsJson) {

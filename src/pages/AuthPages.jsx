@@ -26,7 +26,7 @@ function AuthLayout({ label, title, description, children }) {
   );
 }
 
-export function LoginPage({ onLogin, me }) {
+export function LoginPage({ onLogin, me, sessionExpired = false }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -58,6 +58,7 @@ export function LoginPage({ onLogin, me }) {
         <label>Contrasena<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" required /></label>
         <button type="button" className="text-link auth-link-button" onClick={() => navigate("/forgot-password")}>Olvide mi contrasena</button>
         {error ? <p className="feedback error">{error}</p> : null}
+        {sessionExpired ? <p className="feedback error">Tu sesion vencio porque se inicio sesion en otro dispositivo.</p> : null}
         <button className="primary-button auth-submit" type="submit" disabled={busy}>{busy ? "Ingresando..." : <>Entrar al panel <ArrowIcon /></>}</button>
       </form>
     </AuthLayout>

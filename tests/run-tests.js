@@ -116,6 +116,35 @@ tests.push(["does not render the removed Simple y local section on the home page
 }]);
 
 let failures = 0;
+tests.push(["emits one session-expiry event for repeated unauthorized API responses", async () => {
+  const previousFetch = globalThis.fetch;
+  const previousDocument = globalThis.document;
+  globalThis.document = { cookie: "bookia_csrf=valid" };
+  const moduleUrl = new URL(`../src/api.js?session-expiry=${Date.now()}`, import.meta.url);
+  const { apiFetch, resetSessionExpiryForTests, subscribeToSessionExpiry } = await import(moduleUrl);
+  const expiredResponse = () => ({ status: 401, ok: false, headers: { get: () => "application/json" }, json: async () => ({ detail: "Sesion vencida." }) });
+  let expiryEvents = 0;
+  globalThis.fetch = async () => expiredResponse();
+  resetSessionExpiryForTests();
+  const unsubscribe = subscribeToSessionExpiry(() => { expiryEvents += 1; });
+  try {
+    await assert.rejects(() => apiFetch("/me"), /Sesion vencida/);
+    await assert.rejects(() => apiFetch("/dashboard/catalog"), /Sesion vencida/);
+    assert.equal(expiryEvents, 1);
+  } finally {
+    unsubscribe();
+    globalThis.fetch = previousFetch;
+    globalThis.document = previousDocument;
+  }
+}]);
+
+tests.push(["redirects expired sessions to login with an explanation", () => {
+  const appSource = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
+  const authPagesSource = readFileSync(new URL("../src/pages/AuthPages.jsx", import.meta.url), "utf8");
+  assert.match(appSource, /subscribeToSessionExpiry/);
+  assert.match(appSource, /navigate\("\/login\?reason=session-expired"\)/);
+  assert.match(authPagesSource, /Tu sesion vencio porque se inicio sesion en otro dispositivo\./);
+}]);
 tests.push(["renders the visual pricing composition with catalog growth band", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
   const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
