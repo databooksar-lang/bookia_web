@@ -4,13 +4,14 @@ import { apiFetch, resolveApiUrl } from "../api";
 import { getAiAutocompleteSourceState, mergeAiAutocompleteSuggestion } from "../aiAutocompleteState";
 import { canUseAiAutocomplete } from "../aiAutocompleteAccess";
 import { buildCatalogItemUpdatePayload, buildDraftFromCatalogItem, hasCatalogItemAvailabilityChanged, normalizeBookStatus, normalizeEditableAvailability } from "../dashboardCatalogState";
+import { buildDashboardUrl, parseDashboardNavigation } from "../dashboardNavigationState";
 import BookstoreProfileEditor from "../components/BookstoreProfileEditor";
 import { EmptyState } from "../components/Commerce";
 import { ArrowIcon, BookIcon, SearchIcon, SparkleIcon } from "../components/Icons";
 import { buildSingleGenreIds, getSingleGenreValue } from "../genreSelection";
 import { getGenreSelectorState } from "../genreSelectorState";
 import { buildReadingClubPayload, createReadingClubDraft, displayReadingClubDate } from "../readingClubState";
-import { navigate } from "../navigation";
+import { AppLink, navigate } from "../navigation";
 
 const EMPTY_ITEM = {
   title: "",
@@ -44,21 +45,43 @@ const EDITABLE_BOOK_STATUS_OPTIONS = [
 const CATALOG_IMAGE_ACCEPT = "image/png,image/jpeg,image/webp";
 const MAX_CATALOG_IMAGES = 3;
 
-function DashboardSection({ label, title, description, countLabel, isOpen, onToggle, children, className = "" }) {
+const DASHBOARD_TABS = [
+  { section: "profile", label: "Perfil" },
+  { section: "new-book", label: "Alta de libros" },
+  { section: "catalog", label: "Catalogo" },
+  { section: "clubs", label: "Clubes de lectura" },
+];
+
+function DashboardTabs({ section }) {
   return (
-    <section className={`dashboard-section dashboard-card ${className}`.trim()}>
-      <button type="button" className="dashboard-section-toggle" onClick={onToggle} aria-expanded={isOpen}>
+    <nav className="dashboard-tabs" aria-label="Secciones del panel">
+      {DASHBOARD_TABS.map((tab) => (
+        <AppLink
+          key={tab.section}
+          id={`dashboard-tab-${tab.section}`}
+          href={buildDashboardUrl(tab.section)}
+          className={`dashboard-tab${section === tab.section ? " is-active" : ""}`}
+          aria-current={section === tab.section ? "page" : undefined}
+        >
+          {tab.label}
+        </AppLink>
+      ))}
+    </nav>
+  );
+}
+
+function DashboardPanel({ label, title, description, countLabel, isActive, children, className = "" }) {
+  return (
+    <section className={`dashboard-section dashboard-card ${className}`.trim()} hidden={!isActive}>
+      <div className="dashboard-section-heading">
         <div>
           <p className="section-label">{label}</p>
           <h2>{title}</h2>
           {description ? <p>{description}</p> : null}
         </div>
-        <div className="dashboard-section-meta">
-          {countLabel ? <span>{countLabel}</span> : null}
-          <strong>{isOpen ? "Ocultar" : "Mostrar"}</strong>
-        </div>
-      </button>
-      {isOpen ? <div className="dashboard-section-body">{children}</div> : null}
+        {countLabel ? <span className="dashboard-section-count">{countLabel}</span> : null}
+      </div>
+      <div className="dashboard-section-body">{children}</div>
     </section>
   );
 }
@@ -109,7 +132,8 @@ function ReadingClubGenreField({ genres, genresLoading, genresError, value, onCh
   );
 }
 
-export function DashboardPage({ me, refreshMe }) {
+export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
+  const { section, catalogView } = parseDashboardNavigation(locationSearch);
   const [items, setItems] = useState([]);
   const [titleQuery, setTitleQuery] = useState("");
   const [authorQuery, setAuthorQuery] = useState("");
@@ -121,9 +145,6 @@ export function DashboardPage({ me, refreshMe }) {
   const [newItem, setNewItem] = useState(EMPTY_ITEM);
   const [editingItemId, setEditingItemId] = useState(null);
   const [draftItem, setDraftItem] = useState(EMPTY_ITEM);
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [isActiveOpen, setIsActiveOpen] = useState(true);
-  const [isHiddenOpen, setIsHiddenOpen] = useState(false);
   const [createBusy, startCreateTransition] = useTransition();
   const [saveBusy, startSaveTransition] = useTransition();
   const [imageBusyId, setImageBusyId] = useState(null);
@@ -134,7 +155,6 @@ export function DashboardPage({ me, refreshMe }) {
   const [newReadingClub, setNewReadingClub] = useState(createReadingClubDraft());
   const [editingReadingClubId, setEditingReadingClubId] = useState(null);
   const [draftReadingClub, setDraftReadingClub] = useState(createReadingClubDraft());
-  const [isReadingClubsOpen, setIsReadingClubsOpen] = useState(false);
   const [readingClubBusy, startReadingClubTransition] = useTransition();
   const activeItems = items.filter((item) => item.availability_status !== "hidden");
   const hiddenItems = items.filter((item) => item.availability_status === "hidden");
@@ -296,10 +316,11 @@ export function DashboardPage({ me, refreshMe }) {
     startCreateTransition(() => {
       apiFetch("/dashboard/catalog", { method: "POST", body: JSON.stringify(newItem) }).then(() => {
         setNewItem(EMPTY_ITEM);
+        setTitleQuery("");
+        setAuthorQuery("");
         setError("");
-        setIsCreateOpen(false);
-        setIsActiveOpen(true);
-        loadCatalog();
+        loadCatalog({ title: "", author: "" });
+        navigate(buildDashboardUrl("catalog", "active"));
       }).catch((fetchError) => setError(fetchError.message));
     });
   }
@@ -311,7 +332,6 @@ export function DashboardPage({ me, refreshMe }) {
         .then(() => {
           setNewReadingClub(createReadingClubDraft());
           setError("");
-          setIsReadingClubsOpen(true);
           loadReadingClubs();
         })
         .catch((fetchError) => setError(fetchError.message));
@@ -356,14 +376,18 @@ export function DashboardPage({ me, refreshMe }) {
 
       {error ? <p className="feedback error">{error}</p> : null}
 
-      <BookstoreProfileEditor bookstore={me.bookstore} onSaved={() => refreshMe({ preserveOnError: true })} onError={setError} />
+      <DashboardTabs section={section} />
 
-      <DashboardSection
-        label="Nuevo titulo"
+      <div className="dashboard-workspace">
+        <div className="dashboard-tab-panel" hidden={section !== "profile"}>
+          <BookstoreProfileEditor bookstore={me.bookstore} onSaved={() => refreshMe({ preserveOnError: true })} onError={setError} />
+        </div>
+
+      <DashboardPanel
+        label="Alta de libros"
         title="Agregar libro manualmente"
         description="Usa este formulario cuando quieras cargar un libro desde cero."
-        isOpen={isCreateOpen}
-        onToggle={() => setIsCreateOpen((current) => !current)}
+        isActive={section === "new-book"}
         className="dashboard-create"
       >
         <form onSubmit={createItem}>
@@ -387,14 +411,32 @@ export function DashboardPage({ me, refreshMe }) {
             <label className="dashboard-field-wide">Descripcion<textarea value={newItem.description} onChange={(event) => setNewItem((current) => ({ ...current, description: event.target.value }))} rows={4} placeholder="Cuenta brevemente de que trata el libro, su edicion o cualquier detalle util." /></label>
           </div>
         </form>
-      </DashboardSection>
+      </DashboardPanel>
 
-      <DashboardSection
+      <div className="dashboard-catalog-shell" hidden={section !== "catalog"}>
+        <nav className="dashboard-subtabs" aria-label="Vistas del catalogo">
+          <AppLink
+            href={buildDashboardUrl("catalog", "active")}
+            className={`dashboard-subtab${catalogView === "active" ? " is-active" : ""}`}
+            aria-current={catalogView === "active" ? "page" : undefined}
+          >
+            Catalogo activo <span>{activeItems.length}</span>
+          </AppLink>
+          <AppLink
+            href={buildDashboardUrl("catalog", "sold-out")}
+            className={`dashboard-subtab${catalogView === "sold-out" ? " is-active" : ""}`}
+            aria-current={catalogView === "sold-out" ? "page" : undefined}
+          >
+            Agotados <span>{hiddenItems.length}</span>
+          </AppLink>
+        </nav>
+
+      <DashboardPanel
         label="Catalogo activo"
         title="Tus publicaciones"
         countLabel={`${activeItems.length} ${activeItems.length === 1 ? "libro" : "libros"}`}
-        isOpen={isActiveOpen}
-        onToggle={() => setIsActiveOpen((current) => !current)}
+        isActive={catalogView === "active"}
+        className="dashboard-catalog-panel"
       >
         <form className="dashboard-search" onSubmit={(event) => { event.preventDefault(); loadCatalog(); }}>
           <label className="dashboard-search-field dashboard-search-field-title">
@@ -408,7 +450,7 @@ export function DashboardPage({ me, refreshMe }) {
           <button className="primary-button" type="submit">Filtrar</button>
         </form>
         {loading ? <div className="loading-list"><span /><span /><span /></div> : null}
-        {!loading && activeItems.length === 0 ? <EmptyState title={hasActiveFilters ? "No hay coincidencias" : "Tu catalogo esta listo para crecer"}>{hasActiveFilters ? "Proba con otros filtros." : "Agrega el primer libro usando el formulario de arriba."}</EmptyState> : null}
+        {!loading && activeItems.length === 0 ? <EmptyState title={hasActiveFilters ? "No hay coincidencias" : "Tu catalogo esta listo para crecer"}>{hasActiveFilters ? "Proba con otros filtros." : "Agrega el primer libro desde Alta de libros."}</EmptyState> : null}
         {!loading && activeItems.length > 0 ? <div className="dashboard-list dashboard-list-active">{activeItems.map((item) => {
           const coverUrl = resolveApiUrl(item.cover_image_url);
           const isEditing = editingItemId === item.id;
@@ -464,17 +506,17 @@ export function DashboardPage({ me, refreshMe }) {
             </article>
           );
         })}</div> : null}
-      </DashboardSection>
+      </DashboardPanel>
 
-      {hiddenItems.length > 0 ? (
-        <DashboardSection
+        <DashboardPanel
           label="Agotados"
           title="Libros agotados"
           countLabel={`${hiddenItems.length} ${hiddenItems.length === 1 ? "libro" : "libros"}`}
-          isOpen={isHiddenOpen}
-          onToggle={() => setIsHiddenOpen((current) => !current)}
+          isActive={catalogView === "sold-out"}
+          className="dashboard-catalog-panel"
         >
-          <div className="dashboard-list">{hiddenItems.map((item) => {
+          {hiddenItems.length === 0 ? <EmptyState title="No hay libros agotados">Los libros que marques como agotados apareceran aca.</EmptyState> : null}
+          {hiddenItems.length > 0 ? <div className="dashboard-list">{hiddenItems.map((item) => {
             const coverUrl = resolveApiUrl(item.cover_image_url);
             const bookStatusLabel = BOOK_STATUS_LABELS[normalizeBookStatus(item.book_status)] || BOOK_STATUS_LABELS.usado;
             return (
@@ -493,17 +535,16 @@ export function DashboardPage({ me, refreshMe }) {
                 <div className="card-actions"><button type="button" className="primary-button" onClick={() => updateAvailability(item.id, "available")}>Volver a publicar</button><button type="button" className="secondary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver vidriera digital</button></div>
               </article>
             );
-          })}</div>
-        </DashboardSection>
-      ) : null}
+          })}</div> : null}
+        </DashboardPanel>
+      </div>
 
-      <DashboardSection
+      <DashboardPanel
         label="Encuentros"
         title="Club de lectura"
         description="Carga los clubes que organiza tu libreria y controla cuales aparecen en la vidriera digital."
         countLabel={`${readingClubs.length} ${readingClubs.length === 1 ? "club" : "clubes"}`}
-        isOpen={isReadingClubsOpen}
-        onToggle={() => setIsReadingClubsOpen((current) => !current)}
+        isActive={section === "clubs"}
       >
         <form onSubmit={createReadingClub}>
           <div className="dashboard-card-head dashboard-card-head-inline">
@@ -548,7 +589,8 @@ export function DashboardPage({ me, refreshMe }) {
             </article>
           );
         })}</div> : null}
-      </DashboardSection>
+      </DashboardPanel>
+      </div>
     </section>
   );
 }
