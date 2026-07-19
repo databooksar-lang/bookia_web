@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 
-import { apiFetch } from "./api";
+import { apiFetch, subscribeToSessionExpiry } from "./api";
 import { SiteFooter, SiteHeader } from "./components/SiteChrome";
-import { useLocationState } from "./navigation";
+import { navigate, useLocationState } from "./navigation";
 import { ForgotPasswordPage, LoginPage, ResetPasswordPage } from "./pages/AuthPages";
 import { DashboardPage } from "./pages/DashboardPage";
 import { AboutPage, BookstorePage, HomePage, PlansPage } from "./pages/PublicPages";
@@ -28,11 +28,18 @@ export default function App() {
   useEffect(() => {
     refreshMe();
   }, []);
+  useEffect(() => {
+    return subscribeToSessionExpiry(() => {
+      setMe(null);
+      navigate("/login?reason=session-expired");
+    });
+  }, []);
+
 
   let page = <HomePage />;
   if (pathname === "/plans") page = <PlansPage />;
   else if (pathname === "/about") page = <AboutPage />;
-  else if (pathname === "/login") page = <LoginPage onLogin={refreshMe} me={me} />;
+  else if (pathname === "/login") page = <LoginPage onLogin={refreshMe} me={me} sessionExpired={new URLSearchParams(search).get("reason") === "session-expired"} />;
   else if (pathname === "/forgot-password") page = <ForgotPasswordPage />;
   else if (pathname === "/reset-password") page = <ResetPasswordPage locationSearch={search} />;
   else if (pathname === "/dashboard") page = <DashboardPage me={me} refreshMe={refreshMe} />;
