@@ -8,9 +8,24 @@ import {
   removeProfileImage,
   requireRefreshedBookstore,
   selectProfileImage,
+  setProfileDraftField,
+  setUsePhoneForWhatsApp,
 } from "../profileEditorState";
+import { formatDisplayPhone } from "../formatters";
 
 const PROFILE_IMAGE_ACCEPT = "image/png,image/jpeg,image/webp";
+
+function profileSummary(bookstore) {
+  return [
+    { label: "Correo", value: bookstore.correo },
+    { label: "Telefono", value: formatDisplayPhone(bookstore.phone_country_cd, bookstore.phone) },
+    { label: "WhatsApp", value: bookstore.whatsapp_phone ? `+${bookstore.whatsapp_phone}` : "" },
+    { label: "Instagram", value: bookstore.instagram_handle },
+    { label: "Facebook", value: bookstore.facebook_handle },
+    { label: "Sitio web", value: bookstore.website_url },
+    { label: "Direccion", value: bookstore.address },
+  ];
+}
 
 export default function BookstoreProfileEditor({ bookstore, onSaved, onError }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -99,6 +114,10 @@ export default function BookstoreProfileEditor({ bookstore, onSaved, onError }) 
     }
   }
 
+  function changeField(field, value) {
+    setDraft((current) => setProfileDraftField(current, field, value));
+  }
+
   async function saveProfile(event) {
     event.preventDefault();
     setIsSaving(true);
@@ -125,6 +144,9 @@ export default function BookstoreProfileEditor({ bookstore, onSaved, onError }) 
   }
 
   if (!isEditing) {
+    const summaryItems = profileSummary(bookstore);
+    const completedItems = summaryItems.filter((item) => String(item.value || "").trim());
+    const missingItems = summaryItems.filter((item) => !String(item.value || "").trim());
     return (
       <section className="bookstore-profile-section dashboard-card" aria-labelledby="bookstore-profile-title">
         <div className="bookstore-profile-heading">
@@ -135,6 +157,8 @@ export default function BookstoreProfileEditor({ bookstore, onSaved, onError }) 
           </div>
           <button type="button" className="secondary-button" onClick={startEditing}>Editar perfil</button>
         </div>
+        {completedItems.length > 0 ? <dl className="bookstore-profile-summary-grid">{completedItems.map((item) => <div key={item.label}><dt>{item.label}</dt><dd>{item.value}</dd></div>)}</dl> : null}
+        {missingItems.length > 0 ? <p className="bookstore-profile-missing"><strong>Datos por completar:</strong> {missingItems.map((item) => item.label).join(", ")}.</p> : null}
       </section>
     );
   }
@@ -154,18 +178,44 @@ export default function BookstoreProfileEditor({ bookstore, onSaved, onError }) 
           </div>
         </div>
 
-        <label className="bookstore-profile-description">
-          <span>Descripcion</span>
-          <textarea
-            value={draft.description}
-            onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))}
-            rows={4}
-            disabled={isSaving}
-            placeholder="Conta que hace especial a tu libreria."
-          />
-        </label>
+        <fieldset className="bookstore-profile-group">
+          <legend>Presentacion</legend>
+          <div className="bookstore-profile-fields">
+            <label className="bookstore-profile-field-wide">
+              <span>Descripcion</span>
+              <textarea value={draft.description} onChange={(event) => changeField("description", event.target.value)} rows={4} disabled={isSaving} placeholder="Conta que hace especial a tu libreria." />
+            </label>
+            <label><span>Etiqueta 1</span><input value={draft.tag1} onChange={(event) => changeField("tag1", event.target.value)} maxLength={100} disabled={isSaving} placeholder="Ej. Usados" /></label>
+            <label><span>Etiqueta 2</span><input value={draft.tag2} onChange={(event) => changeField("tag2", event.target.value)} maxLength={100} disabled={isSaving} placeholder="Ej. Literatura argentina" /></label>
+          </div>
+        </fieldset>
 
-        <div className="bookstore-profile-media-grid">
+        <fieldset className="bookstore-profile-group">
+          <legend>Contacto</legend>
+          <div className="bookstore-profile-fields">
+            <label className="bookstore-profile-field-wide"><span>Direccion</span><input value={draft.address} onChange={(event) => changeField("address", event.target.value)} disabled={isSaving} placeholder="Calle, numero, ciudad" /></label>
+            <label><span>Correo publico</span><input type="email" value={draft.contactEmail} onChange={(event) => changeField("contactEmail", event.target.value)} maxLength={255} disabled={isSaving} placeholder="contacto@libreria.com" /></label>
+            <div className="bookstore-profile-phone-row">
+              <label><span>Codigo de pais</span><input type="tel" inputMode="numeric" value={draft.phoneCountryCd} onChange={(event) => changeField("phoneCountryCd", event.target.value)} maxLength={3} disabled={isSaving} placeholder="54" /></label>
+              <label><span>Telefono</span><input type="tel" value={draft.phone} onChange={(event) => changeField("phone", event.target.value)} maxLength={50} disabled={isSaving} placeholder="11 2222-3333" /></label>
+            </div>
+            <label><span>WhatsApp internacional</span><input type="tel" value={draft.whatsappPhone} onChange={(event) => changeField("whatsappPhone", event.target.value)} maxLength={50} disabled={isSaving || draft.usePhoneForWhatsApp} placeholder="5491122223333" /></label>
+            <label className="bookstore-profile-checkbox"><input type="checkbox" checked={draft.usePhoneForWhatsApp} onChange={(event) => setDraft((current) => setUsePhoneForWhatsApp(current, event.target.checked))} disabled={isSaving} /><span>Usar el mismo numero de telefono para WhatsApp</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset className="bookstore-profile-group">
+          <legend>Presencia online</legend>
+          <div className="bookstore-profile-fields">
+            <label><span>Instagram</span><input value={draft.instagramHandle} onChange={(event) => changeField("instagramHandle", event.target.value)} maxLength={255} disabled={isSaving} placeholder="@libreria o URL completa" /></label>
+            <label><span>Facebook</span><input value={draft.facebookHandle} onChange={(event) => changeField("facebookHandle", event.target.value)} maxLength={255} disabled={isSaving} placeholder="usuario o URL completa" /></label>
+            <label className="bookstore-profile-field-wide"><span>Sitio web</span><input type="text" inputMode="url" value={draft.websiteUrl} onChange={(event) => changeField("websiteUrl", event.target.value)} maxLength={500} disabled={isSaving} placeholder="libreria.com" /></label>
+          </div>
+        </fieldset>
+
+        <fieldset className="bookstore-profile-group">
+          <legend>Identidad visual</legend>
+          <div className="bookstore-profile-media-grid">
           <div className="bookstore-profile-upload">
             <span className="bookstore-profile-media-label">Logo</span>
             <div className="bookstore-profile-logo">
@@ -209,7 +259,8 @@ export default function BookstoreProfileEditor({ bookstore, onSaved, onError }) 
             </div>
             <small>PNG, JPEG o WebP &middot; m&aacute;ximo 5 MB. Recomendado: 1600 x 600 px.</small>
           </div>
-        </div>
+          </div>
+        </fieldset>
       </form>
     </section>
   );

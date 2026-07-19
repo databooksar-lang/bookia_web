@@ -21,9 +21,14 @@ function normalizeSocialHandle(value, domainPattern) {
     .replace(/\/+$/, "");
 }
 
-export function buildWhatsAppHref(phoneCountryCd, phone) {
-  const normalizedCountry = normalizePhonePart(phoneCountryCd);
-  const normalizedPhone = normalizePhonePart(phone);
+export function buildWhatsAppHref(whatsappPhone, phoneCountryCd, phone) {
+  const explicitWhatsApp = normalizePhonePart(whatsappPhone).replace(/\D/g, "");
+  if (explicitWhatsApp) {
+    return `https://wa.me/${explicitWhatsApp}`;
+  }
+
+  const normalizedCountry = normalizePhonePart(phoneCountryCd).replace(/\D/g, "");
+  const normalizedPhone = normalizePhonePart(phone).replace(/\D/g, "");
 
   if (!normalizedCountry || !normalizedPhone) {
     return null;

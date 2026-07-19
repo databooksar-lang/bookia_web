@@ -1979,6 +1979,106 @@ button:disabled {
 .dashboard-create {
   border-top: 4px solid var(--forest);
 }
+
+.bookstore-profile-summary-grid {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.bookstore-profile-summary-grid > div {
+  min-width: 0;
+  padding: 14px 16px;
+  background: rgba(18, 63, 50, 0.045);
+  border: 1px solid rgba(18, 63, 50, 0.1);
+  border-radius: 12px;
+}
+
+.bookstore-profile-summary-grid dt {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.bookstore-profile-summary-grid dd {
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+  color: var(--forest-deep);
+  font-weight: 700;
+}
+
+.bookstore-profile-missing {
+  margin: 16px 0 0;
+  padding: 12px 14px;
+  color: var(--muted);
+  background: rgba(232, 93, 63, 0.06);
+  border-radius: 10px;
+}
+
+.bookstore-profile-group {
+  min-width: 0;
+  margin: 0;
+  padding: 24px 0;
+  border: 0;
+  border-top: 1px solid rgba(18, 63, 50, 0.13);
+}
+
+.bookstore-profile-group legend {
+  padding: 0 12px 0 0;
+  color: var(--forest-deep);
+  font-family: "Fraunces", serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+
+.bookstore-profile-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.bookstore-profile-fields > label,
+.bookstore-profile-phone-row > label {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+  color: var(--forest-deep);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.bookstore-profile-field-wide,
+.bookstore-profile-checkbox {
+  grid-column: 1 / -1;
+}
+
+.bookstore-profile-fields textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+.bookstore-profile-phone-row {
+  display: grid;
+  grid-template-columns: minmax(100px, 0.34fr) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.bookstore-profile-fields .bookstore-profile-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.86rem;
+}
+
+.bookstore-profile-checkbox input {
+  width: 18px;
+  min-height: 18px;
+  margin: 0;
+  accent-color: var(--forest);
+}
 .dashboard-catalog-panel {
   border-top: 4px solid rgba(18, 63, 50, 0.82);
 }
@@ -2868,6 +2968,11 @@ textarea:focus {
   }
 
   .bookstore-profile-media-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bookstore-profile-fields,
+  .bookstore-profile-phone-row {
     grid-template-columns: minmax(0, 1fr);
   }
 
