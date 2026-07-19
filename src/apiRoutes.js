@@ -1,4 +1,4 @@
-const API_ROOTS = ["/search", "/auth", "/me", "/catalog", "/genres"];
+const API_ROOTS = ["/search", "/auth", "/me", "/catalog", "/genres", "/newsletter-subscribers"];
 
 function getPathname(path) {
   return (path || "").split(/[?#]/, 1)[0] || "/";

@@ -841,6 +841,81 @@ button:disabled {
 }
 
 
+.newsletter-signup {
+  width: min(1280px, calc(100% - 48px));
+  margin: 0 auto 100px;
+  padding: clamp(32px, 5vw, 56px);
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+  align-items: center;
+  gap: clamp(28px, 6vw, 80px);
+  background: #f3d4c8;
+  border: 1px solid rgba(189, 67, 43, 0.18);
+  border-radius: 20px;
+  box-shadow: var(--shadow-soft);
+}
+
+.newsletter-signup h2 {
+  max-width: 680px;
+  margin: 0 0 12px;
+  color: var(--forest-deep);
+  font-size: clamp(2.1rem, 4vw, 3.65rem);
+  line-height: 1.04;
+}
+
+.newsletter-signup > div > p:last-child {
+  max-width: 610px;
+  margin: 0;
+  color: rgba(11, 45, 36, 0.78);
+}
+
+.newsletter-form {
+  display: grid;
+  gap: 12px;
+}
+
+.newsletter-form label {
+  display: grid;
+  gap: 7px;
+  color: var(--forest-deep);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.newsletter-form input {
+  min-height: 54px;
+  padding: 0 16px;
+  color: var(--forest-deep);
+  background: rgba(255, 250, 240, 0.84);
+  border: 1px solid rgba(11, 45, 36, 0.24);
+  border-radius: 9px;
+}
+
+.newsletter-form input::placeholder {
+  color: rgba(11, 45, 36, 0.5);
+}
+
+.newsletter-form .primary-button {
+  width: 100%;
+  justify-content: center;
+}
+
+.newsletter-form .feedback {
+  margin: 2px 0 0;
+}
+
+@media (max-width: 760px) {
+  .newsletter-signup {
+    width: min(100% - 28px, 100%);
+    margin-bottom: 70px;
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding: 34px 26px;
+    border-radius: 14px;
+  }
+}
+
 .bookstore-cta {
   width: min(1280px, calc(100% - 48px));
   margin: 0 auto 100px;

@@ -206,6 +206,43 @@ function BookstoresSection({ stores, loading }) {
   );
 }
 
+function NewsletterSignup() {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState("idle");
+  const [message, setMessage] = useState("");
+
+  function submit(event) {
+    event.preventDefault();
+    setStatus("submitting");
+    setMessage("");
+    apiFetch("/newsletter-subscribers", { method: "POST", body: JSON.stringify({ email }) })
+      .then((data) => {
+        setEmail("");
+        setStatus("success");
+        setMessage(data.detail || "Listo, te sumamos a las novedades de Bookia.");
+      })
+      .catch((error) => {
+        setStatus("error");
+        setMessage(error.message || "No pudimos guardar tu correo. Intenta nuevamente.");
+      });
+  }
+
+  return (
+    <section className="newsletter-signup" aria-labelledby="newsletter-title">
+      <div>
+        <p className="section-label">Para seguir leyendo</p>
+        <h2 id="newsletter-title">Que las buenas historias tambien lleguen a tu correo.</h2>
+        <p>Recibi novedades de Bookia, librerias para descubrir y lecturas que valen la pena. Sin ruido: solo hallazgos para seguir leyendo.</p>
+      </div>
+      <form className="newsletter-form" onSubmit={submit}>
+        <label><span>Tu correo electronico</span><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" placeholder="lector@ejemplo.com" required disabled={status === "submitting"} /></label>
+        <button className="primary-button" type="submit" disabled={status === "submitting"}>{status === "submitting" ? "Sumando..." : "Quiero recibir novedades"} <ArrowIcon /></button>
+        {message ? <p className={`feedback ${status}`} role="status" aria-live="polite">{message}</p> : null}
+      </form>
+    </section>
+  );
+}
+
 function ContactLink({ href, children }) {
   return <a href={href} target="_blank" rel="noreferrer">{children}</a>;
 }
@@ -229,6 +266,7 @@ export function HomePage() {
       <BenefitsStrip />
       <SearchResults filters={searchFilters} stores={stores} />
       <BookstoresSection stores={stores} loading={storesLoading} />
+      <NewsletterSignup />
       <section className="bookstore-cta"><div><p className="section-label">Para librerias</p><h2>Tu catalogo merece una vidriera mas grande.</h2><p>Suma tu libreria a Bookia y acerca tus libros a personas que ya los estan buscando.</p></div><AppLink className="light-button" href="/plans">Conoce la propuesta <ArrowIcon /></AppLink></section>
     </>
   );
