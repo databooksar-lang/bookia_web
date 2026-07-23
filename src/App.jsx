@@ -6,6 +6,7 @@ import { navigate, useLocationState } from "./navigation";
 import { ForgotPasswordPage, LoginPage, RegisterPage, ResetPasswordPage } from "./pages/AuthPages";
 import { DashboardPage } from "./pages/DashboardPage";
 import { AboutPage, BookstorePage, HomePage, PlansPage } from "./pages/PublicPages";
+import { PrivacyPage } from "./pages/PrivacyPage";
 
 export default function App() {
   const { pathname, search } = useLocationState();
@@ -39,6 +40,7 @@ export default function App() {
   let page = <HomePage />;
   if (pathname === "/plans") page = <PlansPage />;
   else if (pathname === "/about") page = <AboutPage />;
+  else if (pathname === "/privacy") page = <PrivacyPage />;
   else if (pathname === "/login") page = <LoginPage onLogin={refreshMe} me={me} sessionExpired={new URLSearchParams(search).get("reason") === "session-expired"} />;
   else if (pathname === "/register") page = <RegisterPage onRegister={refreshMe} me={me} />;
   else if (pathname === "/forgot-password") page = <ForgotPasswordPage />;

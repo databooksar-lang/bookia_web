@@ -30,6 +30,7 @@ export function LoginPage({ onLogin, me, sessionExpired = false }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [busy, startTransition] = useTransition();
 
   if (me) {
@@ -88,8 +89,8 @@ export function RegisterPage({ onRegister, me }) {
       const isReader = profileType === "reader";
       const path = isReader ? "/auth/register/reader" : "/auth/register/bookstore";
       const body = isReader
-        ? { email, password, display_name: displayName.trim() || undefined }
-        : { name: bookstoreName, email, password, plan_code: planCode, catalog_limit: Number(catalogLimit) };
+        ? { email, password, display_name: displayName.trim() || undefined, privacy_accepted: privacyAccepted }
+        : { name: bookstoreName, email, password, plan_code: planCode, catalog_limit: Number(catalogLimit), privacy_accepted: privacyAccepted };
 
       apiFetch(path, { method: "POST", body: JSON.stringify(body) })
         .then(() => onRegister())
@@ -120,6 +121,7 @@ export function RegisterPage({ onRegister, me }) {
         {isReader ? <label>Como queres que te llamemos<input value={displayName} onChange={(event) => setDisplayName(event.target.value)} autoComplete="name" /></label> : <label>Nombre de la libreria<input value={bookstoreName} onChange={(event) => setBookstoreName(event.target.value)} autoComplete="organization" required /></label>}
         <label>Correo electronico<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" required /></label>
         <label>Contrasena<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" minLength="8" required /></label>
+        <label><input type="checkbox" checked={privacyAccepted} onChange={(event) => setPrivacyAccepted(event.target.checked)} required /> Acepto la <AppLink href="/privacy">Politica de Privacidad</AppLink>.</label>
         {!isReader ? <><label>Plan inicial<select value={planCode} onChange={(event) => setPlanCode(event.target.value)}><option value="base">Base</option><option value="plus_ai">Plus IA</option></select></label><label>Limite de catalogo<select value={catalogLimit} onChange={(event) => setCatalogLimit(event.target.value)}><option value="50">Hasta 50 libros</option><option value="100">Hasta 100 libros</option><option value="200">Hasta 200 libros</option></select></label></> : null}
         {error ? <p className="feedback error">{error}</p> : null}
         <button className="primary-button auth-submit" type="submit" disabled={busy}>{busy ? "Creando cuenta..." : "Crear cuenta"} <ArrowIcon /></button>

@@ -72,6 +72,7 @@ export function SiteFooter() {
           <AppLink href="/">Buscar</AppLink>
           <AppLink href="/plans">Planes</AppLink>
           <AppLink href="/about">Sobre Bookia</AppLink>
+          <AppLink href="/privacy">Privacidad</AppLink>
           <AppLink href="/login">Ingreso de librerias</AppLink>
         </nav>
         <p className="footer-note">Una vidriera local para cada historia.</p>
