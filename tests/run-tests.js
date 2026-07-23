@@ -50,6 +50,19 @@ const tests = [
     assert.match(entrypoint, /BOOKIA_API_UPSTREAM_URL no esta configurada/);
     assert.match(entrypoint, /respond .* 503/);
   }],
+  ["revalidates the SPA entrypoint and runtime config while keeping Vite assets immutable", () => {
+    const entrypoint = readFileSync(new URL("../docker-entrypoint.sh", import.meta.url), "utf8");
+    assert.match(entrypoint, /@runtime_config path \/runtime-config\.js/);
+    assert.match(entrypoint, /@vite_assets path \/assets\/\*/);
+    assert.match(entrypoint, /route \{\s*try_files \{path\} \/index\.html\s*header \/index\.html Cache-Control "no-cache"/);
+    assert.match(entrypoint, /header @runtime_config Cache-Control "no-cache"/);
+    assert.match(entrypoint, /header @vite_assets Cache-Control "public, max-age=31536000, immutable"/);
+  }],
+  ["documents how to verify production cache headers", () => {
+    const readme = readFileSync(new URL("../README.md", import.meta.url), "utf8");
+    assert.match(readme, /curl -I https:\/\/tu-dominio\.com\/runtime-config\.js/);
+    assert.match(readme, /Cache-Control: no-cache/);
+  }],
   ["returns loading state while genres are being fetched", () => {
     assert.deepEqual(
       getGenreSelectorState({ genresLoading: true, genresError: "", genres: [] }),

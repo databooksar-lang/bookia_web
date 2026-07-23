@@ -79,6 +79,18 @@ Notas:
 4. Publica el frontend en tu dominio, por ejemplo `bookia.com` o `www.bookia.com`.
 5. Verifica que al refrescar rutas internas la app siga cargando sin `404`.
 
+### Verificacion de cache tras publicar
+
+El HTML de la SPA y `runtime-config.js` se revalidan en cada visita para que las personas usuarias reciban el despliegue vigente. Los assets bajo `/assets/` tienen nombres versionados por Vite y se almacenan por un ano.
+
+Despues de publicar, comprueba la cabecera del recurso de configuracion:
+
+```powershell
+curl -I https://tu-dominio.com/runtime-config.js
+```
+
+La respuesta debe incluir `Cache-Control: no-cache`.
+
 ## Publicacion en GitHub Pages
 
 - El sitio se publica con GitHub Actions desde la rama principal.

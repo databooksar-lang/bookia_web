@@ -36,8 +36,17 @@ cat >> /etc/caddy/Caddyfile <<EOF
   handle {
     root * /srv
     encode gzip zstd
-    try_files {path} /index.html
-    file_server
+
+    @runtime_config path /runtime-config.js
+    @vite_assets path /assets/*
+
+    route {
+      try_files {path} /index.html
+      header /index.html Cache-Control "no-cache"
+      header @runtime_config Cache-Control "no-cache"
+      header @vite_assets Cache-Control "public, max-age=31536000, immutable"
+      file_server
+    }
   }
 }
 EOF
