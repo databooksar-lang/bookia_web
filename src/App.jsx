@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { apiFetch, subscribeToSessionExpiry } from "./api";
 import { SiteFooter, SiteHeader } from "./components/SiteChrome";
 import { navigate, useLocationState } from "./navigation";
-import { ForgotPasswordPage, LoginPage, ResetPasswordPage } from "./pages/AuthPages";
+import { ForgotPasswordPage, LoginPage, RegisterPage, ResetPasswordPage } from "./pages/AuthPages";
 import { DashboardPage } from "./pages/DashboardPage";
 import { AboutPage, BookstorePage, HomePage, PlansPage } from "./pages/PublicPages";
 
@@ -40,6 +40,7 @@ export default function App() {
   if (pathname === "/plans") page = <PlansPage />;
   else if (pathname === "/about") page = <AboutPage />;
   else if (pathname === "/login") page = <LoginPage onLogin={refreshMe} me={me} sessionExpired={new URLSearchParams(search).get("reason") === "session-expired"} />;
+  else if (pathname === "/register") page = <RegisterPage onRegister={refreshMe} me={me} />;
   else if (pathname === "/forgot-password") page = <ForgotPasswordPage />;
   else if (pathname === "/reset-password") page = <ResetPasswordPage locationSearch={search} />;
   else if (pathname === "/dashboard") page = <DashboardPage me={me} refreshMe={refreshMe} locationSearch={search} />;

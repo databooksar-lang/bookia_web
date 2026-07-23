@@ -140,6 +140,22 @@ tests.push(["renders the newsletter signup block below the bookstore section", (
   assert.match(publicPagesSource, /Tu correo electronico/);
   assert.match(publicPagesSource, /Quiero recibir novedades/);
 }]);
+tests.push(["routes registration through the supported reader and bookstore flows", () => {
+  const appSource = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
+  const authPagesSource = readFileSync(new URL("../src/pages/AuthPages.jsx", import.meta.url), "utf8");
+  const headerSource = readFileSync(new URL("../src/components/SiteChrome.jsx", import.meta.url), "utf8");
+  const dashboardSource = readFileSync(new URL("../src/pages/DashboardPage.jsx", import.meta.url), "utf8");
+
+  assert.match(appSource, /RegisterPage/);
+  assert.match(appSource, /pathname === "\/register"/);
+  assert.match(authPagesSource, /export function RegisterPage/);
+  assert.match(authPagesSource, /auth\/register\/reader/);
+  assert.match(authPagesSource, /auth\/register\/bookstore/);
+  assert.match(authPagesSource, /Soy lector\/a/);
+  assert.match(authPagesSource, /Tengo una libreria/);
+  assert.match(headerSource, /const accountHref = me\?\.bookstore \? "\/dashboard" : "\/"/);
+  assert.match(dashboardSource, /!me\.bookstore/);
+}]);
 tests.push(["emits one session-expiry event for repeated unauthorized API responses", async () => {
   const previousFetch = globalThis.fetch;
   const previousDocument = globalThis.document;

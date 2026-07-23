@@ -134,6 +134,7 @@ function ReadingClubGenreField({ genres, genresLoading, genresError, value, onCh
 
 export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
   const { section, catalogView } = parseDashboardNavigation(locationSearch);
+  const registrationPending = new URLSearchParams(locationSearch).get("registered") === "pending";
   const [items, setItems] = useState([]);
   const [titleQuery, setTitleQuery] = useState("");
   const [authorQuery, setAuthorQuery] = useState("");
@@ -194,7 +195,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
       .finally(() => setGenresLoading(false));
   }, []);
 
-  useEffect(() => { if (me) { loadCatalog(); loadReadingClubs(); } }, [me]);
+  useEffect(() => { if (me?.bookstore) { loadCatalog(); loadReadingClubs(); } }, [me]);
 
   if (me === undefined) {
     return <div className="page-state"><div className="loading-mark" /><p>Preparando tu panel...</p></div>;
@@ -204,6 +205,9 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
     return <div className="page-state"><EmptyState title="Necesitas iniciar sesion">Ingresa con los datos de tu libreria para administrar el catalogo.</EmptyState><button className="primary-button" onClick={() => navigate("/login")}>Ingresar</button></div>;
   }
 
+  if (!me.bookstore) {
+    return <div className="page-state"><EmptyState title="Tu cuenta lectora esta activa">El panel de catalogo es exclusivo para librerias. Podes seguir explorando libros desde la busqueda.</EmptyState><button className="primary-button" onClick={() => navigate("/")}>Explorar libros</button></div>;
+  }
   function updateItem(itemId, payload) {
     apiFetch(`/dashboard/catalog/${itemId}`, { method: "PATCH", body: JSON.stringify(payload) }).then(() => loadCatalog()).catch((fetchError) => setError(fetchError.message));
   }
@@ -374,6 +378,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
         <div className="dashboard-actions"><button className="secondary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver vidriera digital <ArrowIcon /></button><button className="text-link" onClick={logout}>Cerrar sesion</button></div>
       </header>
 
+      {registrationPending ? <p className="feedback success">Registramos tu libreria. Tu cuenta queda pendiente de aprobacion mientras revisamos los datos.</p> : null}
       {error ? <p className="feedback error">{error}</p> : null}
 
       <DashboardTabs section={section} />
