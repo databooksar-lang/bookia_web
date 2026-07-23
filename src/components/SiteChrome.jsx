@@ -46,8 +46,9 @@ export function SiteHeader({ pathname, me }) {
               {item.label}
             </AppLink>
           ))}
+          {!me ? <AppLink href="/register" className="header-account">Registrate</AppLink> : null}
           <AppLink href={accountHref} className={`header-account${pathname === accountHref || pathname === "/dashboard" ? " is-active" : ""}`}>
-            {me ? "Para Librerias" : "Para librerias"}
+            {me ? "Mi cuenta" : "Ingresar"}
           </AppLink>
         </nav>
       </div>
