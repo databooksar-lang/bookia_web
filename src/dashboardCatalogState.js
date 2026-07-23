@@ -12,6 +12,11 @@ export function normalizeBookStatus(value) {
   return value === "nuevo" || value === "usado" ? value : "usado";
 }
 
+export function buildCatalogSaveErrorMessage(message) {
+  const detail = String(message || "").trim() || "No pudimos guardar los cambios del libro.";
+  return `${detail} La sugerencia de IA sigue en el formulario para que puedas reintentar.`;
+}
+
 function normalizeCatalogText(value) {
   const normalized = String(value ?? "").trim();
   return normalized ? normalized.toLowerCase() : "";
