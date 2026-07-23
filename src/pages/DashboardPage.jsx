@@ -3,7 +3,7 @@ import { useEffect, useState, useTransition } from "react";
 import { apiFetch, resolveApiUrl } from "../api";
 import { getAiAutocompleteSourceState, mergeAiAutocompleteSuggestion } from "../aiAutocompleteState";
 import { canUseAiAutocomplete } from "../aiAutocompleteAccess";
-import { buildCatalogItemUpdatePayload, buildDraftFromCatalogItem, hasCatalogItemAvailabilityChanged, normalizeBookStatus, normalizeEditableAvailability } from "../dashboardCatalogState";
+import { buildCatalogItemUpdatePayload, buildCatalogSaveErrorMessage, buildDraftFromCatalogItem, hasCatalogItemAvailabilityChanged, normalizeBookStatus, normalizeEditableAvailability } from "../dashboardCatalogState";
 import { buildDashboardUrl, parseDashboardNavigation } from "../dashboardNavigationState";
 import BookstoreProfileEditor from "../components/BookstoreProfileEditor";
 import { EmptyState } from "../components/Commerce";
@@ -307,7 +307,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
         cancelEditing();
         setError("");
         loadCatalog();
-      }).catch((fetchError) => setError(fetchError.message));
+      }).catch((fetchError) => setError(buildCatalogSaveErrorMessage(fetchError.message)));
     });
   }
 

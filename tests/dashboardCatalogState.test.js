@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 
 import {
   buildCatalogItemUpdatePayload,
+  buildCatalogSaveErrorMessage,
   hasCatalogItemAvailabilityChanged,
 } from "../src/dashboardCatalogState.js";
 
@@ -145,4 +146,10 @@ export function registerDashboardCatalogStateTests(register) {
     assert.deepEqual(buildCatalogItemUpdatePayload(original, draft), {});
     assert.equal(hasCatalogItemAvailabilityChanged(original, draft), true);
   });
+  register("explains that an AI suggestion remains editable after a save failure", () => {
+    assert.equal(buildCatalogSaveErrorMessage("No pudimos guardar los cambios del libro."), "No pudimos guardar los cambios del libro. La sugerencia de IA sigue en el formulario para que puedas reintentar.");
+    const source = readFileSync(new URL("../src/pages/DashboardPage.jsx", import.meta.url), "utf8");
+    assert.match(source, /setError\(buildCatalogSaveErrorMessage\(fetchError\.message\)\)/);
+  });
+
 }
