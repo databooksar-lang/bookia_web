@@ -213,6 +213,21 @@ tests.push(["routes registration through the supported reader and bookstore flow
   assert.match(headerSource, /const accountHref = me\?\.bookstore \? "\/dashboard" : "\/"/);
   assert.match(dashboardSource, /!me\.bookstore/);
 }]);
+tests.push(["offers catalog add-ons after bookstore account credentials", () => {
+  const registerSource = readFileSync(new URL("../src/pages/RegisterPage.jsx", import.meta.url), "utf8");
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+  assert.match(registerSource, /apiFetch\("\/commercial-prices"\)/);
+  assert.match(registerSource, /Sin adicional/);
+  assert.match(registerSource, /Hasta 50 libros/);
+  assert.match(registerSource, /Hasta 100 libros/);
+  assert.match(registerSource, /Hasta 200 libros/);
+  assert.match(registerSource, /catalog_100/);
+  assert.match(registerSource, /catalog_200/);
+  assert.match(registerSource, /type="radio"/);
+  assert.match(editorialStyles, /\.register-catalog-options/);
+}]);
+
 tests.push(["emits one session-expiry event for repeated unauthorized API responses", async () => {
   const previousFetch = globalThis.fetch;
   const previousDocument = globalThis.document;

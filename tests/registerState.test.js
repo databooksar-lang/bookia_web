@@ -49,10 +49,12 @@ export function registerRegisterStateTests(test) {
     );
   });
 
-  test("builds the existing bookstore registration payload after the second step", () => {
-    assert.deepEqual(
-      buildRegistrationRequest({ profileType: "bookstore", email: "libreria@example.com", password: "secreto123", bookstoreName: "La Esquina", planCode: "plus_ai", catalogLimit: "100", privacyAccepted: true }),
-      { path: "/auth/register/bookstore", body: { name: "La Esquina", email: "libreria@example.com", password: "secreto123", plan_code: "plus_ai", catalog_limit: 100, privacy_accepted: true } },
-    );
+  test("builds bookstore registration payloads for every catalog capacity", () => {
+    for (const catalogLimit of ["50", "100", "200"]) {
+      assert.deepEqual(
+        buildRegistrationRequest({ profileType: "bookstore", email: "libreria@example.com", password: "secreto123", bookstoreName: "La Esquina", planCode: "plus_ai", catalogLimit, privacyAccepted: true }),
+        { path: "/auth/register/bookstore", body: { name: "La Esquina", email: "libreria@example.com", password: "secreto123", plan_code: "plus_ai", catalog_limit: Number(catalogLimit), privacy_accepted: true } },
+      );
+    }
   });
 }
