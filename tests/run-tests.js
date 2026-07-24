@@ -149,6 +149,42 @@ tests.push(["styles the public navbar with the reference green and circular tran
   assert.match(styles, /\.brand-mark\s*\{[^}]*border-radius:\s*50%;[^}]*overflow:\s*hidden;/s);
   assert.match(styles, /\.brand-mark img\s*\{[^}]*object-fit:\s*cover;/s);
 }]);
+tests.push(["keeps plan selection inside the bookstore registration flow", () => {
+  const appSource = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
+  const registerSource = readFileSync(new URL("../src/pages/RegisterPage.jsx", import.meta.url), "utf8");
+  const plansSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+  const redirectSource = readFileSync(new URL("../src/components/Redirect.jsx", import.meta.url), "utf8");
+
+  assert.match(appSource, /isPlansRegistrationContext\(search\)/);
+  assert.doesNotMatch(appSource, /else\s*\{\s*navigate\("\/register"\);/);
+  assert.doesNotMatch(registerSource, /if \(queryState\.kind === "invalid"\) \{\s*navigate\("\/register"\);/);
+  assert.match(registerSource, /getRegisterQueryState/);
+  assert.doesNotMatch(registerSource, /if \(me\) \{\s*navigate\(/);
+  assert.match(redirectSource, /useEffect\(\(\) => \{\s*navigate\(to\);/);
+  assert.match(appSource, /page = <Redirect to="\/register" \/>/);
+  assert.match(registerSource, /return <Redirect to=\{me\.bookstore \? "\/dashboard" : "\/"\} \/>/);
+  assert.match(registerSource, /return <Redirect to="\/register" \/>/);
+  assert.match(registerSource, /navigate\("\/plans\?register=bookstore"\)/);
+  assert.match(registerSource, /buildRegisterPath/);
+  assert.doesNotMatch(registerSource, /Plan inicial<select/);
+  assert.match(plansSource, /isRegistrationFlow/);
+  assert.match(plansSource, /\{ code: "base", name: "Prueba gratis"/);
+  assert.match(plansSource, /plus_ai/);
+}]);
+
+tests.push(["removes public plans links in favor of registration", () => {
+  const headerSource = readFileSync(new URL("../src/components/SiteChrome.jsx", import.meta.url), "utf8");
+  const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+  const authPagesSource = readFileSync(new URL("../src/pages/AuthPages.jsx", import.meta.url), "utf8");
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+  assert.doesNotMatch(headerSource, /href="\/plans"/);
+  assert.doesNotMatch(publicPagesSource, /href="\/plans"/);
+  assert.doesNotMatch(authPagesSource, /href="\/plans"/);
+  assert.match(publicPagesSource, /href="\/register"/);
+  assert.match(authPagesSource, /href="\/register"/);
+  assert.match(editorialStyles, /\.plans-select-action/);
+}]);
 let failures = 0;
 tests.push(["renders the newsletter signup block below the bookstore section", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
@@ -177,6 +213,21 @@ tests.push(["routes registration through the supported reader and bookstore flow
   assert.match(headerSource, /const accountHref = me\?\.bookstore \? "\/dashboard" : "\/"/);
   assert.match(dashboardSource, /!me\.bookstore/);
 }]);
+tests.push(["offers catalog add-ons after bookstore account credentials", () => {
+  const registerSource = readFileSync(new URL("../src/pages/RegisterPage.jsx", import.meta.url), "utf8");
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+  assert.match(registerSource, /apiFetch\("\/commercial-prices"\)/);
+  assert.match(registerSource, /Sin adicional/);
+  assert.match(registerSource, /Hasta 50 libros/);
+  assert.match(registerSource, /Hasta 100 libros/);
+  assert.match(registerSource, /Hasta 200 libros/);
+  assert.match(registerSource, /catalog_100/);
+  assert.match(registerSource, /catalog_200/);
+  assert.match(registerSource, /type="radio"/);
+  assert.match(editorialStyles, /\.register-catalog-options/);
+}]);
+
 tests.push(["emits one session-expiry event for repeated unauthorized API responses", async () => {
   const previousFetch = globalThis.fetch;
   const previousDocument = globalThis.document;
@@ -202,6 +253,7 @@ tests.push(["emits one session-expiry event for repeated unauthorized API respon
 tests.push(["redirects expired sessions to login with an explanation", () => {
   const appSource = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
   const authPagesSource = readFileSync(new URL("../src/pages/AuthPages.jsx", import.meta.url), "utf8");
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
   assert.match(appSource, /subscribeToSessionExpiry/);
   assert.match(appSource, /navigate\("\/login\?reason=session-expired"\)/);
   assert.match(authPagesSource, /Tu sesion vencio porque se inicio sesion en otro dispositivo\./);
@@ -253,9 +305,12 @@ tests.push(["renders the visual pricing composition with catalog growth band", (
   assert.match(publicPagesSource, /plans-featured/);
   assert.match(publicPagesSource, /plans-growth-band/);
   assert.match(publicPagesSource, /Adicionales de catalogo/);
+  assert.match(publicPagesSource, /<BookIcon size=\{54\} \/>/);
+  assert.doesNotMatch(publicPagesSource, /\\u25A5/);
   assert.match(editorialStyles, /\.plans-pricing/);
   assert.match(editorialStyles, /\.plans-growth-band/);
-  assert.match(editorialStyles, /\.plans-page \.plans-cta \{[^}]*background: #f3d4c8/);
+  assert.doesNotMatch(publicPagesSource, /plans-cta/);
+  assert.doesNotMatch(editorialStyles, /\.plans-cta/);
   assert.match(editorialStyles, /\.plans-hero-art/);
   assert.doesNotMatch(editorialStyles, /\.plans-hero-art \{[^}]*background: var\(--forest-deep\)/);
 }]);

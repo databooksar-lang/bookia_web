@@ -5,7 +5,6 @@ import { AppLink } from "../navigation";
 
 const NAV_ITEMS = [
   { href: "/", label: "Buscar" },
-  { href: "/plans", label: "Planes" },
   { href: "/about", label: "Sobre Bookia" },
 ];
 
@@ -72,7 +71,6 @@ export function SiteFooter() {
         </div>
         <nav className="footer-links" aria-label="Navegacion secundaria">
           <AppLink href="/">Buscar</AppLink>
-          <AppLink href="/plans">Planes</AppLink>
           <AppLink href="/about">Sobre Bookia</AppLink>
           <AppLink href="/privacy">Privacidad</AppLink>
           <AppLink href="/terms">Terminos</AppLink>
