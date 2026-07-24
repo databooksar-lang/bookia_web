@@ -54,11 +54,10 @@ a {
   position: sticky;
   top: 0;
   z-index: 10;
-  backdrop-filter: blur(14px);
-  background: rgba(255, 247, 237, 0.76);
-  border-bottom: 1px solid var(--stroke);
+  background: #0f4638;
+  border-bottom: 1px solid rgba(255, 250, 243, 0.16);
+  box-shadow: 0 10px 26px rgba(15, 70, 56, 0.18);
 }
-
 .brand {
   display: flex;
   align-items: center;
@@ -87,14 +86,38 @@ h3 {
   place-items: center;
   overflow: hidden;
   flex: 0 0 auto;
+  background: #fffaf3;
 }
 
 .brand-mark img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   display: block;
 }
+
+.brand-name {
+  color: #fffaf3;
+}
+
+.header-links a {
+  color: #fffaf3;
+}
+
+.header-links a.is-active {
+  border-bottom-color: #fffaf3;
+}
+
+.header-links .header-account {
+  background: #c89a2b;
+  color: #fffaf3;
+}
+
+.header-links .header-account:last-child {
+  background: #fffaf3;
+  color: #0f4638;
+}
+
 .header-links {
   display: flex;
   gap: 0.5rem;

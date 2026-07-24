@@ -9,7 +9,7 @@ const NAV_ITEMS = [
   { href: "/about", label: "Sobre Bookia" },
 ];
 
-const BOOKIA_LOGO_SRC = "/images/bookia-logo-circular.png";
+const BOOKIA_LOGO_SRC = "/images/bookia-logo-circular-transparent.png";
 
 function isActive(pathname, href) {
   return href === "/" ? pathname === "/" : pathname === href;

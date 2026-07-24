@@ -133,6 +133,20 @@ tests.push(["does not render the removed Simple y local section on the home page
   assert.doesNotMatch(editorialStyles, /\.how-/);
 }]);
 
+tests.push(["styles the public navbar with the reference green and circular transparent logo", () => {
+  const headerSource = readFileSync(new URL("../src/components/SiteChrome.jsx", import.meta.url), "utf8");
+  const styles = `${readFileSync(new URL("../src/styles.css", import.meta.url), "utf8")}\n${readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8")}`;
+
+  assert.match(headerSource, /bookia-logo-circular-transparent\.png/);
+  assert.match(styles, /\.site-header\s*\{[^}]*background:\s*#0f4638;/s);
+  assert.match(styles, /\.brand-name\s*\{[^}]*color:\s*#fffaf3;/s);
+  assert.match(styles, /\.header-links a\s*\{[^}]*color:\s*#fffaf3;/s);
+  assert.match(styles, /\.header-links a\.is-active\s*\{[^}]*border-bottom-color:\s*#fffaf3;/s);
+  assert.match(styles, /\.header-links \.header-account\s*\{[^}]*background:\s*#c89a2b;[^}]*color:\s*#fffaf3;/s);
+  assert.match(styles, /\.header-links \.header-account:last-child\s*\{[^}]*background:\s*#fffaf3;[^}]*color:\s*#0f4638;/s);
+  assert.match(styles, /\.brand-mark\s*\{[^}]*border-radius:\s*50%;[^}]*overflow:\s*hidden;/s);
+  assert.match(styles, /\.brand-mark img\s*\{[^}]*object-fit:\s*cover;/s);
+}]);
 let failures = 0;
 tests.push(["renders the newsletter signup block below the bookstore section", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
