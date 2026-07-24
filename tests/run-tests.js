@@ -210,7 +210,7 @@ tests.push(["routes registration through the supported reader and bookstore flow
   assert.match(registerSource, /reader-books\.png/);
   assert.match(registerSource, /bookstore-front\.png/);
   assert.match(registerSource, /register-trust/);
-  assert.match(headerSource, /const accountHref = me\?\.bookstore \? "\/dashboard" : "\/"/);
+  assert.match(headerSource, /const accountHref = me\?\.bookstore \? "\/dashboard" : me \? "\/" : "\/login"/);
   assert.match(dashboardSource, /!me\.bookstore/);
 }]);
 tests.push(["offers catalog add-ons after bookstore account credentials", () => {
