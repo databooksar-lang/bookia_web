@@ -325,7 +325,7 @@ export function PlansPage({ isRegistrationFlow = false }) {
     return pricingState.prices ? formatCommercialPrice(pricingState.prices[offeringCode]) : "Precio no disponible";
   };
   const plans = [
-    { name: "Prueba gratis", price: priceLabel("trial"), detail: "por 30 dias", limit: "Hasta 10 libros", benefits: ["IA incluida", "Todas las funcionalidades"], tone: "trial" },
+    { code: "base", name: "Prueba gratis", price: priceLabel("trial"), detail: "por 30 dias", limit: "Hasta 10 libros", benefits: ["IA incluida", "Todas las funcionalidades"], tone: "trial" },
     { code: "base", name: "Base", price: priceLabel("base"), detail: "/mes", limit: "Hasta 50 libros", benefits: ["Perfil publico", "Carga manual"], tone: "base" },
     { code: "plus_ai", name: "IA", price: priceLabel("plus_ai"), detail: "/mes", limit: "Hasta 50 libros", benefits: ["Carga desde foto", "Autocompletado con IA"], tone: "featured", featured: true },
   ];

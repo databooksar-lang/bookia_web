@@ -168,6 +168,7 @@ tests.push(["keeps plan selection inside the bookstore registration flow", () =>
   assert.match(registerSource, /buildRegisterPath/);
   assert.doesNotMatch(registerSource, /Plan inicial<select/);
   assert.match(plansSource, /isRegistrationFlow/);
+  assert.match(plansSource, /\{ code: "base", name: "Prueba gratis"/);
   assert.match(plansSource, /plus_ai/);
 }]);
 
