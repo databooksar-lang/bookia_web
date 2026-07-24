@@ -289,9 +289,12 @@ tests.push(["renders the visual pricing composition with catalog growth band", (
   assert.match(publicPagesSource, /plans-featured/);
   assert.match(publicPagesSource, /plans-growth-band/);
   assert.match(publicPagesSource, /Adicionales de catalogo/);
+  assert.match(publicPagesSource, /<BookIcon size=\{54\} \/>/);
+  assert.doesNotMatch(publicPagesSource, /\\u25A5/);
   assert.match(editorialStyles, /\.plans-pricing/);
   assert.match(editorialStyles, /\.plans-growth-band/);
-  assert.match(editorialStyles, /\.plans-page \.plans-cta \{[^}]*background: #f3d4c8/);
+  assert.doesNotMatch(publicPagesSource, /plans-cta/);
+  assert.doesNotMatch(editorialStyles, /\.plans-cta/);
   assert.match(editorialStyles, /\.plans-hero-art/);
   assert.doesNotMatch(editorialStyles, /\.plans-hero-art \{[^}]*background: var\(--forest-deep\)/);
 }]);

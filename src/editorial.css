@@ -1072,29 +1072,6 @@ button:disabled {
   color: var(--muted);
 }
 
-.plans-cta {
-  width: min(1050px, calc(100% - 48px));
-  margin: 0 auto 110px;
-  padding: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 32px;
-  color: var(--cream);
-  background: var(--forest-deep);
-  border-radius: 18px;
-}
-
-.plans-cta h2 {
-  max-width: 650px;
-  margin: 0;
-  font-size: clamp(2rem, 3.8vw, 3.7rem);
-  line-height: 1;
-}
-
-.plans-cta .section-label {
-  color: #f6a38f;
-}
 
 .about-hero {
   text-align: left;
@@ -2689,7 +2666,6 @@ textarea:focus {
   .section-heading,
   .catalog-heading,
   .bookstore-cta,
-  .plans-cta,
   .dashboard-top,
   .dashboard-card-head,
   .dashboard-section-heading {
@@ -2719,8 +2695,7 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 
-  .bookstore-cta,
-  .plans-cta {
+  .bookstore-cta {
     align-items: flex-start;
   }
 
@@ -2791,7 +2766,6 @@ textarea:focus {
   .footer-inner,
   .page-hero,
   .plan-benefits,
-  .plans-cta,
   .about-statement,
   .about-values,
   .bookstore-cta {
@@ -2873,15 +2847,13 @@ textarea:focus {
     height: 48px;
   }
 
-  .bookstore-cta,
-  .plans-cta {
+  .bookstore-cta {
     margin-bottom: 70px;
     padding: 34px 26px;
     border-radius: 14px;
   }
 
-  .bookstore-cta .light-button,
-  .plans-cta .primary-button {
+  .bookstore-cta .light-button {
     width: 100%;
   }
 
@@ -3314,18 +3286,13 @@ textarea:focus {
 .plans-growth-band { width: min(1280px, calc(100% - 48px)); margin: 0 auto 76px; display: grid; grid-template-columns: 1.1fr 1fr 1fr; overflow: hidden; border-radius: 18px; background: var(--forest-deep); color: white; }
 .plans-growth-band > div { min-height: 198px; padding: 34px 42px; border-left: 1px solid rgba(246, 163, 143, .55); display: flex; flex-direction: column; justify-content: center; }
 .plans-growth-title { border-left: 0 !important; flex-direction: row !important; align-items: center; gap: 25px; }
-.plans-growth-title span { color: var(--coral); font-size: 4rem; }
+.plans-growth-title > svg { flex: 0 0 auto; color: var(--coral); }
 .plans-growth-title h2 { margin: 0; font-size: clamp(2rem, 3.3vw, 3.6rem); line-height: .9; }
 .plans-growth-kicker { margin: 0 0 10px !important; color: var(--coral) !important; font-size: .72rem !important; font-weight: 800; letter-spacing: .15em; line-height: 1.2; text-transform: uppercase; }
 .plans-growth-band p, .plans-growth-band span { margin: 0; color: #fff2e8; }
 .plans-growth-band strong { color: var(--coral); font-family: Georgia, serif; font-size: clamp(3.8rem, 6vw, 6.5rem); line-height: .85; letter-spacing: -.06em; }
 .plans-growth-band strong small { color: white; font-family: inherit; font-size: 1.4rem; letter-spacing: 0; }
 .plans-growth-band > div > span { margin-top: 11px; font-size: 1.05rem; }
-.plans-page .plans-cta { margin-bottom: 110px; background: #f3d4c8; }
-.plans-page .plans-cta .section-label { color: var(--coral-dark); }
-.plans-page .plans-cta h2 { color: var(--forest-deep); }
-.plans-page .plans-cta em { color: var(--coral-dark); font-style: normal; }
-.plans-page .plans-cta .primary-button { background: var(--forest-deep); }
 .plans-pricing > button.plans-plan { width: 100%; text-align: left; color: inherit; font: inherit; }
 .plans-select-action { margin-top: 24px; display: inline-flex; align-items: center; gap: 8px; color: var(--forest-deep); font-size: .86rem; font-weight: 800; }
 .plans-featured .plans-select-action { color: white; }

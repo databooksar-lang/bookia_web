@@ -341,11 +341,10 @@ export function PlansPage({ isRegistrationFlow = false }) {
         {plans.map((plan) => <PlansPlan key={plan.name} plan={plan} isRegistrationFlow={isRegistrationFlow} onSelect={(planCode) => navigate(buildRegisterPath({ profileType: "bookstore", planCode }))} />)}
       </section>
       <section className="plans-growth-band" aria-label="Ampliaciones de catalogo">
-        <div className="plans-growth-title"><span aria-hidden="true">{"\u25A5"}</span><div><p className="plans-growth-kicker">Adicionales de catalogo</p><h2>Hace crecer<br />tu catalogo</h2></div></div>
+        <div className="plans-growth-title"><BookIcon size={54} /><div><p className="plans-growth-kicker">Adicionales de catalogo</p><h2>Hace crecer<br />tu catalogo</h2></div></div>
         <div><p>Hasta</p><strong>100 <small>libros</small></strong><span>+ {priceLabel("catalog_100")}/mes</span></div>
         <div><p>Hasta</p><strong>200 <small>libros</small></strong><span>+ {priceLabel("catalog_200")}/mes</span></div>
       </section>
-      <section className="plans-cta"><div><p className="section-label">Sin letra chica</p><h2>Proba Bookia durante <em>30 dias.</em></h2></div><AppLink href="/register" className="primary-button">Crear una cuenta <ArrowIcon /></AppLink></section>
     </div>
   );
 }
