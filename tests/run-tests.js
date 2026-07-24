@@ -12,6 +12,7 @@ import { registerDashboardCatalogStateTests } from "./dashboardCatalogState.test
 import { registerPublicSearchStateTests } from "./publicSearchState.test.js";
 import { registerPlansPricingStateTests } from "./plansPricingState.test.js";
 import { registerAnalyticsStateTests } from "./analyticsState.test.js";
+import { registerRegisterStateTests } from "./registerState.test.js";
 
 import { registerDashboardNavigationStateTests } from './dashboardNavigationState.test.js';
 
@@ -110,6 +111,7 @@ registerDashboardCatalogStateTests((name, fn) => tests.push([name, fn]));
 registerPublicSearchStateTests((name, fn) => tests.push([name, fn]));
 registerPlansPricingStateTests((name, fn) => tests.push([name, fn]));
 registerAnalyticsStateTests((name, fn) => tests.push([name, fn]));
+registerRegisterStateTests((name, fn) => tests.push([name, fn]));
 registerDashboardNavigationStateTests((name, fn) => tests.push([name, fn]));
 
 tests.push(["resolves API calls against an external runtime base", async () => {
@@ -158,17 +160,20 @@ tests.push(["renders the newsletter signup block below the bookstore section", (
 }]);
 tests.push(["routes registration through the supported reader and bookstore flows", () => {
   const appSource = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
-  const authPagesSource = readFileSync(new URL("../src/pages/AuthPages.jsx", import.meta.url), "utf8");
+  const registerSource = readFileSync(new URL("../src/pages/RegisterPage.jsx", import.meta.url), "utf8");
+  const registerStateSource = readFileSync(new URL("../src/registerState.js", import.meta.url), "utf8");
   const headerSource = readFileSync(new URL("../src/components/SiteChrome.jsx", import.meta.url), "utf8");
   const dashboardSource = readFileSync(new URL("../src/pages/DashboardPage.jsx", import.meta.url), "utf8");
 
   assert.match(appSource, /RegisterPage/);
   assert.match(appSource, /pathname === "\/register"/);
-  assert.match(authPagesSource, /export function RegisterPage/);
-  assert.match(authPagesSource, /auth\/register\/reader/);
-  assert.match(authPagesSource, /auth\/register\/bookstore/);
-  assert.match(authPagesSource, /Soy lector\/a/);
-  assert.match(authPagesSource, /Tengo una libreria/);
+  assert.match(registerSource, /export function RegisterPage/);
+  assert.match(registerStateSource, /auth\/register\/reader/);
+  assert.match(registerStateSource, /auth\/register\/bookstore/);
+  assert.match(registerSource, /register-choice-grid/);
+  assert.match(registerSource, /reader-books\.png/);
+  assert.match(registerSource, /bookstore-front\.png/);
+  assert.match(registerSource, /register-trust/);
   assert.match(headerSource, /const accountHref = me\?\.bookstore \? "\/dashboard" : "\/"/);
   assert.match(dashboardSource, /!me\.bookstore/);
 }]);
@@ -218,7 +223,7 @@ tests.push(["publishes a cookies policy for technical session cookies", () => {
 }]);
 tests.push(["publishes terms and conditions for Bookia's marketplace role", () => {
   const appSource = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
-  const authPagesSource = readFileSync(new URL("../src/pages/AuthPages.jsx", import.meta.url), "utf8");
+  const registerSource = readFileSync(new URL("../src/pages/RegisterPage.jsx", import.meta.url), "utf8");
   const privacySource = readFileSync(new URL("../src/pages/PrivacyPage.jsx", import.meta.url), "utf8");
   const siteChromeSource = readFileSync(new URL("../src/components/SiteChrome.jsx", import.meta.url), "utf8");
   const termsSource = readFileSync(new URL("../src/pages/TermsPage.jsx", import.meta.url), "utf8");
@@ -226,9 +231,9 @@ tests.push(["publishes terms and conditions for Bookia's marketplace role", () =
   assert.match(appSource, /TermsPage/);
   assert.match(appSource, /pathname === "\/terms"/);
   assert.match(siteChromeSource, /href="\/terms">Terminos/);
-  assert.match(authPagesSource, /Acepto los/);
-  assert.match(authPagesSource, /href="\/terms"/);
-  assert.match(authPagesSource, /href="\/privacy"/);
+  assert.match(registerSource, /Acepto los/);
+  assert.match(registerSource, /href="\/terms"/);
+  assert.match(registerSource, /href="\/privacy"/);
   assert.match(privacySource, /href="\/terms"/);
   assert.match(termsSource, /Terminos y Condiciones/);
   assert.match(termsSource, /Vigente desde el 23 de julio de 2026/);

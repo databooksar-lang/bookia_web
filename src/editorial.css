@@ -3391,3 +3391,110 @@ textarea:focus {
     flex-direction: column;
   }
 }
+
+.register-page {
+  width: min(1180px, calc(100% - 48px));
+  margin: 44px auto 82px;
+  overflow: hidden;
+  border: 1px solid #e7dbc6;
+  border-radius: 24px;
+  background: #fffaf3;
+  box-shadow: var(--shadow-soft);
+}
+
+.register-hero {
+  position: relative;
+  padding: clamp(42px, 6vw, 76px) clamp(24px, 7vw, 100px) 48px;
+  text-align: center;
+  background: #fffaf3;
+}
+
+.register-hero::before,
+.register-hero::after {
+  position: absolute;
+  z-index: 0;
+  width: min(23vw, 265px);
+  height: 310px;
+  content: "";
+  opacity: 0.16;
+  background: url("/images/register/reader-books.png") center / cover no-repeat;
+}
+
+.register-hero::before { top: 66px; left: -130px; transform: rotate(-14deg); }
+.register-hero::after { right: -140px; bottom: 28px; transform: scaleX(-1) rotate(-10deg); }
+
+.register-heading,
+.register-question,
+.register-choice-grid,
+.register-login { position: relative; z-index: 1; }
+
+.register-flourish { display: block; color: #c89a2b; font-size: 2.3rem; line-height: 0.8; }
+.register-heading h1,
+.register-form-panel h1 { margin: 12px 0 10px; color: var(--forest-deep); font-size: clamp(2.45rem, 5vw, 4.35rem); line-height: 0.98; }
+.register-heading p { max-width: 440px; margin: 0 auto; color: var(--muted); }
+.register-question { margin: 34px 0 18px; color: var(--forest-deep); font-family: var(--serif); font-size: 1.15rem; }
+
+.register-choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; max-width: 800px; margin: 0 auto; }
+.register-choice {
+  display: grid;
+  grid-template-rows: 190px auto auto 1fr;
+  gap: 8px;
+  min-height: 410px;
+  padding: 14px 14px 18px;
+  overflow: hidden;
+  color: var(--forest-deep);
+  text-align: center;
+  cursor: pointer;
+  background: #fffdf8;
+  border: 1px solid #eadfcf;
+  border-radius: 13px;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+.register-choice:hover, .register-choice:focus-visible { border-color: #c89a2b; outline: none; box-shadow: 0 15px 30px rgba(18, 57, 45, 0.12); transform: translateY(-4px); }
+.register-choice img { width: 100%; height: 190px; object-fit: cover; border-radius: 8px; mix-blend-mode: multiply; }
+.register-choice-icon { width: 30px; height: 30px; margin: -19px auto 0; display: grid; place-items: center; color: #fffaf3; background: var(--forest); border: 3px solid #fffdf8; border-radius: 50%; }
+.register-choice strong { font-family: var(--serif); font-size: 1.55rem; }
+.register-choice > span:not(.register-choice-icon):not(.register-choice-action) { padding: 0 12px; color: var(--muted); font-size: 0.78rem; line-height: 1.45; }
+.register-choice-action { align-self: end; display: inline-flex; align-items: center; justify-content: center; gap: 7px; margin: 9px 4px 0; padding: 12px; color: #fffaf3; background: #ed684f; border-radius: 4px; font-size: 0.76rem; font-weight: 800; }
+.register-login { margin: 24px 0 0; color: var(--muted); font-size: 0.86rem; }
+.register-login a { color: var(--forest); font-weight: 800; }
+
+.register-trust { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; padding: 21px clamp(24px, 7vw, 100px); color: var(--forest-deep); background: #f4ebdc; border-top: 1px solid #eadfcf; }
+.register-trust-item { display: flex; gap: 10px; align-items: center; }
+.register-trust-item > span { color: #c89a2b; font-size: 1.4rem; }
+.register-trust-item strong { display: block; font-size: 0.7rem; }
+.register-trust-item p { margin: 2px 0 0; color: var(--muted); font-size: 0.65rem; line-height: 1.35; }
+
+.register-page-form { max-width: 1010px; }
+.register-form-shell { position: relative; display: grid; grid-template-columns: 0.78fr 1fr; min-height: 620px; }
+.register-back { position: absolute; z-index: 2; top: 24px; left: 24px; padding: 0; color: var(--forest-deep); background: transparent; border: 0; cursor: pointer; font-weight: 800; }
+.register-form-art { display: grid; place-items: center; padding: 80px 30px 35px; background: #e7eee4; }
+.register-form-art img { width: 100%; mix-blend-mode: multiply; }
+.register-form-panel { align-self: center; max-width: 460px; padding: 75px clamp(28px, 6vw, 72px); }
+.register-form-panel > p:not(.register-progress) { margin: 0 0 28px; color: var(--muted); }
+.register-progress { display: flex; gap: 16px; margin: 0 0 22px; color: #9c9284; font-size: 0.72rem; font-weight: 800; }
+.register-progress span { padding-bottom: 5px; border-bottom: 2px solid transparent; }
+.register-progress .is-current { color: var(--forest); border-bottom-color: #c89a2b; }
+.register-progress .is-complete { color: var(--forest); }
+.register-form { display: grid; gap: 16px; }
+.register-form label { display: grid; gap: 7px; color: var(--forest-deep); font-size: 0.78rem; font-weight: 800; }
+.register-form input:not([type="checkbox"]), .register-form select { min-height: 47px; padding: 10px 12px; color: var(--forest-deep); background: #fffdf8; border: 1px solid #d9cdbb; border-radius: 5px; }
+.register-form input:focus, .register-form select:focus { outline: 3px solid rgba(200, 154, 43, 0.25); border-color: #c89a2b; }
+.register-legal { grid-template-columns: auto 1fr; align-items: start; gap: 8px !important; color: var(--muted) !important; font-size: 0.7rem !important; line-height: 1.45; }
+.register-legal input { margin-top: 3px; }
+.register-legal a { color: var(--forest); text-decoration: underline; }
+.register-submit { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; color: #fffaf3; cursor: pointer; background: #ed684f; border: 0; border-radius: 5px; font-weight: 800; }
+.register-submit:hover { background: #d9553e; }
+.register-submit:disabled { cursor: wait; opacity: 0.65; }
+
+@media (max-width: 720px) {
+  .register-page { width: min(100% - 16px, 100%); margin: 12px auto 52px; border-radius: 15px; }
+  .register-hero { padding: 42px 18px 34px; }
+  .register-hero::before, .register-hero::after { display: none; }
+  .register-choice-grid, .register-form-shell, .register-trust { grid-template-columns: 1fr; }
+  .register-choice { grid-template-rows: 155px auto auto 1fr; min-height: 0; }
+  .register-choice img { height: 155px; }
+  .register-trust { gap: 14px; }
+  .register-form-art { min-height: 220px; padding: 65px 60px 20px; }
+  .register-form-panel { padding: 42px 24px; }
+}
