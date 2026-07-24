@@ -3289,7 +3289,7 @@ textarea:focus {
 .plans-hero-copy h1 span, .plans-hero-copy h1 + p::first-letter { color: var(--coral); }
 .plans-hero-copy > p:last-child { max-width: 570px; margin: 0; color: #263d35; font-size: 1.18rem; line-height: 1.55; }
 .plans-hero-art { align-self: stretch; position: relative; z-index: 2; display: flex; align-items: end; justify-content: flex-start; overflow: visible; pointer-events: none; }
-.plans-hero-art img { width: 168%; max-width: none; height: auto; object-fit: contain; transform: translate(-48%, 7%); }
+.plans-hero-art img { width: 156%; max-width: none; height: auto; object-fit: contain; transform: translate(-43%, -1%); }
 .plans-pricing { width: min(1280px, calc(100% - 48px)); margin: 0 auto 28px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
 .plans-pricing-status { grid-column: 1 / -1; margin: 0; padding: 13px 18px; color: var(--coral-dark); background: #f8ddd5; border: 1px solid rgba(189, 67, 43, .2); border-radius: 12px; font-weight: 700; }
 .plans-plan { min-height: 345px; padding: 32px; display: flex; flex-direction: column; border: 1px solid #d6c8b3; border-radius: 18px; background: #fffdf8; transition: transform .2s ease, box-shadow .2s ease; }
@@ -3321,7 +3321,7 @@ textarea:focus {
 .plans-page .plans-cta h2 { color: var(--forest-deep); }
 .plans-page .plans-cta em { color: var(--coral-dark); font-style: normal; }
 .plans-page .plans-cta .primary-button { background: var(--forest-deep); }
-@media (max-width: 760px) { .plans-hero { width: min(100% - 28px, 100%); min-height: 0; grid-template-columns: 1fr; } .plans-hero-copy { padding: 72px 0 30px; } .plans-hero-copy h1 { font-size: clamp(3.2rem, 15vw, 4.4rem); } .plans-hero-art { min-height: 250px; } .plans-hero-art img { width: 150%; transform: translate(-30%, 8%); } .plans-pricing, .plans-growth-band { width: min(100% - 28px, 100%); grid-template-columns: 1fr; } .plans-plan { min-height: 285px; padding: 27px 23px; } .plans-growth-band > div { min-height: 150px; padding: 27px 23px; border-left: 0; border-top: 1px solid rgba(246, 163, 143, .55); } .plans-growth-title { border-top: 0; } }
+@media (max-width: 760px) { .plans-hero { width: min(100% - 28px, 100%); min-height: 0; grid-template-columns: 1fr; } .plans-hero-copy { padding: 72px 0 30px; } .plans-hero-copy h1 { font-size: clamp(3.2rem, 15vw, 4.4rem); } .plans-hero-art { min-height: 250px; } .plans-hero-art img { width: 140%; transform: translate(-24%, 0%); } .plans-pricing, .plans-growth-band { width: min(100% - 28px, 100%); grid-template-columns: 1fr; } .plans-plan { min-height: 285px; padding: 27px 23px; } .plans-growth-band > div { min-height: 150px; padding: 27px 23px; border-left: 0; border-top: 1px solid rgba(246, 163, 143, .55); } .plans-growth-title { border-top: 0; } }
 
 .metrics-summary-grid {
   display: grid;
