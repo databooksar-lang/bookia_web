@@ -1,4 +1,4 @@
-const DASHBOARD_SECTIONS = new Set(["profile", "new-book", "catalog", "clubs"]);
+const DASHBOARD_SECTIONS = new Set(["profile", "new-book", "catalog", "clubs", "metrics"]);
 const CATALOG_VIEWS = new Set(["active", "sold-out"]);
 
 function normalizeDashboardSection(value) {

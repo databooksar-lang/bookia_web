@@ -11,6 +11,7 @@ import { registerAiAutocompleteStateTests } from "./aiAutocompleteState.test.js"
 import { registerDashboardCatalogStateTests } from "./dashboardCatalogState.test.js";
 import { registerPublicSearchStateTests } from "./publicSearchState.test.js";
 import { registerPlansPricingStateTests } from "./plansPricingState.test.js";
+import { registerAnalyticsStateTests } from "./analyticsState.test.js";
 
 import { registerDashboardNavigationStateTests } from './dashboardNavigationState.test.js';
 
@@ -108,6 +109,7 @@ registerAiAutocompleteStateTests((name, fn) => tests.push([name, fn]));
 registerDashboardCatalogStateTests((name, fn) => tests.push([name, fn]));
 registerPublicSearchStateTests((name, fn) => tests.push([name, fn]));
 registerPlansPricingStateTests((name, fn) => tests.push([name, fn]));
+registerAnalyticsStateTests((name, fn) => tests.push([name, fn]));
 registerDashboardNavigationStateTests((name, fn) => tests.push([name, fn]));
 
 tests.push(["resolves API calls against an external runtime base", async () => {

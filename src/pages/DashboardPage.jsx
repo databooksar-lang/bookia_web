@@ -50,6 +50,7 @@ const DASHBOARD_TABS = [
   { section: "new-book", label: "Alta de libros" },
   { section: "catalog", label: "Catalogo" },
   { section: "clubs", label: "Clubes de lectura" },
+  { section: "metrics", label: "Metricas" },
 ];
 
 function DashboardTabs({ section }) {
@@ -68,6 +69,20 @@ function DashboardTabs({ section }) {
       ))}
     </nav>
   );
+}
+
+const EMPTY_ANALYTICS = {
+  period_days: 30,
+  totals: {
+    book_detail_opened: 0,
+    bookstore_opened: 0,
+    whatsapp_clicked: 0,
+  },
+  top_books: [],
+};
+
+function formatMetricValue(value) {
+  return new Intl.NumberFormat("es-AR").format(Number(value || 0));
 }
 
 function DashboardPanel({ label, title, description, countLabel, isActive, children, className = "" }) {
@@ -157,11 +172,22 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
   const [editingReadingClubId, setEditingReadingClubId] = useState(null);
   const [draftReadingClub, setDraftReadingClub] = useState(createReadingClubDraft());
   const [readingClubBusy, startReadingClubTransition] = useTransition();
+  const [analytics, setAnalytics] = useState(EMPTY_ANALYTICS);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [analyticsError, setAnalyticsError] = useState("");
   const activeItems = items.filter((item) => item.availability_status !== "hidden");
   const hiddenItems = items.filter((item) => item.availability_status === "hidden");
   const hasActiveFilters = Boolean(titleQuery.trim() || authorQuery.trim());
   const canAutocompleteWithAi = canUseAiAutocomplete(me?.current_plan_code);
 
+  function loadAnalytics() {
+    setAnalyticsLoading(true);
+    setAnalyticsError("");
+    apiFetch("/dashboard/analytics")
+      .then((data) => { setAnalytics({ ...EMPTY_ANALYTICS, ...data, totals: { ...EMPTY_ANALYTICS.totals, ...(data.totals || {}) }, top_books: data.top_books || [] }); setAnalyticsError(""); })
+      .catch((fetchError) => { setAnalytics(EMPTY_ANALYTICS); setAnalyticsError(fetchError.message || "No pudimos cargar las metricas."); })
+      .finally(() => setAnalyticsLoading(false));
+  }
   function loadReadingClubs() {
     setReadingClubsLoading(true);
     apiFetch("/dashboard/reading-clubs")
@@ -196,6 +222,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
   }, []);
 
   useEffect(() => { if (me?.bookstore) { loadCatalog(); loadReadingClubs(); } }, [me]);
+  useEffect(() => { if (me?.bookstore && section === "metrics") loadAnalytics(); }, [me, section]);
 
   if (me === undefined) {
     return <div className="page-state"><div className="loading-mark" /><p>Preparando tu panel...</p></div>;
@@ -594,6 +621,40 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
             </article>
           );
         })}</div> : null}
+
+      </DashboardPanel>
+
+      <DashboardPanel
+        label="Metricas"
+        title="Interes de lectores"
+        description={`Resumen de los ultimos ${analytics.period_days || 30} dias.`}
+        isActive={section === "metrics"}
+        className="dashboard-metrics-panel"
+      >
+        {analyticsLoading ? <div className="loading-list"><span /><span /><span /></div> : null}
+        {analyticsError ? <p className="feedback error">{analyticsError}</p> : null}
+        {!analyticsLoading ? (
+          <>
+            <div className="metrics-summary-grid">
+              <article><span>Aperturas de libros</span><strong>{formatMetricValue(analytics.totals.book_detail_opened)}</strong></article>
+              <article><span>Visitas a libreria</span><strong>{formatMetricValue(analytics.totals.bookstore_opened)}</strong></article>
+              <article><span>Clicks en WhatsApp</span><strong>{formatMetricValue(analytics.totals.whatsapp_clicked)}</strong></article>
+            </div>
+            {analytics.top_books.length === 0 ? <EmptyState title="Todavia no hay metricas">Cuando las personas interactuen con tu vidriera, vas a ver los libros con mas interes aca.</EmptyState> : (
+              <div className="dashboard-list metrics-book-list">
+                {analytics.top_books.map((book) => (
+                  <article key={book.id} className="dashboard-card metrics-book-item">
+                    <div><span className="catalog-id">Libro #{book.id}</span><h3>{book.title}</h3><p>{book.author || "Autor no visible"}</p></div>
+                    <dl>
+                      <div><dt>Aperturas</dt><dd>{formatMetricValue(book.book_detail_opened)}</dd></div>
+                      <div><dt>WhatsApp</dt><dd>{formatMetricValue(book.whatsapp_clicked)}</dd></div>
+                    </dl>
+                  </article>
+                ))}
+              </div>
+            )}
+          </>
+        ) : null}
       </DashboardPanel>
       </div>
     </section>

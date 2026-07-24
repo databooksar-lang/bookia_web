@@ -3322,3 +3322,67 @@ textarea:focus {
 .plans-page .plans-cta em { color: var(--coral-dark); font-style: normal; }
 .plans-page .plans-cta .primary-button { background: var(--forest-deep); }
 @media (max-width: 760px) { .plans-hero { width: min(100% - 28px, 100%); min-height: 0; grid-template-columns: 1fr; } .plans-hero-copy { padding: 72px 0 30px; } .plans-hero-copy h1 { font-size: clamp(3.2rem, 15vw, 4.4rem); } .plans-hero-art { min-height: 250px; } .plans-hero-art img { width: 150%; transform: translate(-30%, 8%); } .plans-pricing, .plans-growth-band { width: min(100% - 28px, 100%); grid-template-columns: 1fr; } .plans-plan { min-height: 285px; padding: 27px 23px; } .plans-growth-band > div { min-height: 150px; padding: 27px 23px; border-left: 0; border-top: 1px solid rgba(246, 163, 143, .55); } .plans-growth-title { border-top: 0; } }
+
+.metrics-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.metrics-summary-grid article,
+.metrics-book-item {
+  border: 1px solid rgba(31, 59, 48, 0.12);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.metrics-summary-grid article {
+  padding: 16px;
+}
+
+.metrics-summary-grid span,
+.metrics-book-item dt {
+  display: block;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.metrics-summary-grid strong {
+  display: block;
+  margin-top: 8px;
+  color: var(--forest);
+  font-size: 1.8rem;
+}
+
+.metrics-book-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+}
+
+.metrics-book-item dl {
+  display: flex;
+  gap: 16px;
+  margin: 0;
+}
+
+.metrics-book-item dd {
+  margin: 4px 0 0;
+  color: var(--forest);
+  font-weight: 800;
+}
+
+@media (max-width: 760px) {
+  .metrics-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .metrics-book-item,
+  .metrics-book-item dl {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { apiFetch, resolveApiUrl } from "../api";
+import { trackWebInteractionEvent } from "../analyticsState";
 import { formatCommercialPrice, getCommercialPrices } from "../plansPricingState";
 import { buildFacebookHref, buildInstagramHref, buildWebsiteHref, buildWhatsAppHref, formatDisplayPhone, formatDisplayUrl } from "../formatters";
 import { AppLink, navigate } from "../navigation";
@@ -33,6 +34,21 @@ function BookCover({ item, className = "book-cover", interactive = false, onOpen
   );
 }
 
+function trackBookDetailOpened(item, source) {
+  const bookstoreId = item?.bookstore?.id;
+  if (!bookstoreId || !item?.id) return;
+  trackWebInteractionEvent({ eventType: "book_detail_opened", bookstoreId, catalogItemId: item.id, source });
+}
+
+function trackBookstoreOpened(bookstore, source) {
+  if (!bookstore?.id) return;
+  trackWebInteractionEvent({ eventType: "bookstore_opened", bookstoreId: bookstore.id, source, metadata: bookstore.slug ? { path: `/bookstores/${bookstore.slug}` } : undefined });
+}
+
+function trackWhatsAppClicked(bookstore, source, catalogItemId) {
+  if (!bookstore?.id) return;
+  trackWebInteractionEvent({ eventType: "whatsapp_clicked", bookstoreId: bookstore.id, catalogItemId, source });
+}
 function bookImageGallery(item) {
   const galleryImages = (item?.images || [])
     .slice()
@@ -74,6 +90,7 @@ function SearchResults({ filters, stores }) {
   const visibleItems = items.filter((item) => item.availability_status !== "hidden");
 
   function openBookDetail(item) {
+    trackBookDetailOpened(item, "search_results");
     const gallery = bookImageGallery(item);
     setSelectedBook(item);
     setSelectedBookImageUrl(gallery[0]?.url ? resolveApiUrl(gallery[0].url) : null);
@@ -155,9 +172,9 @@ function SearchResults({ filters, stores }) {
               </button>
               <div className="search-result-store-info">
                 <span>Libreria</span>
-                <AppLink href={`/bookstores/${item.bookstore.slug}`}>{item.bookstore.name} <ArrowIcon size={15} /></AppLink>
+                <AppLink href={`/bookstores/${item.bookstore.slug}`} onClick={() => trackBookstoreOpened(item.bookstore, "search_results")}>{item.bookstore.name} <ArrowIcon size={15} /></AppLink>
               </div>
-              <WhatsAppButton className="primary-button search-result-whatsapp" whatsappPhone={item.bookstore.whatsapp_phone} phoneCountryCd={item.bookstore.phone_country_cd} phone={item.bookstore.phone}>
+              <WhatsAppButton className="primary-button search-result-whatsapp" whatsappPhone={item.bookstore.whatsapp_phone} phoneCountryCd={item.bookstore.phone_country_cd} phone={item.bookstore.phone} onClick={() => trackWhatsAppClicked(item.bookstore, "search_results", item.id)}>
                 <WhatsAppIcon size={19} /> Contactar
               </WhatsAppButton>
             </article>
@@ -192,7 +209,7 @@ function BookstoresSection({ stores, loading }) {
           {stores.slice(0, 6).map((store, index) => {
             const logoUrl = resolveApiUrl(store.logo_url);
             return (
-              <AppLink className="store-card" href={`/bookstores/${store.slug}`} key={store.id}>
+              <AppLink className="store-card" href={`/bookstores/${store.slug}`} key={store.id} onClick={() => trackBookstoreOpened(store, "home_bookstores")}>
                 <span className="store-card-number">{String(index + 1).padStart(2, "0")}</span>
                 {logoUrl ? <img src={logoUrl} alt="" onError={(event) => { event.currentTarget.hidden = true; }} /> : <span className="store-card-placeholder"><StoreIcon /></span>}
                 <span><strong>{store.name}</strong><small>{store.address || "Catalogo disponible online"}</small></span>
@@ -407,10 +424,10 @@ function BookDetailModal({ selectedBook, selectedBookImageUrl, onImageChange, on
               <div><dt>Editorial</dt><dd>{selectedBook.publisher || "Editorial no visible"}</dd></div>
               <div><dt>Idioma</dt><dd>{selectedBook.language || "Idioma no visible"}</dd></div>
               <div><dt>Edicion</dt><dd>{bookEditionLine(selectedBook)}</dd></div>
-              <div><dt>Libreria</dt><dd>{bookstore ? <AppLink className="book-detail-store-link" href={`/bookstores/${bookstore.slug}`}>{bookstore.name} <ArrowIcon size={14} /></AppLink> : "Libreria no visible"}</dd></div>
+              <div><dt>Libreria</dt><dd>{bookstore ? <AppLink className="book-detail-store-link" href={`/bookstores/${bookstore.slug}`} onClick={() => trackBookstoreOpened(bookstore, "book_detail_modal")}>{bookstore.name} <ArrowIcon size={14} /></AppLink> : "Libreria no visible"}</dd></div>
             </dl>
             {hasBookstoreContact ? (
-              <WhatsAppButton className="primary-button book-detail-whatsapp" whatsappPhone={bookstore.whatsapp_phone} phoneCountryCd={bookstore.phone_country_cd} phone={bookstore.phone}>
+              <WhatsAppButton className="primary-button book-detail-whatsapp" whatsappPhone={bookstore.whatsapp_phone} phoneCountryCd={bookstore.phone_country_cd} phone={bookstore.phone} onClick={() => trackWhatsAppClicked(bookstore, "book_detail_modal", selectedBook.id)}>
                 <WhatsAppIcon size={19} /> Contactar por WhatsApp
               </WhatsAppButton>
             ) : null}
@@ -437,6 +454,7 @@ export function BookstorePage({ slug }) {
   }, [slug]);
 
   function openBookDetail(item) {
+    trackBookDetailOpened(item, "bookstore_page");
     const gallery = bookImageGallery(item);
     setSelectedBook(item);
     setSelectedBookImageUrl(gallery[0]?.url ? resolveApiUrl(gallery[0].url) : null);
