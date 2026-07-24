@@ -3,9 +3,12 @@ import { useEffect, useState } from "react";
 import { apiFetch, subscribeToSessionExpiry } from "./api";
 import { SiteFooter, SiteHeader } from "./components/SiteChrome";
 import { navigate, useLocationState } from "./navigation";
-import { ForgotPasswordPage, LoginPage, ResetPasswordPage } from "./pages/AuthPages";
+import { ForgotPasswordPage, LoginPage, RegisterPage, ResetPasswordPage } from "./pages/AuthPages";
 import { DashboardPage } from "./pages/DashboardPage";
 import { AboutPage, BookstorePage, HomePage, PlansPage } from "./pages/PublicPages";
+import { CookiePolicyPage } from "./pages/CookiePolicyPage";
+import { PrivacyPage } from "./pages/PrivacyPage";
+import { TermsPage } from "./pages/TermsPage";
 
 export default function App() {
   const { pathname, search } = useLocationState();
@@ -39,7 +42,11 @@ export default function App() {
   let page = <HomePage />;
   if (pathname === "/plans") page = <PlansPage />;
   else if (pathname === "/about") page = <AboutPage />;
+  else if (pathname === "/privacy") page = <PrivacyPage />;
+  else if (pathname === "/terms") page = <TermsPage />;
+  else if (pathname === "/cookies") page = <CookiePolicyPage />;
   else if (pathname === "/login") page = <LoginPage onLogin={refreshMe} me={me} sessionExpired={new URLSearchParams(search).get("reason") === "session-expired"} />;
+  else if (pathname === "/register") page = <RegisterPage onRegister={refreshMe} me={me} />;
   else if (pathname === "/forgot-password") page = <ForgotPasswordPage />;
   else if (pathname === "/reset-password") page = <ResetPasswordPage locationSearch={search} />;
   else if (pathname === "/dashboard") page = <DashboardPage me={me} refreshMe={refreshMe} locationSearch={search} />;

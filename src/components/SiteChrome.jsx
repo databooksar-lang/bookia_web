@@ -15,7 +15,8 @@ function isActive(pathname, href) {
 
 export function SiteHeader({ pathname, me }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const accountHref = me ? "/dashboard" : "/login";
+  const accountHref = me?.bookstore ? "/dashboard" : "/";
+  const accountLabel = me?.bookstore ? "Mi cuenta" : me ? "Explorar" : "Ingresar";
 
   useEffect(() => {
     setMenuOpen(false);
@@ -48,7 +49,7 @@ export function SiteHeader({ pathname, me }) {
           ))}
           {!me ? <AppLink href="/register" className="header-account">Registrate</AppLink> : null}
           <AppLink href={accountHref} className={`header-account${pathname === accountHref || pathname === "/dashboard" ? " is-active" : ""}`}>
-            {me ? "Mi cuenta" : "Ingresar"}
+            {accountLabel}
           </AppLink>
         </nav>
       </div>
@@ -71,6 +72,9 @@ export function SiteFooter() {
           <AppLink href="/">Buscar</AppLink>
           <AppLink href="/plans">Planes</AppLink>
           <AppLink href="/about">Sobre Bookia</AppLink>
+          <AppLink href="/privacy">Privacidad</AppLink>
+          <AppLink href="/terms">Terminos</AppLink>
+          <AppLink href="/cookies">Cookies</AppLink>
           <AppLink href="/login">Ingreso de librerias</AppLink>
         </nav>
         <p className="footer-note">Una vidriera local para cada historia.</p>

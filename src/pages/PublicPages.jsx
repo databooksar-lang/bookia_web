@@ -215,7 +215,7 @@ function NewsletterSignup() {
     event.preventDefault();
     setStatus("submitting");
     setMessage("");
-    apiFetch("/newsletter-subscribers", { method: "POST", body: JSON.stringify({ email }) })
+    apiFetch("/newsletter-subscribers", { method: "POST", body: JSON.stringify({ email, marketing_consent: true }) })
       .then((data) => {
         setEmail("");
         setStatus("success");
@@ -237,6 +237,7 @@ function NewsletterSignup() {
       <form className="newsletter-form" onSubmit={submit}>
         <label><span>Tu correo electronico</span><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" placeholder="lector@ejemplo.com" required disabled={status === "submitting"} /></label>
         <button className="primary-button" type="submit" disabled={status === "submitting"}>{status === "submitting" ? "Sumando..." : "Quiero recibir novedades"} <ArrowIcon /></button>
+        <p className="newsletter-consent">Al suscribirte aceptas recibir novedades y promociones. Consulta nuestra <AppLink href="/privacy">Politica de Privacidad</AppLink>.</p>
         {message ? <p className={`feedback ${status}`} role="status" aria-live="polite">{message}</p> : null}
       </form>
     </section>

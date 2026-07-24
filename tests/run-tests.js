@@ -140,6 +140,22 @@ tests.push(["renders the newsletter signup block below the bookstore section", (
   assert.match(publicPagesSource, /Tu correo electronico/);
   assert.match(publicPagesSource, /Quiero recibir novedades/);
 }]);
+tests.push(["routes registration through the supported reader and bookstore flows", () => {
+  const appSource = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
+  const authPagesSource = readFileSync(new URL("../src/pages/AuthPages.jsx", import.meta.url), "utf8");
+  const headerSource = readFileSync(new URL("../src/components/SiteChrome.jsx", import.meta.url), "utf8");
+  const dashboardSource = readFileSync(new URL("../src/pages/DashboardPage.jsx", import.meta.url), "utf8");
+
+  assert.match(appSource, /RegisterPage/);
+  assert.match(appSource, /pathname === "\/register"/);
+  assert.match(authPagesSource, /export function RegisterPage/);
+  assert.match(authPagesSource, /auth\/register\/reader/);
+  assert.match(authPagesSource, /auth\/register\/bookstore/);
+  assert.match(authPagesSource, /Soy lector\/a/);
+  assert.match(authPagesSource, /Tengo una libreria/);
+  assert.match(headerSource, /const accountHref = me\?\.bookstore \? "\/dashboard" : "\/"/);
+  assert.match(dashboardSource, /!me\.bookstore/);
+}]);
 tests.push(["emits one session-expiry event for repeated unauthorized API responses", async () => {
   const previousFetch = globalThis.fetch;
   const previousDocument = globalThis.document;
@@ -168,6 +184,46 @@ tests.push(["redirects expired sessions to login with an explanation", () => {
   assert.match(appSource, /subscribeToSessionExpiry/);
   assert.match(appSource, /navigate\("\/login\?reason=session-expired"\)/);
   assert.match(authPagesSource, /Tu sesion vencio porque se inicio sesion en otro dispositivo\./);
+}]);
+tests.push(["publishes a cookies policy for technical session cookies", () => {
+  const appSource = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
+  const privacySource = readFileSync(new URL("../src/pages/PrivacyPage.jsx", import.meta.url), "utf8");
+  const siteChromeSource = readFileSync(new URL("../src/components/SiteChrome.jsx", import.meta.url), "utf8");
+  const cookiePolicySource = readFileSync(new URL("../src/pages/CookiePolicyPage.jsx", import.meta.url), "utf8");
+
+  assert.match(appSource, /CookiePolicyPage/);
+  assert.match(appSource, /pathname === "\/cookies"/);
+  assert.match(siteChromeSource, /href="\/cookies">Cookies/);
+  assert.match(privacySource, /href="\/cookies"/);
+  assert.match(cookiePolicySource, /Politica de Cookies/);
+  assert.match(cookiePolicySource, /bookia_session/);
+  assert.match(cookiePolicySource, /bookia_csrf/);
+  assert.match(cookiePolicySource, /No usamos cookies de analitica ni publicidad/);
+}]);
+tests.push(["publishes terms and conditions for Bookia's marketplace role", () => {
+  const appSource = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
+  const authPagesSource = readFileSync(new URL("../src/pages/AuthPages.jsx", import.meta.url), "utf8");
+  const privacySource = readFileSync(new URL("../src/pages/PrivacyPage.jsx", import.meta.url), "utf8");
+  const siteChromeSource = readFileSync(new URL("../src/components/SiteChrome.jsx", import.meta.url), "utf8");
+  const termsSource = readFileSync(new URL("../src/pages/TermsPage.jsx", import.meta.url), "utf8");
+
+  assert.match(appSource, /TermsPage/);
+  assert.match(appSource, /pathname === "\/terms"/);
+  assert.match(siteChromeSource, /href="\/terms">Terminos/);
+  assert.match(authPagesSource, /Acepto los/);
+  assert.match(authPagesSource, /href="\/terms"/);
+  assert.match(authPagesSource, /href="\/privacy"/);
+  assert.match(privacySource, /href="\/terms"/);
+  assert.match(termsSource, /Terminos y Condiciones/);
+  assert.match(termsSource, /Vigente desde el 23 de julio de 2026/);
+  assert.match(termsSource, /Marcelo Gabriel Gonzalez/);
+  assert.match(termsSource, /bookia.app.admin@gmail.com/);
+  assert.match(termsSource, /Bookia no vende libros directamente/);
+  assert.match(termsSource, /operacion comercial se acuerda directamente entre la persona interesada y la libreria/);
+  assert.match(termsSource, /OpenAI/);
+  assert.match(termsSource, /Politica de Privacidad/);
+  assert.match(termsSource, /Politica de Cookies/);
+  assert.match(termsSource, /no reemplaza asesoramiento legal profesional/);
 }]);
 tests.push(["renders the visual pricing composition with catalog growth band", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");

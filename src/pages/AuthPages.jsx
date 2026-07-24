@@ -30,6 +30,7 @@ export function LoginPage({ onLogin, me, sessionExpired = false }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [busy, startTransition] = useTransition();
 
   if (me) {
@@ -65,6 +66,70 @@ export function LoginPage({ onLogin, me, sessionExpired = false }) {
   );
 }
 
+export function RegisterPage({ onRegister, me }) {
+  const [profileType, setProfileType] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [bookstoreName, setBookstoreName] = useState("");
+  const [planCode, setPlanCode] = useState("base");
+  const [catalogLimit, setCatalogLimit] = useState("50");
+  const [error, setError] = useState("");
+  const [busy, startTransition] = useTransition();
+
+  if (me) {
+    const destination = me.bookstore ? "/dashboard" : "/";
+    return <AuthLayout label="Sesion activa" title="Ya estas dentro" description="Tu cuenta ya esta registrada."><button className="primary-button auth-submit" onClick={() => navigate(destination)}>Continuar <ArrowIcon /></button></AuthLayout>;
+  }
+
+  function submit(event) {
+    event.preventDefault();
+    setError("");
+    startTransition(() => {
+      const isReader = profileType === "reader";
+      const path = isReader ? "/auth/register/reader" : "/auth/register/bookstore";
+      const body = isReader
+        ? { email, password, display_name: displayName.trim() || undefined, privacy_accepted: privacyAccepted }
+        : { name: bookstoreName, email, password, plan_code: planCode, catalog_limit: Number(catalogLimit), privacy_accepted: privacyAccepted };
+
+      apiFetch(path, { method: "POST", body: JSON.stringify(body) })
+        .then(() => onRegister())
+        .then((sessionData) => {
+          if (!sessionData) throw new Error("El registro fue aceptado, pero no pudimos recuperar tu sesion.");
+          navigate(isReader ? "/" : "/dashboard?registered=pending");
+        })
+        .catch((registrationError) => setError(registrationError.message));
+    });
+  }
+
+  if (!profileType) {
+    return (
+      <AuthLayout label="Crear una cuenta" title="Bienvenido a Bookia" description="Elegi como queres usar Bookia para crear tu cuenta.">
+        <div className="auth-choice-grid">
+          <button type="button" className="secondary-button auth-choice" onClick={() => setProfileType("reader")}><strong>Soy lector/a</strong><span>Guarda tus proximos libros y segui explorando.</span></button>
+          <button type="button" className="primary-button auth-choice" onClick={() => setProfileType("bookstore")}><strong>Tengo una libreria</strong><span>Publica y administra tu catalogo en Bookia.</span></button>
+        </div>
+        <AppLink className="text-link auth-link-button" href="/login">Ya tengo una cuenta</AppLink>
+      </AuthLayout>
+    );
+  }
+
+  const isReader = profileType === "reader";
+  return (
+    <AuthLayout label={isReader ? "Cuenta lectora" : "Cuenta para libreria"} title={isReader ? "Empeza a descubrir" : "Mostra tu catalogo"} description={isReader ? "Crea tu cuenta para seguir explorando libros y librerias." : "Tu libreria quedara pendiente de aprobacion antes de hacerse publica."}>
+      <form className="auth-form" onSubmit={submit}>
+        {isReader ? <label>Como queres que te llamemos<input value={displayName} onChange={(event) => setDisplayName(event.target.value)} autoComplete="name" /></label> : <label>Nombre de la libreria<input value={bookstoreName} onChange={(event) => setBookstoreName(event.target.value)} autoComplete="organization" required /></label>}
+        <label>Correo electronico<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" required /></label>
+        <label>Contrasena<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" minLength="8" required /></label>
+        <label><input type="checkbox" checked={privacyAccepted} onChange={(event) => setPrivacyAccepted(event.target.checked)} required /> Acepto los <AppLink href="/terms">Terminos y Condiciones</AppLink> y la <AppLink href="/privacy">Politica de Privacidad</AppLink>.</label>
+        {!isReader ? <><label>Plan inicial<select value={planCode} onChange={(event) => setPlanCode(event.target.value)}><option value="base">Base</option><option value="plus_ai">Plus IA</option></select></label><label>Limite de catalogo<select value={catalogLimit} onChange={(event) => setCatalogLimit(event.target.value)}><option value="50">Hasta 50 libros</option><option value="100">Hasta 100 libros</option><option value="200">Hasta 200 libros</option></select></label></> : null}
+        {error ? <p className="feedback error">{error}</p> : null}
+        <button className="primary-button auth-submit" type="submit" disabled={busy}>{busy ? "Creando cuenta..." : "Crear cuenta"} <ArrowIcon /></button>
+        <button type="button" className="text-link auth-link-button" onClick={() => { setError(""); setProfileType(""); }}>Cambiar tipo de cuenta</button>
+      </form>
+    </AuthLayout>
+  );
+}
 export function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
