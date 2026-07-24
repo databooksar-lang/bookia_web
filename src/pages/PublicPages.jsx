@@ -5,6 +5,7 @@ import { trackWebInteractionEvent } from "../analyticsState";
 import { formatCommercialPrice, getCommercialPrices } from "../plansPricingState";
 import { buildFacebookHref, buildInstagramHref, buildWebsiteHref, buildWhatsAppHref, formatDisplayPhone, formatDisplayUrl } from "../formatters";
 import { AppLink, navigate } from "../navigation";
+import { buildRegisterPath } from "../registerState";
 import { displayBookstoreDescription } from "../profileEditorState";
 import { displayReadingClubDate } from "../readingClubState";
 import { buildPublicSearchParams } from "../publicSearchState";
@@ -285,12 +286,28 @@ export function HomePage() {
       <SearchResults filters={searchFilters} stores={stores} />
       <BookstoresSection stores={stores} loading={storesLoading} />
       <NewsletterSignup />
-      <section className="bookstore-cta"><div><p className="section-label">Para librerias</p><h2>Tu catalogo merece una vidriera mas grande.</h2><p>Suma tu libreria a Bookia y acerca tus libros a personas que ya los estan buscando.</p></div><AppLink className="light-button" href="/plans">Conoce la propuesta <ArrowIcon /></AppLink></section>
+      <section className="bookstore-cta"><div><p className="section-label">Para librerias</p><h2>Tu catalogo merece una vidriera mas grande.</h2><p>Suma tu libreria a Bookia y acerca tus libros a personas que ya los estan buscando.</p></div><AppLink className="light-button" href="/register">Conoce la propuesta <ArrowIcon /></AppLink></section>
     </>
   );
 }
 
-export function PlansPage() {
+function PlansPlan({ plan, isRegistrationFlow, onSelect }) {
+  const className = `plans-plan plans-plan-${plan.tone}${plan.featured ? " plans-featured" : ""}`;
+  const content = <>
+    <div className="plans-plan-head"><span>{plan.name}</span>{plan.featured ? <strong>Mas elegido</strong> : null}</div>
+    <p className="plans-price">{plan.price}<small>{plan.detail}</small></p>
+    <p className="plans-limit">{plan.limit}</p>
+    <ul>{plan.benefits.map((benefit) => <li key={benefit}><b>{"\u2713"}</b>{benefit}</li>)}</ul>
+    {isRegistrationFlow && plan.code ? <span className="plans-select-action">Elegir este plan <ArrowIcon size={16} /></span> : null}
+  </>;
+
+  if (isRegistrationFlow && plan.code) {
+    return <button type="button" className={className} onClick={() => onSelect(plan.code)}>{content}</button>;
+  }
+  return <article className={className}>{content}</article>;
+}
+
+export function PlansPage({ isRegistrationFlow = false }) {
   const [pricingState, setPricingState] = useState({ loading: true, prices: null, error: "" });
 
   useEffect(() => {
@@ -309,31 +326,26 @@ export function PlansPage() {
   };
   const plans = [
     { name: "Prueba gratis", price: priceLabel("trial"), detail: "por 30 dias", limit: "Hasta 10 libros", benefits: ["IA incluida", "Todas las funcionalidades"], tone: "trial" },
-    { name: "Base", price: priceLabel("base"), detail: "/mes", limit: "Hasta 50 libros", benefits: ["Perfil publico", "Carga manual"], tone: "base" },
-    { name: "IA", price: priceLabel("plus_ai"), detail: "/mes", limit: "Hasta 50 libros", benefits: ["Carga desde foto", "Autocompletado con IA"], tone: "featured", featured: true },
+    { code: "base", name: "Base", price: priceLabel("base"), detail: "/mes", limit: "Hasta 50 libros", benefits: ["Perfil publico", "Carga manual"], tone: "base" },
+    { code: "plus_ai", name: "IA", price: priceLabel("plus_ai"), detail: "/mes", limit: "Hasta 50 libros", benefits: ["Carga desde foto", "Autocompletado con IA"], tone: "featured", featured: true },
   ];
 
   return (
     <div className="editorial-page plans-page">
       <section className="plans-hero">
-        <div className="plans-hero-copy"><p className="section-label">Planes para librerias</p><h1>Una vidriera que crece con tu catalogo<span>.</span></h1><p>Empeza sin costo, mostra tus libros y elegi la forma de carga que mejor funciona para vos.</p></div>
+        <div className="plans-hero-copy"><p className="section-label">Planes para librerias</p><h1>Una vidriera que crece con tu catalogo<span>.</span></h1><p>{isRegistrationFlow ? "Elegi el plan que mejor acompana a tu libreria. La prueba de 30 dias se activa automaticamente." : "Empeza sin costo, mostra tus libros y elegi la forma de carga que mejor funciona para vos."}</p></div>
         <div className="plans-hero-art" aria-hidden="true"><img src="/images/plans-books.png" alt="" /></div>
       </section>
       <section className="plans-pricing" aria-label="Planes de Bookia">
         {pricingState.error ? <p className="plans-pricing-status" role="status">{pricingState.error}</p> : null}
-        {plans.map((plan) => <article key={plan.name} className={`plans-plan plans-plan-${plan.tone}${plan.featured ? " plans-featured" : ""}`}>
-          <div className="plans-plan-head"><span>{plan.name}</span>{plan.featured ? <strong>Mas elegido</strong> : null}</div>
-          <p className="plans-price">{plan.price}<small>{plan.detail}</small></p>
-          <p className="plans-limit">{plan.limit}</p>
-          <ul>{plan.benefits.map((benefit) => <li key={benefit}><b>✓</b>{benefit}</li>)}</ul>
-        </article>)}
+        {plans.map((plan) => <PlansPlan key={plan.name} plan={plan} isRegistrationFlow={isRegistrationFlow} onSelect={(planCode) => navigate(buildRegisterPath({ profileType: "bookstore", planCode }))} />)}
       </section>
       <section className="plans-growth-band" aria-label="Ampliaciones de catalogo">
-        <div className="plans-growth-title"><span aria-hidden="true">▥</span><div><p className="plans-growth-kicker">Adicionales de catalogo</p><h2>Hace crecer<br />tu catalogo</h2></div></div>
+        <div className="plans-growth-title"><span aria-hidden="true">{"\u25A5"}</span><div><p className="plans-growth-kicker">Adicionales de catalogo</p><h2>Hace crecer<br />tu catalogo</h2></div></div>
         <div><p>Hasta</p><strong>100 <small>libros</small></strong><span>+ {priceLabel("catalog_100")}/mes</span></div>
         <div><p>Hasta</p><strong>200 <small>libros</small></strong><span>+ {priceLabel("catalog_200")}/mes</span></div>
       </section>
-      <section className="plans-cta"><div><p className="section-label">Sin letra chica</p><h2>Proba Bookia durante <em>30 dias.</em></h2></div><AppLink href="/login" className="primary-button">Ingresar como libreria <ArrowIcon /></AppLink></section>
+      <section className="plans-cta"><div><p className="section-label">Sin letra chica</p><h2>Proba Bookia durante <em>30 dias.</em></h2></div><AppLink href="/register" className="primary-button">Crear una cuenta <ArrowIcon /></AppLink></section>
     </div>
   );
 }
@@ -343,7 +355,7 @@ export function AboutPage() {
       <section className="page-hero about-hero"><p className="section-label">Sobre Bookia</p><h1>Encontrar un libro deberia acercarte a tu comunidad.</h1><p>Bookia nace para conectar busquedas concretas con catalogos reales: los de librerias, vendedores de usados y proyectos que sostienen la circulacion de libros.</p></section>
       <section className="about-statement"><blockquote>"Cada libro encontrado tambien puede ser una libreria descubierta."</blockquote><div><h2>Mas cerca es mejor</h2><p>Creemos en una tecnologia que ordena la busqueda sin borrar el vinculo humano. Por eso Bookia no reemplaza la conversacion: ayuda a que suceda.</p><p>Los lectores encuentran opciones. Las librerias ganan visibilidad. Los libros vuelven a circular.</p></div></section>
       <section className="about-values"><article><span>01</span><h3>Descubrimiento</h3><p>Hacemos visibles catalogos que merecen ser explorados.</p></article><article><span>02</span><h3>Cercania</h3><p>Priorizamos el contacto directo y las redes locales.</p></article><article><span>03</span><h3>Circulacion</h3><p>Ayudamos a que cada libro encuentre una nueva lectura.</p></article></section>
-      <section className="bookstore-cta about-cta"><div><p className="section-label">Dos lados de la misma historia</p><h2>Buscas un libro o queres mostrar tu catalogo?</h2></div><div className="cta-actions"><AppLink className="light-button" href="/">Buscar libros <ArrowIcon /></AppLink><AppLink className="outline-light-button" href="/plans">Para librerias</AppLink></div></section>
+      <section className="bookstore-cta about-cta"><div><p className="section-label">Dos lados de la misma historia</p><h2>Buscas un libro o queres mostrar tu catalogo?</h2></div><div className="cta-actions"><AppLink className="light-button" href="/">Buscar libros <ArrowIcon /></AppLink><AppLink className="outline-light-button" href="/register">Para librerias</AppLink></div></section>
     </div>
   );
 }
