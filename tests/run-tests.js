@@ -186,14 +186,14 @@ tests.push(["removes public plans links in favor of registration", () => {
   assert.match(editorialStyles, /\.plans-select-action/);
 }]);
 let failures = 0;
-tests.push(["places an open book and catalog card in the public search hero illustration", () => {
+tests.push(["renders one decorative image in the public search hero illustration", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
   const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
 
-  assert.match(publicPagesSource, /hero-open-book/);
-  assert.match(publicPagesSource, /hero-catalog-card/);
-  assert.match(editorialStyles, /\.hero-open-book\s*\{/);
-  assert.match(editorialStyles, /\.hero-catalog-card\s*\{/);
+  assert.match(publicPagesSource, /<img className="hero-illustration" src="\/images\/hero-bookia-discovery\.webp" alt="" \/>/);
+  assert.doesNotMatch(publicPagesSource, /hero-book hero-book-|hero-open-book|hero-catalog-card|hero-leaf/);
+  assert.match(editorialStyles, /\.hero-illustration\s*\{/);
+  assert.doesNotMatch(editorialStyles, /\.hero-book(?:\s|\.|\{)|\.hero-open-book|\.hero-catalog-card|\.hero-leaf/);
 }]);
 tests.push(["keeps Buscar as the home page with Bookia's approved public-search copy", () => {
   const appSource = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
