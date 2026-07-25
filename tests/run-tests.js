@@ -232,7 +232,7 @@ tests.push(["separates the reader search and bookstore acquisition routes", () =
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
 
   assert.match(appSource, /pathname === "\/para-librerias"\) page = <BookstoresPage \/>;/);
-  assert.match(headerSource, /\{ href: "\/", label: "Buscar libros" \}/);
+  assert.match(headerSource, /\{ href: "\/", label: "Buscar" \}/);
   assert.match(headerSource, /\{ href: "\/para-librerias", label: "Para librerias" \}/);
   assert.match(headerSource, /<AppLink href="\/para-librerias">Para librerias<\/AppLink>/);
   assert.match(publicPagesSource, /export function BookstoresPage\(\)/);

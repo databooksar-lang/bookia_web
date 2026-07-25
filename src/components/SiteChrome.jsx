@@ -4,7 +4,7 @@ import { MenuIcon } from "./Icons";
 import { AppLink } from "../navigation";
 
 const NAV_ITEMS = [
-  { href: "/", label: "Buscar libros" },
+  { href: "/", label: "Buscar" },
   { href: "/para-librerias", label: "Para librerias" },
   { href: "/about", label: "Sobre Bookia" },
 ];

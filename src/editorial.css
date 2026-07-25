@@ -692,12 +692,51 @@ button:disabled {
   animation: loading-sheen 1.3s infinite linear;
 }
 
+
+.bookstore-filters {
+  margin: 34px 0;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.42fr);
+  gap: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255, 250, 240, 0.46);
+}
+
+.bookstore-filter-field {
+  display: grid;
+  gap: 7px;
+}
+
+.bookstore-filter-field > span:first-child {
+  color: var(--forest-deep);
+  font-size: 0.73rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.bookstore-filter-field .input-with-icon {
+  padding-left: 12px;
+}
+
+.bookstore-filter-field input,
+.bookstore-filter-field select {
+  width: 100%;
+  min-height: 42px;
+}
+
+@media (max-width: 680px) {
+  .bookstore-filters {
+    grid-template-columns: 1fr;
+  }
+}
+
 .store-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   border-top: 1px solid var(--line);
-}
 
+}
 .store-card {
   min-height: 140px;
   padding: 24px 14px;
