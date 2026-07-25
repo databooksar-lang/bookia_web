@@ -66,14 +66,14 @@ function HeroSearch({ initialFilters, genres, genresLoading, onSearch }) {
   function updateFilter(name) { return (event) => setFilters((current) => ({ ...current, [name]: event.target.value })); }
   return (
     <section className="hero">
-      <div className="hero-copy"><p className="section-label">Tu proxima lectura esta cerca</p><h1>El libro que buscas, <em>mas cerca</em> de lo que imaginas.</h1><p className="hero-lead">Bookia reune catalogos de librerias, vendedores de usados y emprendimientos para que encuentres tu proxima historia en tu comunidad.</p></div>
-      <div className="hero-books" aria-hidden="true"><span className="hero-book hero-book-one"><small>Historias</small><strong>que nos<br />encuentran</strong></span><span className="hero-book hero-book-two"><small>Autores</small><strong>de aca<br />y de alla</strong></span><span className="hero-book hero-book-three"><small>Lecturas</small><strong>para cada<br />momento</strong></span><span className="hero-leaf hero-leaf-one" /><span className="hero-leaf hero-leaf-two" /></div>
+      <div className="hero-copy"><p className="section-label">{"ENCONTR\u00C1 TU PR\u00D3XIMA LECTURA"}</p><h1>{"Los libros que busc\u00E1s, en un solo lugar."}</h1><p className="hero-lead">{"Bookia re\u00FAne los cat\u00E1logos de librer\u00EDas y vendedores independientes para que encuentres una lectura que te espera y consultes directo con quien la tiene."}</p></div>
+      <div className="hero-books" aria-hidden="true"><img className="hero-illustration" src="/images/hero-bookia-discovery.webp" alt="" /></div>
       <form className="search-panel" onSubmit={submit} aria-label="Buscar libros">
         <label className="search-field search-field-title"><span>Nombre del libro</span><span className="input-with-icon"><SearchIcon /><input value={filters.title} onChange={updateFilter("title")} placeholder="Ej: Rayuela" /></span></label>
-        <label className="search-field search-field-author"><span>Autor</span><input value={filters.author} onChange={updateFilter("author")} placeholder="Ej: Julio Cortazar" /></label>
+        <label className="search-field search-field-author"><span>Autor</span><input value={filters.author} onChange={updateFilter("author")} placeholder={"Ej: Julio Cort\u00E1zar"} /></label>
         <label className="search-field search-field-publisher"><span>Editorial</span><input value={filters.publisher} onChange={updateFilter("publisher")} placeholder="Ej: Sudamericana" /></label>
-        <label className="search-field search-field-language"><span>Idioma</span><input value={filters.language} onChange={updateFilter("language")} placeholder="Ej: Espanol" /></label>
-        <label className="search-field search-field-genre"><span>Genero</span><select value={filters.genreSlug} onChange={updateFilter("genreSlug")} disabled={genresLoading}><option value="">{genresLoading ? "Cargando generos..." : "Todos los generos"}</option>{genres.map((genre) => <option key={genre.id} value={genre.slug}>{genre.name}</option>)}</select></label>
+        <label className="search-field search-field-language"><span>Idioma</span><input value={filters.language} onChange={updateFilter("language")} placeholder={"Ej: Espa\u00F1ol"} /></label>
+        <label className="search-field search-field-genre"><span>{"G\u00E9nero"}</span><select value={filters.genreSlug} onChange={updateFilter("genreSlug")} disabled={genresLoading}><option value="">{genresLoading ? "Cargando g\u00E9neros..." : "Todos los g\u00E9neros"}</option>{genres.map((genre) => <option key={genre.id} value={genre.slug}>{genre.name}</option>)}</select></label>
         <button className="primary-button search-submit" type="submit">Buscar libros <ArrowIcon /></button>
       </form>
     </section>
@@ -140,15 +140,15 @@ function SearchResults({ filters, stores }) {
     <section className="results-section" id="resultados" aria-live="polite">
       <div className="section-heading results-heading">
         <div>
-          <p className="section-label">Catalogos locales</p>
-          <h2>Resultados de busqueda</h2>
-          <p>{loading ? "Buscando en los catalogos..." : `${visibleItems.length} ${visibleItems.length === 1 ? "libro encontrado" : "libros encontrados"}`}</p>
+          <p className="section-label">{"RESULTADOS DE B\u00DASQUEDA"}</p>
+          <h2>{"Libros que pod\u00E9s consultar"}</h2>
+          <p>{loading ? "Buscando en los cat\u00E1logos..." : `${visibleItems.length} ${visibleItems.length === 1 ? "libro encontrado" : "libros encontrados"}`}</p>
         </div>
         <div className="compact-filter-group">
           <label className="compact-filter">
-            <span>Libreria</span>
+            <span>{"Librer\u00EDa"}</span>
             <select value={selectedStore} onChange={(event) => setSelectedStore(event.target.value)}>
-              <option value="">Todas las librerias</option>
+              <option value="">{"Todas las librer\u00EDas"}</option>
               {stores.map((store) => <option key={store.id} value={store.slug}>{store.name}</option>)}
             </select>
           </label>
@@ -157,7 +157,7 @@ function SearchResults({ filters, stores }) {
       </div>
       {error ? <p className="feedback error">{error}</p> : null}
       {loading ? <div className="loading-list" aria-label="Cargando resultados"><span /><span /><span /></div> : null}
-      {!loading && !error && visibleItems.length === 0 ? <EmptyState title="No encontramos coincidencias">Proba con otro nombre de libro, autor, editorial, idioma o genero, o busca en todas las librerias.</EmptyState> : null}
+      {!loading && !error && visibleItems.length === 0 ? <EmptyState title={"Todav\u00EDa no encontramos ese libro"}>{"Prob\u00E1 con otro t\u00EDtulo, autor, editorial, idioma o g\u00E9nero. Tambi\u00E9n pod\u00E9s ampliar la b\u00FAsqueda a todas las librer\u00EDas."}</EmptyState> : null}
       {!loading && visibleItems.length > 0 ? (
         <div className="search-results-list" role="list">
           {visibleItems.map((item) => (
@@ -189,9 +189,9 @@ function SearchResults({ filters, stores }) {
 
 function BenefitsStrip() {
   const benefits = [
-    [<LocationIcon key="icon" />, "Cerca tuyo", "Resultados de tu comunidad"],
-    [<StoreIcon key="icon" />, "Librerias y vendedores", "Nuevos, usados y hallazgos"],
-    [<WhatsAppIcon key="icon" />, "Contacto directo", "Consulta por WhatsApp"],
+    [<LocationIcon key="icon" />, "Cat\u00E1logos reales", "Libros publicados por librer\u00EDas y vendedores."],
+    [<StoreIcon key="icon" />, "Nuevos y usados", "Opciones para cada b\u00FAsqueda."],
+    [<WhatsAppIcon key="icon" />, "Contacto directo", "Consult\u00E1 disponibilidad por WhatsApp"],
   ];
   return <section className="benefits-strip" aria-label="Beneficios de Bookia">{benefits.map(([icon, title, text]) => <div key={title}>{icon}<span><strong>{title}</strong><small>{text}</small></span></div>)}</section>;
 }
@@ -200,11 +200,11 @@ function BookstoresSection({ stores, loading }) {
   return (
     <section className="home-section bookstores-section">
       <div className="section-heading">
-        <div><p className="section-label">Una red que crece</p><h2>Librerias para descubrir</h2></div>
-        <p>Explora catalogos reales y encontra una nueva libreria favorita.</p>
+        <div><p className="section-label">{"LIBRER\u00CDAS EN BOOKIA"}</p><h2>{"Descubr\u00ED qui\u00E9nes tienen libros para vos."}</h2></div>
+        <p>{"Explor\u00E1 sus cat\u00E1logos y encontr\u00E1 nuevas librer\u00EDas para volver."}</p>
       </div>
       {loading ? <div className="store-grid loading-stores"><span /><span /><span /></div> : null}
-      {!loading && stores.length === 0 ? <EmptyState compact title="Proximamente mas librerias">Estamos preparando nuevos catalogos para que puedas descubrirlos.</EmptyState> : null}
+      {!loading && stores.length === 0 ? <EmptyState compact title={"Pronto vas a encontrar m\u00E1s librer\u00EDas"}>{"Estamos sumando nuevos cat\u00E1logos para que tengas m\u00E1s libros para buscar."}</EmptyState> : null}
       {!loading && stores.length > 0 ? (
         <div className="store-grid">
           {stores.slice(0, 6).map((store, index) => {
@@ -248,14 +248,14 @@ function NewsletterSignup() {
   return (
     <section className="newsletter-signup" aria-labelledby="newsletter-title">
       <div>
-        <p className="section-label">Para seguir leyendo</p>
-        <h2 id="newsletter-title">Que las buenas historias tambien lleguen a tu correo.</h2>
-        <p>Recibi novedades de Bookia, librerias para descubrir y lecturas que valen la pena. Sin ruido: solo hallazgos para seguir leyendo.</p>
+        <p className="section-label">{"NOVEDADES DE BOOKIA"}</p>
+        <h2 id="newsletter-title">{"M\u00E1s libros y librer\u00EDas para descubrir."}</h2>
+        <p>{"Recib\u00ED novedades de cat\u00E1logos, librer\u00EDas y lecturas para seguir buscando. Solo cuando haya algo para contarte."}</p>
       </div>
       <form className="newsletter-form" onSubmit={submit}>
-        <label><span>Tu correo electronico</span><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" placeholder="lector@ejemplo.com" required disabled={status === "submitting"} /></label>
+        <label><span>{"Tu correo electr\u00F3nico"}</span><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" placeholder="lector@ejemplo.com" required disabled={status === "submitting"} /></label>
         <button className="primary-button" type="submit" disabled={status === "submitting"}>{status === "submitting" ? "Sumando..." : "Quiero recibir novedades"} <ArrowIcon /></button>
-        <p className="newsletter-consent">Al suscribirte aceptas recibir novedades y promociones. Consulta nuestra <AppLink href="/privacy">Politica de Privacidad</AppLink>.</p>
+        <p className="newsletter-consent">{"Al suscribirte acept\u00E1s recibir novedades y promociones. Consult\u00E1 nuestra "}<AppLink href="/privacy">{"Pol\u00EDtica de Privacidad"}</AppLink>.</p>
         {message ? <p className={`feedback ${status}`} role="status" aria-live="polite">{message}</p> : null}
       </form>
     </section>
@@ -286,7 +286,7 @@ export function HomePage() {
       <SearchResults filters={searchFilters} stores={stores} />
       <BookstoresSection stores={stores} loading={storesLoading} />
       <NewsletterSignup />
-      <section className="bookstore-cta"><div><p className="section-label">Para librerias</p><h2>Tu catalogo merece una vidriera mas grande.</h2><p>Suma tu libreria a Bookia y acerca tus libros a personas que ya los estan buscando.</p></div><AppLink className="light-button" href="/register">Conoce la propuesta <ArrowIcon /></AppLink></section>
+      <section className="bookstore-cta"><div><p className="section-label">{"PARA LIBRER\u00CDAS"}</p><h2>{"Hac\u00E9 que tus libros lleguen a m\u00E1s lectores."}</h2><p>{"Public\u00E1 tu cat\u00E1logo en Bookia para que las personas encuentren tus libros y puedan consultarte directo."}</p></div><AppLink className="light-button" href="/about">{"Conoc\u00E9 la propuesta"} <ArrowIcon /></AppLink></section>
     </>
   );
 }
