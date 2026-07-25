@@ -209,7 +209,7 @@ function BookstoresSection({ stores, loading }) {
     <section className="home-section bookstores-section">
       <div className="section-heading">
         <div><p className="section-label">{"LIBRER\u00CDAS EN BOOKIA"}</p><h2>{"Descubr\u00ED las librerias que son parte de la comunidad"}</h2></div>
-        <p>{"Explor\u00E1 sus cat\u00E1logos y encontr\u00E1 nuevas librer\u00EDas para volver."}</p>
+        <img className="bookstores-section-illustration" src="/images/bookstores-section-facade.png" alt="" />
       </div>
       {!loading && stores.length > 0 ? <form className="bookstore-filters" role="search" aria-label={"Buscar librer\u00EDas"} onSubmit={(event) => event.preventDefault()}>
         <label className="bookstore-filter-field"><span>Nombre de la libreria</span><span className="input-with-icon"><SearchIcon /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Ej: DataBooksAr" /></span></label>
