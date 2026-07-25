@@ -76,4 +76,23 @@ export function registerPublicSearchStateTests(register) {
       [1, 2, 3, 4, 5, 6, 7],
     );
   });
+
+  register("keeps only genres that are available in public reading clubs", () => {
+    assert.deepEqual(
+      publicSearchState.getAvailableReadingClubGenres([
+        { id: 1, slug: "policial", name: "Policial" },
+        { id: 2, slug: "terror", name: "Terror" },
+        { id: 3, slug: "poesia", name: "Poesia" },
+      ], [
+        { genre: { slug: "poesia" } },
+        { genre: { slug: "policial" } },
+        { genre: { slug: "poesia" } },
+      ]),
+      [
+        { id: 1, slug: "policial", name: "Policial" },
+        { id: 3, slug: "poesia", name: "Poesia" },
+      ],
+    );
+  });
+
 }
