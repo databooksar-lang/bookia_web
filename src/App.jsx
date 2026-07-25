@@ -8,7 +8,7 @@ import { ForgotPasswordPage, LoginPage, ResetPasswordPage } from "./pages/AuthPa
 import { RegisterPage } from "./pages/RegisterPage";
 import { isPlansRegistrationContext } from "./registerState";
 import { DashboardPage } from "./pages/DashboardPage";
-import { AboutPage, BookstorePage, HomePage, PlansPage } from "./pages/PublicPages";
+import { AboutPage, BookstorePage, BookstoresPage, HomePage, PlansPage } from "./pages/PublicPages";
 import { CookiePolicyPage } from "./pages/CookiePolicyPage";
 import { PrivacyPage } from "./pages/PrivacyPage";
 import { TermsPage } from "./pages/TermsPage";
@@ -48,6 +48,7 @@ export default function App() {
     else page = <Redirect to="/register" />;
   }
   else if (pathname === "/about") page = <AboutPage />;
+  else if (pathname === "/para-librerias") page = <BookstoresPage />;
   else if (pathname === "/privacy") page = <PrivacyPage />;
   else if (pathname === "/terms") page = <TermsPage />;
   else if (pathname === "/cookies") page = <CookiePolicyPage />;

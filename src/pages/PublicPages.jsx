@@ -286,11 +286,14 @@ export function HomePage() {
       <SearchResults filters={searchFilters} stores={stores} />
       <BookstoresSection stores={stores} loading={storesLoading} />
       <NewsletterSignup />
-      <section className="bookstore-cta"><div><p className="section-label">{"PARA LIBRER\u00CDAS"}</p><h2>{"Hac\u00E9 que tus libros lleguen a m\u00E1s lectores."}</h2><p>{"Public\u00E1 tu cat\u00E1logo en Bookia para que las personas encuentren tus libros y puedan consultarte directo."}</p></div><AppLink className="light-button" href="/about">{"Conoc\u00E9 la propuesta"} <ArrowIcon /></AppLink></section>
     </>
   );
 }
 
+
+export function BookstoresPage() {
+  return <div className="editorial-page bookstores-page"><section className="bookstore-cta"><div><p className="section-label">{"PARA LIBRER\u00CDAS"}</p><h2>{"Hac\u00E9 que tus libros lleguen a m\u00E1s lectores."}</h2><p>{"Public\u00E1 tu cat\u00E1logo en Bookia para que las personas encuentren tus libros y puedan consultarte directo."}</p></div><AppLink className="light-button" href="/register">{"Crear cuenta para mi librer\u00EDa"} <ArrowIcon /></AppLink></section></div>;
+}
 function PlansPlan({ plan, isRegistrationFlow, onSelect }) {
   const className = `plans-plan plans-plan-${plan.tone}${plan.featured ? " plans-featured" : ""}`;
   const content = <>
