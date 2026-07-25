@@ -8,7 +8,7 @@ import { AppLink, navigate } from "../navigation";
 import { buildRegisterPath } from "../registerState";
 import { displayBookstoreDescription } from "../profileEditorState";
 import { displayReadingClubDate } from "../readingClubState";
-import { buildPublicSearchParams, buildReadingClubSearchParams, filterBookstores, getBookstoreTags, getVisibleReadingClubs } from "../publicSearchState";
+import { buildPublicSearchParams, buildReadingClubSearchParams, filterBookstores, getAvailableReadingClubGenres, getBookstoreTags, getVisibleReadingClubs } from "../publicSearchState";
 import { EmptyState, WhatsAppButton } from "../components/Commerce";
 import { ArrowIcon, BookIcon, LocationIcon, SearchIcon, StoreIcon, WhatsAppIcon } from "../components/Icons";
 
@@ -238,8 +238,9 @@ function BookstoresSection({ stores, loading }) {
 }
 
 
-function ReadingClubsSection({ genres, genresLoading }) {
+function ReadingClubsSection() {
   const [clubs, setClubs] = useState([]);
+  const [availableGenres, setAvailableGenres] = useState([]);
   const [genreSlug, setGenreSlug] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -249,7 +250,14 @@ function ReadingClubsSection({ genres, genresLoading }) {
     setLoading(true);
     setError("");
     apiFetch(`/reading-clubs?${params.toString()}`)
-      .then((data) => setClubs(data.items || []))
+      .then((data) => {
+        const nextGenres = getAvailableReadingClubGenres(data.available_genres || []);
+        setAvailableGenres(nextGenres);
+        if (genreSlug && !nextGenres.some((genre) => genre.slug === genreSlug)) {
+          setGenreSlug("");
+        }
+        setClubs(data.items || []);
+      })
       .catch((fetchError) => { setClubs([]); setError(fetchError.message || "No pudimos cargar los clubes de lectura."); })
       .finally(() => setLoading(false));
   }, [genreSlug]);
@@ -258,9 +266,9 @@ function ReadingClubsSection({ genres, genresLoading }) {
 
   return (
     <section className="home-section reading-clubs-section">
-      <div className="section-heading"><div><p className="section-label">CLUBES DE LECTURA</p><h2>{"Encontr\u00E1 una pr\u00F3xima conversaci\u00F3n"}</h2></div><p>{"Descubr\u00ED encuentros p\u00FAblicos de la comunidad Bookia y eleg\u00ED el g\u00E9nero que m\u00E1s te interesa."}</p></div>
+      <div className="section-heading"><div><p className="section-label">CLUBES DE LECTURA</p><h2>{"Encontr\u00E1 tu pr\u00F3ximo club de lectura"}</h2></div><p>{"Descubr\u00ED encuentros p\u00FAblicos de la comunidad Bookia y eleg\u00ED el g\u00E9nero que m\u00E1s te interesa."}</p></div>
       <form className="bookstore-filters reading-club-filters" role="search" aria-label="Buscar clubes de lectura" onSubmit={(event) => event.preventDefault()}>
-        <label className="bookstore-filter-field"><span>{"G\u00E9nero"}</span><select value={genreSlug} onChange={(event) => setGenreSlug(event.target.value)} disabled={genresLoading}><option value="">{genresLoading ? "Cargando g\u00E9neros..." : "Todos los g\u00E9neros"}</option>{genres.map((genre) => <option key={genre.id} value={genre.slug}>{genre.name}</option>)}</select></label>
+        <label className="bookstore-filter-field"><span>{"G\u00E9nero"}</span><select value={genreSlug} onChange={(event) => setGenreSlug(event.target.value)} disabled={loading}><option value="">{loading ? "Cargando g\u00E9neros..." : "Todos los g\u00E9neros"}</option>{availableGenres.map((genre) => <option key={genre.id} value={genre.slug}>{genre.name}</option>)}</select></label>
       </form>
       {loading ? <div className="reading-club-public-list loading-stores" aria-label="Cargando clubes de lectura"><span /><span /><span /></div> : null}
       {error ? <p className="feedback error" role="alert">{error}</p> : null}
@@ -345,7 +353,7 @@ export function HomePage() {
       <BenefitsStrip />
       <SearchResults filters={searchFilters} stores={stores} />
       <BookstoresSection stores={stores} loading={storesLoading} />
-      <ReadingClubsSection genres={genres} genresLoading={genresLoading} />
+      <ReadingClubsSection />
       <NewsletterSignup />
     </>
   );

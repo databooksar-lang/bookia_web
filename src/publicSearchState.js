@@ -60,6 +60,16 @@ export function buildReadingClubSearchParams(genreSlug) {
   return params;
 }
 
+export function getAvailableReadingClubGenres(genres = [], clubs = []) {
+  const availableSlugs = new Set(
+    clubs
+      .map((club) => club?.genre?.slug)
+      .filter(Boolean),
+  );
+
+  return genres.filter((genre) => genre?.slug && (!availableSlugs.size || availableSlugs.has(genre.slug)));
+}
 export function getVisibleReadingClubs(clubs = [], genreSlug = "") {
+
   return genreSlug ? clubs : clubs.slice(0, 6);
 }
