@@ -186,13 +186,22 @@ tests.push(["removes public plans links in favor of registration", () => {
   assert.match(editorialStyles, /\.plans-select-action/);
 }]);
 let failures = 0;
+tests.push(["places an open book and catalog card in the public search hero illustration", () => {
+  const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+  assert.match(publicPagesSource, /hero-open-book/);
+  assert.match(publicPagesSource, /hero-catalog-card/);
+  assert.match(editorialStyles, /\.hero-open-book\s*\{/);
+  assert.match(editorialStyles, /\.hero-catalog-card\s*\{/);
+}]);
 tests.push(["keeps Buscar as the home page with Bookia's approved public-search copy", () => {
   const appSource = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
 
   assert.match(appSource, /let page = <HomePage \/>;/);
   assert.match(publicPagesSource, /ENCONTR\\u00C1 TU PR\\u00D3XIMA LECTURA/);
-  assert.match(publicPagesSource, /Los libros que busc\\u00E1s, en librer\\u00EDas cerca tuyo\./);
+  assert.match(publicPagesSource, /Los libros que busc\\u00E1s, en un solo lugar\./);
   assert.match(publicPagesSource, /Consult\\u00E1 disponibilidad por WhatsApp/);
   assert.match(publicPagesSource, /M\\u00E1s libros y librer\\u00EDas para descubrir\./);
   assert.match(publicPagesSource, /Hac\\u00E9 que tus libros lleguen a m\\u00E1s lectores\./);
