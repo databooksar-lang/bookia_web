@@ -53,3 +53,13 @@ export function filterBookstores(bookstores = [], { query = "", tag = "" } = {})
     return matchesName && matchesTag;
   });
 }
+
+export function buildReadingClubSearchParams(genreSlug) {
+  const params = new URLSearchParams();
+  appendTrimmedParam(params, "genre_slug", genreSlug);
+  return params;
+}
+
+export function getVisibleReadingClubs(clubs = [], genreSlug = "") {
+  return genreSlug ? clubs : clubs.slice(0, 6);
+}

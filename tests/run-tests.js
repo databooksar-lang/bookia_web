@@ -18,6 +18,7 @@ import { registerDashboardNavigationStateTests } from './dashboardNavigationStat
 
 const tests = [
   ["treats /genres as an API route", () => {
+    assert.equal(isBookiaApiRoute("/reading-clubs?genre_slug=policial"), true);
     assert.equal(isBookiaApiRoute("/genres"), true);
     assert.equal(isBookiaApiRoute("/genres?active=true"), true);
   }],

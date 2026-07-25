@@ -8,7 +8,7 @@ import { ForgotPasswordPage, LoginPage, ResetPasswordPage } from "./pages/AuthPa
 import { RegisterPage } from "./pages/RegisterPage";
 import { isPlansRegistrationContext } from "./registerState";
 import { DashboardPage } from "./pages/DashboardPage";
-import { AboutPage, BookstorePage, BookstoresPage, HomePage, PlansPage } from "./pages/PublicPages";
+import { AboutPage, BookstorePage, BookstoresPage, HomePage, PlansPage, ReaderPage } from "./pages/PublicPages";
 import { CookiePolicyPage } from "./pages/CookiePolicyPage";
 import { PrivacyPage } from "./pages/PrivacyPage";
 import { TermsPage } from "./pages/TermsPage";
@@ -58,6 +58,7 @@ export default function App() {
   else if (pathname === "/reset-password") page = <ResetPasswordPage locationSearch={search} />;
   else if (pathname === "/dashboard") page = <DashboardPage me={me} refreshMe={refreshMe} locationSearch={search} />;
   else if (pathname.startsWith("/bookstores/")) page = <BookstorePage slug={pathname.replace("/bookstores/", "")} />;
+  else if (pathname.startsWith("/readers/")) page = <ReaderPage slug={pathname.replace("/readers/", "")} />;
 
   return (
     <div className="app-shell">
