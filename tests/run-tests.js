@@ -219,6 +219,13 @@ tests.push(["uses a responsive decorative reading-club illustration in the secti
   assert.match(editorialStyles, /\.reading-clubs-section-illustration\s*(?:,|\{)/);
   assert.match(editorialStyles, /@media \(max-width: 820px\)[\s\S]*?\.reading-clubs-section-illustration\s*(?:,|\{)/);
 }]);
+tests.push(["keeps the bookstore and reading-club sections visually compact", () => {
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+  assert.match(editorialStyles, /\.bookstores-section\s*\{[^}]*padding:\s*72px 0 56px;/s);
+  assert.match(editorialStyles, /\.reading-clubs-section\s*\{[^}]*padding:\s*56px 0 72px;/s);
+  assert.match(editorialStyles, /\.bookstores-section-illustration,[\s\S]*?\.reading-clubs-section-illustration\s*\{[^}]*width:\s*clamp\(220px, 20vw, 260px\);/s);
+}]);
 tests.push(["keeps the public search form hierarchy responsive", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
   const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
