@@ -69,6 +69,7 @@ function HeroSearch({ initialFilters, genres, genresLoading, onSearch }) {
       <div className="hero-copy"><p className="section-label">{"ENCONTR\u00C1 TU PR\u00D3XIMA LECTURA"}</p><h1>{"Los libros que busc\u00E1s, en un solo lugar."}</h1><p className="hero-lead">{"Bookia re\u00FAne los cat\u00E1logos de librer\u00EDas y vendedores independientes para que encuentres una lectura que te espera y consultes directo con quien la tiene."}</p></div>
       <div className="hero-books" aria-hidden="true"><img className="hero-illustration" src="/images/hero-bookia-discovery.webp" alt="" /></div>
       <form className="search-panel" onSubmit={submit} aria-label="Buscar libros">
+        <p className="search-panel-heading">Buscar libros</p>
         <label className="search-field search-field-title"><span>Nombre del libro</span><span className="input-with-icon"><SearchIcon /><input value={filters.title} onChange={updateFilter("title")} placeholder="Ej: Rayuela" /></span></label>
         <label className="search-field search-field-author"><span>Autor</span><input value={filters.author} onChange={updateFilter("author")} placeholder={"Ej: Julio Cort\u00E1zar"} /></label>
         <label className="search-field search-field-publisher"><span>Editorial</span><input value={filters.publisher} onChange={updateFilter("publisher")} placeholder="Ej: Sudamericana" /></label>
