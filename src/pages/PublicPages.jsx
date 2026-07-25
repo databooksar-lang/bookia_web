@@ -8,7 +8,7 @@ import { AppLink, navigate } from "../navigation";
 import { buildRegisterPath } from "../registerState";
 import { displayBookstoreDescription } from "../profileEditorState";
 import { displayReadingClubDate } from "../readingClubState";
-import { buildPublicSearchParams } from "../publicSearchState";
+import { buildPublicSearchParams, filterBookstores, getBookstoreTags } from "../publicSearchState";
 import { EmptyState, WhatsAppButton } from "../components/Commerce";
 import { ArrowIcon, BookIcon, LocationIcon, SearchIcon, StoreIcon, WhatsAppIcon } from "../components/Icons";
 
@@ -197,17 +197,29 @@ function BenefitsStrip() {
 }
 
 function BookstoresSection({ stores, loading }) {
+  const [query, setQuery] = useState("");
+  const [tag, setTag] = useState("");
+  const tags = getBookstoreTags(stores);
+  const filteredStores = filterBookstores(stores, { query, tag });
+  const hasActiveFilters = Boolean(query.trim() || tag);
+  const visibleStores = hasActiveFilters ? filteredStores : stores.slice(0, 6);
+
   return (
     <section className="home-section bookstores-section">
       <div className="section-heading">
         <div><p className="section-label">{"LIBRER\u00CDAS EN BOOKIA"}</p><h2>{"Descubr\u00ED qui\u00E9nes tienen libros para vos."}</h2></div>
         <p>{"Explor\u00E1 sus cat\u00E1logos y encontr\u00E1 nuevas librer\u00EDas para volver."}</p>
       </div>
+      {!loading && stores.length > 0 ? <form className="bookstore-filters" role="search" aria-label={"Buscar librer\u00EDas"} onSubmit={(event) => event.preventDefault()}>
+        <label className="bookstore-filter-field"><span>Nombre de la libreria</span><span className="input-with-icon"><SearchIcon /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Ej: DataBooksAr" /></span></label>
+        <label className="bookstore-filter-field"><span>Etiqueta</span><select value={tag} onChange={(event) => setTag(event.target.value)}><option value="">Todas las etiquetas</option>{tags.map((option) => <option key={option} value={option}>{option}</option>)}</select></label>
+      </form> : null}
       {loading ? <div className="store-grid loading-stores"><span /><span /><span /></div> : null}
       {!loading && stores.length === 0 ? <EmptyState compact title={"Pronto vas a encontrar m\u00E1s librer\u00EDas"}>{"Estamos sumando nuevos cat\u00E1logos para que tengas m\u00E1s libros para buscar."}</EmptyState> : null}
-      {!loading && stores.length > 0 ? (
+      {!loading && stores.length > 0 && visibleStores.length === 0 ? <EmptyState compact title="No encontramos librerias con esos filtros">Proba con otro nombre o elegi una etiqueta diferente.</EmptyState> : null}
+      {!loading && visibleStores.length > 0 ? (
         <div className="store-grid">
-          {stores.slice(0, 6).map((store, index) => {
+          {visibleStores.map((store, index) => {
             const logoUrl = resolveApiUrl(store.logo_url);
             return (
               <AppLink className="store-card" href={`/bookstores/${store.slug}`} key={store.id} onClick={() => trackBookstoreOpened(store, "home_bookstores")}>
@@ -286,11 +298,14 @@ export function HomePage() {
       <SearchResults filters={searchFilters} stores={stores} />
       <BookstoresSection stores={stores} loading={storesLoading} />
       <NewsletterSignup />
-      <section className="bookstore-cta"><div><p className="section-label">{"PARA LIBRER\u00CDAS"}</p><h2>{"Hac\u00E9 que tus libros lleguen a m\u00E1s lectores."}</h2><p>{"Public\u00E1 tu cat\u00E1logo en Bookia para que las personas encuentren tus libros y puedan consultarte directo."}</p></div><AppLink className="light-button" href="/about">{"Conoc\u00E9 la propuesta"} <ArrowIcon /></AppLink></section>
     </>
   );
 }
 
+
+export function BookstoresPage() {
+  return <div className="editorial-page bookstores-page"><section className="bookstore-cta"><div><p className="section-label">{"PARA LIBRER\u00CDAS"}</p><h2>{"Hac\u00E9 que tus libros lleguen a m\u00E1s lectores."}</h2><p>{"Public\u00E1 tu cat\u00E1logo en Bookia para que las personas encuentren tus libros y puedan consultarte directo."}</p></div><AppLink className="light-button" href="/register">{"Crear cuenta para mi librer\u00EDa"} <ArrowIcon /></AppLink></section></div>;
+}
 function PlansPlan({ plan, isRegistrationFlow, onSelect }) {
   const className = `plans-plan plans-plan-${plan.tone}${plan.featured ? " plans-featured" : ""}`;
   const content = <>

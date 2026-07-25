@@ -221,10 +221,22 @@ tests.push(["keeps Buscar as the home page with Bookia's approved public-search 
   assert.match(publicPagesSource, /Consult\\u00E1 disponibilidad por WhatsApp/);
   assert.match(publicPagesSource, /M\\u00E1s libros y librer\\u00EDas para descubrir\./);
   assert.match(publicPagesSource, /Hac\\u00E9 que tus libros lleguen a m\\u00E1s lectores\./);
-  assert.match(publicPagesSource, /href="\/about">\{"Conoc\\u00E9 la propuesta"\}/);
+  assert.match(publicPagesSource, /Crear cuenta para mi librer/);
   assert.match(publicPagesSource, /newsletter-subscribers/);
   assert.match(publicPagesSource, /Tu correo electr\\u00F3nico/);
   assert.match(publicPagesSource, /Quiero recibir novedades/);
+}]);
+tests.push(["separates the reader search and bookstore acquisition routes", () => {
+  const appSource = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
+  const headerSource = readFileSync(new URL("../src/components/SiteChrome.jsx", import.meta.url), "utf8");
+  const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+
+  assert.match(appSource, /pathname === "\/para-librerias"\) page = <BookstoresPage \/>;/);
+  assert.match(headerSource, /\{ href: "\/", label: "Buscar" \}/);
+  assert.match(headerSource, /\{ href: "\/para-librerias", label: "Para librerias" \}/);
+  assert.match(headerSource, /<AppLink href="\/para-librerias">Para librerias<\/AppLink>/);
+  assert.match(publicPagesSource, /export function BookstoresPage\(\)/);
+  assert.match(publicPagesSource, /Crear cuenta para mi librer/);
 }]);
 tests.push(["routes registration through the supported reader and bookstore flows", () => {
   const appSource = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
