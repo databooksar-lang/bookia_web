@@ -196,6 +196,7 @@ tests.push(["keeps Buscar as the home page with Bookia's approved public-search 
   assert.match(publicPagesSource, /Consult\\u00E1 disponibilidad por WhatsApp/);
   assert.match(publicPagesSource, /M\\u00E1s libros y librer\\u00EDas para descubrir\./);
   assert.match(publicPagesSource, /Hac\\u00E9 que tus libros lleguen a m\\u00E1s lectores\./);
+  assert.match(publicPagesSource, /href="\/about">\{"Conoc\\u00E9 la propuesta"\}/);
   assert.match(publicPagesSource, /newsletter-subscribers/);
   assert.match(publicPagesSource, /Tu correo electr\\u00F3nico/);
   assert.match(publicPagesSource, /Quiero recibir novedades/);
