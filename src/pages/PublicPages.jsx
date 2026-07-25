@@ -266,7 +266,7 @@ function ReadingClubsSection() {
 
   return (
     <section className="home-section reading-clubs-section">
-      <div className="section-heading"><div><p className="section-label">CLUBES DE LECTURA</p><h2>{"Encontr\u00E1 tu pr\u00F3ximo club de lectura"}</h2></div><p>{"Descubr\u00ED encuentros p\u00FAblicos de la comunidad Bookia y eleg\u00ED el g\u00E9nero que m\u00E1s te interesa."}</p></div>
+      <div className="section-heading"><div><p className="section-label">CLUBES DE LECTURA</p><h2>{"Encontr\u00E1 tu pr\u00F3ximo club de lectura"}</h2></div><img className="reading-clubs-section-illustration" src="/images/reading-clubs-section.png" alt="" /></div>
       <form className="bookstore-filters reading-club-filters" role="search" aria-label="Buscar clubes de lectura" onSubmit={(event) => event.preventDefault()}>
         <label className="bookstore-filter-field"><span>{"G\u00E9nero"}</span><select value={genreSlug} onChange={(event) => setGenreSlug(event.target.value)} disabled={loading}><option value="">{loading ? "Cargando g\u00E9neros..." : "Todos los g\u00E9neros"}</option>{availableGenres.map((genre) => <option key={genre.id} value={genre.slug}>{genre.name}</option>)}</select></label>
       </form>

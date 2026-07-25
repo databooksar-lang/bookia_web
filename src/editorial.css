@@ -502,7 +502,8 @@ button:disabled {
   color: var(--muted);
 }
 
-.bookstores-section-illustration {
+.bookstores-section-illustration,
+.reading-clubs-section-illustration {
   width: clamp(260px, 24vw, 320px);
   max-width: 100%;
   height: auto;
@@ -2648,7 +2649,8 @@ textarea:focus {
     max-width: none;
   }
 
-  .bookstores-section-illustration {
+  .bookstores-section-illustration,
+  .reading-clubs-section-illustration {
     width: min(280px, 80vw);
     margin: -8px 0 -18px;
     align-self: flex-end;
