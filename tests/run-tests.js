@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 import { isBookiaApiRoute } from "../src/apiRoutes.js";
 import { resolveApiUrl } from "../src/api.js";
@@ -195,6 +195,36 @@ tests.push(["renders one decorative image in the public search hero illustration
   assert.doesNotMatch(publicPagesSource, /hero-book hero-book-|hero-open-book|hero-catalog-card|hero-leaf/);
   assert.match(editorialStyles, /\.hero-illustration\s*\{/);
   assert.doesNotMatch(editorialStyles, /\.hero-book(?:\s|\.|\{)|\.hero-open-book|\.hero-catalog-card|\.hero-leaf/);
+}]);
+tests.push(["uses a responsive decorative bookstore facade in the Bookia bookstores heading", () => {
+  const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+  const illustrationPath = new URL("../public/images/bookstores-section-facade.png", import.meta.url);
+
+  assert.equal(existsSync(illustrationPath), true);
+  assert.match(publicPagesSource, /<img className="bookstores-section-illustration" src="\/images\/bookstores-section-facade\.png" alt="" \/>/);
+  assert.doesNotMatch(publicPagesSource, /Explor\\u00E1 sus cat\\u00E1logos y encontr\\u00E1 nuevas librer\\u00EDas para volver\./);
+  assert.match(editorialStyles, /\.bookstores-section-illustration\s*(?:,|\{)/);
+  assert.match(editorialStyles, /@media \(max-width: 820px\)[\s\S]*?\.bookstores-section-illustration\s*(?:,|\{)/);
+}]);
+
+tests.push(["uses a responsive decorative reading-club illustration in the section heading", () => {
+  const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+  const illustrationPath = new URL("../public/images/reading-clubs-section.png", import.meta.url);
+
+  assert.equal(existsSync(illustrationPath), true);
+  assert.match(publicPagesSource, /<img className="reading-clubs-section-illustration" src="\/images\/reading-clubs-section\.png" alt="" \/>/);
+  assert.doesNotMatch(publicPagesSource, /Descubr\\u00ED encuentros p\\u00FAblicos de la comunidad Bookia y eleg\\u00ED el g\\u00E9nero que m\\u00E1s te interesa\./);
+  assert.match(editorialStyles, /\.reading-clubs-section-illustration\s*(?:,|\{)/);
+  assert.match(editorialStyles, /@media \(max-width: 820px\)[\s\S]*?\.reading-clubs-section-illustration\s*(?:,|\{)/);
+}]);
+tests.push(["keeps the bookstore and reading-club sections visually compact", () => {
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+  assert.match(editorialStyles, /\.bookstores-section\s*\{[^}]*padding:\s*72px 0 56px;/s);
+  assert.match(editorialStyles, /\.reading-clubs-section\s*\{[^}]*padding:\s*56px 0 72px;/s);
+  assert.match(editorialStyles, /\.bookstores-section-illustration,[\s\S]*?\.reading-clubs-section-illustration\s*\{[^}]*width:\s*clamp\(220px, 20vw, 260px\);/s);
 }]);
 tests.push(["keeps the public search form hierarchy responsive", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");

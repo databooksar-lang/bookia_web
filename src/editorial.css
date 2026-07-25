@@ -502,6 +502,17 @@ button:disabled {
   color: var(--muted);
 }
 
+.bookstores-section-illustration,
+.reading-clubs-section-illustration {
+  width: clamp(220px, 20vw, 260px);
+  max-width: 100%;
+  height: auto;
+  margin: -28px 0 -34px;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
 .results-heading {
   align-items: end;
 }
@@ -2638,6 +2649,13 @@ textarea:focus {
     max-width: none;
   }
 
+  .bookstores-section-illustration,
+  .reading-clubs-section-illustration {
+    width: min(280px, 80vw);
+    margin: -8px 0 -18px;
+    align-self: flex-end;
+  }
+
   .store-grid,
   .plan-benefits,
   .about-values,
@@ -3502,8 +3520,12 @@ textarea:focus {
   .register-form-panel { padding: 42px 24px; }
 }
 
+.bookstores-section {
+  padding: 72px 0 56px;
+}
+
 .reading-clubs-section {
-  padding-top: 86px;
+  padding: 56px 0 72px;
 }
 
 .reading-club-filters {
