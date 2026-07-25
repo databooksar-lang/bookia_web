@@ -195,6 +195,22 @@ tests.push(["renders one decorative image in the public search hero illustration
   assert.match(editorialStyles, /\.hero-illustration\s*\{/);
   assert.doesNotMatch(editorialStyles, /\.hero-book(?:\s|\.|\{)|\.hero-open-book|\.hero-catalog-card|\.hero-leaf/);
 }]);
+tests.push(["keeps the public search form hierarchy responsive", () => {
+  const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+  assert.match(publicPagesSource, /search-field-title/);
+  assert.match(publicPagesSource, /search-field-author/);
+  assert.match(publicPagesSource, /search-field-publisher/);
+  assert.match(editorialStyles, /\.search-field-title\s*\{\s*grid-column:\s*span 7;/);
+  assert.match(editorialStyles, /\.search-field-author\s*\{\s*grid-column:\s*span 5;/);
+  assert.match(editorialStyles, /\.search-field-publisher\s*\{\s*grid-column:\s*span 4;/);
+  assert.match(editorialStyles, /\.search-submit\s*\{[^}]*grid-column:\s*span 3;/s);
+  assert.match(editorialStyles, /@media \(max-width: 1040px\)[\s\S]*?\.search-panel\s*\{\s*grid-template-columns:\s*repeat\(6,/);
+  assert.match(editorialStyles, /@media \(max-width: 820px\)[\s\S]*?\.search-panel\s*\{\s*grid-template-columns:\s*1fr;/);
+  assert.match(editorialStyles, /\.search-panel\s*\{[^}]*box-sizing:\s*border-box;/s);
+  assert.match(editorialStyles, /\.search-panel \.search-field > input,[\s\S]*?box-sizing:\s*border-box;/);
+}]);
 tests.push(["keeps Buscar as the home page with Bookia's approved public-search copy", () => {
   const appSource = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
