@@ -56,4 +56,24 @@ export function registerPublicSearchStateTests(register) {
   register("returns no bookstores when no filter combination matches", () => {
     assert.deepEqual(filterBookstores(bookstores, { query: "sur", tag: "Poes\u00EDa" }), []);
   });
+
+  register("builds the reading-club genre query", () => {
+    assert.deepEqual(
+      [...publicSearchState.buildReadingClubSearchParams("policial").entries()],
+      [["genre_slug", "policial"]],
+    );
+  });
+
+  register("limits the unfiltered reading-club list and keeps all filtered matches", () => {
+    const clubs = Array.from({ length: 7 }, (_, index) => ({ id: index + 1 }));
+
+    assert.deepEqual(
+      publicSearchState.getVisibleReadingClubs(clubs, "").map((club) => club.id),
+      [1, 2, 3, 4, 5, 6],
+    );
+    assert.deepEqual(
+      publicSearchState.getVisibleReadingClubs(clubs, "policial").map((club) => club.id),
+      [1, 2, 3, 4, 5, 6, 7],
+    );
+  });
 }

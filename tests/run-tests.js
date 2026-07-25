@@ -18,6 +18,7 @@ import { registerDashboardNavigationStateTests } from './dashboardNavigationStat
 
 const tests = [
   ["treats /genres as an API route", () => {
+    assert.equal(isBookiaApiRoute("/reading-clubs?genre_slug=policial"), true);
     assert.equal(isBookiaApiRoute("/genres"), true);
     assert.equal(isBookiaApiRoute("/genres?active=true"), true);
   }],
@@ -199,6 +200,8 @@ tests.push(["keeps the public search form hierarchy responsive", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
   const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
 
+  assert.match(publicPagesSource, /<p className="search-panel-heading">Buscar libros<\/p>/);
+  assert.match(editorialStyles, /\.search-panel-heading\s*\{[^}]*grid-column:\s*1\s*\/\s*-1;/s);
   assert.match(publicPagesSource, /search-field-title/);
   assert.match(publicPagesSource, /search-field-author/);
   assert.match(publicPagesSource, /search-field-publisher/);
