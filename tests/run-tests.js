@@ -319,6 +319,8 @@ tests.push(["presents About Bookia as a dual-audience discovery and contact plat
   assert.match(page, /Creada por Marcelo G\. Gonz.lez/);
   assert.match(page, /href="\/"/);
   assert.match(page, /href="\/register"/);
+  assert.match(page, /<img className="about-hero-logo" src="\/images\/logo-sin-fondo\.png" alt="Logo circular de Bookia" \/>/);
+  assert.doesNotMatch(page, /about-hero-panel/);
   assert.doesNotMatch(page, /compr. en Bookia|pag. en Bookia|procesamos pagos/i);
 }]);
 tests.push(["routes registration through the supported reader and bookstore flows", () => {
