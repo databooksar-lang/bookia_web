@@ -205,8 +205,8 @@ const READING_CLUB_BENEFITS = [
   [<LocationIcon key="icon" />, "Encuentros cercanos", "Conoc\u00E9 fecha y lugar de cada encuentro."],
 ];
 
-function BenefitsStrip({ benefits, ariaLabel }) {
-  return <section className="benefits-strip" aria-label={ariaLabel}>{benefits.map(([icon, title, text]) => <div key={title}>{icon}<span><strong>{title}</strong><small>{text}</small></span></div>)}</section>;
+function BenefitsStrip({ benefits, ariaLabel, className = "" }) {
+  return <section className={`benefits-strip ${className}`.trim()} aria-label={ariaLabel}>{benefits.map(([icon, title, text]) => <div key={title}>{icon}<span><strong>{title}</strong><small>{text}</small></span></div>)}</section>;
 }
 function BookstoresSection({ stores, loading }) {
   const [query, setQuery] = useState("");
@@ -244,7 +244,7 @@ function BookstoresSection({ stores, loading }) {
           })}
         </div>
       ) : null}
-      <BenefitsStrip benefits={BOOKSTORE_BENEFITS} ariaLabel="Beneficios para librerías" />
+      <BenefitsStrip className="bookstores-benefits-strip" benefits={BOOKSTORE_BENEFITS} ariaLabel="Beneficios para librerías" />
     </section>
   );
 }
@@ -300,7 +300,7 @@ function ReadingClubsSection() {
           })}
         </div>
       ) : null}
-      <BenefitsStrip benefits={READING_CLUB_BENEFITS} ariaLabel="Beneficios de los clubes de lectura" />
+      <BenefitsStrip className="reading-clubs-benefits-strip" benefits={READING_CLUB_BENEFITS} ariaLabel="Beneficios de los clubes de lectura" />
     </section>
   );
 }
@@ -377,7 +377,16 @@ export function BookstoresPage() {
   return (
     <div className="editorial-page bookstores-page">
       <section className="bookstores-hero">
-        <div><p className="section-label">{"PARA LIBRER\u00CDAS"}</p><h1>{"Tu librer\u00EDa, m\u00E1s cerca de nuevos lectores."}</h1><p>{"Mostr\u00E1 tu cat\u00E1logo en Bookia para que cada b\u00FAsqueda pueda convertirse en una nueva conversaci\u00F3n."}</p><AppLink className="primary-button" href="/register">{"Crear cuenta para mi librer\u00EDa"} <ArrowIcon /></AppLink></div>
+        <div className="bookstores-hero-copy"><p className="section-label">{"PARA LIBRER\u00CDAS"}</p><h1>{"Tu librer\u00EDa, m\u00E1s cerca de nuevos lectores."}</h1><p>{"Mostr\u00E1 tu cat\u00E1logo en Bookia para que cada b\u00FAsqueda pueda convertirse en una nueva conversaci\u00F3n."}</p><AppLink className="primary-button" href="/register">{"Crear cuenta para mi librer\u00EDa"} <ArrowIcon /></AppLink></div>
+        <div className="bookstores-catalog-preview" aria-hidden="true">
+          <div className="catalog-preview-toolbar"><span /><span /></div>
+          <div className="catalog-preview-search"><span /><i /></div>
+          <div className="catalog-preview-list">
+            <div className="catalog-preview-row"><b /><span><i /><i /><i /></span><em /></div>
+            <div className="catalog-preview-row"><b /><span><i /><i /><i /></span><em /></div>
+            <div className="catalog-preview-row"><b /><span><i /><i /><i /></span><em /></div>
+          </div>
+        </div>
       </section>
       <section className="bookstores-benefits" aria-labelledby="bookstores-benefits-title">
         <div className="bookstores-section-heading"><p className="section-label">{"UNA VIDRIERA PARA TU CAT\u00C1LOGO"}</p><h2 id="bookstores-benefits-title">{"Todo lo que necesit\u00E1s para que tus libros se encuentren."}</h2></div>
