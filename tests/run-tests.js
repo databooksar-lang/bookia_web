@@ -273,7 +273,7 @@ tests.push(["places contextual benefit strips after the bookstore and reading-cl
   assert.match(publicPagesSource, /Eleg\\u00ED c\\u00F3mo quer\\u00E9s leer/);
   assert.match(publicPagesSource, /Consult\\u00E1 a la librer\\u00EDa/);
   assert.match(bookstoresSectionSource[1], /<BenefitsStrip(?: className="bookstores-benefits-strip")? benefits=\{BOOKSTORE_BENEFITS\} ariaLabel="Beneficios para librer\u00EDas" \/>/);
-  assert.match(readingClubsSectionSource[1], /<BenefitsStrip benefits=\{READING_CLUB_BENEFITS\} ariaLabel="Beneficios de los clubes de lectura" \/>/);
+  assert.match(readingClubsSectionSource[1], /<BenefitsStrip(?: className="reading-clubs-benefits-strip")? benefits=\{READING_CLUB_BENEFITS\} ariaLabel="Beneficios de los clubes de lectura" \/>/);
   assert.match(publicPagesSource, /Comunidad lectora/);
   assert.match(publicPagesSource, /Lecturas compartidas/);
   assert.match(publicPagesSource, /Encuentros cercanos/);
@@ -434,7 +434,13 @@ tests.push(["adds a gap only before the bookstore benefits strip", () => {
   assert.match(publicPagesSource, /<BenefitsStrip className="bookstores-benefits-strip" benefits=\{BOOKSTORE_BENEFITS\}/);
   assert.match(editorialStyles, /\.bookstores-benefits-strip\s*\{[^}]*margin-top:\s*12px;/s);
 }]);
-for (const [name, fn] of tests) {
+tests.push(["adds a gap only before the reading-club benefits strip", () => {
+  const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+  assert.match(publicPagesSource, /<BenefitsStrip className="reading-clubs-benefits-strip" benefits=\{READING_CLUB_BENEFITS\}/);
+  assert.match(editorialStyles, /\.reading-clubs-benefits-strip\s*\{[^}]*margin-top:\s*12px;/s);
+}]);for (const [name, fn] of tests) {
   try {
     await fn();
     console.log(`PASS ${name}`);

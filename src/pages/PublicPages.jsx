@@ -300,7 +300,7 @@ function ReadingClubsSection() {
           })}
         </div>
       ) : null}
-      <BenefitsStrip benefits={READING_CLUB_BENEFITS} ariaLabel="Beneficios de los clubes de lectura" />
+      <BenefitsStrip className="reading-clubs-benefits-strip" benefits={READING_CLUB_BENEFITS} ariaLabel="Beneficios de los clubes de lectura" />
     </section>
   );
 }

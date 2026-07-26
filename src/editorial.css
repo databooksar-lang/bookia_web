@@ -440,6 +440,10 @@ button:disabled {
   margin-top: 12px;
 }
 
+.reading-clubs-benefits-strip {
+  margin-top: 12px;
+}
+
 .benefits-strip > div {
   padding: 8px 32px;
   display: flex;
