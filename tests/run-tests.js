@@ -305,6 +305,22 @@ tests.push(["separates the reader search and bookstore acquisition routes", () =
   assert.match(publicPagesSource, /export function BookstoresPage\(\)/);
   assert.match(publicPagesSource, /Crear cuenta para mi librer/);
 }]);
+tests.push(["presents About Bookia as a dual-audience discovery and contact platform", () => {
+  const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+  const aboutPageSource = publicPagesSource.match(/export function AboutPage\(\) \{([\s\S]*?)\r?\n\}\r?\n\r?\nconst AVAILABILITY_LABELS/);
+
+  assert.ok(aboutPageSource, "AboutPage should remain isolated before catalog helpers");
+  const page = aboutPageSource[1];
+  assert.match(page, /Los libros, las librer.as y los lectores, en el mismo lugar/);
+  assert.match(page, /Busc. un libro/);
+  assert.match(page, /Descubr. qui.n lo tiene/);
+  assert.match(page, /Contact. directamente/);
+  assert.match(page, /Bookia no vende libros ni procesa pagos/);
+  assert.match(page, /Creada por Marcelo G\. Gonz.lez/);
+  assert.match(page, /href="\/"/);
+  assert.match(page, /href="\/register"/);
+  assert.doesNotMatch(page, /compr. en Bookia|pag. en Bookia|procesamos pagos/i);
+}]);
 tests.push(["routes registration through the supported reader and bookstore flows", () => {
   const appSource = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
   const registerSource = readFileSync(new URL("../src/pages/RegisterPage.jsx", import.meta.url), "utf8");
