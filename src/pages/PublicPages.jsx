@@ -194,6 +194,11 @@ const BOOKSTORE_BENEFITS = [
   [<WhatsAppIcon key="icon" />, "Contacto directo", "Consult\u00E1 disponibilidad por WhatsApp"],
 ];
 
+const SEARCH_BENEFITS = [
+  [<BookIcon key="icon" />, "Encontr\u00E1 tu pr\u00F3ximo libro", "Busc\u00E1 por t\u00EDtulo, autor o editorial."],
+  [<SearchIcon key="icon" />, "Eleg\u00ED c\u00F3mo quer\u00E9s leer", "Nuevos y usados, g\u00E9neros e idiomas para explorar."],
+  [<WhatsAppIcon key="icon" />, "Consult\u00E1 a la librer\u00EDa", "Confirm\u00E1 disponibilidad antes de ir o comprar."],
+];
 const READING_CLUB_BENEFITS = [
   [<LocationIcon key="icon" />, "Comunidad lectora", "Encontr\u00E1 clubes para compartir tus lecturas."],
   [<BookIcon key="icon" />, "Lecturas compartidas", "Sumate a conversaciones con otros lectores."],
@@ -358,6 +363,7 @@ export function HomePage() {
   return (
     <>
       <HeroSearch initialFilters={draftFilters} genres={genres} genresLoading={genresLoading} onSearch={(nextFilters) => { setDraftFilters(nextFilters); setSearchFilters(nextFilters); setTimeout(() => document.getElementById("resultados")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0); }} />
+      <BenefitsStrip benefits={SEARCH_BENEFITS} ariaLabel="Beneficios de la búsqueda de libros" />
       <SearchResults filters={searchFilters} stores={stores} />
       <BookstoresSection stores={stores} loading={storesLoading} />
       <ReadingClubsSection />
