@@ -427,6 +427,17 @@ tests.push(["presents bookstore plans and AI capabilities without public pricing
   assert.match(page, /href="\/register"/);
   assert.doesNotMatch(page, /ARS|\$\s*\d|\/mes/);
 }]);
+tests.push(["composes the bookstore acquisition page around a catalog preview and conversion hierarchy", () => {
+  const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+  assert.match(publicPagesSource, /className="bookstores-hero-copy"/);
+  assert.match(publicPagesSource, /className="bookstores-catalog-preview" aria-hidden="true"/);
+  assert.match(publicPagesSource, /className="bookstores-benefit-grid"/);
+  assert.match(editorialStyles, /\.bookstores-hero\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1\.08fr\) minmax\(320px,\s*\.72fr\);/s);
+  assert.match(editorialStyles, /\.bookstores-catalog-preview\s*\{/);
+  assert.match(editorialStyles, /\.bookstore-cta\s*\{/);
+}]);
 tests.push(["adds a gap only before the bookstore benefits strip", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
   const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
