@@ -36,7 +36,6 @@ function RegistrationChoice({ type, title, description, image, onChoose }) {
   return (
     <button type="button" className={`register-choice register-choice-${type}`} onClick={onChoose}>
       <img src={image} alt="" />
-      <span className="register-choice-icon" aria-hidden="true">{type === "reader" ? "O" : "M"}</span>
       <strong>{title}</strong>
       <span>{description}</span>
       <span className="register-choice-action">Registrarme como {type === "reader" ? "lector/a" : "libreria"} <ArrowIcon size={15} /></span>

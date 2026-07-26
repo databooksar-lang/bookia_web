@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { createServer } from "vite";
 
 import { isBookiaApiRoute } from "../src/apiRoutes.js";
 import { resolveApiUrl } from "../src/api.js";
@@ -185,6 +188,18 @@ tests.push(["removes public plans links in favor of registration", () => {
   assert.match(publicPagesSource, /href="\/register"/);
   assert.match(authPagesSource, /href="\/register"/);
   assert.match(editorialStyles, /\.plans-select-action/);
+}]);
+tests.push(["renders registration choices without image badges", async () => {
+  const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
+  try {
+    const { RegisterPage } = await vite.ssrLoadModule("/src/pages/RegisterPage.jsx");
+    const markup = renderToStaticMarkup(createElement(RegisterPage, { locationSearch: "", me: null, onRegister: () => {} }));
+    assert.match(markup, /reader-books\.png/);
+    assert.match(markup, /bookstore-front\.png/);
+    assert.doesNotMatch(markup, /register-choice-icon/);
+  } finally {
+    await vite.close();
+  }
 }]);
 let failures = 0;
 tests.push(["renders one decorative image in the public search hero illustration", () => {
