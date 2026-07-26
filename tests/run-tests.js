@@ -259,6 +259,22 @@ tests.push(["keeps Buscar as the home page with Bookia's approved public-search 
   assert.match(publicPagesSource, /Tu correo electr\\u00F3nico/);
   assert.match(publicPagesSource, /Quiero recibir novedades/);
 }]);
+tests.push(["places contextual benefit strips after the bookstore and reading-club sections", () => {
+  const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+  const homePageSource = publicPagesSource.match(/export function HomePage\(\) \{([\s\S]*?)\r?\n\}\r?\n\r?\n\r?\nexport function BookstoresPage/);
+  const bookstoresSectionSource = publicPagesSource.match(/function BookstoresSection\(\{ stores, loading \}\) \{([\s\S]*?)\r?\n\}\r?\n\r?\n\r?\nfunction ReadingClubsSection/);
+  const readingClubsSectionSource = publicPagesSource.match(/function ReadingClubsSection\(\) \{([\s\S]*?)\r?\n\}\r?\n\r?\nfunction NewsletterSignup/);
+
+  assert.ok(homePageSource, "HomePage should remain isolated before BookstoresPage");
+  assert.ok(bookstoresSectionSource, "BookstoresSection should remain isolated before ReadingClubsSection");
+  assert.ok(readingClubsSectionSource, "ReadingClubsSection should remain isolated before NewsletterSignup");
+  assert.doesNotMatch(homePageSource[1], /<BenefitsStrip/);
+  assert.match(bookstoresSectionSource[1], /<BenefitsStrip benefits=\{BOOKSTORE_BENEFITS\} ariaLabel="Beneficios para librer\u00EDas" \/>/);
+  assert.match(readingClubsSectionSource[1], /<BenefitsStrip benefits=\{READING_CLUB_BENEFITS\} ariaLabel="Beneficios de los clubes de lectura" \/>/);
+  assert.match(publicPagesSource, /Comunidad lectora/);
+  assert.match(publicPagesSource, /Lecturas compartidas/);
+  assert.match(publicPagesSource, /Encuentros cercanos/);
+}]);
 tests.push(["separates the reader search and bookstore acquisition routes", () => {
   const appSource = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
   const headerSource = readFileSync(new URL("../src/components/SiteChrome.jsx", import.meta.url), "utf8");
@@ -390,6 +406,23 @@ tests.push(["renders the visual pricing composition with catalog growth band", (
   assert.doesNotMatch(editorialStyles, /\.plans-cta/);
   assert.match(editorialStyles, /\.plans-hero-art/);
   assert.doesNotMatch(editorialStyles, /\.plans-hero-art \{[^}]*background: var\(--forest-deep\)/);
+}]);
+tests.push(["presents bookstore plans and AI capabilities without public pricing", () => {
+  const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+  const bookstoresPageSource = publicPagesSource.match(/export function BookstoresPage\(\) \{([\s\S]*?)\n\}\nfunction PlansPlan/);
+
+  assert.ok(bookstoresPageSource, "BookstoresPage should remain isolated before PlansPlan");
+  const page = bookstoresPageSource[1];
+  assert.match(page, /Lleg\\u00E1 a m\\u00E1s lectores/);
+  assert.match(page, /Organiz\\u00E1 tu cat\\u00E1logo/);
+  assert.match(page, /Consultas directas/);
+  assert.match(page, /Planes que acompa\\u00F1an tu etapa/);
+  assert.match(page, /Carga desde foto/);
+  assert.match(page, /Autocompletado con IA/);
+  assert.doesNotMatch(page, />Gesti\\u00F3n/);
+  assert.match(page, /<li>\{"Fichas que siempre pod\\u00E9s revisar y editar"\}<\/li>/);
+  assert.match(page, /href="\/register"/);
+  assert.doesNotMatch(page, /ARS|\$\s*\d|\/mes/);
 }]);
 for (const [name, fn] of tests) {
   try {

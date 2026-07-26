@@ -188,15 +188,21 @@ function SearchResults({ filters, stores }) {
   );
 }
 
-function BenefitsStrip() {
-  const benefits = [
-    [<LocationIcon key="icon" />, "Cat\u00E1logos reales", "Libros publicados por librer\u00EDas y vendedores."],
-    [<StoreIcon key="icon" />, "Nuevos y usados", "Opciones para cada b\u00FAsqueda."],
-    [<WhatsAppIcon key="icon" />, "Contacto directo", "Consult\u00E1 disponibilidad por WhatsApp"],
-  ];
-  return <section className="benefits-strip" aria-label="Beneficios de Bookia">{benefits.map(([icon, title, text]) => <div key={title}>{icon}<span><strong>{title}</strong><small>{text}</small></span></div>)}</section>;
-}
+const BOOKSTORE_BENEFITS = [
+  [<LocationIcon key="icon" />, "Cat\u00E1logos reales", "Libros publicados por librer\u00EDas y vendedores."],
+  [<StoreIcon key="icon" />, "Nuevos y usados", "Opciones para cada b\u00FAsqueda."],
+  [<WhatsAppIcon key="icon" />, "Contacto directo", "Consult\u00E1 disponibilidad por WhatsApp"],
+];
 
+const READING_CLUB_BENEFITS = [
+  [<LocationIcon key="icon" />, "Comunidad lectora", "Encontr\u00E1 clubes para compartir tus lecturas."],
+  [<BookIcon key="icon" />, "Lecturas compartidas", "Sumate a conversaciones con otros lectores."],
+  [<LocationIcon key="icon" />, "Encuentros cercanos", "Conoc\u00E9 fecha y lugar de cada encuentro."],
+];
+
+function BenefitsStrip({ benefits, ariaLabel }) {
+  return <section className="benefits-strip" aria-label={ariaLabel}>{benefits.map(([icon, title, text]) => <div key={title}>{icon}<span><strong>{title}</strong><small>{text}</small></span></div>)}</section>;
+}
 function BookstoresSection({ stores, loading }) {
   const [query, setQuery] = useState("");
   const [tag, setTag] = useState("");
@@ -233,6 +239,7 @@ function BookstoresSection({ stores, loading }) {
           })}
         </div>
       ) : null}
+      <BenefitsStrip benefits={BOOKSTORE_BENEFITS} ariaLabel="Beneficios para librerías" />
     </section>
   );
 }
@@ -288,6 +295,7 @@ function ReadingClubsSection() {
           })}
         </div>
       ) : null}
+      <BenefitsStrip benefits={READING_CLUB_BENEFITS} ariaLabel="Beneficios de los clubes de lectura" />
     </section>
   );
 }
@@ -350,7 +358,6 @@ export function HomePage() {
   return (
     <>
       <HeroSearch initialFilters={draftFilters} genres={genres} genresLoading={genresLoading} onSearch={(nextFilters) => { setDraftFilters(nextFilters); setSearchFilters(nextFilters); setTimeout(() => document.getElementById("resultados")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0); }} />
-      <BenefitsStrip />
       <SearchResults filters={searchFilters} stores={stores} />
       <BookstoresSection stores={stores} loading={storesLoading} />
       <ReadingClubsSection />
@@ -361,7 +368,26 @@ export function HomePage() {
 
 
 export function BookstoresPage() {
-  return <div className="editorial-page bookstores-page"><section className="bookstore-cta"><div><p className="section-label">{"PARA LIBRER\u00CDAS"}</p><h2>{"Hac\u00E9 que tus libros lleguen a m\u00E1s lectores."}</h2><p>{"Public\u00E1 tu cat\u00E1logo en Bookia para que las personas encuentren tus libros y puedan consultarte directo."}</p></div><AppLink className="light-button" href="/register">{"Crear cuenta para mi librer\u00EDa"} <ArrowIcon /></AppLink></section></div>;
+  return (
+    <div className="editorial-page bookstores-page">
+      <section className="bookstores-hero">
+        <div><p className="section-label">{"PARA LIBRER\u00CDAS"}</p><h1>{"Tu librer\u00EDa, m\u00E1s cerca de nuevos lectores."}</h1><p>{"Mostr\u00E1 tu cat\u00E1logo en Bookia para que cada b\u00FAsqueda pueda convertirse en una nueva conversaci\u00F3n."}</p><AppLink className="primary-button" href="/register">{"Crear cuenta para mi librer\u00EDa"} <ArrowIcon /></AppLink></div>
+      </section>
+      <section className="bookstores-benefits" aria-labelledby="bookstores-benefits-title">
+        <div className="bookstores-section-heading"><p className="section-label">{"UNA VIDRIERA PARA TU CAT\u00C1LOGO"}</p><h2 id="bookstores-benefits-title">{"Todo lo que necesit\u00E1s para que tus libros se encuentren."}</h2></div>
+        <div className="bookstores-benefit-grid">
+          <article><span>01</span><h3>{"Lleg\u00E1 a m\u00E1s lectores"}</h3><p>{"Hac\u00E9 visible tu cat\u00E1logo para quienes ya est\u00E1n buscando su pr\u00F3xima lectura."}</p></article>
+          <article><span>02</span><h3>{"Organiz\u00E1 tu cat\u00E1logo"}</h3><p>{"Public\u00E1 tus libros y manten\u00E9 actualizada la informaci\u00F3n que quer\u00E9s compartir."}</p></article>
+          <article><span>03</span><h3>Consultas directas</h3><p>{"Las personas interesadas pueden contactar a tu librer\u00EDa directamente para consultar disponibilidad."}</p></article>
+        </div>
+      </section>
+      <section className="bookstores-plans" aria-labelledby="bookstores-plans-title">
+        <div><p className="section-label">{"CREC\u00C9 A TU RITMO"}</p><h2 id="bookstores-plans-title">{"Planes que acompa\u00F1an tu etapa."}</h2><p>{"Empez\u00E1 con una prueba inicial y eleg\u00ED el plan que mejor acompa\u00F1e el tama\u00F1o y la forma de trabajo de tu librer\u00EDa."}</p></div>
+        <div className="bookstores-ai-card"><p>{"Gesti\u00F3n m\u00E1s simple"}</p><h3>{"Menos tiempo cargando, m\u00E1s tiempo entre libros."}</h3><ul><li>Carga desde foto</li><li>Autocompletado con IA</li><li>{"Fichas que siempre pod\u00E9s revisar y editar"}</li></ul></div>
+      </section>
+      <section className="bookstore-cta"><div><p className="section-label">{"PARA LIBRER\u00CDAS"}</p><h2>{"Hac\u00E9 que tus libros lleguen a m\u00E1s lectores."}</h2><p>{"Public\u00E1 tu cat\u00E1logo en Bookia para que las personas encuentren tus libros y puedan consultarte directo."}</p></div><AppLink className="light-button" href="/register">{"Crear cuenta para mi librer\u00EDa"} <ArrowIcon /></AppLink></section>
+    </div>
+  );
 }
 function PlansPlan({ plan, isRegistrationFlow, onSelect }) {
   const className = `plans-plan plans-plan-${plan.tone}${plan.featured ? " plans-featured" : ""}`;
