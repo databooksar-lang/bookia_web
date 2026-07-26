@@ -3714,3 +3714,5 @@ textarea:focus {
   .about-impact > div { gap: 30px; margin-top: 42px; }
   .about-impact article { padding: 0; border: 0; }
 }
+.about-hero-logo { width: min(100%, 420px); justify-self: end; filter: drop-shadow(0 26px 34px rgba(13, 57, 45, .18)); }
+@media (max-width: 760px) { .about-hero-logo { width: min(78vw, 360px); justify-self: center; } }
