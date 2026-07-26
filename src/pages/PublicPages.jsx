@@ -358,6 +358,7 @@ export function HomePage() {
   return (
     <>
       <HeroSearch initialFilters={draftFilters} genres={genres} genresLoading={genresLoading} onSearch={(nextFilters) => { setDraftFilters(nextFilters); setSearchFilters(nextFilters); setTimeout(() => document.getElementById("resultados")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0); }} />
+      <BenefitsStrip benefits={BOOKSTORE_BENEFITS} ariaLabel="Beneficios de la búsqueda de libros" />
       <SearchResults filters={searchFilters} stores={stores} />
       <BookstoresSection stores={stores} loading={storesLoading} />
       <ReadingClubsSection />

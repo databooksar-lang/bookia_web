@@ -268,7 +268,7 @@ tests.push(["places contextual benefit strips after the bookstore and reading-cl
   assert.ok(homePageSource, "HomePage should remain isolated before BookstoresPage");
   assert.ok(bookstoresSectionSource, "BookstoresSection should remain isolated before ReadingClubsSection");
   assert.ok(readingClubsSectionSource, "ReadingClubsSection should remain isolated before NewsletterSignup");
-  assert.doesNotMatch(homePageSource[1], /<BenefitsStrip/);
+  assert.match(homePageSource[1], /<HeroSearch[\s\S]*?<BenefitsStrip benefits=\{BOOKSTORE_BENEFITS\} ariaLabel="Beneficios de la b\u00FAsqueda de libros" \/>[\s\S]*?<SearchResults[\s\S]*?<BookstoresSection/s);
   assert.match(bookstoresSectionSource[1], /<BenefitsStrip benefits=\{BOOKSTORE_BENEFITS\} ariaLabel="Beneficios para librer\u00EDas" \/>/);
   assert.match(readingClubsSectionSource[1], /<BenefitsStrip benefits=\{READING_CLUB_BENEFITS\} ariaLabel="Beneficios de los clubes de lectura" \/>/);
   assert.match(publicPagesSource, /Comunidad lectora/);
