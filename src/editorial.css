@@ -436,6 +436,10 @@ button:disabled {
   background: var(--forest-deep);
 }
 
+.bookstores-benefits-strip {
+  margin-top: 12px;
+}
+
 .benefits-strip > div {
   padding: 8px 32px;
   display: flex;

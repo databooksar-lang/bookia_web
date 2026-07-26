@@ -205,8 +205,8 @@ const READING_CLUB_BENEFITS = [
   [<LocationIcon key="icon" />, "Encuentros cercanos", "Conoc\u00E9 fecha y lugar de cada encuentro."],
 ];
 
-function BenefitsStrip({ benefits, ariaLabel }) {
-  return <section className="benefits-strip" aria-label={ariaLabel}>{benefits.map(([icon, title, text]) => <div key={title}>{icon}<span><strong>{title}</strong><small>{text}</small></span></div>)}</section>;
+function BenefitsStrip({ benefits, ariaLabel, className = "" }) {
+  return <section className={`benefits-strip ${className}`.trim()} aria-label={ariaLabel}>{benefits.map(([icon, title, text]) => <div key={title}>{icon}<span><strong>{title}</strong><small>{text}</small></span></div>)}</section>;
 }
 function BookstoresSection({ stores, loading }) {
   const [query, setQuery] = useState("");
@@ -244,7 +244,7 @@ function BookstoresSection({ stores, loading }) {
           })}
         </div>
       ) : null}
-      <BenefitsStrip benefits={BOOKSTORE_BENEFITS} ariaLabel="Beneficios para librerías" />
+      <BenefitsStrip className="bookstores-benefits-strip" benefits={BOOKSTORE_BENEFITS} ariaLabel="Beneficios para librerías" />
     </section>
   );
 }
