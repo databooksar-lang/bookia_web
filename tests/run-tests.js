@@ -438,7 +438,13 @@ tests.push(["composes the bookstore acquisition page around a catalog preview an
   assert.match(editorialStyles, /\.bookstores-catalog-preview\s*\{/);
   assert.match(editorialStyles, /\.bookstore-cta\s*\{/);
 }]);
-tests.push(["adds a gap only before the bookstore benefits strip", () => {
+tests.push(["presents bookstore benefits as modern independent cards", () => {
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+  assert.match(editorialStyles, /\.bookstores-section-heading\s*\{[^}]*grid-template-columns:\s*1fr;/s);
+  assert.match(editorialStyles, /\.bookstores-benefit-grid\s*\{[^}]*gap:\s*18px;/s);
+  assert.match(editorialStyles, /\.bookstores-benefit-grid article\s*\{[^}]*border-radius:\s*18px;/s);
+}]);tests.push(["adds a gap only before the bookstore benefits strip", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
   const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
 

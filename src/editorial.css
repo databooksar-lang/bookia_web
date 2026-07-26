@@ -3319,13 +3319,13 @@ textarea:focus {
 .bookstores-hero p:not(.section-label) { max-width: 580px; margin: 0 0 32px; color: rgba(255, 250, 240, .78); font-size: 1.16rem; line-height: 1.6; }
 .bookstores-hero .primary-button { display: inline-flex; }
 .bookstores-benefits { margin-bottom: 92px; }
-.bookstores-section-heading { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 40px; align-items: end; margin-bottom: 38px; }
+.bookstores-section-heading { display: grid; grid-template-columns: 1fr; gap: 14px; align-items: start; max-width: 820px; margin-bottom: 42px; }
 .bookstores-section-heading h2, .bookstores-plans h2 { margin: 0; color: var(--forest-deep); font-size: clamp(2.4rem, 4.8vw, 4.8rem); line-height: .98; }
-.bookstores-benefit-grid { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); }
-.bookstores-benefit-grid article { min-height: 242px; padding: 28px clamp(20px, 3vw, 42px); border-right: 1px solid var(--line); }
-.bookstores-benefit-grid article:last-child { border-right: 0; }
+.bookstores-benefit-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; border: 0; background: transparent; }
+.bookstores-benefit-grid article { min-height: 266px; padding: 30px clamp(24px, 3vw, 38px); border: 1px solid rgba(23, 63, 53, .12); border-radius: 18px; background: #fffaf3; box-shadow: 0 12px 30px rgba(23, 63, 53, .07); transition: transform 180ms ease, box-shadow 180ms ease; }
+.bookstores-benefit-grid article:last-child { border-right: 1px solid rgba(23, 63, 53, .12); }
 .bookstores-benefit-grid span { color: var(--coral-dark); font-size: .78rem; font-weight: 800; letter-spacing: .12em; }
-.bookstores-benefit-grid h3 { margin: 54px 0 12px; color: var(--forest-deep); font-size: 1.7rem; line-height: 1.05; }
+.bookstores-benefit-grid h3 { margin: 38px 0 12px; color: var(--forest-deep); font-size: 1.7rem; line-height: 1.05; }
 .bookstores-benefit-grid p, .bookstores-plans > div > p { margin: 0; color: var(--muted); line-height: 1.6; }
 .bookstores-plans { display: grid; grid-template-columns: 1.05fr .95fr; gap: clamp(34px, 8vw, 112px); align-items: center; margin-bottom: 100px; padding: clamp(36px, 6vw, 76px); background: #eadfce; border-radius: 20px; }
 .bookstores-plans > div > p { max-width: 540px; margin-top: 22px; }
@@ -3368,6 +3368,14 @@ textarea:focus {
   .bookstores-hero { grid-template-columns: 1fr; gap: 36px; min-height: 0; padding: 72px 26px 46px; }
   .bookstores-catalog-preview { width: min(100%, 420px); justify-self: end; transform: rotate(1.25deg); }
   .bookstores-benefit-grid { background: transparent; }
+}
+.bookstores-benefit-grid article:hover { transform: translateY(-5px); box-shadow: 0 18px 38px rgba(23, 63, 53, .12); }
+.bookstores-benefit-grid span { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 50%; color: var(--coral-dark); background: rgba(232, 93, 63, .1); font-size: .72rem; }
+@media (max-width: 760px) {
+  .bookstores-section-heading { margin-bottom: 28px; }
+  .bookstores-benefit-grid { gap: 12px; }
+  .bookstores-benefit-grid article, .bookstores-benefit-grid article:last-child { min-height: 0; padding: 24px; border: 1px solid rgba(23, 63, 53, .12); border-radius: 14px; }
+  .bookstores-benefit-grid h3 { margin-top: 28px; }
 }
 /* Plans page */
 .plans-page { background: #f8f4ec; }
