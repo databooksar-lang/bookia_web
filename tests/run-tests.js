@@ -259,6 +259,22 @@ tests.push(["keeps Buscar as the home page with Bookia's approved public-search 
   assert.match(publicPagesSource, /Tu correo electr\\u00F3nico/);
   assert.match(publicPagesSource, /Quiero recibir novedades/);
 }]);
+tests.push(["places contextual benefit strips after the bookstore and reading-club sections", () => {
+  const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+  const homePageSource = publicPagesSource.match(/export function HomePage\(\) \{([\s\S]*?)\r?\n\}\r?\n\r?\n\r?\nexport function BookstoresPage/);
+  const bookstoresSectionSource = publicPagesSource.match(/function BookstoresSection\(\{ stores, loading \}\) \{([\s\S]*?)\r?\n\}\r?\n\r?\n\r?\nfunction ReadingClubsSection/);
+  const readingClubsSectionSource = publicPagesSource.match(/function ReadingClubsSection\(\) \{([\s\S]*?)\r?\n\}\r?\n\r?\nfunction NewsletterSignup/);
+
+  assert.ok(homePageSource, "HomePage should remain isolated before BookstoresPage");
+  assert.ok(bookstoresSectionSource, "BookstoresSection should remain isolated before ReadingClubsSection");
+  assert.ok(readingClubsSectionSource, "ReadingClubsSection should remain isolated before NewsletterSignup");
+  assert.doesNotMatch(homePageSource[1], /<BenefitsStrip/);
+  assert.match(bookstoresSectionSource[1], /<BenefitsStrip benefits=\{BOOKSTORE_BENEFITS\} ariaLabel="Beneficios para librer\u00EDas" \/>/);
+  assert.match(readingClubsSectionSource[1], /<BenefitsStrip benefits=\{READING_CLUB_BENEFITS\} ariaLabel="Beneficios de los clubes de lectura" \/>/);
+  assert.match(publicPagesSource, /Comunidad lectora/);
+  assert.match(publicPagesSource, /Lecturas compartidas/);
+  assert.match(publicPagesSource, /Encuentros cercanos/);
+}]);
 tests.push(["separates the reader search and bookstore acquisition routes", () => {
   const appSource = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
   const headerSource = readFileSync(new URL("../src/components/SiteChrome.jsx", import.meta.url), "utf8");
