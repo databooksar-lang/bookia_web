@@ -66,7 +66,7 @@ function HeroSearch({ initialFilters, genres, genresLoading, onSearch }) {
   function updateFilter(name) { return (event) => setFilters((current) => ({ ...current, [name]: event.target.value })); }
   return (
     <section className="hero">
-      <div className="hero-copy"><p className="section-label">{"ENCONTR\u00C1 TU PR\u00D3XIMA LECTURA"}</p><h1>{"Los libros que busc\u00E1s, en un solo lugar."}</h1><p className="hero-lead">{"Bookia re\u00FAne los cat\u00E1logos de librer\u00EDas y vendedores independientes para que encuentres una lectura que te espera y consultes directo con quien la tiene."}</p></div>
+      <div className="hero-copy"><p className="section-label">{"ENCONTR\u00C1 TU PR\u00D3XIMA LECTURA"}</p><h1>{"Los libros que busc\u00E1s, en un solo lugar."}</h1><p className="hero-lead">{"Explora librerias, descubri catalogos reales y conectate con clubes de lectura. Bookia reúne todo en un solo lugar para que encuentres el libro que buscas y consultes directamente con quien lo tiene."}</p></div>
       <div className="hero-books" aria-hidden="true"><img className="hero-illustration" src="/images/hero-bookia-discovery.webp" alt="" /></div>
       <form className="search-panel" onSubmit={submit} aria-label="Buscar libros">
         <p className="search-panel-heading">Buscar libros</p>
