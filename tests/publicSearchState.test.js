@@ -77,6 +77,27 @@ export function registerPublicSearchStateTests(register) {
     );
   });
 
+  register("filters reading clubs by title without case or accent sensitivity", () => {
+    const clubs = [
+      { id: 1, title: "C\u00EDrculo de poes\u00EDa" },
+      { id: 2, title: "Misterio nocturno" },
+    ];
+
+    assert.deepEqual(
+      publicSearchState.getVisibleReadingClubs(clubs, "policial", "circulo").map((club) => club.id),
+      [1],
+    );
+  });
+
+  register("keeps all matching clubs when filtering by title", () => {
+    const clubs = Array.from({ length: 7 }, (_, index) => ({ id: index + 1, title: "Club mensual" }));
+
+    assert.deepEqual(
+      publicSearchState.getVisibleReadingClubs(clubs, "", "club").map((club) => club.id),
+      [1, 2, 3, 4, 5, 6, 7],
+    );
+  });
+
   register("keeps only genres that are available in public reading clubs", () => {
     assert.deepEqual(
       publicSearchState.getAvailableReadingClubGenres([

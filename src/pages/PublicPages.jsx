@@ -254,6 +254,7 @@ function ReadingClubsSection() {
   const [clubs, setClubs] = useState([]);
   const [availableGenres, setAvailableGenres] = useState([]);
   const [genreSlug, setGenreSlug] = useState("");
+  const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -274,12 +275,14 @@ function ReadingClubsSection() {
       .finally(() => setLoading(false));
   }, [genreSlug]);
 
-  const visibleClubs = getVisibleReadingClubs(clubs, genreSlug);
+  const visibleClubs = getVisibleReadingClubs(clubs, genreSlug, query);
+  const hasQuery = query.trim().length > 0;
 
   return (
     <section className="home-section reading-clubs-section">
       <div className="section-heading"><div><p className="section-label">CLUBES DE LECTURA</p><h2>{"Encontr\u00E1 tu pr\u00F3ximo club de lectura"}</h2></div><img className="reading-clubs-section-illustration" src="/images/reading-clubs-section.png" alt="" /></div>
       <form className="bookstore-filters reading-club-filters" role="search" aria-label="Buscar clubes de lectura" onSubmit={(event) => event.preventDefault()}>
+        <label className="bookstore-filter-field"><span>Buscar por nombre o palabras clave</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Ej: Club de novela" /></label>
         <label className="bookstore-filter-field"><span>{"G\u00E9nero"}</span><select value={genreSlug} onChange={(event) => setGenreSlug(event.target.value)} disabled={loading}><option value="">{loading ? "Cargando g\u00E9neros..." : "Todos los g\u00E9neros"}</option>{availableGenres.map((genre) => <option key={genre.id} value={genre.slug}>{genre.name}</option>)}</select></label>
       </form>
       {loading ? <div className="reading-club-public-list loading-stores" aria-label="Cargando clubes de lectura"><span /><span /><span /></div> : null}

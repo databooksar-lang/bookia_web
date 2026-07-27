@@ -3604,7 +3604,7 @@ textarea:focus {
 }
 
 .reading-club-filters {
-  grid-template-columns: minmax(220px, 0.42fr);
+  grid-template-columns: minmax(220px, 1fr) minmax(220px, 0.65fr);
 }
 
 .reading-club-link {
