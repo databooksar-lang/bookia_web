@@ -79,7 +79,7 @@ export function SiteFooter() {
           <AppLink href="/cookies">Cookies</AppLink>
           <AppLink href="/login">Ingreso de librerias</AppLink>
         </nav>
-        <p className="footer-note">Una vidriera local para cada historia.</p>
+        <p className="footer-note">Conectados por los libros.</p>
       </div>
     </footer>
   );

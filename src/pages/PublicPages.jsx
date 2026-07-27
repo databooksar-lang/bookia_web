@@ -330,13 +330,13 @@ function NewsletterSignup() {
     <section className="newsletter-signup" aria-labelledby="newsletter-title">
       <div>
         <p className="section-label">{"NOVEDADES DE BOOKIA"}</p>
-        <h2 id="newsletter-title">{"M\u00E1s libros y librer\u00EDas para descubrir."}</h2>
-        <p>{"Recib\u00ED novedades de cat\u00E1logos, librer\u00EDas y lecturas para seguir buscando. Solo cuando haya algo para contarte."}</p>
+        <h2 id="newsletter-title">{"M\u00E1s para descubrir."}</h2>
+        <p>{"Recib\u00ED novedades de cat\u00E1logos, recomendaciones, librer\u00EDas y lecturas."}</p>
       </div>
       <form className="newsletter-form" onSubmit={submit}>
         <label><span>{"Tu correo electr\u00F3nico"}</span><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" placeholder="lector@ejemplo.com" required disabled={status === "submitting"} /></label>
         <button className="primary-button" type="submit" disabled={status === "submitting"}>{status === "submitting" ? "Sumando..." : "Quiero recibir novedades"} <ArrowIcon /></button>
-        <p className="newsletter-consent">{"Al suscribirte acept\u00E1s recibir novedades y promociones. Consult\u00E1 nuestra "}<AppLink href="/privacy">{"Pol\u00EDtica de Privacidad"}</AppLink>.</p>
+        <p className="newsletter-consent" style={{ fontSize: "0.8rem" }}>{"Al suscribirte acept\u00E1s recibir novedades y promociones. Consult\u00E1 nuestra "}<AppLink href="/privacy">{"Pol\u00EDtica de Privacidad"}</AppLink>.</p>
         {message ? <p className={`feedback ${status}`} role="status" aria-live="polite">{message}</p> : null}
       </form>
     </section>
