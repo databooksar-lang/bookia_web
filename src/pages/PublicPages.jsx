@@ -66,7 +66,7 @@ function HeroSearch({ initialFilters, genres, genresLoading, onSearch }) {
   function updateFilter(name) { return (event) => setFilters((current) => ({ ...current, [name]: event.target.value })); }
   return (
     <section className="hero">
-      <div className="hero-copy"><p className="section-label">{"ENCONTR\u00C1 TU PR\u00D3XIMA LECTURA"}</p><h1>{"Los libros que busc\u00E1s, en un solo lugar."}</h1><p className="hero-lead">{"Bookia re\u00FAne los cat\u00E1logos de librer\u00EDas y vendedores independientes para que encuentres una lectura que te espera y consultes directo con quien la tiene."}</p></div>
+      <div className="hero-copy"><p className="section-label">{"ENCONTR\u00C1 TU PR\u00D3XIMA LECTURA"}</p><h1>{"Los libros que busc\u00E1s, en un solo lugar."}</h1><p className="hero-lead">{"Explora librerias, descubri catalogos reales y conectate con clubes de lectura. Bookia reúne todo en un solo lugar para que encuentres el libro que buscas y consultes directamente con quien lo tiene."}</p></div>
       <div className="hero-books" aria-hidden="true"><img className="hero-illustration" src="/images/hero-bookia-discovery.webp" alt="" /></div>
       <form className="search-panel" onSubmit={submit} aria-label="Buscar libros">
         <p className="search-panel-heading">Buscar libros</p>
@@ -254,6 +254,7 @@ function ReadingClubsSection() {
   const [clubs, setClubs] = useState([]);
   const [availableGenres, setAvailableGenres] = useState([]);
   const [genreSlug, setGenreSlug] = useState("");
+  const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -274,12 +275,14 @@ function ReadingClubsSection() {
       .finally(() => setLoading(false));
   }, [genreSlug]);
 
-  const visibleClubs = getVisibleReadingClubs(clubs, genreSlug);
+  const visibleClubs = getVisibleReadingClubs(clubs, genreSlug, query);
+  const hasQuery = query.trim().length > 0;
 
   return (
     <section className="home-section reading-clubs-section">
       <div className="section-heading"><div><p className="section-label">CLUBES DE LECTURA</p><h2>{"Encontr\u00E1 tu pr\u00F3ximo club de lectura"}</h2></div><img className="reading-clubs-section-illustration" src="/images/reading-clubs-section.png" alt="" /></div>
       <form className="bookstore-filters reading-club-filters" role="search" aria-label="Buscar clubes de lectura" onSubmit={(event) => event.preventDefault()}>
+        <label className="bookstore-filter-field"><span>Buscar por nombre o palabras clave</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Ej: Club de novela" /></label>
         <label className="bookstore-filter-field"><span>{"G\u00E9nero"}</span><select value={genreSlug} onChange={(event) => setGenreSlug(event.target.value)} disabled={loading}><option value="">{loading ? "Cargando g\u00E9neros..." : "Todos los g\u00E9neros"}</option>{availableGenres.map((genre) => <option key={genre.id} value={genre.slug}>{genre.name}</option>)}</select></label>
       </form>
       {loading ? <div className="reading-club-public-list loading-stores" aria-label="Cargando clubes de lectura"><span /><span /><span /></div> : null}
@@ -330,13 +333,13 @@ function NewsletterSignup() {
     <section className="newsletter-signup" aria-labelledby="newsletter-title">
       <div>
         <p className="section-label">{"NOVEDADES DE BOOKIA"}</p>
-        <h2 id="newsletter-title">{"M\u00E1s libros y librer\u00EDas para descubrir."}</h2>
-        <p>{"Recib\u00ED novedades de cat\u00E1logos, librer\u00EDas y lecturas para seguir buscando. Solo cuando haya algo para contarte."}</p>
+        <h2 id="newsletter-title">{"M\u00E1s para descubrir."}</h2>
+        <p>{"Recib\u00ED novedades de cat\u00E1logos, recomendaciones, librer\u00EDas y lecturas."}</p>
       </div>
       <form className="newsletter-form" onSubmit={submit}>
         <label><span>{"Tu correo electr\u00F3nico"}</span><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" placeholder="lector@ejemplo.com" required disabled={status === "submitting"} /></label>
         <button className="primary-button" type="submit" disabled={status === "submitting"}>{status === "submitting" ? "Sumando..." : "Quiero recibir novedades"} <ArrowIcon /></button>
-        <p className="newsletter-consent">{"Al suscribirte acept\u00E1s recibir novedades y promociones. Consult\u00E1 nuestra "}<AppLink href="/privacy">{"Pol\u00EDtica de Privacidad"}</AppLink>.</p>
+        <p className="newsletter-consent" style={{ fontSize: "0.8rem" }}>{"Al suscribirte acept\u00E1s recibir novedades y promociones. Consult\u00E1 nuestra "}<AppLink href="/privacy">{"Pol\u00EDtica de Privacidad"}</AppLink>.</p>
         {message ? <p className={`feedback ${status}`} role="status" aria-live="polite">{message}</p> : null}
       </form>
     </section>

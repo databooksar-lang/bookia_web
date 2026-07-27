@@ -69,7 +69,11 @@ export function getAvailableReadingClubGenres(genres = [], clubs = []) {
 
   return genres.filter((genre) => genre?.slug && (!availableSlugs.size || availableSlugs.has(genre.slug)));
 }
-export function getVisibleReadingClubs(clubs = [], genreSlug = "") {
+export function getVisibleReadingClubs(clubs = [], genreSlug = "", query = "") {
+  const normalizedQuery = normalizeBookstoreSearchValue(query);
+  const matchingClubs = normalizedQuery
+    ? clubs.filter((club) => normalizeBookstoreSearchValue(club?.title).includes(normalizedQuery))
+    : clubs;
 
-  return genreSlug ? clubs : clubs.slice(0, 6);
+  return genreSlug || normalizedQuery ? matchingClubs : matchingClubs.slice(0, 6);
 }
