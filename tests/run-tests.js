@@ -16,6 +16,7 @@ import { registerPublicSearchStateTests } from "./publicSearchState.test.js";
 import { registerPlansPricingStateTests } from "./plansPricingState.test.js";
 import { registerAnalyticsStateTests } from "./analyticsState.test.js";
 import { registerRegisterStateTests } from "./registerState.test.js";
+import { registerReaderProfileStateTests } from "./readerProfileState.test.js";
 
 import { registerDashboardNavigationStateTests } from './dashboardNavigationState.test.js';
 
@@ -117,6 +118,7 @@ registerPlansPricingStateTests((name, fn) => tests.push([name, fn]));
 registerAnalyticsStateTests((name, fn) => tests.push([name, fn]));
 registerRegisterStateTests((name, fn) => tests.push([name, fn]));
 registerDashboardNavigationStateTests((name, fn) => tests.push([name, fn]));
+registerReaderProfileStateTests((name, fn) => tests.push([name, fn]));
 
 tests.push(["resolves API calls against an external runtime base", async () => {
   const previousConfig = globalThis.__BOOKIA_CONFIG__;
