@@ -12,6 +12,7 @@ import { AboutPage, BookstorePage, BookstoresPage, HomePage, PlansPage, ReaderPa
 import { CookiePolicyPage } from "./pages/CookiePolicyPage";
 import { PrivacyPage } from "./pages/PrivacyPage";
 import { TermsPage } from "./pages/TermsPage";
+import { ReaderProfilePage } from "./pages/ReaderProfilePage";
 
 export default function App() {
   const { pathname, search } = useLocationState();
@@ -42,7 +43,7 @@ export default function App() {
   }, []);
 
 
-  let page = <HomePage />;
+  let page = <HomePage me={me} />;
   if (pathname === "/plans") {
     if (isPlansRegistrationContext(search)) page = <PlansPage isRegistrationFlow />;
     else page = <Redirect to="/register" />;
@@ -57,6 +58,7 @@ export default function App() {
   else if (pathname === "/forgot-password") page = <ForgotPasswordPage />;
   else if (pathname === "/reset-password") page = <ResetPasswordPage locationSearch={search} />;
   else if (pathname === "/dashboard") page = <DashboardPage me={me} refreshMe={refreshMe} locationSearch={search} />;
+  else if (pathname === "/profile") page = <ReaderProfilePage me={me} refreshMe={refreshMe} />;
   else if (pathname.startsWith("/bookstores/")) page = <BookstorePage slug={pathname.replace("/bookstores/", "")} />;
   else if (pathname.startsWith("/readers/")) page = <ReaderPage slug={pathname.replace("/readers/", "")} />;
 
