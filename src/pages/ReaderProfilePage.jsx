@@ -1,24 +1,30 @@
 import { useEffect, useState } from "react";
 
 import { apiFetch } from "../api";
+import { createReaderProfileDraft, loadReaderFavorites } from "../readerProfileState";
 import { AppLink, navigate } from "../navigation";
 import { EmptyState } from "../components/Commerce";
 
 export function ReaderProfilePage({ me, refreshMe }) {
   const profile = me?.reader_profile;
-  const [draft, setDraft] = useState(() => ({ display_name: profile?.display_name || "", slug: profile?.slug || "", description: profile?.description || "", is_public: Boolean(profile?.is_public) }));
+  const [draft, setDraft] = useState(() => createReaderProfileDraft(profile));
   const [favorites, setFavorites] = useState([]);
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(Boolean(profile));
 
   useEffect(() => {
-    setDraft({ display_name: profile?.display_name || "", slug: profile?.slug || "", description: profile?.description || "", is_public: Boolean(profile?.is_public) });
+    setDraft(createReaderProfileDraft(profile));
   }, [profile?.display_name, profile?.slug, profile?.description, profile?.is_public]);
 
   useEffect(() => {
     if (!profile) return undefined;
     setLoading(true);
-    return apiFetch("/dashboard/favorites").then((data) => setFavorites(data.books || [])).catch((error) => setStatus(error.message)).finally(() => setLoading(false));
+    return loadReaderFavorites({
+      fetchFavorites: () => apiFetch("/dashboard/favorites"),
+      onFavorites: setFavorites,
+      onError: (error) => setStatus(error.message),
+      onSettled: () => setLoading(false),
+    });
   }, [profile]);
 
   if (me === undefined) return <div className="page-state"><div className="loading-mark" /><p>Cargando perfil...</p></div>;
