@@ -69,3 +69,21 @@ export function MenuIcon({ open }) {
     </svg>
   );
 }
+
+export function EyeIcon({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M2.8 12s3.3-5.5 9.2-5.5 9.2 5.5 9.2 5.5-3.3 5.5-9.2 5.5S2.8 12 2.8 12Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+      <circle cx="12" cy="12" r="2.7" stroke="currentColor" strokeWidth="1.7" />
+    </svg>
+  );
+}
+
+export function EyeOffIcon({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M3.5 3.5 20.5 20.5M10 6.8A10.8 10.8 0 0 1 12 6.5c5.9 0 9.2 5.5 9.2 5.5a13.6 13.6 0 0 1-3 3.5M6.2 8.3A13.3 13.3 0 0 0 2.8 12s3.3 5.5 9.2 5.5a9.7 9.7 0 0 0 2.2-.3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M9.7 9.7A3.2 3.2 0 0 0 14.3 14.3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  );
+}

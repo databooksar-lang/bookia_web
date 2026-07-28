@@ -4,7 +4,7 @@ import { apiFetch } from "../api";
 import { formatCommercialPrice, getCommercialPrices } from "../plansPricingState";
 import { AppLink, navigate } from "../navigation";
 import { Redirect } from "../components/Redirect";
-import { ArrowIcon } from "../components/Icons";
+import { ArrowIcon, EyeIcon, EyeOffIcon } from "../components/Icons";
 import { buildRegisterPath, buildRegistrationRequest, getRegisterQueryState, getRegisterStep, isSupportedBookstorePlan } from "../registerState";
 
 const TRUST_ITEMS = [
@@ -47,6 +47,7 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
   const [bookstoreStep, setBookstoreStep] = useState("account");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [bookstoreName, setBookstoreName] = useState("");
   const [catalogLimit, setCatalogLimit] = useState("50");
@@ -161,7 +162,15 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
           <p>{isReader ? "Guarda tus proximos libros y segui explorando." : isBookstoreDetails ? "Elegi si queres ampliar el catalogo incluido en tu plan." : "Primero, defini los datos para ingresar a Bookia."}</p>
           <form className="register-form" onSubmit={submit}>
             {isReader ? <label>Como queres que te llamemos?<input value={displayName} onChange={(event) => setDisplayName(event.target.value)} autoComplete="name" /></label> : null}
-            {!isBookstoreDetails ? <><label>Correo electronico<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" required /></label><label>Contrasena<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" minLength="8" required /></label></> : <>
+            {!isBookstoreDetails ? <><label>Correo electronico<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" required /></label><div className="register-password-group">
+                <label htmlFor="register-password">Contrasena</label>
+                <div className="register-password-field">
+                  <input id="register-password" type={passwordVisible ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" minLength="8" required />
+                  <button type="button" className="register-password-toggle" aria-label={passwordVisible ? "Ocultar contrase\u00f1a" : "Mostrar contrase\u00f1a"} aria-pressed={passwordVisible} onClick={() => setPasswordVisible((visible) => !visible)}>
+                    {passwordVisible ? <EyeOffIcon /> : <EyeIcon />}
+                  </button>
+                </div>
+              </div></> : <>
               <label>Nombre de la libreria<input value={bookstoreName} onChange={(event) => setBookstoreName(event.target.value)} autoComplete="organization" required /></label>
               <fieldset className="register-catalog-options"><legend>Queres ampliar tu catalogo?</legend>
                 {CATALOG_OPTIONS.map((option) => <label className={`register-catalog-option${catalogLimit === option.limit ? " is-selected" : ""}`} key={option.limit}>

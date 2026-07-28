@@ -201,6 +201,24 @@ tests.push(["renders registration choices without image badges", async () => {
     await vite.close();
   }
 }]);
+tests.push(["renders an accessible password visibility control in registration forms", async () => {
+  const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
+  try {
+    const { RegisterPage } = await vite.ssrLoadModule("/src/pages/RegisterPage.jsx");
+    const markup = renderToStaticMarkup(createElement(RegisterPage, { locationSearch: "?profile=reader", me: null, onRegister: () => {} }));
+
+    assert.match(markup, /type="password"/);
+    assert.match(markup, /aria-label="Mostrar/);
+    assert.match(markup, /class="register-password-toggle"/);
+    const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+    assert.match(editorialStyles, /\.register-password-field\s*\{[^}]*position:\s*relative;/s);
+    assert.match(editorialStyles, /\.register-password-field input\s*\{[^}]*padding-right:\s*48px;/s);
+    assert.match(editorialStyles, /\.register-password-toggle\s*\{[^}]*min-width:\s*44px;/s);
+    assert.match(editorialStyles, /\.register-legal input\[type="checkbox"\]\s*\{[^}]*width:\s*14px;[^}]*height:\s*14px;/s);
+  } finally {
+    await vite.close();
+  }
+}]);
 let failures = 0;
 tests.push(["renders one decorative image in the public search hero illustration", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
