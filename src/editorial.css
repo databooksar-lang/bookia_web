@@ -3670,7 +3670,7 @@ textarea:focus {
 .about-impact article > span { color: var(--coral); }
 .about-impact h3 { margin-top: 30px; color: #fffaf3; }
 .about-impact article p { color: rgba(255, 250, 243, .74); }
-.about-cta { margin-bottom: 0; }
+.about-cta { margin-bottom: 24px; }
 @media (max-width: 760px) {
   .about-hero-modern,
   .about-problem,
