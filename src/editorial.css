@@ -3553,6 +3553,12 @@ textarea:focus {
 .register-form label { display: grid; gap: 7px; color: var(--forest-deep); font-size: 0.78rem; font-weight: 800; }
 .register-form input:not([type="checkbox"]), .register-form select { min-height: 47px; padding: 10px 12px; color: var(--forest-deep); background: #fffdf8; border: 1px solid #d9cdbb; border-radius: 5px; }
 .register-form input:focus, .register-form select:focus { outline: 3px solid rgba(200, 154, 43, 0.25); border-color: #c89a2b; }
+.register-password-group { display: grid; gap: 7px; }
+.register-password-field { position: relative; }
+.register-form .register-password-field input { width: 100%; padding-right: 48px; box-sizing: border-box; }
+.register-password-toggle { position: absolute; top: 50%; right: 2px; display: grid; place-items: center; min-width: 44px; min-height: 44px; padding: 0; color: var(--forest); cursor: pointer; background: transparent; border: 0; border-radius: 4px; transform: translateY(-50%); }
+.register-password-toggle:hover { color: #c89a2b; }
+.register-password-toggle:focus-visible { outline: 3px solid rgba(200, 154, 43, 0.35); }
 .register-catalog-options { display: grid; gap: 9px; margin: 0; padding: 0; border: 0; }
 .register-catalog-options legend { margin-bottom: 3px; color: var(--forest-deep); font-size: 0.78rem; font-weight: 800; }
 .register-catalog-option { grid-template-columns: auto 1fr auto; align-items: center; gap: 10px !important; padding: 12px; background: #fffdf8; border: 1px solid #d9cdbb; border-radius: 5px; cursor: pointer; }
@@ -3562,7 +3568,7 @@ textarea:focus {
 .register-catalog-option small { color: var(--muted); font-size: 0.72rem; font-weight: 500; }
 .register-catalog-option em { color: var(--forest); font-size: 0.75rem; font-style: normal; text-align: right; }
 .register-legal { grid-template-columns: auto 1fr; align-items: start; gap: 8px !important; color: var(--muted) !important; font-size: 0.7rem !important; line-height: 1.45; }
-.register-legal input { margin-top: 3px; }
+.register-legal input[type="checkbox"] { width: 14px; height: 14px; min-height: 14px; margin-top: 3px; padding: 0; accent-color: var(--forest); }
 .register-legal a { color: var(--forest); text-decoration: underline; }
 .register-submit { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; color: #fffaf3; cursor: pointer; background: #ed684f; border: 0; border-radius: 5px; font-weight: 800; }
 .register-submit:hover { background: #d9553e; }
