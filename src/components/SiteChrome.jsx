@@ -17,8 +17,8 @@ function isActive(pathname, href) {
 
 export function SiteHeader({ pathname, me }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const accountHref = me?.bookstore ? "/dashboard" : me ? "/" : "/login";
-  const accountLabel = me?.bookstore ? "Mi cuenta" : me ? "Explorar" : "Ingresar";
+  const accountHref = me?.bookstore ? "/dashboard" : me ? "/profile" : "/login";
+  const accountLabel = me?.bookstore ? "Mi cuenta" : me ? "Mi Perfil" : "Ingresar";
 
   useEffect(() => {
     setMenuOpen(false);
