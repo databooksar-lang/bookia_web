@@ -61,7 +61,7 @@ function bookImageGallery(item) {
   return item?.cover_image_url ? [{ id: "cover", url: item.cover_image_url, isPrimary: true }] : [];
 }
 function HeroSearch({ initialFilters, genres, genresLoading, onSearch }) {
-  const [filters, setFilters] = useState(() => ({ title: initialFilters.title || "", author: initialFilters.author || "", publisher: initialFilters.publisher || "", language: initialFilters.language || "", genreSlug: initialFilters.genreSlug || "" }));
+  const [filters, setFilters] = useState(() => ({ title: initialFilters.title || "", author: initialFilters.author || "", bookStatus: initialFilters.bookStatus || "", language: initialFilters.language || "", genreSlug: initialFilters.genreSlug || "" }));
   function submit(event) { event.preventDefault(); onSearch(filters); }
   function updateFilter(name) { return (event) => setFilters((current) => ({ ...current, [name]: event.target.value })); }
   return (
@@ -72,7 +72,7 @@ function HeroSearch({ initialFilters, genres, genresLoading, onSearch }) {
         <p className="search-panel-heading">Buscar libros</p>
         <label className="search-field search-field-title"><span>Nombre del libro</span><span className="input-with-icon"><SearchIcon /><input value={filters.title} onChange={updateFilter("title")} placeholder="Ej: Rayuela" /></span></label>
         <label className="search-field search-field-author"><span>Autor</span><input value={filters.author} onChange={updateFilter("author")} placeholder={"Ej: Julio Cort\u00E1zar"} /></label>
-        <label className="search-field search-field-publisher"><span>Editorial</span><input value={filters.publisher} onChange={updateFilter("publisher")} placeholder="Ej: Sudamericana" /></label>
+        <label className="search-field search-field-status"><span>Estado</span><select value={filters.bookStatus} onChange={updateFilter("bookStatus")}><option value="">Todos los estados</option><option value="nuevo">Nuevo</option><option value="usado">Usado</option></select></label>
         <label className="search-field search-field-language"><span>Idioma</span><input value={filters.language} onChange={updateFilter("language")} placeholder={"Ej: Espa\u00F1ol"} /></label>
         <label className="search-field search-field-genre"><span>{"G\u00E9nero"}</span><select value={filters.genreSlug} onChange={updateFilter("genreSlug")} disabled={genresLoading}><option value="">{genresLoading ? "Cargando g\u00E9neros..." : "Todos los g\u00E9neros"}</option>{genres.map((genre) => <option key={genre.id} value={genre.slug}>{genre.name}</option>)}</select></label>
         <button className="primary-button search-submit" type="submit">Buscar libros <ArrowIcon /></button>
@@ -380,28 +380,20 @@ export function BookstoresPage() {
   return (
     <div className="editorial-page bookstores-page">
       <section className="bookstores-hero">
-        <div className="bookstores-hero-copy"><p className="section-label">{"PARA LIBRER\u00CDAS"}</p><h1>{"Tu librer\u00EDa, m\u00E1s cerca de nuevos lectores."}</h1><p>{"Mostr\u00E1 tu cat\u00E1logo en Bookia para que cada b\u00FAsqueda pueda convertirse en una nueva conversaci\u00F3n."}</p><AppLink className="primary-button" href="/register">{"Crear cuenta para mi librer\u00EDa"} <ArrowIcon /></AppLink></div>
-        <div className="bookstores-catalog-preview" aria-hidden="true">
-          <div className="catalog-preview-toolbar"><span /><span /></div>
-          <div className="catalog-preview-search"><span /><i /></div>
-          <div className="catalog-preview-list">
-            <div className="catalog-preview-row"><b /><span><i /><i /><i /></span><em /></div>
-            <div className="catalog-preview-row"><b /><span><i /><i /><i /></span><em /></div>
-            <div className="catalog-preview-row"><b /><span><i /><i /><i /></span><em /></div>
-          </div>
-        </div>
+        <div className="bookstores-hero-copy"><p className="section-label">{"PARA LIBRER\u00CDAS"}</p><h1>{"Tu librer\u00EDa, m\u00E1s cerca de nuevos lectores."}</h1><p>{"Mostr\u00E1 tu cat\u00E1logo en Bookia para que cada b\u00FAsqueda pueda convertirse en una nueva oportunidad."}</p><AppLink className="primary-button" href="/register">{"Crear cuenta para mi librer\u00EDa"} <ArrowIcon /></AppLink></div>
+        <div className="bookstores-hero-art" aria-hidden="true"><img className="bookstores-hero-image" src="/images/bookstores-hero-library.png" alt="" /></div>
       </section>
       <section className="bookstores-benefits" aria-labelledby="bookstores-benefits-title">
-        <div className="bookstores-section-heading"><p className="section-label">{"UNA VIDRIERA PARA TU CAT\u00C1LOGO"}</p><h2 id="bookstores-benefits-title">{"Todo lo que necesit\u00E1s para que tus libros se encuentren."}</h2></div>
+        <div className="bookstores-section-heading"><p className="section-label">{"UNA VIDRIERA PARA TU CAT\u00C1LOGO"}</p><h2 id="bookstores-benefits-title">{"Todo lo que necesit\u00E1s para que tener mas visibilidad."}</h2></div>
         <div className="bookstores-benefit-grid">
           <article><span>01</span><h3>{"Lleg\u00E1 a m\u00E1s lectores"}</h3><p>{"Hac\u00E9 visible tu cat\u00E1logo para quienes ya est\u00E1n buscando su pr\u00F3xima lectura."}</p></article>
-          <article><span>02</span><h3>{"Organiz\u00E1 tu cat\u00E1logo"}</h3><p>{"Public\u00E1 tus libros y manten\u00E9 actualizada la informaci\u00F3n que quer\u00E9s compartir."}</p></article>
+          <article><span>02</span><h3>{"Organiz\u00E1 tu cat\u00E1logo"}</h3><p>{"Public\u00E1 tus libros y manten\u00E9 actualizada tu vidriera digital."}</p></article>
           <article><span>03</span><h3>Consultas directas</h3><p>{"Las personas interesadas pueden contactar a tu librer\u00EDa directamente para consultar disponibilidad."}</p></article>
         </div>
       </section>
       <section className="bookstores-plans" aria-labelledby="bookstores-plans-title">
         <div><p className="section-label">{"CREC\u00C9 A TU RITMO"}</p><h2 id="bookstores-plans-title">{"Planes que acompa\u00F1an tu etapa."}</h2><p>{"Empez\u00E1 con una prueba inicial y eleg\u00ED el plan que mejor acompa\u00F1e el tama\u00F1o y la forma de trabajo de tu librer\u00EDa."}</p></div>
-        <div className="bookstores-ai-card"><p>{"Gesti\u00F3n m\u00E1s simple"}</p><h3>{"Menos tiempo cargando, m\u00E1s tiempo entre libros."}</h3><ul><li>Carga desde foto</li><li>Autocompletado con IA</li><li>{"Fichas que siempre pod\u00E9s revisar y editar"}</li></ul></div>
+        <div className="bookstores-ai-card"><p>{"Gesti\u00F3n m\u00E1s simple"}</p><h3>{"Menos tiempo cargando, m\u00E1s tiempo entre libros."}</h3><ul><li>Carga desde foto</li><li>Autocompletado con IA</li><li>{"Vidriera digital atractiva"}</li><li>Promociona eventos, clubes de lectura y novedades de tu librería.</li></ul></div>
       </section>
       <section className="bookstore-cta"><div><p className="section-label">{"PARA LIBRER\u00CDAS"}</p><h2>{"Hac\u00E9 que tus libros lleguen a m\u00E1s lectores."}</h2><p>{"Public\u00E1 tu cat\u00E1logo en Bookia para que las personas encuentren tus libros y puedan consultarte directo."}</p></div><AppLink className="light-button" href="/register">{"Crear cuenta para mi librer\u00EDa"} <ArrowIcon /></AppLink></section>
     </div>
@@ -473,10 +465,10 @@ export function AboutPage() {
       </section>
       <section className="about-problem"><div><p className="section-label">UNA BÚSQUEDA MÁS SIMPLE</p><h2>Menos recorridas entre catálogos. Más tiempo para encontrar.</h2></div><p>Bookia reúne en un solo lugar los catálogos de librerías, vendedores de usados y proyectos que hacen circular libros. Ordena la búsqueda, pero deja la conversación donde importa: entre vos y quien tiene el libro.</p></section>
       <section className="about-how" aria-labelledby="about-how-title"><div className="about-section-heading"><p className="section-label">CÓMO FUNCIONA</p><h2 id="about-how-title">Una conexión directa, en tres pasos.</h2></div><ol><li><span>01</span><BookIcon size={28} /><h3>Buscá un libro</h3><p>Explorá por título, autor, editorial, idioma o género.</p></li><li><span>02</span><StoreIcon size={28} /><h3>Descubrí quién lo tiene</h3><p>Conocé el catálogo y el perfil de cada librería.</p></li><li><span>03</span><WhatsAppIcon size={28} /><h3>Contactá directamente</h3><p>Confirmá disponibilidad con la librería antes de ir o comprar.</p></li></ol><p className="about-disclaimer">Bookia no vende libros ni procesa pagos: facilita el encuentro para que cada operación se acuerde directamente con la librería.</p></section>
-      <section className="about-paths" aria-labelledby="about-paths-title"><div className="about-section-heading"><p className="section-label">DOS CAMINOS, UNA COMUNIDAD</p><h2 id="about-paths-title">Bookia crece de los dos lados de la historia.</h2></div><div><article className="about-path-reader"><BookIcon size={34} /><h3>Quiero encontrar libros</h3><p>Descubrí catálogos reales, nuevas librerías y tu próxima lectura.</p><AppLink href="/">Explorar libros <ArrowIcon size={17} /></AppLink></article><article className="about-path-bookstore"><StoreIcon size={34} /><h3>Quiero mostrar mi catálogo</h3><p>Hacé visible tu librería y gestioná tus libros con herramientas simples.</p><AppLink href="/register">Sumar mi librería <ArrowIcon size={17} /></AppLink></article></div></section>
-      <section className="about-origin"><div><p className="section-label">DE DÓNDE NACE</p><h2>Creada por Marcelo G. González.</h2></div><div><p>Bookia nació de una pasión por los libros y de una idea concreta: conectar de forma sencilla a lectores y librerías en un lugar centralizado.</p><p>La plataforma busca hacer más fácil descubrir, conversar y gestionar, para que las librerías tengan más tiempo para lo que mejor hacen.</p></div></section>
+      <section className="about-paths" aria-labelledby="about-paths-title"><div className="about-section-heading"><p className="section-label">DOS CAMINOS, UNA COMUNIDAD</p><h2 id="about-paths-title">Bookia crece de los dos lados de la historia.</h2></div><div><article className="about-path-reader"><BookIcon size={34} /><h3>Lectores:<br></br>Quiero encontrar libros</h3><p>Descubrí catálogos reales, nuevas librerías y tu próxima lectura.</p><AppLink href="/">Explorar libros <ArrowIcon size={17} /></AppLink></article><article className="about-path-bookstore"><StoreIcon size={34} /><h3>Librerias:<br></br>Quiero mostrar mi catálogo</h3><p>Hacé visible tu librería y gestioná tus libros con herramientas simples.</p><AppLink href="/register">Sumar mi librería <ArrowIcon size={17} /></AppLink></article></div></section>
+      <section className="about-origin"><div><p className="section-label">DE DÓNDE NACE</p><h2>Creada por Marcelo G. González.</h2></div><div><p>Bookia nació de una pasión por los libros y de una idea concreta: conectar de forma sencilla a lectores y librerías en un lugar centralizado.</p><p>Diseñamos una plataforma integral que simplifica la búsqueda de títulos, la interacción con la comunidad y la administración diaria. Al automatizar y optimizar los procesos de gestión, les devolvemos a las librerías su recurso más valioso: tiempo para recomendar, curar sus catálogos y conectar con sus lectores.</p></div></section>
       <section className="about-impact" aria-labelledby="about-impact-title"><p className="section-label">EL IMPACTO QUE BUSCAMOS</p><h2 id="about-impact-title">Que cada búsqueda abra una nueva posibilidad.</h2><div><article><span>01</span><h3>Más descubrimiento</h3><p>Lectores que encuentran más opciones y librerías que antes no conocían.</p></article><article><span>02</span><h3>Más visibilidad</h3><p>Catálogos y herramientas que acompañan la gestión cotidiana de cada librería.</p></article><article><span>03</span><h3>Más circulación</h3><p>Libros nuevos y usados que vuelven a encontrarse con sus próximos lectores.</p></article></div></section>
-      <section className="bookstore-cta about-cta"><div><p className="section-label">EMPEZÁ POR DONDE ESTÉS</p><h2>Tu próxima lectura o tu próxima conversación empieza acá.</h2></div><div className="cta-actions"><AppLink className="light-button" href="/">Explorar libros <ArrowIcon /></AppLink><AppLink className="outline-light-button" href="/register">Sumar mi librería</AppLink></div></section>
+      <section className="bookstore-cta about-cta"><div><p className="section-label">EMPEZÁ POR DONDE ESTÉS</p><h2>Tu próximo paso empieza acá.</h2></div><div className="cta-actions"><AppLink className="light-button" href="/">Explorar libros <ArrowIcon /></AppLink><AppLink className="outline-light-button" href="/register">Sumar mi librería</AppLink></div></section>
     </div>
   );
 }

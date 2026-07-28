@@ -249,10 +249,10 @@ tests.push(["keeps the public search form hierarchy responsive", () => {
   assert.match(editorialStyles, /\.search-panel-heading\s*\{[^}]*grid-column:\s*1\s*\/\s*-1;/s);
   assert.match(publicPagesSource, /search-field-title/);
   assert.match(publicPagesSource, /search-field-author/);
-  assert.match(publicPagesSource, /search-field-publisher/);
+  assert.match(publicPagesSource, /search-field-status/);
   assert.match(editorialStyles, /\.search-field-title\s*\{\s*grid-column:\s*span 7;/);
   assert.match(editorialStyles, /\.search-field-author\s*\{\s*grid-column:\s*span 5;/);
-  assert.match(editorialStyles, /\.search-field-publisher\s*\{\s*grid-column:\s*span 4;/);
+  assert.match(editorialStyles, /\.search-field-status\s*\{\s*grid-column:\s*span 4;/);
   assert.match(editorialStyles, /\.search-submit\s*\{[^}]*grid-column:\s*span 3;/s);
   assert.match(editorialStyles, /@media \(max-width: 1040px\)[\s\S]*?\.search-panel\s*\{\s*grid-template-columns:\s*repeat\(6,/);
   assert.match(editorialStyles, /@media \(max-width: 820px\)[\s\S]*?\.search-panel\s*\{\s*grid-template-columns:\s*1fr;/);
@@ -267,7 +267,7 @@ tests.push(["keeps Buscar as the home page with Bookia's approved public-search 
   assert.match(publicPagesSource, /ENCONTR\\u00C1 TU PR\\u00D3XIMA LECTURA/);
   assert.match(publicPagesSource, /Los libros que busc\\u00E1s, en un solo lugar\./);
   assert.match(publicPagesSource, /Consult\\u00E1 disponibilidad por WhatsApp/);
-  assert.match(publicPagesSource, /M\\u00E1s libros y librer\\u00EDas para descubrir\./);
+  assert.match(publicPagesSource, /Explora librerias, descubri catalogos reales y conectate con clubes de lectura\./);
   assert.match(publicPagesSource, /Hac\\u00E9 que tus libros lleguen a m\\u00E1s lectores\./);
   assert.match(publicPagesSource, /Crear cuenta para mi librer/);
   assert.match(publicPagesSource, /newsletter-subscribers/);
@@ -456,19 +456,19 @@ tests.push(["presents bookstore plans and AI capabilities without public pricing
   assert.match(page, /Carga desde foto/);
   assert.match(page, /Autocompletado con IA/);
   assert.doesNotMatch(page, />Gesti\\u00F3n/);
-  assert.match(page, /<li>\{"Fichas que siempre pod\\u00E9s revisar y editar"\}<\/li>/);
+  assert.match(page, /<li>\{"Vidriera digital atractiva"\}<\/li>/);
   assert.match(page, /href="\/register"/);
   assert.doesNotMatch(page, /ARS|\$\s*\d|\/mes/);
 }]);
-tests.push(["composes the bookstore acquisition page around a catalog preview and conversion hierarchy", () => {
+tests.push(["composes the bookstore acquisition page around a responsive editorial library image and conversion hierarchy", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
   const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
 
   assert.match(publicPagesSource, /className="bookstores-hero-copy"/);
-  assert.match(publicPagesSource, /className="bookstores-catalog-preview" aria-hidden="true"/);
+  assert.match(publicPagesSource, /className="bookstores-hero-image" src="\/images\/bookstores-hero-library\.png" alt=""/);
   assert.match(publicPagesSource, /className="bookstores-benefit-grid"/);
   assert.match(editorialStyles, /\.bookstores-hero\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1\.08fr\) minmax\(320px,\s*\.72fr\);/s);
-  assert.match(editorialStyles, /\.bookstores-catalog-preview\s*\{/);
+  assert.match(editorialStyles, /\.bookstores-hero-image\s*\{[^}]*object-fit:\s*cover;/s);
   assert.match(editorialStyles, /\.bookstore-cta\s*\{/);
 }]);
 tests.push(["presents bookstore benefits as modern independent cards", () => {

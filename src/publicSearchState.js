@@ -8,7 +8,9 @@ export function buildPublicSearchParams(filters = {}) {
   const params = new URLSearchParams();
   appendTrimmedParam(params, "title", filters.title);
   appendTrimmedParam(params, "author", filters.author);
-  appendTrimmedParam(params, "publisher", filters.publisher);
+  if (filters.bookStatus === "nuevo" || filters.bookStatus === "usado") {
+    params.set("book_status", filters.bookStatus);
+  }
   appendTrimmedParam(params, "language", filters.language);
   appendTrimmedParam(params, "genre_slug", filters.genreSlug);
 

@@ -4,19 +4,19 @@ import { buildPublicSearchParams } from "../src/publicSearchState.js";
 import * as publicSearchState from "../src/publicSearchState.js";
 
 export function registerPublicSearchStateTests(register) {
-  register("builds public search parameters from every populated filter", () => {
+  register("builds public search parameters with the selected book status", () => {
     assert.deepEqual(
       [...buildPublicSearchParams({
         title: "Rayuela",
         author: "Cortazar",
-        publisher: "Sudamericana",
+        bookStatus: "nuevo",
         language: "es",
         genreSlug: "policial",
       }).entries()],
       [
         ["title", "Rayuela"],
         ["author", "Cortazar"],
-        ["publisher", "Sudamericana"],
+        ["book_status", "nuevo"],
         ["language", "es"],
         ["genre_slug", "policial"],
       ],
@@ -25,7 +25,7 @@ export function registerPublicSearchStateTests(register) {
 
   register("omits empty public search filters", () => {
     assert.deepEqual(
-      [...buildPublicSearchParams({ title: "  ", author: "", publisher: null, language: undefined, genreSlug: "" }).entries()],
+      [...buildPublicSearchParams({ title: "  ", author: "", bookStatus: "", language: undefined, genreSlug: "" }).entries()],
       [],
     );
   });
