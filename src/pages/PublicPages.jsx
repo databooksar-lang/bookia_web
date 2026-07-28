@@ -61,7 +61,7 @@ function bookImageGallery(item) {
   return item?.cover_image_url ? [{ id: "cover", url: item.cover_image_url, isPrimary: true }] : [];
 }
 function HeroSearch({ initialFilters, genres, genresLoading, onSearch }) {
-  const [filters, setFilters] = useState(() => ({ title: initialFilters.title || "", author: initialFilters.author || "", publisher: initialFilters.publisher || "", language: initialFilters.language || "", genreSlug: initialFilters.genreSlug || "" }));
+  const [filters, setFilters] = useState(() => ({ title: initialFilters.title || "", author: initialFilters.author || "", bookStatus: initialFilters.bookStatus || "", language: initialFilters.language || "", genreSlug: initialFilters.genreSlug || "" }));
   function submit(event) { event.preventDefault(); onSearch(filters); }
   function updateFilter(name) { return (event) => setFilters((current) => ({ ...current, [name]: event.target.value })); }
   return (
@@ -72,7 +72,7 @@ function HeroSearch({ initialFilters, genres, genresLoading, onSearch }) {
         <p className="search-panel-heading">Buscar libros</p>
         <label className="search-field search-field-title"><span>Nombre del libro</span><span className="input-with-icon"><SearchIcon /><input value={filters.title} onChange={updateFilter("title")} placeholder="Ej: Rayuela" /></span></label>
         <label className="search-field search-field-author"><span>Autor</span><input value={filters.author} onChange={updateFilter("author")} placeholder={"Ej: Julio Cort\u00E1zar"} /></label>
-        <label className="search-field search-field-publisher"><span>Editorial</span><input value={filters.publisher} onChange={updateFilter("publisher")} placeholder="Ej: Sudamericana" /></label>
+        <label className="search-field search-field-status"><span>Estado</span><select value={filters.bookStatus} onChange={updateFilter("bookStatus")}><option value="">Todos los estados</option><option value="nuevo">Nuevo</option><option value="usado">Usado</option></select></label>
         <label className="search-field search-field-language"><span>Idioma</span><input value={filters.language} onChange={updateFilter("language")} placeholder={"Ej: Espa\u00F1ol"} /></label>
         <label className="search-field search-field-genre"><span>{"G\u00E9nero"}</span><select value={filters.genreSlug} onChange={updateFilter("genreSlug")} disabled={genresLoading}><option value="">{genresLoading ? "Cargando g\u00E9neros..." : "Todos los g\u00E9neros"}</option>{genres.map((genre) => <option key={genre.id} value={genre.slug}>{genre.name}</option>)}</select></label>
         <button className="primary-button search-submit" type="submit">Buscar libros <ArrowIcon /></button>

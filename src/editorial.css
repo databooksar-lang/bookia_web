@@ -3206,7 +3206,7 @@ textarea:focus {
   grid-column: span 5;
 }
 
-.search-field-publisher {
+.search-field-status {
   grid-column: span 4;
 }
 
@@ -3277,7 +3277,7 @@ textarea:focus {
     grid-column: span 3;
   }
 
-  .search-field-publisher,
+  .search-field-status,
   .search-field-language,
   .search-field-genre {
     grid-column: span 2;
@@ -3301,7 +3301,7 @@ textarea:focus {
 
   .search-field-title,
   .search-field-author,
-  .search-field-publisher,
+  .search-field-status,
   .search-field-language,
   .search-field-genre,
   .search-submit {

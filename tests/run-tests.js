@@ -249,10 +249,10 @@ tests.push(["keeps the public search form hierarchy responsive", () => {
   assert.match(editorialStyles, /\.search-panel-heading\s*\{[^}]*grid-column:\s*1\s*\/\s*-1;/s);
   assert.match(publicPagesSource, /search-field-title/);
   assert.match(publicPagesSource, /search-field-author/);
-  assert.match(publicPagesSource, /search-field-publisher/);
+  assert.match(publicPagesSource, /search-field-status/);
   assert.match(editorialStyles, /\.search-field-title\s*\{\s*grid-column:\s*span 7;/);
   assert.match(editorialStyles, /\.search-field-author\s*\{\s*grid-column:\s*span 5;/);
-  assert.match(editorialStyles, /\.search-field-publisher\s*\{\s*grid-column:\s*span 4;/);
+  assert.match(editorialStyles, /\.search-field-status\s*\{\s*grid-column:\s*span 4;/);
   assert.match(editorialStyles, /\.search-submit\s*\{[^}]*grid-column:\s*span 3;/s);
   assert.match(editorialStyles, /@media \(max-width: 1040px\)[\s\S]*?\.search-panel\s*\{\s*grid-template-columns:\s*repeat\(6,/);
   assert.match(editorialStyles, /@media \(max-width: 820px\)[\s\S]*?\.search-panel\s*\{\s*grid-template-columns:\s*1fr;/);
