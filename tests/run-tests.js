@@ -17,6 +17,7 @@ import { registerPlansPricingStateTests } from "./plansPricingState.test.js";
 import { registerAnalyticsStateTests } from "./analyticsState.test.js";
 import { registerRegisterStateTests } from "./registerState.test.js";
 import { registerReaderProfileStateTests } from "./readerProfileState.test.js";
+import { registerReaderProfileNavigationStateTests } from "./readerProfileNavigationState.test.js";
 import { registerFavoritesStateTests } from "./favoritesState.test.js";
 import { registerAccountDestinationTests } from "./accountDestination.test.js";
 
@@ -121,6 +122,7 @@ registerAnalyticsStateTests((name, fn) => tests.push([name, fn]));
 registerRegisterStateTests((name, fn) => tests.push([name, fn]));
 registerDashboardNavigationStateTests((name, fn) => tests.push([name, fn]));
 registerReaderProfileStateTests((name, fn) => tests.push([name, fn]));
+registerReaderProfileNavigationStateTests((name, fn) => tests.push([name, fn]));
 registerFavoritesStateTests((name, fn) => tests.push([name, fn]));
 registerAccountDestinationTests((name, fn) => tests.push([name, fn]));
 

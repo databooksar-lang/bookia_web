@@ -3734,3 +3734,7 @@ textarea:focus {
 .book-card { position: relative; }
 .book-detail-copy > .favorite-book-button { margin-top: 16px; }
 @media (min-width: 821px) { .search-result-row { grid-template-columns: minmax(0, 1.5fr) minmax(170px, 0.75fr) 150px auto; } }
+
+.reader-profile-tab-panel[hidden] {
+  display: none !important;
+}
