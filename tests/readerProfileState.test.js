@@ -55,6 +55,8 @@ export function registerReaderProfileStateTests(test) {
 assert.match(profilePage, /<fieldset className="bookstore-profile-field-wide reader-favorite-genres-field">/);
     assert.match(profilePage, /<legend>.*te gustan<\/legend>/);
     assert.match(profilePage, /<details className="reader-favorite-genres"/);
+    assert.match(profilePage, /className={`reader-favorite-genre-chip/);
+    assert.match(profilePage, /className="reader-favorite-genre-checkbox"/);
     assert.match(profilePage, /type="checkbox"/);
     assert.match(profilePage, /favoriteGenreSelectionLabel\(draft\.favorite_genre_ids\)/);
     assert.doesNotMatch(profilePage, /body: JSON\.stringify\(draft\)/);
