@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import { apiFetch, resolveApiUrl } from "../api";
 import { trackWebInteractionEvent } from "../analyticsState";
+import { createFavoriteBookIds, isReaderAccount, toggleFavoriteBookId } from "../favoritesState";
 import { formatCommercialPrice, getCommercialPrices } from "../plansPricingState";
 import { buildFacebookHref, buildInstagramHref, buildWebsiteHref, buildWhatsAppHref, formatDisplayPhone, formatDisplayUrl } from "../formatters";
 import { AppLink, navigate } from "../navigation";
@@ -10,6 +11,7 @@ import { displayBookstoreDescription } from "../profileEditorState";
 import { displayReadingClubDate } from "../readingClubState";
 import { buildPublicSearchParams, buildReadingClubSearchParams, filterBookstores, getAvailableReadingClubGenres, getBookstoreTags, getVisibleReadingClubs } from "../publicSearchState";
 import { EmptyState, WhatsAppButton } from "../components/Commerce";
+import { FavoriteBookButton } from "../components/FavoriteBookButton";
 import { ArrowIcon, BookIcon, LocationIcon, SearchIcon, StoreIcon, WhatsAppIcon } from "../components/Icons";
 
 function BookCover({ item, className = "book-cover", interactive = false, onOpen }) {
@@ -60,6 +62,31 @@ function bookImageGallery(item) {
   }
   return item?.cover_image_url ? [{ id: "cover", url: item.cover_image_url, isPrimary: true }] : [];
 }
+function useFavoriteBooks(me) {
+  const [favoriteIds, setFavoriteIds] = useState(() => new Set());
+  const [pendingIds, setPendingIds] = useState(() => new Set());
+  const [favoriteError, setFavoriteError] = useState("");
+
+  useEffect(() => {
+    if (!isReaderAccount(me)) { setFavoriteIds(new Set()); setFavoriteError(""); return undefined; }
+    let active = true;
+    apiFetch("/dashboard/favorites").then((data) => { if (active) setFavoriteIds(createFavoriteBookIds(data)); }).catch((error) => { if (active) setFavoriteError(error.message); });
+    return () => { active = false; };
+  }, [me?.reader_profile]);
+
+  function toggleFavorite(itemId) {
+    if (!isReaderAccount(me)) { navigate("/login"); return; }
+    const wasFavorite = favoriteIds.has(itemId);
+    setFavoriteIds((ids) => toggleFavoriteBookId(ids, itemId, !wasFavorite));
+    setPendingIds((ids) => toggleFavoriteBookId(ids, itemId, true));
+    setFavoriteError("");
+    apiFetch(`/dashboard/favorites/books/${itemId}`, { method: wasFavorite ? "DELETE" : "POST" })
+      .catch((error) => { setFavoriteIds((ids) => toggleFavoriteBookId(ids, itemId, wasFavorite)); setFavoriteError(error.message); })
+      .finally(() => setPendingIds((ids) => toggleFavoriteBookId(ids, itemId, false)));
+  }
+
+  return { favoriteIds, pendingIds, favoriteError, toggleFavorite };
+}
 function HeroSearch({ initialFilters, genres, genresLoading, onSearch }) {
   const [filters, setFilters] = useState(() => ({ title: initialFilters.title || "", author: initialFilters.author || "", bookStatus: initialFilters.bookStatus || "", language: initialFilters.language || "", genreSlug: initialFilters.genreSlug || "" }));
   function submit(event) { event.preventDefault(); onSearch(filters); }
@@ -81,13 +108,14 @@ function HeroSearch({ initialFilters, genres, genresLoading, onSearch }) {
   );
 }
 
-function SearchResults({ filters, stores }) {
+function SearchResults({ filters, stores, me }) {
   const [items, setItems] = useState([]);
   const [selectedStore, setSelectedStore] = useState("");
   const [selectedBook, setSelectedBook] = useState(null);
   const [selectedBookImageUrl, setSelectedBookImageUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const favorites = useFavoriteBooks(me);
   const hasSearched = filters !== null;
   const visibleItems = items.filter((item) => item.availability_status !== "hidden");
 
@@ -156,7 +184,7 @@ function SearchResults({ filters, stores }) {
 
         </div>
       </div>
-      {error ? <p className="feedback error">{error}</p> : null}
+      {error ? <p className="feedback error">{error}</p> : null}{favorites.favoriteError ? <p className="feedback error">{favorites.favoriteError}</p> : null}
       {loading ? <div className="loading-list" aria-label="Cargando resultados"><span /><span /><span /></div> : null}
       {!loading && !error && visibleItems.length === 0 ? <EmptyState title={"Todav\u00EDa no encontramos ese libro"}>{"Prob\u00E1 con otro t\u00EDtulo, autor, editorial, idioma o g\u00E9nero. Tambi\u00E9n pod\u00E9s ampliar la b\u00FAsqueda a todas las librer\u00EDas."}</EmptyState> : null}
       {!loading && visibleItems.length > 0 ? (
@@ -179,11 +207,13 @@ function SearchResults({ filters, stores }) {
               <WhatsAppButton className="primary-button search-result-whatsapp" whatsappPhone={item.bookstore.whatsapp_phone} phoneCountryCd={item.bookstore.phone_country_cd} phone={item.bookstore.phone} onClick={() => trackWhatsAppClicked(item.bookstore, "search_results", item.id)}>
                 <WhatsAppIcon size={19} /> Contactar
               </WhatsAppButton>
+              <FavoriteBookButton itemId={item.id} isFavorite={favorites.favoriteIds.has(item.id)} isPending={favorites.pendingIds.has(item.id)} isSessionLoading={me === undefined} onToggle={favorites.toggleFavorite} />
+
             </article>
           ))}
         </div>
       ) : null}
-      <BookDetailModal selectedBook={selectedBook} selectedBookImageUrl={selectedBookImageUrl} onImageChange={setSelectedBookImageUrl} onClose={closeBookDetail} />
+      <BookDetailModal selectedBook={selectedBook} selectedBookImageUrl={selectedBookImageUrl} onImageChange={setSelectedBookImageUrl} onClose={closeBookDetail} favorites={favorites} isSessionLoading={me === undefined} />
     </section>
   );
 }
@@ -350,7 +380,7 @@ function ContactLink({ href, children }) {
   return <a href={href} target="_blank" rel="noreferrer">{children}</a>;
 }
 
-export function HomePage() {
+export function HomePage({ me }) {
   const [stores, setStores] = useState([]);
   const [genres, setGenres] = useState([]);
   const [genresLoading, setGenresLoading] = useState(true);
@@ -367,7 +397,7 @@ export function HomePage() {
     <>
       <HeroSearch initialFilters={draftFilters} genres={genres} genresLoading={genresLoading} onSearch={(nextFilters) => { setDraftFilters(nextFilters); setSearchFilters(nextFilters); setTimeout(() => document.getElementById("resultados")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0); }} />
       <BenefitsStrip benefits={SEARCH_BENEFITS} ariaLabel="Beneficios de la búsqueda de libros" />
-      <SearchResults filters={searchFilters} stores={stores} />
+      <SearchResults filters={searchFilters} stores={stores} me={me} />
       <BookstoresSection stores={stores} loading={storesLoading} />
       <ReadingClubsSection />
       <NewsletterSignup />
@@ -505,7 +535,7 @@ function BookGenreTags({ item }) {
   );
 }
 
-function BookDetailModal({ selectedBook, selectedBookImageUrl, onImageChange, onClose }) {
+function BookDetailModal({ selectedBook, selectedBookImageUrl, onImageChange, onClose, favorites, isSessionLoading }) {
   if (!selectedBook) return null;
 
   const selectedBookGallery = bookImageGallery(selectedBook);
@@ -541,6 +571,7 @@ function BookDetailModal({ selectedBook, selectedBookImageUrl, onImageChange, on
             <h2 id="book-detail-title">{selectedBook.title}</h2>
             <p className="book-detail-author">{selectedBook.author || "Autor no visible"}</p>
             <BookGenreTags item={selectedBook} />
+            <FavoriteBookButton itemId={selectedBook.id} isFavorite={favorites?.favoriteIds.has(selectedBook.id)} isPending={favorites?.pendingIds.has(selectedBook.id)} isSessionLoading={isSessionLoading} onToggle={favorites?.toggleFavorite || (() => {})} />
             <div className="book-detail-section">
               <span>Descripcion</span>
               <p>{selectedBook.description || "Sin descripcion visible."}</p>
@@ -563,7 +594,7 @@ function BookDetailModal({ selectedBook, selectedBookImageUrl, onImageChange, on
   );
 }
 
-export function BookstorePage({ slug }) {
+export function BookstorePage({ slug, me }) {
   const [store, setStore] = useState(null);
   const [items, setItems] = useState([]);
   const [readingClubs, setReadingClubs] = useState([]);
@@ -571,6 +602,7 @@ export function BookstorePage({ slug }) {
   const [error, setError] = useState("");
   const [selectedBook, setSelectedBook] = useState(null);
   const [selectedBookImageUrl, setSelectedBookImageUrl] = useState(null);
+  const favorites = useFavoriteBooks(me);
   const visibleItems = items.filter((item) => item.availability_status !== "hidden");
 
   useEffect(() => {
@@ -643,6 +675,7 @@ export function BookstorePage({ slug }) {
                 }}
               >
                 <BookCover item={item} />
+                <FavoriteBookButton itemId={item.id} isFavorite={favorites.favoriteIds.has(item.id)} isPending={favorites.pendingIds.has(item.id)} isSessionLoading={me === undefined} onToggle={(itemId, event) => { event.stopPropagation(); favorites.toggleFavorite(itemId); }} />
                 <div>
                   <span className={`status-pill status-${item.availability_status}`}>{bookAvailabilityLabel(item.availability_status)}</span>
                   {item.is_featured ? <span className="status-pill status-featured">Destacado</span> : null}
@@ -675,7 +708,7 @@ export function BookstorePage({ slug }) {
           </div>
         </section>
       ) : null}
-      <BookDetailModal selectedBook={selectedBook} selectedBookImageUrl={selectedBookImageUrl} onImageChange={setSelectedBookImageUrl} onClose={closeBookDetail} />
+      <BookDetailModal selectedBook={selectedBook} selectedBookImageUrl={selectedBookImageUrl} onImageChange={setSelectedBookImageUrl} onClose={closeBookDetail} favorites={favorites} isSessionLoading={me === undefined} />
     </section>
   );
 }

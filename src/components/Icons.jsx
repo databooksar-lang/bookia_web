@@ -87,3 +87,11 @@ export function EyeOffIcon({ size = 20 }) {
     </svg>
   );
 }
+
+export function HeartIcon({ size = 20, filled = false }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} aria-hidden="true">
+      <path d="M20.8 8.6c0 5-8.8 10.6-8.8 10.6S3.2 13.6 3.2 8.6A4.5 4.5 0 0 1 12 7.2a4.5 4.5 0 0 1 8.8 1.4Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+    </svg>
+  );
+}
