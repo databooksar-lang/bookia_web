@@ -52,6 +52,8 @@ export function registerReaderProfileStateTests(test) {
     const termsPage = readFileSync(new URL("../src/pages/TermsPage.jsx", import.meta.url), "utf8");
 
     assert.match(profilePage, /apiFetch\("\/genres"\)/);
+    assert.match(profilePage, /apiFetch\("\/auth\/logout"/);
+    assert.match(profilePage, /Cerrar sesion/);
 assert.match(profilePage, /<fieldset className="bookstore-profile-field-wide reader-favorite-genres-field">/);
     assert.match(profilePage, /<legend>.*te gustan<\/legend>/);
     assert.match(profilePage, /<details className="reader-favorite-genres"/);
