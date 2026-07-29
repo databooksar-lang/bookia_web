@@ -1,6 +1,7 @@
 import { useState, useTransition } from "react";
 
 import { apiFetch } from "../api";
+import { getAccountDestination } from "../accountDestination";
 import { AppLink, navigate } from "../navigation";
 import { ArrowIcon, BookIcon } from "../components/Icons";
 
@@ -34,9 +35,10 @@ export function LoginPage({ onLogin, me, sessionExpired = false }) {
   const [busy, startTransition] = useTransition();
 
   if (me) {
-    return <AuthLayout label="Sesion activa" title="Ya estas dentro" description={`Tu catalogo de ${me.bookstore.name} esta listo para gestionarse.`}><button className="primary-button auth-submit" onClick={() => navigate("/dashboard")}>Ir al panel <ArrowIcon /></button></AuthLayout>;
+    const destination = getAccountDestination(me);
+    const isReader = destination === "/profile";
+    return <AuthLayout label="Sesion activa" title="Ya estas dentro" description={isReader ? "Tu perfil lector esta listo para actualizarse." : `Tu catalogo de ${me.bookstore.name} esta listo para gestionarse.`}><button className="primary-button auth-submit" onClick={() => navigate(destination)}>{isReader ? "Ir a mi perfil" : "Ir al panel"} <ArrowIcon /></button></AuthLayout>;
   }
-
   function submit(event) {
     event.preventDefault();
     startTransition(() => {
@@ -46,7 +48,7 @@ export function LoginPage({ onLogin, me, sessionExpired = false }) {
           if (!sessionData) {
             throw new Error("El ingreso fue aceptado, pero no pudimos recuperar tu sesion. Revisa la configuracion de cookies del backend (SESSION_COOKIE_SECURE, SESSION_COOKIE_SAMESITE, FRONTEND_ORIGINS).");
           }
-          navigate("/dashboard");
+          navigate(getAccountDestination(sessionData));
         })
         .catch((loginError) => setError(loginError.message));
     });
