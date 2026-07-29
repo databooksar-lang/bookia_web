@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-import { createReaderProfileDraft, loadReaderFavorites } from "../src/readerProfileState.js";
+import { createReaderProfileDraft, loadReaderFavorites, normalizeReaderFavorites } from "../src/readerProfileState.js";
 
 export function registerReaderProfileStateTests(test) {
   test("defaults a reader profile to public only when visibility is missing", () => {
@@ -39,6 +39,13 @@ export function registerReaderProfileStateTests(test) {
 
     assert.deepEqual(receivedFavorites, [[{ id: 1, title: "Ficciones" }]]);
     assert.equal(settled, 1);
+  });
+
+  test("drops incomplete favorite entries instead of rendering blank book rows", () => {
+    assert.deepEqual(
+      normalizeReaderFavorites({ books: [{ id: 7, title: "Ficciones", author: "Borges" }, { id: 8, catalog_item_id: 4 }] }),
+      [{ id: 7, title: "Ficciones", author: "Borges" }],
+    );
   });
 }
 
