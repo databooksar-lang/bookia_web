@@ -17,6 +17,7 @@ import { registerPlansPricingStateTests } from "./plansPricingState.test.js";
 import { registerAnalyticsStateTests } from "./analyticsState.test.js";
 import { registerRegisterStateTests } from "./registerState.test.js";
 import { registerReaderProfileStateTests } from "./readerProfileState.test.js";
+import { registerFavoritesStateTests } from "./favoritesState.test.js";
 
 import { registerDashboardNavigationStateTests } from './dashboardNavigationState.test.js';
 
@@ -119,6 +120,20 @@ registerAnalyticsStateTests((name, fn) => tests.push([name, fn]));
 registerRegisterStateTests((name, fn) => tests.push([name, fn]));
 registerDashboardNavigationStateTests((name, fn) => tests.push([name, fn]));
 registerReaderProfileStateTests((name, fn) => tests.push([name, fn]));
+registerFavoritesStateTests((name, fn) => tests.push([name, fn]));
+
+tests.push(["offers a reusable favorite control throughout public book discovery", () => {
+  const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+  const favoriteButtonSource = readFileSync(new URL("../src/components/FavoriteBookButton.jsx", import.meta.url), "utf8");
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+  assert.match(favoriteButtonSource, /aria-label=\{isFavorite \? "Quitar de favoritos" : "Guardar en favoritos"\}/);
+  assert.match(publicPagesSource, /function useFavoriteBooks\(me\)/);
+  assert.match(publicPagesSource, /<FavoriteBookButton itemId=\{item\.id\}/);
+  assert.match(publicPagesSource, /<FavoriteBookButton itemId=\{selectedBook\.id\}/);
+  assert.match(publicPagesSource, /navigate\("\/login"\)/);
+  assert.match(editorialStyles, /\.favorite-book-button\s*\{/);
+}]);
 
 tests.push(["resolves API calls against an external runtime base", async () => {
   const previousConfig = globalThis.__BOOKIA_CONFIG__;

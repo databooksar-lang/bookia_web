@@ -3707,3 +3707,22 @@ textarea:focus {
 }
 .about-hero-logo { width: min(100%, 420px); justify-self: end; filter: drop-shadow(0 26px 34px rgba(13, 57, 45, .18)); }
 @media (max-width: 760px) { .about-hero-logo { width: min(78vw, 360px); justify-self: center; } }
+
+.favorite-book-button {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  color: var(--forest);
+  background: rgba(255, 250, 240, 0.92);
+  border: 1px solid var(--line);
+  border-radius: 50%;
+}
+.favorite-book-button:hover:not(:disabled), .favorite-book-button:focus-visible { color: var(--coral-dark); border-color: var(--coral); }
+.favorite-book-button.is-favorite { color: var(--coral-dark); }
+.favorite-book-button:disabled { cursor: wait; opacity: 0.65; }
+.search-result-row > .favorite-book-button { justify-self: end; }
+.book-card > .favorite-book-button { position: absolute; top: 14px; right: 14px; }
+.book-card { position: relative; }
+.book-detail-copy > .favorite-book-button { margin-top: 16px; }
