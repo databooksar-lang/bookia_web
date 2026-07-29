@@ -2,10 +2,30 @@ import { useEffect, useState } from "react";
 
 import { apiFetch } from "../api";
 import { createReaderProfileDraft, loadReaderFavorites } from "../readerProfileState";
+import { buildReaderProfileUrl, parseReaderProfileNavigation } from "../readerProfileNavigationState";
 import { AppLink, navigate } from "../navigation";
 import { EmptyState } from "../components/Commerce";
 
-export function ReaderProfilePage({ me, refreshMe }) {
+const READER_PROFILE_TABS = [
+  { section: "info", label: "Mi info" },
+  { section: "favorites", label: "Mis favoritos" },
+];
+
+function ReaderProfileTabs({ section }) {
+  return (
+    <nav className="dashboard-tabs" aria-label="Secciones de mi perfil">
+      {READER_PROFILE_TABS.map((tab) => (
+        <AppLink key={tab.section} href={buildReaderProfileUrl(tab.section)} className={`dashboard-tab${section === tab.section ? " is-active" : ""}`} aria-current={section === tab.section ? "page" : undefined}>
+          {tab.label}
+        </AppLink>
+      ))}
+    </nav>
+  );
+}
+
+
+export function ReaderProfilePage({ me, refreshMe, locationSearch = "" }) {
+  const { section } = parseReaderProfileNavigation(locationSearch);
   const profile = me?.reader_profile;
   const [draft, setDraft] = useState(() => createReaderProfileDraft(profile));
   const [favorites, setFavorites] = useState([]);
@@ -42,7 +62,8 @@ export function ReaderProfilePage({ me, refreshMe }) {
   }
 
   return <section className="store-page reader-page"><div className="section-heading"><div><p className="section-label">MI PERFIL</p><h1>{draft.display_name || "Tu perfil lector"}</h1><p>Contale a la comunidad quién sos, qué leés y qué te inspira.</p></div>{draft.is_public && draft.slug ? <AppLink className="secondary-button" href={`/readers/${draft.slug}`}>Ver perfil público</AppLink> : null}</div>
-    <form className="bookstore-profile-section dashboard-card" onSubmit={save}><fieldset className="bookstore-profile-group"><legend>Información pública</legend><div className="bookstore-profile-fields"><label><span>Nombre visible</span><input value={draft.display_name} onChange={(event) => update("display_name", event.target.value)} required /></label><label><span>Alias público</span><input value={draft.slug} onChange={(event) => update("slug", event.target.value)} required={draft.is_public} /></label><label className="bookstore-profile-field-wide"><span>Biografía</span><textarea value={draft.description} onChange={(event) => update("description", event.target.value)} placeholder="Tu perfil personal, profesional, gustos y lecturas favoritas." /></label><label className="bookstore-profile-checkbox"><input type="checkbox" checked={draft.is_public} onChange={(event) => update("is_public", event.target.checked)} />Perfil público</label></div></fieldset><button className="primary-button" type="submit">Guardar perfil</button>{status ? <p className="feedback" role="status">{status}</p> : null}</form>
-    <section className="results-section"><div className="section-heading"><div><p className="section-label">LIBROS FAVORITOS</p><h2>Tus lecturas guardadas</h2></div></div>{loading ? <div className="loading-mark" /> : null}{!loading && favorites.length === 0 ? <EmptyState compact title="Todavía no guardaste libros">Explorá el catálogo y usá el corazón para volver a encontrarlos acá.</EmptyState> : <div className="search-results-list">{favorites.map((item) => <article key={item.id} className="search-result-row"><div className="search-result-main"><strong>{item.title}</strong><span>{item.author || "Autor no visible"}</span><span>{item.bookstore?.name}</span></div><button className="secondary-button" type="button" onClick={() => removeFavorite(item.id)}>Quitar de favoritos</button></article>)}</div>}</section>
+    <ReaderProfileTabs section={section} />
+    <form className="bookstore-profile-section dashboard-card reader-profile-tab-panel" onSubmit={save} hidden={section !== "info"}><fieldset className="bookstore-profile-group"><legend>Información pública</legend><div className="bookstore-profile-fields"><label><span>Nombre visible</span><input value={draft.display_name} onChange={(event) => update("display_name", event.target.value)} required /></label><label><span>Alias público</span><input value={draft.slug} onChange={(event) => update("slug", event.target.value)} required={draft.is_public} /></label><label className="bookstore-profile-field-wide"><span>Biografía</span><textarea value={draft.description} onChange={(event) => update("description", event.target.value)} placeholder="Tu perfil personal, profesional, gustos y lecturas favoritas." /></label><label className="bookstore-profile-checkbox"><input type="checkbox" checked={draft.is_public} onChange={(event) => update("is_public", event.target.checked)} />Perfil público</label></div></fieldset><button className="primary-button" type="submit">Guardar perfil</button>{status ? <p className="feedback" role="status">{status}</p> : null}</form>
+    <section className="results-section reader-profile-tab-panel" hidden={section !== "favorites"}><div className="section-heading"><div><p className="section-label">LIBROS FAVORITOS</p><h2>Tus lecturas guardadas</h2></div></div>{loading ? <div className="loading-mark" /> : null}{!loading && favorites.length === 0 ? <EmptyState compact title="Todavía no guardaste libros">Explorá el catálogo y usá el corazón para volver a encontrarlos acá.</EmptyState> : <div className="search-results-list">{favorites.map((item) => <article key={item.id} className="search-result-row"><div className="search-result-main"><strong>{item.title}</strong><span>{item.author || "Autor no visible"}</span><span>{item.bookstore?.name}</span></div><button className="secondary-button" type="button" onClick={() => removeFavorite(item.id)}>Quitar de favoritos</button></article>)}</div>}</section>
   </section>;
 }
