@@ -13,8 +13,8 @@ export function FavoriteBookButton({ itemId, isFavorite, isPending, isSessionLoa
       disabled={isPending || isSessionLoading}
       onClick={(event) => onToggle(itemId, event)}
     >
-      <HeartIcon filled={isFavorite} />
-      <span className="sr-only">{label}</span>
+      <HeartIcon size={18} filled={isFavorite} />
+      <span className="favorite-book-label">Favoritos</span>
     </button>
   );
 }

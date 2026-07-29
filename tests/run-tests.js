@@ -127,12 +127,14 @@ tests.push(["offers a reusable favorite control throughout public book discovery
   const favoriteButtonSource = readFileSync(new URL("../src/components/FavoriteBookButton.jsx", import.meta.url), "utf8");
   const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
 
+  assert.match(favoriteButtonSource, />Favoritos<\/span>/);
   assert.match(favoriteButtonSource, /aria-label=\{isFavorite \? "Quitar de favoritos" : "Guardar en favoritos"\}/);
   assert.match(publicPagesSource, /function useFavoriteBooks\(me\)/);
   assert.match(publicPagesSource, /<FavoriteBookButton itemId=\{item\.id\}/);
   assert.match(publicPagesSource, /<FavoriteBookButton itemId=\{selectedBook\.id\}/);
   assert.match(publicPagesSource, /navigate\("\/login"\)/);
-  assert.match(editorialStyles, /\.favorite-book-button\s*\{/);
+  assert.match(editorialStyles, /\.favorite-book-label\s*\{/);
+  assert.match(editorialStyles, /\.book-card > \.favorite-book-button\s*\{[^}]*width:\s*auto;/s);
 }]);
 
 tests.push(["resolves API calls against an external runtime base", async () => {

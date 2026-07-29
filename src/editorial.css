@@ -3709,20 +3709,28 @@ textarea:focus {
 @media (max-width: 760px) { .about-hero-logo { width: min(78vw, 360px); justify-self: center; } }
 
 .favorite-book-button {
-  width: 42px;
-  height: 42px;
-  padding: 0;
-  display: inline-grid;
-  place-items: center;
+  min-height: 40px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
   color: var(--forest);
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  letter-spacing: 0;
   background: rgba(255, 250, 240, 0.92);
   border: 1px solid var(--line);
-  border-radius: 50%;
+  border-radius: 999px;
 }
+.favorite-book-label { display: block; }
 .favorite-book-button:hover:not(:disabled), .favorite-book-button:focus-visible { color: var(--coral-dark); border-color: var(--coral); }
 .favorite-book-button.is-favorite { color: var(--coral-dark); }
 .favorite-book-button:disabled { cursor: wait; opacity: 0.65; }
 .search-result-row > .favorite-book-button { justify-self: end; }
-.book-card > .favorite-book-button { position: absolute; top: 14px; right: 14px; }
+.book-card > .favorite-book-button { position: absolute; top: 14px; right: 14px; width: auto; }
 .book-card { position: relative; }
 .book-detail-copy > .favorite-book-button { margin-top: 16px; }
+@media (min-width: 821px) { .search-result-row { grid-template-columns: minmax(0, 1.5fr) minmax(170px, 0.75fr) 150px auto; } }
