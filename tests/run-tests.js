@@ -68,6 +68,20 @@ const tests = [
     assert.match(entrypoint, /header @runtime_config Cache-Control "no-cache"/);
     assert.match(entrypoint, /header @vite_assets Cache-Control "public, max-age=31536000, immutable"/);
   }],
+  ["adds production security headers to proxied API and SPA responses", () => {
+    const entrypoint = readFileSync(new URL("../docker-entrypoint.sh", import.meta.url), "utf8");
+    assert.match(entrypoint, /Strict-Transport-Security "max-age=31536000; includeSubDomains"/);
+    assert.match(entrypoint, /Content-Security-Policy/);
+    assert.match(entrypoint, /X-Content-Type-Options "nosniff"/);
+    assert.match(entrypoint, /X-Frame-Options "DENY"/);
+    assert.match(entrypoint, /Referrer-Policy "strict-origin-when-cross-origin"/);
+    assert.match(entrypoint, /Permissions-Policy "camera=\(\), microphone=\(\), geolocation=\(\)"/);
+  }],
+  ["keeps local environment secrets out of the frontend image build context", () => {
+    const dockerignore = readFileSync(new URL("../.dockerignore", import.meta.url), "utf8");
+    assert.match(dockerignore, /^\.env$/m);
+    assert.match(dockerignore, /^\.env\.\*$/m);
+  }],
   ["documents how to verify production cache headers", () => {
     const readme = readFileSync(new URL("../README.md", import.meta.url), "utf8");
     assert.match(readme, /curl -I https:\/\/tu-dominio\.com\/runtime-config\.js/);
@@ -304,7 +318,7 @@ tests.push(["keeps Buscar as the home page with Bookia's approved public-search 
   const appSource = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
 
-  assert.match(appSource, /let page = <HomePage \/>;/);
+  assert.match(appSource, /let page = <HomePage me=\{me\} \/>;/);
   assert.match(publicPagesSource, /ENCONTR\\u00C1 TU PR\\u00D3XIMA LECTURA/);
   assert.match(publicPagesSource, /Los libros que busc\\u00E1s, en un solo lugar\./);
   assert.match(publicPagesSource, /Consult\\u00E1 disponibilidad por WhatsApp/);
@@ -317,7 +331,7 @@ tests.push(["keeps Buscar as the home page with Bookia's approved public-search 
 }]);
 tests.push(["places contextual benefit strips after the bookstore and reading-club sections", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
-  const homePageSource = publicPagesSource.match(/export function HomePage\(\) \{([\s\S]*?)\r?\n\}\r?\n\r?\n\r?\nexport function BookstoresPage/);
+  const homePageSource = publicPagesSource.match(/export function HomePage\([^)]*\) \{([\s\S]*?)\r?\n\}\r?\n\r?\n\r?\nexport function BookstoresPage/);
   const bookstoresSectionSource = publicPagesSource.match(/function BookstoresSection\(\{ stores, loading \}\) \{([\s\S]*?)\r?\n\}\r?\n\r?\n\r?\nfunction ReadingClubsSection/);
   const readingClubsSectionSource = publicPagesSource.match(/function ReadingClubsSection\(\) \{([\s\S]*?)\r?\n\}\r?\n\r?\nfunction NewsletterSignup/);
 
@@ -380,7 +394,7 @@ tests.push(["routes registration through the supported reader and bookstore flow
   assert.match(registerSource, /reader-books\.png/);
   assert.match(registerSource, /bookstore-front\.png/);
   assert.match(registerSource, /register-trust/);
-  assert.match(headerSource, /const accountHref = me\?\.bookstore \? "\/dashboard" : me \? "\/" : "\/login"/);
+  assert.match(headerSource, /const accountHref = me\?\.bookstore \? "\/dashboard" : me \? "\/profile" : "\/login"/);
   assert.match(dashboardSource, /!me\.bookstore/);
 }]);
 tests.push(["offers catalog add-ons after bookstore account credentials", () => {
@@ -458,7 +472,7 @@ tests.push(["publishes terms and conditions for Bookia's marketplace role", () =
   assert.match(registerSource, /href="\/privacy"/);
   assert.match(privacySource, /href="\/terms"/);
   assert.match(termsSource, /Terminos y Condiciones/);
-  assert.match(termsSource, /Vigente desde el 23 de julio de 2026/);
+  assert.match(termsSource, /Vigente desde el 28 de julio de 2026/);
   assert.match(termsSource, /Marcelo Gabriel Gonzalez/);
   assert.match(termsSource, /bookia.app.admin@gmail.com/);
   assert.match(termsSource, /Bookia no vende libros directamente/);
