@@ -223,7 +223,7 @@ tests.push(["removes public plans links in favor of registration", () => {
   assert.doesNotMatch(publicPagesSource, /href="\/plans"/);
   assert.doesNotMatch(authPagesSource, /href="\/plans"/);
   assert.match(publicPagesSource, /href="\/register"/);
-  assert.match(authPagesSource, /href="\/register"/);
+  assert.match(authPagesSource, /href="\/about"/);
   assert.match(editorialStyles, /\.plans-select-action/);
 }]);
 tests.push(["renders registration choices without image badges", async () => {
@@ -462,6 +462,18 @@ tests.push(["redirects expired sessions to login with an explanation", () => {
   assert.match(appSource, /subscribeToSessionExpiry/);
   assert.match(appSource, /navigate\("\/login\?reason=session-expired"\)/);
   assert.match(authPagesSource, /Tu sesion vencio porque se inicio sesion en otro dispositivo\./);
+}]);
+tests.push(["uses inclusive copy across the access flow", () => {
+  const authPagesSource = readFileSync(new URL("../src/pages/AuthPages.jsx", import.meta.url), "utf8");
+  const siteChromeSource = readFileSync(new URL("../src/components/SiteChrome.jsx", import.meta.url), "utf8");
+
+  assert.match(authPagesSource, /Bookia, para quienes viven los libros\./);
+  assert.match(authPagesSource, /Ingresá para seguir explorando, compartiendo y conectando alrededor de las historias que te gustan\./);
+  assert.match(authPagesSource, /<AppLink href="\/about">Conocé Bookia/);
+  assert.match(authPagesSource, /label="Ingresar a Bookia" title="Qué bueno verte de nuevo" description="Ingresá con tu correo y contraseña para continuar\./);
+  assert.match(authPagesSource, /Ya tenés una sesión activa/);
+  assert.match(authPagesSource, /\{busy \? "Ingresando\.\.\." : <>Ingresar <ArrowIcon \/><\/>\}/);
+  assert.match(siteChromeSource, /<AppLink href="\/login">Ingresar<\/AppLink>/);
 }]);
 tests.push(["publishes a cookies policy for technical session cookies", () => {
   const appSource = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");

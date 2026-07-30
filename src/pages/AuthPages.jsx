@@ -10,10 +10,10 @@ function AuthLayout({ label, title, description, children }) {
     <section className="auth-shell">
       <aside className="auth-intro">
         <div className="auth-book-mark" aria-hidden="true"><BookIcon size={42} /></div>
-        <p className="section-label">Herramientas para librerias</p>
-        <h1>Tu catalogo tambien puede abrir puertas.</h1>
-        <p>Gestiona tus libros y hacelos visibles para personas que ya los estan buscando.</p>
-        <AppLink href="/register">Conoce la propuesta <ArrowIcon size={16} /></AppLink>
+        <p className="section-label">Bookia, para quienes viven los libros.</p>
+        <h1>Tu próxima historia empieza acá.</h1>
+        <p>Ingresá para seguir explorando, compartiendo y conectando alrededor de las historias que te gustan.</p>
+        <AppLink href="/about">Conocé Bookia <ArrowIcon size={16} /></AppLink>
       </aside>
       <div className="auth-card-wrap">
         <div className="auth-card">
@@ -37,7 +37,7 @@ export function LoginPage({ onLogin, me, sessionExpired = false }) {
   if (me) {
     const destination = getAccountDestination(me);
     const isReader = destination === "/profile";
-    return <AuthLayout label="Sesion activa" title="Ya estas dentro" description={isReader ? "Tu perfil lector esta listo para actualizarse." : `Tu catalogo de ${me.bookstore.name} esta listo para gestionarse.`}><button className="primary-button auth-submit" onClick={() => navigate(destination)}>{isReader ? "Ir a mi perfil" : "Ir al panel"} <ArrowIcon /></button></AuthLayout>;
+    return <AuthLayout label="Sesión activa" title="Ya tenés una sesión activa" description="Tu cuenta está lista para continuar."><button className="primary-button auth-submit" onClick={() => navigate(destination)}>{isReader ? "Ir a mi perfil" : "Ir al panel"} <ArrowIcon /></button></AuthLayout>;
   }
   function submit(event) {
     event.preventDefault();
@@ -55,14 +55,14 @@ export function LoginPage({ onLogin, me, sessionExpired = false }) {
   }
 
   return (
-    <AuthLayout label="Ingreso de librerias" title="Volve a tu catalogo" description="Ingresa con los datos de tu libreria para administrar publicaciones y disponibilidad.">
+    <AuthLayout label="Ingresar a Bookia" title="Qué bueno verte de nuevo" description="Ingresá con tu correo y contraseña para continuar.">
       <form className="auth-form" onSubmit={submit}>
         <label>Correo electronico<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" required /></label>
         <label>Contrasena<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" required /></label>
         <button type="button" className="text-link auth-link-button" onClick={() => navigate("/forgot-password")}>Olvide mi contrasena</button>
         {error ? <p className="feedback error">{error}</p> : null}
         {sessionExpired ? <p className="feedback error">Tu sesion vencio porque se inicio sesion en otro dispositivo.</p> : null}
-        <button className="primary-button auth-submit" type="submit" disabled={busy}>{busy ? "Ingresando..." : <>Entrar al panel <ArrowIcon /></>}</button>
+        <button className="primary-button auth-submit" type="submit" disabled={busy}>{busy ? "Ingresando..." : <>Ingresar <ArrowIcon /></>}</button>
       </form>
     </AuthLayout>
   );

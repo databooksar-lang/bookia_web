@@ -77,7 +77,7 @@ export function SiteFooter() {
           <AppLink href="/privacy">Privacidad</AppLink>
           <AppLink href="/terms">Terminos</AppLink>
           <AppLink href="/cookies">Cookies</AppLink>
-          <AppLink href="/login">Ingreso de librerias</AppLink>
+          <AppLink href="/login">Ingresar</AppLink>
         </nav>
         <section className="footer-contact" aria-labelledby="footer-contact-title">
           <h2 id="footer-contact-title">Contacto</h2>
