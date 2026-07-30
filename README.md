@@ -105,6 +105,23 @@ La respuesta debe incluir `Cache-Control: no-cache`.
 - El backend debe permitir el origen del frontend en `FRONTEND_ORIGINS`.
 - Como el frontend usa `credentials: "include"`, revisa tambien `SESSION_COOKIE_SECURE`, la politica `SESSION_COOKIE_SAMESITE` y `SESSION_COOKIE_DOMAIN` solo si realmente necesitas compartir cookies entre subdominios.
 - Si despliegas este frontend con `BOOKIA_API_UPSTREAM_URL`, las llamadas a la API salen por el mismo origen del frontend bajo `/api` y normalmente ya no hace falta depender de cookies cross-site.
+Configuracion de produccion de Bookia (`https://mybookia.app`):
+
+```env
+BOOKIA_API_UPSTREAM_URL=https://<servicio-api-privado-o-railway>
+```
+
+En el servicio backend, configura explicitamente:
+
+```env
+APP_ENV=production
+FRONTEND_ORIGINS=https://mybookia.app
+FRONTEND_ORIGIN_REGEX=
+SESSION_COOKIE_SECURE=true
+SESSION_COOKIE_SAMESITE=lax
+```
+
+No uses comodines ni subdominios Railway como origen CORS en produccion. Antes de publicar, ejecuta `npm test`, `npm run build` y verifica las cabeceras HTTP de `/` y `/api/healthz`.
 
 
 - Si una tapa falla al cargar, el buscador la oculta para evitar imagenes rotas visibles.

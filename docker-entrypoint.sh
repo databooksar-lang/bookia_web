@@ -3,6 +3,14 @@ set -eu
 
 cat > /etc/caddy/Caddyfile <<EOF
 :{\$PORT:3000} {
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; connect-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self'"
+    X-Content-Type-Options "nosniff"
+    X-Frame-Options "DENY"
+    Referrer-Policy "strict-origin-when-cross-origin"
+    Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  }
 EOF
 
 if [ -n "${BOOKIA_API_UPSTREAM_URL:-}" ]; then
