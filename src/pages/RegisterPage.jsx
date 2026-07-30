@@ -7,31 +7,11 @@ import { Redirect } from "../components/Redirect";
 import { ArrowIcon, EyeIcon, EyeOffIcon } from "../components/Icons";
 import { buildRegisterPath, buildRegistrationRequest, getRegisterQueryState, getRegisterStep, isSupportedBookstorePlan } from "../registerState";
 
-const TRUST_ITEMS = [
-  ["*", "Tu informacion esta segura", "Protegemos tus datos y tu privacidad."],
-  ["o", "Comunidad confiable", "Lectores y librerias reales como vos."],
-  ["+", "Apoyamos lo independiente", "Conectamos historias, lectores y librerias."],
-];
-
 const CATALOG_OPTIONS = [
   { limit: "50", title: "Sin adicional", description: "Hasta 50 libros", offeringCode: null },
   { limit: "100", title: "Hasta 100 libros", description: "Amplia tu catalogo", offeringCode: "catalog_100" },
   { limit: "200", title: "Hasta 200 libros", description: "Amplia tu catalogo", offeringCode: "catalog_200" },
 ];
-
-function RegistrationTrust() {
-  return (
-    <div className="register-trust" aria-label="Compromisos de Bookia">
-      {TRUST_ITEMS.map(([icon, title, description]) => (
-        <div className="register-trust-item" key={title}>
-          <span aria-hidden="true">{icon}</span>
-          <div><strong>{title}</strong><p>{description}</p></div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function RegistrationChoice({ type, title, description, image, onChoose }) {
   return (
     <button type="button" className={`register-choice register-choice-${type}`} onClick={onChoose}>
@@ -138,7 +118,7 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
     return (
       <main className="register-page">
         <section className="register-hero" aria-labelledby="register-title">
-          <div className="register-heading"><span className="register-flourish" aria-hidden="true">*</span><h1 id="register-title">Crea tu cuenta en Bookia</h1><p>Unite a la comunidad que conecta lectores y librerias independientes.</p></div>
+          <div className="register-heading"><span className="register-flourish" aria-hidden="true">Registrate</span><h1 id="register-title">Crea tu cuenta en Bookia</h1><p>Unite a la comunidad que conecta lectores y librerias independientes.</p></div>
           <p className="register-question">Como queres unirte a Bookia?</p>
           <div className="register-choice-grid">
             <RegistrationChoice type="reader" title="Soy lector/a" description="Crea tu cuenta para descubrir libros, seguir tus lecturas y guardar favoritos." image="/images/register/reader-books.png" onChoose={() => selectProfile("reader")} />
@@ -146,7 +126,6 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
           </div>
           <p className="register-login">Ya tenes una cuenta? <AppLink href="/login">Ingresar</AppLink></p>
         </section>
-        <RegistrationTrust />
       </main>
     );
   }
@@ -186,7 +165,6 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
           </form>
         </div>
       </section>
-      <RegistrationTrust />
     </main>
   );
 }

@@ -3554,12 +3554,6 @@ textarea:focus {
 .register-login { margin: 24px 0 0; color: var(--muted); font-size: 0.86rem; }
 .register-login a { color: var(--forest); font-weight: 800; }
 
-.register-trust { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; padding: 21px clamp(24px, 7vw, 100px); color: var(--forest-deep); background: #f4ebdc; border-top: 1px solid #eadfcf; }
-.register-trust-item { display: flex; gap: 10px; align-items: center; }
-.register-trust-item > span { color: #c89a2b; font-size: 1.4rem; }
-.register-trust-item strong { display: block; font-size: 0.7rem; }
-.register-trust-item p { margin: 2px 0 0; color: var(--muted); font-size: 0.65rem; line-height: 1.35; }
-
 .register-page-form { max-width: 1010px; }
 .register-form-shell { position: relative; display: grid; grid-template-columns: 0.78fr 1fr; min-height: 620px; }
 .register-back { position: absolute; z-index: 2; top: 24px; left: 24px; padding: 0; color: var(--forest-deep); background: transparent; border: 0; cursor: pointer; font-weight: 800; }
@@ -3600,10 +3594,9 @@ textarea:focus {
   .register-page { width: min(100% - 16px, 100%); margin: 12px auto 52px; border-radius: 15px; }
   .register-hero { padding: 42px 18px 34px; }
   .register-hero::before, .register-hero::after { display: none; }
-  .register-choice-grid, .register-form-shell, .register-trust { grid-template-columns: 1fr; }
+  .register-choice-grid, .register-form-shell { grid-template-columns: 1fr; }
   .register-choice { grid-template-rows: 155px auto auto 1fr; min-height: 0; }
   .register-choice img { height: 155px; }
-  .register-trust { gap: 14px; }
   .register-form-art { min-height: 220px; padding: 65px 60px 20px; }
   .register-form-panel { padding: 42px 24px; }
 }

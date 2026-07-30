@@ -393,7 +393,7 @@ tests.push(["routes registration through the supported reader and bookstore flow
   assert.match(registerSource, /register-choice-grid/);
   assert.match(registerSource, /reader-books\.png/);
   assert.match(registerSource, /bookstore-front\.png/);
-  assert.match(registerSource, /register-trust/);
+  assert.doesNotMatch(registerSource, /register-trust/);
   assert.match(headerSource, /const accountHref = me\?\.bookstore \? "\/dashboard" : me \? "\/profile" : "\/login"/);
   assert.match(dashboardSource, /!me\.bookstore/);
 }]);
