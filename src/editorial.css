@@ -3362,7 +3362,7 @@ textarea:focus {
 .bookstores-hero { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(320px, .72fr); gap: clamp(40px, 7vw, 104px); align-items: center; min-height: 540px; padding: clamp(64px, 8vw, 108px) clamp(26px, 7vw, 94px); }
 .bookstores-hero > .bookstores-hero-copy { max-width: 680px; }
 .bookstores-hero > .bookstores-hero-art { max-width: none; }
-.bookstores-hero-art { width: min(100%, 420px); aspect-ratio: 4 / 5; justify-self: end; overflow: hidden; border: 1px solid rgba(255, 250, 240, .22); border-radius: 18px; box-shadow: 0 26px 54px rgba(0, 0, 0, .22); transform: rotate(2deg); }
+.bookstores-hero-art { width: min(100%, 420px); aspect-ratio: 4 / 5; justify-self: end; overflow: hidden; border: 1px solid rgba(255, 250, 240, .22); border-radius: 18px; box-shadow: 0 26px 54px rgba(0, 0, 0, .22); }
 .bookstores-hero-image { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
 .bookstores-benefit-grid { background: rgba(255, 250, 240, .36); }
 .bookstores-benefit-grid article { padding-top: 32px; padding-bottom: 34px; }
@@ -3373,7 +3373,7 @@ textarea:focus {
 .bookstores-ai-card ul { color: var(--muted); }
 @media (max-width: 760px) {
   .bookstores-hero { grid-template-columns: 1fr; gap: 36px; min-height: 0; padding: 72px 26px 46px; }
-  .bookstores-hero-art { width: min(100%, 420px); justify-self: end; transform: rotate(1.25deg); }
+  .bookstores-hero-art { width: min(100%, 420px); justify-self: end; }
   .bookstores-benefit-grid { background: transparent; }
 }
 .bookstores-benefit-grid article:hover { transform: translateY(-5px); box-shadow: 0 18px 38px rgba(23, 63, 53, .12); }
