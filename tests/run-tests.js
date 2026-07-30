@@ -366,7 +366,7 @@ tests.push(["presents About Bookia as a dual-audience discovery and contact plat
 
   assert.ok(aboutPageSource, "AboutPage should remain isolated before catalog helpers");
   const page = aboutPageSource[1];
-  assert.match(page, /Los libros, las librer.as y los lectores, en el mismo lugar/);
+  assert.match(page, /Libros, librer.as y lectores, en un mismo lugar/);
   assert.match(page, /Busc. un libro/);
   assert.match(page, /Descubr. qui.n lo tiene/);
   assert.match(page, /Contact. directamente/);
@@ -427,6 +427,27 @@ tests.push(["emits one session-expiry event for repeated unauthorized API respon
     await assert.rejects(() => apiFetch("/me"), /Sesion vencida/);
     await assert.rejects(() => apiFetch("/dashboard/catalog"), /Sesion vencida/);
     assert.equal(expiryEvents, 1);
+  } finally {
+    unsubscribe();
+    globalThis.fetch = previousFetch;
+    globalThis.document = previousDocument;
+  }
+}]);
+
+tests.push(["does not treat the initial session check as an expired active session", async () => {
+  const previousFetch = globalThis.fetch;
+  const previousDocument = globalThis.document;
+  globalThis.document = { cookie: "bookia_csrf=valid" };
+  const moduleUrl = new URL(`../src/api.js?initial-session-check=${Date.now()}`, import.meta.url);
+  const { apiFetch, resetSessionExpiryForTests, subscribeToSessionExpiry } = await import(moduleUrl);
+  const expiredResponse = () => ({ status: 401, ok: false, headers: { get: () => "application/json" }, json: async () => ({ detail: "Sesion vencida." }) });
+  let expiryEvents = 0;
+  globalThis.fetch = async () => expiredResponse();
+  resetSessionExpiryForTests();
+  const unsubscribe = subscribeToSessionExpiry(() => { expiryEvents += 1; });
+  try {
+    await assert.rejects(() => apiFetch("/me", { suppressSessionExpiry: true }), /Sesion vencida/);
+    assert.equal(expiryEvents, 0);
   } finally {
     unsubscribe();
     globalThis.fetch = previousFetch;

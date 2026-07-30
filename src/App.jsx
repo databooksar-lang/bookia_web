@@ -19,7 +19,7 @@ export default function App() {
   const [me, setMe] = useState(undefined);
 
   function refreshMe({ preserveOnError = false } = {}) {
-    return apiFetch("/me")
+    return apiFetch("/me", { suppressSessionExpiry: true })
       .then((data) => {
         setMe(data);
         return data;

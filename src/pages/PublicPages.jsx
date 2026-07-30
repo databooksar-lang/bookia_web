@@ -490,7 +490,7 @@ export function AboutPage() {
   return (
     <div className="editorial-page about-page">
       <section className="about-hero-modern">
-        <div className="about-hero-copy"><p className="section-label">Sobre Bookia</p><h1>Los libros, las librerías y los lectores, en el mismo lugar.</h1><p>Bookia centraliza catálogos reales para que encontrar una lectura y descubrir la librería que la tiene sea más simple.</p><div className="cta-actions"><AppLink className="primary-button" href="/">Explorar libros <ArrowIcon /></AppLink><AppLink className="secondary-button" href="/register">Sumar mi librería</AppLink></div></div>
+        <div className="about-hero-copy"><p className="section-label">Sobre Bookia</p><h1>Libros, librerías y lectores, en un mismo lugar.</h1><p>Bookia centraliza catálogos reales para que encontrar una lectura y descubrir la librería que la tiene sea más simple.</p><div className="cta-actions"><AppLink className="primary-button" href="/">Explorar libros <ArrowIcon /></AppLink><AppLink className="secondary-button" href="/register">Sumar mi librería</AppLink></div></div>
         <img className="about-hero-logo" src="/images/logo-sin-fondo.png" alt="Logo circular de Bookia" />
       </section>
       <section className="about-problem"><div><p className="section-label">UNA BÚSQUEDA MÁS SIMPLE</p><h2>Menos recorridas entre catálogos. Más tiempo para encontrar.</h2></div><p>Bookia reúne en un solo lugar los catálogos de librerías, vendedores de usados y proyectos que hacen circular libros. Ordena la búsqueda, pero deja la conversación donde importa: entre vos y quien tiene el libro.</p></section>
