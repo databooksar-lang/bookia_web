@@ -560,6 +560,7 @@ tests.push(["composes the bookstore acquisition page around a responsive editori
   assert.match(publicPagesSource, /className="bookstores-benefit-grid"/);
   assert.match(editorialStyles, /\.bookstores-hero\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1\.08fr\) minmax\(320px,\s*\.72fr\);/s);
   assert.match(editorialStyles, /\.bookstores-hero-image\s*\{[^}]*object-fit:\s*cover;/s);
+  assert.doesNotMatch(editorialStyles, /\.bookstores-hero-art\s*\{[^}]*transform:\s*rotate\(/s);
   assert.match(editorialStyles, /\.bookstore-cta\s*\{/);
 }]);
 tests.push(["presents bookstore benefits as modern independent cards", () => {
