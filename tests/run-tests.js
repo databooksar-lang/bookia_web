@@ -434,6 +434,27 @@ tests.push(["emits one session-expiry event for repeated unauthorized API respon
   }
 }]);
 
+tests.push(["does not treat the initial session check as an expired active session", async () => {
+  const previousFetch = globalThis.fetch;
+  const previousDocument = globalThis.document;
+  globalThis.document = { cookie: "bookia_csrf=valid" };
+  const moduleUrl = new URL(`../src/api.js?initial-session-check=${Date.now()}`, import.meta.url);
+  const { apiFetch, resetSessionExpiryForTests, subscribeToSessionExpiry } = await import(moduleUrl);
+  const expiredResponse = () => ({ status: 401, ok: false, headers: { get: () => "application/json" }, json: async () => ({ detail: "Sesion vencida." }) });
+  let expiryEvents = 0;
+  globalThis.fetch = async () => expiredResponse();
+  resetSessionExpiryForTests();
+  const unsubscribe = subscribeToSessionExpiry(() => { expiryEvents += 1; });
+  try {
+    await assert.rejects(() => apiFetch("/me", { suppressSessionExpiry: true }), /Sesion vencida/);
+    assert.equal(expiryEvents, 0);
+  } finally {
+    unsubscribe();
+    globalThis.fetch = previousFetch;
+    globalThis.document = previousDocument;
+  }
+}]);
+
 tests.push(["redirects expired sessions to login with an explanation", () => {
   const appSource = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
   const authPagesSource = readFileSync(new URL("../src/pages/AuthPages.jsx", import.meta.url), "utf8");

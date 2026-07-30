@@ -119,7 +119,7 @@ export function buildRequestHeaders(options = {}, csrfToken = "") {
   };
 }
 
-export async function apiFetch(path, options = {}) {
+export async function apiFetch(path, { suppressSessionExpiry = false, ...options } = {}) {
   let response;
   const method = (options.method || "GET").toUpperCase();
   const csrfToken = method === "GET" ? "" : readCookie("bookia_csrf");
@@ -141,7 +141,7 @@ export async function apiFetch(path, options = {}) {
 
   const contentType = response.headers.get("content-type") || "";
   if (response.status === 401) {
-    notifySessionExpiry(path);
+    if (!suppressSessionExpiry) notifySessionExpiry(path);
   }
 
   const expectsJson = contentType.includes("application/json");
