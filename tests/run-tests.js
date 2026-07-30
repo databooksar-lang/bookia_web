@@ -498,6 +498,21 @@ tests.push(["renders the visual pricing composition with catalog growth band", (
   assert.match(editorialStyles, /\.plans-hero-art/);
   assert.doesNotMatch(editorialStyles, /\.plans-hero-art \{[^}]*background: var\(--forest-deep\)/);
 }]);
+tests.push(["adds direct contact channels to the site footer", () => {
+  const siteChromeSource = readFileSync(new URL("../src/components/SiteChrome.jsx", import.meta.url), "utf8");
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+  assert.match(siteChromeSource, /className="footer-contact"/);
+  assert.match(siteChromeSource, /<nav className="footer-links"[\s\S]*?<\/nav>\s*<section className="footer-contact"/);
+  assert.match(siteChromeSource, /href="mailto:bookia\.app\.admin@gmail\.com"/);
+  assert.match(siteChromeSource, /href="https:\/\/wa\.me\/5491162366344"/);
+  assert.match(siteChromeSource, /href="https:\/\/www\.instagram\.com\/bookia_app\?igsh=MWRveTNhanV4Y3J4eg=="/);
+  assert.match(siteChromeSource, /target="_blank"/);
+  assert.match(siteChromeSource, /rel="noreferrer"/);
+  assert.match(editorialStyles, /\.footer-contact\s*\{/);
+  assert.match(editorialStyles, /@media \(max-width: 620px\)[\s\S]*?\.footer-inner\s*\{[\s\S]*?grid-template-columns:\s*1fr;/);
+}]);
+
 tests.push(["presents bookstore plans and AI capabilities without public pricing", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
   const bookstoresPageSource = publicPagesSource.match(/export function BookstoresPage\(\) \{([\s\S]*?)\n\}\nfunction PlansPlan/);
