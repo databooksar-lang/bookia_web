@@ -1,4 +1,4 @@
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 
 import { apiFetch } from "../api";
 import {
@@ -14,7 +14,12 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
   const [catalogLimit, setCatalogLimit] = useState(String(initialBilling?.catalog_limit || 50));
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-  const [busy, startTransition] = useTransition();
+  const [busy, setBusy] = useState(false);
+
+  function runAction(action) {
+    setBusy(true);
+    return action().finally(() => setBusy(false));
+  }
 
   function acceptBilling(nextBilling) {
     setBilling(nextBilling);
@@ -32,40 +37,36 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
 
   function authorizePayment() {
     setError("");
-    startTransition(() => {
-      apiFetch("/billing/subscription/checkout", { method: "POST" })
+    runAction(() => apiFetch("/billing/subscription/checkout", { method: "POST" })
         .then((data) => {
           if (!data.checkout_url) throw new Error("La autorización ya fue iniciada. Comprobá el estado del pago.");
           window.location.assign(data.checkout_url);
         })
-        .catch((actionError) => setError(actionError.message));
-    });
+        .catch((actionError) => setError(actionError.message)));
   }
 
   function syncPayment() {
     setError("");
     setMessage("");
-    startTransition(() => {
-      apiFetch("/billing/subscription/sync", { method: "POST" })
+    runAction(() => apiFetch("/billing/subscription/sync", { method: "POST" })
         .then(acceptBilling)
         .then(() => setMessage("Actualizamos el estado con Mercado Pago."))
-        .catch((actionError) => setError(actionError.message));
-    });
+        .catch((actionError) => setError(actionError.message)));
   }
 
   function scheduleChange(event) {
     event.preventDefault();
     setError("");
     setMessage("");
-    startTransition(() => {
+    runAction(() => {
       let body;
       try {
         body = buildBillingChangeRequest(planCode, catalogLimit);
       } catch (validationError) {
         setError(validationError.message);
-        return;
+        return Promise.resolve();
       }
-      apiFetch("/billing/subscription/change", { method: "POST", body: JSON.stringify(body) })
+      return apiFetch("/billing/subscription/change", { method: "POST", body: JSON.stringify(body) })
         .then(acceptBilling)
         .then(() => setMessage("El cambio se aplicará en la próxima renovación, sin prorrateo."))
         .catch((actionError) => setError(actionError.message));
@@ -75,16 +76,15 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
   function cancelRenewal() {
     if (!window.confirm("¿Querés cancelar la renovación? Vas a conservar el acceso hasta el fin del período actual.")) return;
     setError("");
-    startTransition(() => {
-      apiFetch("/billing/subscription/cancel", { method: "POST" })
+    runAction(() => apiFetch("/billing/subscription/cancel", { method: "POST" })
         .then(acceptBilling)
         .then(() => setMessage("La renovación quedó cancelada. Conservás el acceso hasta el fin del período."))
-        .catch((actionError) => setError(actionError.message));
-    });
+        .catch((actionError) => setError(actionError.message)));
   }
 
   if (!billing) return <p>Cargando suscripción...</p>;
   const canChange = ["trialing", "active", "grace_period"].includes(billing.status);
+  const changeIsNoop = planCode === billing.plan_code && Number(catalogLimit) === billing.catalog_limit;
 
   return (
     <div className="billing-panel">
@@ -105,7 +105,7 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
         <h3>Cambiar desde la próxima renovación</h3>
         <label>Plan<select value={planCode} onChange={(event) => setPlanCode(event.target.value)}><option value="base">Base</option><option value="plus_ai">Plus AI</option></select></label>
         <label>Capacidad<select value={catalogLimit} onChange={(event) => setCatalogLimit(event.target.value)}><option value="50">50 libros</option><option value="100">100 libros</option><option value="200">200 libros</option></select></label>
-        <button className="secondary-button" type="submit" disabled={busy}>Programar cambio</button>
+        <button className="secondary-button" type="submit" disabled={busy || changeIsNoop}>Programar cambio</button>
       </form> : null}
 
       {canChange ? <button className="text-button billing-cancel" type="button" onClick={cancelRenewal} disabled={busy}>Cancelar renovación</button> : null}

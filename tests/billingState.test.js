@@ -28,6 +28,7 @@ export function registerBillingStateTests(test) {
 
   test("recognizes Mercado Pago return outcomes", () => {
     assert.equal(getBillingReturnState("?status=authorized").kind, "syncing");
-    assert.equal(getBillingReturnState("?status=failure").kind, "failure");
+    assert.equal(getBillingReturnState("?status=failure").kind, "syncing");
+    assert.equal(getBillingReturnState("?status=failure").reportedFailure, true);
   });
 }

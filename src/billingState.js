@@ -34,10 +34,14 @@ export function buildBillingChangeRequest(planCode, catalogLimit) {
 
 export function getBillingReturnState(search = "") {
   const status = new URLSearchParams(search).get("status");
-  if (["failure", "rejected", "cancelled", "canceled"].includes(status)) {
-    return { kind: "failure", message: "La autorización no se completó. Podés intentarlo nuevamente." };
-  }
-  return { kind: "syncing", message: "Estamos confirmando tu suscripción con Mercado Pago." };
+  const reportedFailure = ["failure", "rejected", "cancelled", "canceled"].includes(status);
+  return {
+    kind: "syncing",
+    reportedFailure,
+    message: reportedFailure
+      ? "Mercado Pago informó que la autorización no terminó; igualmente vamos a confirmar el estado definitivo."
+      : "Estamos confirmando tu suscripción con Mercado Pago.",
+  };
 }
 
 export function formatBillingDate(value) {

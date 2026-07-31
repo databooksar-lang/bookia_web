@@ -411,6 +411,9 @@ tests.push(["offers catalog add-ons after bookstore account credentials", () => 
   assert.match(registerSource, /catalog_100/);
   assert.match(registerSource, /catalog_200/);
   assert.match(registerSource, /type="radio"/);
+  assert.match(registerSource, /Hoy: ARS 0/);
+  assert.match(registerSource, /primer cobro se estima/);
+  assert.match(registerSource, /Crear cuenta y autorizar Mercado Pago/);
   assert.match(editorialStyles, /\.register-catalog-options/);
 }]);
 

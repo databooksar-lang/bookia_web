@@ -11,7 +11,6 @@ export function BillingReturnPage({ locationSearch = "", refreshMe }) {
   const [billing, setBilling] = useState(null);
 
   useEffect(() => {
-    if (returnState.kind === "failure") return;
     apiFetch("/billing/subscription/sync", { method: "POST" })
       .then((data) => {
         setBilling(data);
