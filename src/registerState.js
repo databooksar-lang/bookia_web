@@ -44,6 +44,7 @@ export function buildRegistrationRequest({
   bookstoreName,
   planCode,
   catalogLimit,
+  expectedMonthlyTotal,
   privacyAccepted,
 }) {
   if (profileType === "reader") {
@@ -66,6 +67,7 @@ export function buildRegistrationRequest({
       password,
       plan_code: planCode,
       catalog_limit: Number(catalogLimit),
+      ...(Number.isInteger(expectedMonthlyTotal) ? { expected_total_amount_ars: expectedMonthlyTotal } : {}),
       privacy_accepted: privacyAccepted,
     },
   };

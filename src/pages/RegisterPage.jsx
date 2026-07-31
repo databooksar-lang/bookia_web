@@ -118,7 +118,7 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
       return;
     }
 
-    const { path, body } = buildRegistrationRequest({ profileType, email, password, displayName, bookstoreName, planCode, catalogLimit, privacyAccepted });
+    const { path, body } = buildRegistrationRequest({ profileType, email, password, displayName, bookstoreName, planCode, catalogLimit, expectedMonthlyTotal: monthlyTotal, privacyAccepted });
     setBusy(true);
     apiFetch(path, { method: "POST", body: JSON.stringify(body) })
         .then(() => {
@@ -189,7 +189,7 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
               <div><span>Plan {planCode === "plus_ai" ? "Plus AI" : "Base"}</span><strong>{formatCommercialPrice(pricingState.prices?.[planCode] || 0)}/mes</strong></div>
               <div><span>Catalogo de hasta {catalogLimit} libros</span><strong>{addonCode ? `+ ${formatCommercialPrice(pricingState.prices?.[addonCode] || 0)}/mes` : "Incluido"}</strong></div>
               <div className="register-subscription-total"><span>Total mensual</span><strong>{formatCommercialPrice(monthlyTotal || 0)}</strong></div>
-              <p><strong>Hoy: ARS 0.</strong> El primer cobro se estima para el {firstChargeEstimate}, luego se renueva automaticamente cada mes.</p>
+              <p><strong>Hoy: ARS 0.</strong> Tenes 30 dias de prueba gratis. El primer cobro se estima para el {firstChargeEstimate}, luego se renueva automaticamente cada mes.</p>
               <p>Podes cancelar la renovacion desde Bookia y conservar el acceso hasta el final del periodo vigente.</p>
             </div>}
             {(isReader || isBookstoreDetails) ? <label className="register-legal"><input type="checkbox" checked={privacyAccepted} onChange={(event) => setPrivacyAccepted(event.target.checked)} required />Acepto los <AppLink href="/terms">Terminos y Condiciones</AppLink> y la <AppLink href="/privacy">Politica de Privacidad</AppLink>.</label> : null}
