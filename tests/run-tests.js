@@ -546,6 +546,14 @@ tests.push(["adds direct contact channels to the site footer", () => {
   assert.match(editorialStyles, /@media \(max-width: 620px\)[\s\S]*?\.footer-inner\s*\{[\s\S]*?grid-template-columns:\s*1fr;/);
 }]);
 
+tests.push(["shows Bookia's copyright notice beneath the footer description", () => {
+  const siteChromeSource = readFileSync(new URL("../src/components/SiteChrome.jsx", import.meta.url), "utf8");
+
+  assert.match(
+    siteChromeSource,
+    /Libros, librerias y lectores mas cerca\.<\/p>\s*<p className="footer-copyright">© 2026 Bookia\. Todos los derechos reservados\.<\/p>/,
+  );
+}]);
 tests.push(["presents bookstore plans and AI capabilities without public pricing", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
   const bookstoresPageSource = publicPagesSource.match(/export function BookstoresPage\(\) \{([\s\S]*?)\n\}\nfunction PlansPlan/);

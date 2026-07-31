@@ -69,6 +69,7 @@ export function SiteFooter() {
             <span className="brand-name">Bookia</span>
           </AppLink>
           <p>Libros, librerias y lectores mas cerca.</p>
+          <p className="footer-copyright">© 2026 Bookia. Todos los derechos reservados.</p>
         </div>
         <nav className="footer-links" aria-label="Navegacion secundaria">
           <AppLink href="/para-librerias">Para librerias</AppLink>
