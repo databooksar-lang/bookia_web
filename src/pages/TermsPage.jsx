@@ -5,7 +5,7 @@ export function TermsPage() {
     <article className="editorial-page about-page legal-page">
       <p className="section-label">Terminos y Condiciones</p>
       <h1>Reglas claras para buscar, publicar y conectar.</h1>
-      <p>Vigente desde el 28 de julio de 2026.</p>
+      <p>Vigente desde el 31 de julio de 2026.</p>
       <p>Este documento resume las condiciones de uso de Bookia y no reemplaza asesoramiento legal profesional.</p>
 
       <h2>Responsable</h2>
@@ -30,7 +30,10 @@ export function TermsPage() {
       <p>Bookia no vende libros directamente, no cobra al lector, no procesa tarjetas y no almacena datos de medios de pago. La operacion comercial se acuerda directamente entre la persona interesada y la libreria, incluyendo precio final, reserva, disponibilidad real, entrega, retiro, envio, cambios, devoluciones, garantias y reclamos relacionados con el libro.</p>
 
       <h2>Planes para librerias</h2>
-      <p>Bookia puede ofrecer planes gratuitos, pruebas por tiempo limitado, planes pagos, ampliaciones de catalogo y funciones con IA. Cada plan puede incluir limites de catalogo, formas de carga, funcionalidades y vigencias distintas. Los precios en ARS y condiciones comerciales pueden cambiar; las condiciones aplicables seran las informadas por Bookia al momento de la contratacion o renovacion.</p>
+      <p>Bookia ofrece suscripciones mensuales para librerias, con limites de catalogo y funciones segun el plan elegido. La contratacion se autoriza y cobra de forma recurrente mediante Mercado Pago. Bookia no recibe ni almacena los datos completos de la tarjeta.</p>
+      <p>Las nuevas librerias acceden a una prueba gratis de 30 dias una vez que Mercado Pago confirma la autorizacion. Finalizada la prueba, Mercado Pago realiza el cobro mensual automatico del importe informado al contratar. Un cambio de plan o capacidad solicitado por la libreria se aplica en la renovacion siguiente, sin prorrateo.</p>
+      <p>Ante un cobro rechazado, Bookia mantiene por 7 dias el acceso para administrar el catalogo. Vencido ese plazo sin regularizacion, se restringen las altas, bajas, ediciones y funciones con IA, pero la vidriera y el catalogo ya publicado permanecen visibles. La cancelacion evita nuevas renovaciones y conserva el acceso hasta finalizar el periodo vigente.</p>
+      <p>Los precios en ARS para nuevas contrataciones pueden cambiar. El importe de una suscripcion existente se mantiene hasta que Bookia comunique y aplique expresamente una actualizacion o la libreria solicite un cambio de plan.</p>
 
       <h2>Uso permitido y usos prohibidos</h2>
       <p>Bookia debe usarse de buena fe, con fines licitos y respetando derechos de terceros. No esta permitido publicar informacion falsa o enganosa, cargar contenido ofensivo o ilegal, intentar acceder a cuentas ajenas, afectar la seguridad del servicio, automatizar usos abusivos, copiar masivamente informacion de la plataforma o usar Bookia para fraudes, spam o actividades no autorizadas.</p>

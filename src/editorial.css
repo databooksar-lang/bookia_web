@@ -3851,3 +3851,80 @@ textarea:focus {
 .reader-profile-tab-panel[hidden] {
   display: none !important;
 }
+
+.billing-panel {
+  display: grid;
+  gap: 22px;
+}
+
+.billing-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+}
+
+.billing-summary > div {
+  display: grid;
+  gap: 5px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--cream-soft);
+}
+
+.billing-summary span,
+.billing-change-form label {
+  color: var(--muted);
+  font-size: .86rem;
+}
+
+.billing-change-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  padding: 20px;
+  border-radius: 16px;
+  background: rgba(18, 63, 50, .06);
+}
+
+.billing-change-form h3,
+.billing-change-form button {
+  grid-column: 1 / -1;
+}
+
+.billing-change-form label {
+  display: grid;
+  gap: 7px;
+}
+
+.billing-notice {
+  padding: 14px 16px;
+  border-left: 4px solid var(--forest);
+  background: rgba(18, 63, 50, .08);
+}
+
+.billing-cancel {
+  justify-self: start;
+  color: var(--coral-dark);
+}
+
+.billing-return {
+  max-width: 720px;
+  margin: 48px auto;
+  padding: 42px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--paper);
+}
+
+.billing-return-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+@media (max-width: 620px) {
+  .billing-change-form { grid-template-columns: 1fr; }
+  .billing-return { margin: 24px 12px; padding: 28px 20px; }
+}

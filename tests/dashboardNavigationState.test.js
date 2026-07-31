@@ -21,6 +21,7 @@ export function registerDashboardNavigationStateTests(test) {
     assert.equal(parseDashboardNavigation("?section=catalog").section, "catalog");
     assert.equal(parseDashboardNavigation("?section=clubs").section, "clubs");
     assert.equal(parseDashboardNavigation("?section=metrics").section, "metrics");
+    assert.equal(parseDashboardNavigation("?section=subscription").section, "subscription");
   });
 
   test("accepts active and sold-out catalog views", () => {

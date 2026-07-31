@@ -105,12 +105,23 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
     const { path, body } = buildRegistrationRequest({ profileType, email, password, displayName, bookstoreName, planCode, catalogLimit, privacyAccepted });
     startTransition(() => {
       apiFetch(path, { method: "POST", body: JSON.stringify(body) })
-        .then(() => onRegister())
-        .then((sessionData) => {
-          if (!sessionData) throw new Error("El registro fue aceptado, pero no pudimos recuperar tu sesion.");
-          navigate(isReader ? "/" : "/dashboard?registered=pending");
+        .then(() => {
+          if (isReader) {
+            return onRegister().then((sessionData) => {
+              if (!sessionData) throw new Error("El registro fue aceptado, pero no pudimos recuperar tu sesion.");
+              navigate("/");
+            });
+          }
+          return apiFetch("/billing/subscription/checkout", { method: "POST" })
+            .then((checkout) => {
+              if (!checkout?.checkout_url) throw new Error("Mercado Pago no devolvió el enlace de autorización.");
+              window.location.assign(checkout.checkout_url);
+            });
         })
-        .catch((registrationError) => setError(registrationError.message));
+        .catch((registrationError) => {
+          setError(registrationError.message);
+          if (!isReader) onRegister({ preserveOnError: true }).then(() => navigate("/dashboard?section=subscription&registered=pending"));
+        });
     });
   }
 
