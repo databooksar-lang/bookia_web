@@ -57,4 +57,13 @@ export function registerRegisterStateTests(test) {
       );
     }
   });
+
+  test("sends the displayed monthly total so the backend can reject stale pricing", () => {
+    const request = buildRegistrationRequest({
+      profileType: "bookstore", email: "libreria@example.com", password: "secreto123",
+      bookstoreName: "La Esquina", planCode: "plus_ai", catalogLimit: "100",
+      expectedMonthlyTotal: 35000, privacyAccepted: true,
+    });
+    assert.equal(request.body.expected_total_amount_ars, 35000);
+  });
 }

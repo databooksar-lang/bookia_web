@@ -1,4 +1,4 @@
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 
 import { apiFetch } from "../api";
 import { formatCommercialPrice, getCommercialPrices } from "../plansPricingState";
@@ -34,7 +34,7 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [error, setError] = useState("");
   const [pricingState, setPricingState] = useState({ loading: true, prices: null });
-  const [busy, startTransition] = useTransition();
+  const [busy, setBusy] = useState(false);
   const queryState = getRegisterQueryState(locationSearch);
 
   useEffect(() => {
@@ -58,6 +58,10 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
   const planCode = queryState.planCode;
   const isReader = profileType === "reader";
   const isBookstoreDetails = profileType === "bookstore" && bookstoreStep === "details";
+  const isBookstoreSummary = profileType === "bookstore" && bookstoreStep === "summary";
+  const addonCode = catalogLimit === "100" ? "catalog_100" : catalogLimit === "200" ? "catalog_200" : null;
+  const monthlyTotal = pricingState.prices ? pricingState.prices[planCode] + (addonCode ? pricingState.prices[addonCode] : 0) : null;
+  const firstChargeEstimate = new Intl.DateTimeFormat("es-AR", { day: "2-digit", month: "long", year: "numeric" }).format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
 
   function catalogOptionPrice(offeringCode) {
     if (!offeringCode) return "Incluido";
@@ -78,6 +82,10 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
 
   function goBack() {
     setError("");
+    if (isBookstoreSummary) {
+      setBookstoreStep("details");
+      return;
+    }
     if (isBookstoreDetails) {
       setBookstoreStep("account");
       return;
@@ -101,17 +109,36 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
       setBookstoreStep("details");
       return;
     }
+    if (isBookstoreDetails) {
+      if (monthlyTotal === null) {
+        setError("No pudimos confirmar el precio vigente. Intentá nuevamente.");
+        return;
+      }
+      setBookstoreStep("summary");
+      return;
+    }
 
-    const { path, body } = buildRegistrationRequest({ profileType, email, password, displayName, bookstoreName, planCode, catalogLimit, privacyAccepted });
-    startTransition(() => {
-      apiFetch(path, { method: "POST", body: JSON.stringify(body) })
-        .then(() => onRegister())
-        .then((sessionData) => {
-          if (!sessionData) throw new Error("El registro fue aceptado, pero no pudimos recuperar tu sesion.");
-          navigate(isReader ? "/" : "/dashboard?registered=pending");
+    const { path, body } = buildRegistrationRequest({ profileType, email, password, displayName, bookstoreName, planCode, catalogLimit, expectedMonthlyTotal: monthlyTotal, privacyAccepted });
+    setBusy(true);
+    apiFetch(path, { method: "POST", body: JSON.stringify(body) })
+        .then(() => {
+          if (isReader) {
+            return onRegister().then((sessionData) => {
+              if (!sessionData) throw new Error("El registro fue aceptado, pero no pudimos recuperar tu sesion.");
+              navigate("/");
+            });
+          }
+          return apiFetch("/billing/subscription/checkout", { method: "POST" })
+            .then((checkout) => {
+              if (!checkout?.checkout_url) throw new Error("Mercado Pago no devolvió el enlace de autorización.");
+              window.location.assign(checkout.checkout_url);
+            });
         })
-        .catch((registrationError) => setError(registrationError.message));
-    });
+        .catch((registrationError) => {
+          setError(registrationError.message);
+          if (!isReader) onRegister({ preserveOnError: true }).then(() => navigate("/dashboard?section=subscription&registered=pending"));
+        })
+        .finally(() => setBusy(false));
   }
 
   if (queryState.kind === "choice") {
@@ -136,12 +163,12 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
         <button type="button" className="register-back" onClick={goBack}>&larr; Volver</button>
         <div className="register-form-art" aria-hidden="true"><img src={isReader ? "/images/register/reader-books.png" : "/images/register/bookstore-front.png"} alt="" /></div>
         <div className="register-form-panel">
-          {!isReader ? <p className="register-progress"><span className={bookstoreStep === "account" ? "is-current" : "is-complete"}>1. Tu cuenta</span><span className={isBookstoreDetails ? "is-current" : ""}>2. Tu libreria y catalogo</span></p> : null}
-          <h1 id="register-form-title">{isReader ? "Empeza a descubrir" : isBookstoreDetails ? "Contanos sobre tu libreria" : "Crea tu cuenta"}</h1>
-          <p>{isReader ? "Guarda tus proximos libros y segui explorando." : isBookstoreDetails ? "Elegi si queres ampliar el catalogo incluido en tu plan." : "Primero, defini los datos para ingresar a Bookia."}</p>
+          {!isReader ? <p className="register-progress"><span className={bookstoreStep === "account" ? "is-current" : "is-complete"}>1. Tu cuenta</span><span className={isBookstoreDetails ? "is-current" : isBookstoreSummary ? "is-complete" : ""}>2. Plan</span><span className={isBookstoreSummary ? "is-current" : ""}>3. Confirmacion</span></p> : null}
+          <h1 id="register-form-title">{isReader ? "Empeza a descubrir" : isBookstoreSummary ? "Confirma tu suscripcion" : isBookstoreDetails ? "Contanos sobre tu libreria" : "Crea tu cuenta"}</h1>
+          <p>{isReader ? "Guarda tus proximos libros y segui explorando." : isBookstoreSummary ? "Revisa el importe y la renovacion antes de autorizar Mercado Pago." : isBookstoreDetails ? "Elegi si queres ampliar el catalogo incluido en tu plan." : "Primero, defini los datos para ingresar a Bookia."}</p>
           <form className="register-form" onSubmit={submit}>
             {isReader ? <label>Como queres que te llamemos?<input value={displayName} onChange={(event) => setDisplayName(event.target.value)} autoComplete="name" /></label> : null}
-            {!isBookstoreDetails ? <><label>Correo electronico<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" required /></label><div className="register-password-group">
+            {(isReader || bookstoreStep === "account") ? <><label>Correo electronico<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" required /></label><div className="register-password-group">
                 <label htmlFor="register-password">Contrasena</label>
                 <div className="register-password-field">
                   <input id="register-password" type={passwordVisible ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" minLength="8" required />
@@ -149,7 +176,7 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
                     {passwordVisible ? <EyeOffIcon /> : <EyeIcon />}
                   </button>
                 </div>
-              </div></> : <>
+              </div></> : isBookstoreDetails ? <>
               <label>Nombre de la libreria<input value={bookstoreName} onChange={(event) => setBookstoreName(event.target.value)} autoComplete="organization" required /></label>
               <fieldset className="register-catalog-options"><legend>Queres ampliar tu catalogo?</legend>
                 {CATALOG_OPTIONS.map((option) => <label className={`register-catalog-option${catalogLimit === option.limit ? " is-selected" : ""}`} key={option.limit}>
@@ -158,10 +185,16 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
                   <em>{catalogOptionPrice(option.offeringCode)}</em>
                 </label>)}
               </fieldset>
-            </>}
+            </> : <div className="register-subscription-summary">
+              <div><span>Plan {planCode === "plus_ai" ? "Plus AI" : "Base"}</span><strong>{formatCommercialPrice(pricingState.prices?.[planCode] || 0)}/mes</strong></div>
+              <div><span>Catalogo de hasta {catalogLimit} libros</span><strong>{addonCode ? `+ ${formatCommercialPrice(pricingState.prices?.[addonCode] || 0)}/mes` : "Incluido"}</strong></div>
+              <div className="register-subscription-total"><span>Total mensual</span><strong>{formatCommercialPrice(monthlyTotal || 0)}</strong></div>
+              <p><strong>Hoy: ARS 0.</strong> Tenes 30 dias de prueba gratis. El primer cobro se estima para el {firstChargeEstimate}, luego se renueva automaticamente cada mes.</p>
+              <p>Podes cancelar la renovacion desde Bookia y conservar el acceso hasta el final del periodo vigente.</p>
+            </div>}
             {(isReader || isBookstoreDetails) ? <label className="register-legal"><input type="checkbox" checked={privacyAccepted} onChange={(event) => setPrivacyAccepted(event.target.checked)} required />Acepto los <AppLink href="/terms">Terminos y Condiciones</AppLink> y la <AppLink href="/privacy">Politica de Privacidad</AppLink>.</label> : null}
             {error ? <p className="feedback error">{error}</p> : null}
-            <button className="register-submit" type="submit" disabled={busy}>{busy ? "Creando cuenta..." : profileType === "bookstore" && !isBookstoreDetails ? "Continuar" : "Crear cuenta"} <ArrowIcon /></button>
+            <button className="register-submit" type="submit" disabled={busy}>{busy ? "Creando cuenta..." : isBookstoreSummary ? "Crear cuenta y autorizar Mercado Pago" : profileType === "bookstore" ? "Continuar" : "Crear cuenta"} <ArrowIcon /></button>
           </form>
         </div>
       </section>

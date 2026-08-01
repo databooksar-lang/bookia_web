@@ -13,6 +13,7 @@ import { CookiePolicyPage } from "./pages/CookiePolicyPage";
 import { PrivacyPage } from "./pages/PrivacyPage";
 import { TermsPage } from "./pages/TermsPage";
 import { ReaderProfilePage } from "./pages/ReaderProfilePage";
+import { BillingReturnPage } from "./pages/BillingReturnPage";
 
 export default function App() {
   const { pathname, search } = useLocationState();
@@ -58,6 +59,7 @@ export default function App() {
   else if (pathname === "/forgot-password") page = <ForgotPasswordPage />;
   else if (pathname === "/reset-password") page = <ResetPasswordPage locationSearch={search} />;
   else if (pathname === "/dashboard") page = <DashboardPage me={me} refreshMe={refreshMe} locationSearch={search} />;
+  else if (pathname === "/billing/return") page = <BillingReturnPage locationSearch={search} refreshMe={refreshMe} />;
   else if (pathname === "/profile") page = <ReaderProfilePage me={me} refreshMe={refreshMe} locationSearch={search} />;
   else if (pathname.startsWith("/bookstores/")) page = <BookstorePage slug={pathname.replace("/bookstores/", "")} me={me} />;
   else if (pathname.startsWith("/readers/")) page = <ReaderPage slug={pathname.replace("/readers/", "")} />;

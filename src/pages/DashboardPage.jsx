@@ -12,6 +12,8 @@ import { buildSingleGenreIds, getSingleGenreValue } from "../genreSelection";
 import { getGenreSelectorState } from "../genreSelectorState";
 import { buildReadingClubPayload, createReadingClubDraft, displayReadingClubDate } from "../readingClubState";
 import { AppLink, navigate } from "../navigation";
+import { getBillingAccessState } from "../billingState";
+import { BillingSubscriptionPanel } from "../components/BillingSubscriptionPanel";
 
 const EMPTY_ITEM = {
   title: "",
@@ -51,6 +53,7 @@ const DASHBOARD_TABS = [
   { section: "catalog", label: "Catalogo" },
   { section: "clubs", label: "Clubes de lectura" },
   { section: "metrics", label: "Metricas" },
+  { section: "subscription", label: "Suscripcion" },
 ];
 
 function DashboardTabs({ section }) {
@@ -179,6 +182,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
   const hiddenItems = items.filter((item) => item.availability_status === "hidden");
   const hasActiveFilters = Boolean(titleQuery.trim() || authorQuery.trim());
   const canAutocompleteWithAi = canUseAiAutocomplete(me?.current_plan_code);
+  const billingAccess = getBillingAccessState(me?.billing);
 
   function loadAnalytics() {
     setAnalyticsLoading(true);
@@ -405,7 +409,8 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
         <div className="dashboard-actions"><button className="secondary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver vidriera digital <ArrowIcon /></button><button className="text-link" onClick={logout}>Cerrar sesion</button></div>
       </header>
 
-      {registrationPending ? <p className="feedback success">Registramos tu libreria. Tu cuenta queda pendiente de aprobacion mientras revisamos los datos.</p> : null}
+      {registrationPending ? <p className="feedback success">Registramos tu libreria. Autoriza la suscripcion con Mercado Pago para activar la prueba gratis de 30 dias.</p> : null}
+      {!billingAccess.canManageCatalog ? <p className="feedback error">La suscripcion necesita regularizarse. Tu catalogo sigue publico, pero no podes modificarlo hasta confirmar el pago.</p> : null}
       {error ? <p className="feedback error">{error}</p> : null}
 
       <DashboardTabs section={section} />
@@ -655,6 +660,16 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
             )}
           </>
         ) : null}
+      </DashboardPanel>
+
+      <DashboardPanel
+        label="Facturacion"
+        title="Tu suscripcion"
+        description="Consulta el proximo cobro, programa cambios o cancela la renovacion. Bookia no almacena los datos de tu tarjeta."
+        isActive={section === "subscription"}
+        className="dashboard-subscription-panel"
+      >
+        <BillingSubscriptionPanel initialBilling={me.billing} onBillingChange={() => refreshMe({ preserveOnError: true })} />
       </DashboardPanel>
       </div>
     </section>
