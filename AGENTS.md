@@ -24,6 +24,21 @@ Repo guidance for AI agents working in `bookia-frontend`. Use this file for fast
 
 If Vite or esbuild fails with a sandbox-related `spawn EPERM`, rerun the same command with the appropriate sandbox escalation rather than changing project code.
 
+## Required Visual Review
+
+After every completed batch that changes visible JSX, CSS, images, icons, or content that can alter layout, spawn the project agent `visual_reviewer` before declaring the work complete.
+
+- Give `visual_reviewer` the implementation goal, current diff, and affected routes.
+- Wait for it to inspect the rendered result in desktop and mobile viewports and apply any necessary visual corrections.
+- If it changes files, rerun `npm test` and `npm run build`, then include its corrections in the completed work.
+- Do not invoke it for changes that are purely internal and cannot affect rendered output.
+- Do not claim visual validation succeeded when browser tooling was unavailable; report the rendered review as pending instead.
+
+## Required Security Review
+
+- After every change, run the `security_reviewer` custom agent against the implementation goal, current diff, affected trust boundaries, and test results.
+- If the review identifies a critical or high finding, remediate it and run the security review again before the change can proceed.
+
 ## Legal And Documentation Review Rule
 
 For every future change, explicitly consider whether any of these files also need an update:
