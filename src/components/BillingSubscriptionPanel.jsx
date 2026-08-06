@@ -45,6 +45,29 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
         .catch((actionError) => setError(actionError.message)));
   }
 
+  function reactivateSubscription(event) {
+    event.preventDefault();
+    setError("");
+    setMessage("");
+    runAction(() => {
+      let body;
+      try {
+        body = buildBillingChangeRequest(planCode, catalogLimit);
+      } catch (validationError) {
+        setError(validationError.message);
+        return Promise.resolve();
+      }
+      return apiFetch("/billing/subscription/reactivate", { method: "POST", body: JSON.stringify(body) })
+        .then(acceptBilling)
+        .then(() => apiFetch("/billing/subscription/checkout", { method: "POST" }))
+        .then((data) => {
+          if (!data.checkout_url) throw new Error("La autorización ya fue iniciada. Comprobá el estado del pago.");
+          window.location.assign(data.checkout_url);
+        })
+        .catch((actionError) => setError(actionError.message));
+    });
+  }
+
   function syncPayment() {
     setError("");
     setMessage("");
@@ -74,17 +97,23 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
   }
 
   function cancelRenewal() {
-    if (!window.confirm("¿Querés cancelar la renovación? Vas a conservar el acceso hasta el fin del período actual.")) return;
+    if (!window.confirm("¿Querés cancelar la renovación? Tu librería seguirá pública hasta el fin del período actual y luego se ocultará.")) return;
     setError("");
     runAction(() => apiFetch("/billing/subscription/cancel", { method: "POST" })
         .then(acceptBilling)
-        .then(() => setMessage("La renovación quedó cancelada. Conservás el acceso hasta el fin del período."))
+        .then(() => setMessage("La renovación quedó cancelada. Tu librería seguirá pública hasta el fin del período y luego se ocultará."))
         .catch((actionError) => setError(actionError.message)));
   }
 
   if (!billing) return <p>Cargando suscripción...</p>;
   const canChange = ["trialing", "active", "grace_period"].includes(billing.status);
   const changeIsNoop = planCode === billing.plan_code && Number(catalogLimit) === billing.catalog_limit;
+  const isReactivationPending = billing.status === "payment_pending" && !billing.trial_ends_at;
+  const billingDateLabel = billing.status === "payment_pending" && billing.trial_ends_at
+    ? "Fin de la prueba gratis"
+    : billing.status === "trialing"
+      ? "Fin de la prueba gratis"
+      : "Próximo vencimiento";
 
   return (
     <div className="billing-panel">
@@ -93,10 +122,11 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
         <div><span>Plan</span><strong>{billing.plan_code === "plus_ai" ? "Plus AI" : "Base"}</strong></div>
         <div><span>Catálogo</span><strong>Hasta {billing.catalog_limit} libros</strong></div>
         <div><span>Total mensual</span><strong>{formatBillingAmount(billing.total_amount_ars, billing.currency)}</strong></div>
-        <div><span>{billing.status === "payment_pending" || billing.status === "trialing" ? "Fin de la prueba gratis" : "Próximo vencimiento"}</span><strong>{formatBillingDate(billing.current_period_end || billing.trial_ends_at)}</strong></div>
+        <div><span>{billingDateLabel}</span><strong>{formatBillingDate(billing.current_period_end || billing.trial_ends_at)}</strong></div>
       </div>
 
       {billing.status === "payment_pending" ? <button className="primary-button" type="button" onClick={authorizePayment} disabled={busy}>Confirmar medio de pago</button> : null}
+      {isReactivationPending ? <p className="billing-notice">Tu librería sigue oculta. Volverá a publicarse cuando Mercado Pago confirme la autorización.</p> : null}
       {["grace_period", "restricted"].includes(billing.status) ? <button className="secondary-button" type="button" onClick={syncPayment} disabled={busy}>Comprobar pago</button> : null}
 
       {billing.scheduled_change ? <p className="billing-notice">Próximo cambio: {billing.scheduled_change.plan_code === "plus_ai" ? "Plus AI" : "Base"}, hasta {billing.scheduled_change.catalog_limit} libros, desde el {formatBillingDate(billing.scheduled_change.effective_at)}.</p> : null}
@@ -109,6 +139,14 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
       </form> : null}
 
       {canChange ? <button className="text-button billing-cancel" type="button" onClick={cancelRenewal} disabled={busy}>Cancelar renovación</button> : null}
+
+      {billing.status === "canceled" ? <form className="billing-change-form" onSubmit={reactivateSubscription}>
+        <h3>Reactivar librería</h3>
+        <p className="billing-notice">Elegí el plan y la capacidad. La reactivación es paga, sin una nueva prueba gratis, y tu librería volverá a publicarse cuando Mercado Pago confirme la autorización.</p>
+        <label>Plan<select value={planCode} onChange={(event) => setPlanCode(event.target.value)}><option value="base">Base</option><option value="plus_ai">Plus AI</option></select></label>
+        <label>Capacidad<select value={catalogLimit} onChange={(event) => setCatalogLimit(event.target.value)}><option value="50">50 libros</option><option value="100">100 libros</option><option value="200">200 libros</option></select></label>
+        <button className="primary-button" type="submit" disabled={busy}>Reactivar librería</button>
+      </form> : null}
       {message ? <p className="feedback success">{message}</p> : null}
       {error ? <p className="feedback error">{error}</p> : null}
     </div>

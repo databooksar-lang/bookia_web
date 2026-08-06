@@ -18,7 +18,7 @@ export function getBillingStatusLabel(status) {
 }
 
 export function getBillingAccessState(billing) {
-  if (!billing) return { canManageCatalog: true, needsPayment: false };
+  if (!billing) return { canManageCatalog: true, needsPayment: false, catalogIsPublic: true };
   const trialEndsAt = billing.trial_ends_at ? new Date(billing.trial_ends_at) : null;
   const trialIsActive = billing.status === "payment_pending"
     && trialEndsAt instanceof Date
@@ -27,6 +27,7 @@ export function getBillingAccessState(billing) {
   return {
     canManageCatalog: ACTIVE_MANAGEMENT_STATES.has(billing.status) || trialIsActive,
     needsPayment: PAYMENT_ATTENTION_STATES.has(billing.status),
+    catalogIsPublic: billing.status !== "canceled" && (billing.status !== "payment_pending" || trialIsActive),
   };
 }
 
