@@ -15,11 +15,13 @@ export function registerBillingStateTests(test) {
   });
 
   test("allows catalog management only during entitled billing states", () => {
-    assert.deepEqual(getBillingAccessState({ status: "active" }), { canManageCatalog: true, needsPayment: false });
-    assert.deepEqual(getBillingAccessState({ status: "grace_period" }), { canManageCatalog: true, needsPayment: true });
-    assert.deepEqual(getBillingAccessState({ status: "restricted" }), { canManageCatalog: false, needsPayment: true });
-    assert.deepEqual(getBillingAccessState({ status: "payment_pending", trial_ends_at: "2099-01-01T00:00:00Z" }), { canManageCatalog: true, needsPayment: true });
-    assert.deepEqual(getBillingAccessState(null), { canManageCatalog: true, needsPayment: false });
+    assert.deepEqual(getBillingAccessState({ status: "active" }), { canManageCatalog: true, needsPayment: false, catalogIsPublic: true });
+    assert.deepEqual(getBillingAccessState({ status: "grace_period" }), { canManageCatalog: true, needsPayment: true, catalogIsPublic: true });
+    assert.deepEqual(getBillingAccessState({ status: "restricted" }), { canManageCatalog: false, needsPayment: true, catalogIsPublic: true });
+    assert.deepEqual(getBillingAccessState({ status: "payment_pending", trial_ends_at: "2099-01-01T00:00:00Z" }), { canManageCatalog: true, needsPayment: true, catalogIsPublic: true });
+    assert.deepEqual(getBillingAccessState({ status: "payment_pending", trial_ends_at: null }), { canManageCatalog: false, needsPayment: true, catalogIsPublic: false });
+    assert.deepEqual(getBillingAccessState({ status: "canceled" }), { canManageCatalog: false, needsPayment: false, catalogIsPublic: false });
+    assert.deepEqual(getBillingAccessState(null), { canManageCatalog: true, needsPayment: false, catalogIsPublic: true });
   });
 
   test("builds a validated next-renewal change request", () => {

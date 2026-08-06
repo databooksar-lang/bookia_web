@@ -510,7 +510,7 @@ tests.push(["publishes terms and conditions for Bookia's marketplace role", () =
   assert.match(registerSource, /href="\/privacy"/);
   assert.match(privacySource, /href="\/terms"/);
   assert.match(termsSource, /Terminos y Condiciones/);
-  assert.match(termsSource, /Vigente desde el 31 de julio de 2026/);
+  assert.match(termsSource, /Vigente desde el 6 de agosto de 2026/);
   assert.match(termsSource, /Marcelo Gabriel Gonzalez/);
   assert.match(termsSource, /bookia.app.admin@gmail.com/);
   assert.match(termsSource, /Bookia no vende libros directamente/);
@@ -519,9 +519,23 @@ tests.push(["publishes terms and conditions for Bookia's marketplace role", () =
   assert.match(termsSource, /Mercado Pago/);
   assert.match(termsSource, /prueba gratis de 30 dias/);
   assert.match(termsSource, /7 dias/);
+  assert.match(termsSource, /oculta la vidriera y el catalogo publico/);
+  assert.match(termsSource, /reactivar la suscripcion desde su panel/);
+  assert.match(termsSource, /no incluye una nueva prueba gratis/);
   assert.match(termsSource, /Politica de Privacidad/);
   assert.match(termsSource, /Politica de Cookies/);
   assert.match(termsSource, /no reemplaza asesoramiento legal profesional/);
+}]);
+tests.push(["offers paid reactivation for canceled hidden bookstores", () => {
+  const billingPanelSource = readFileSync(new URL("../src/components/BillingSubscriptionPanel.jsx", import.meta.url), "utf8");
+  const dashboardSource = readFileSync(new URL("../src/pages/DashboardPage.jsx", import.meta.url), "utf8");
+
+  assert.match(billingPanelSource, /\/billing\/subscription\/reactivate/);
+  assert.match(billingPanelSource, /Reactivar librería/);
+  assert.match(billingPanelSource, /sin una nueva prueba gratis/);
+  assert.match(billingPanelSource, /volverá a publicarse cuando Mercado Pago confirme la autorización/);
+  assert.match(dashboardSource, /billingAccess\.catalogIsPublic/);
+  assert.match(dashboardSource, /Tu librería y su catálogo no están visibles públicamente/);
 }]);
 tests.push(["renders the visual pricing composition with catalog growth band", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");

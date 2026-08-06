@@ -411,7 +411,8 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
 
       {registrationPending && me.billing?.status !== "payment_pending" ? <p className="feedback success">Registramos tu libreria.</p> : null}
       {me.billing?.status === "payment_pending" && billingAccess.canManageCatalog ? <p className="feedback success">Tu prueba gratis está activa hasta el {formatBillingDate(me.billing.trial_ends_at)}. Confirmá el medio de pago antes de esa fecha para conservar el acceso.</p> : null}
-      {!billingAccess.canManageCatalog ? <p className="feedback error">La prueba o suscripción necesita regularizarse. Tu catálogo sigue público, pero no podés modificarlo hasta confirmar el pago.</p> : null}
+      {!billingAccess.canManageCatalog && billingAccess.catalogIsPublic ? <p className="feedback error">La prueba o suscripción necesita regularizarse. Tu catálogo sigue público, pero no podés modificarlo hasta confirmar el pago.</p> : null}
+      {!billingAccess.canManageCatalog && !billingAccess.catalogIsPublic ? <p className="feedback error">Tu librería y su catálogo no están visibles públicamente. Podés reactivar la suscripción desde este panel.</p> : null}
       {error ? <p className="feedback error">{error}</p> : null}
 
       <DashboardTabs section={section} />
