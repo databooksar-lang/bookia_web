@@ -12,7 +12,7 @@ import { buildSingleGenreIds, getSingleGenreValue } from "../genreSelection";
 import { getGenreSelectorState } from "../genreSelectorState";
 import { buildReadingClubPayload, createReadingClubDraft, displayReadingClubDate } from "../readingClubState";
 import { AppLink, navigate } from "../navigation";
-import { getBillingAccessState } from "../billingState";
+import { formatBillingDate, getBillingAccessState } from "../billingState";
 import { BillingSubscriptionPanel } from "../components/BillingSubscriptionPanel";
 
 const EMPTY_ITEM = {
@@ -409,8 +409,9 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
         <div className="dashboard-actions"><button className="secondary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver vidriera digital <ArrowIcon /></button><button className="text-link" onClick={logout}>Cerrar sesion</button></div>
       </header>
 
-      {registrationPending ? <p className="feedback success">Registramos tu libreria. Autoriza la suscripcion con Mercado Pago para activar la prueba gratis de 30 dias.</p> : null}
-      {!billingAccess.canManageCatalog ? <p className="feedback error">La suscripcion necesita regularizarse. Tu catalogo sigue publico, pero no podes modificarlo hasta confirmar el pago.</p> : null}
+      {registrationPending && me.billing?.status !== "payment_pending" ? <p className="feedback success">Registramos tu libreria.</p> : null}
+      {me.billing?.status === "payment_pending" && billingAccess.canManageCatalog ? <p className="feedback success">Tu prueba gratis está activa hasta el {formatBillingDate(me.billing.trial_ends_at)}. Confirmá el medio de pago antes de esa fecha para conservar el acceso.</p> : null}
+      {!billingAccess.canManageCatalog ? <p className="feedback error">La prueba o suscripción necesita regularizarse. Tu catálogo sigue público, pero no podés modificarlo hasta confirmar el pago.</p> : null}
       {error ? <p className="feedback error">{error}</p> : null}
 
       <DashboardTabs section={section} />

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { apiFetch } from "../api";
-import { getBillingReturnState, getBillingStatusLabel } from "../billingState";
+import { formatBillingDate, getBillingReturnState, getBillingStatusLabel } from "../billingState";
 import { navigate } from "../navigation";
 
 export function BillingReturnPage({ locationSearch = "", refreshMe }) {
@@ -14,8 +14,8 @@ export function BillingReturnPage({ locationSearch = "", refreshMe }) {
     apiFetch("/billing/subscription/sync", { method: "POST" })
       .then((data) => {
         setBilling(data);
-        setState(["trialing", "active"].includes(data.status) ? "success" : "pending");
-        setMessage(["trialing", "active"].includes(data.status) ? "Tu suscripción quedó activa y comenzó la prueba gratis de 30 días." : "Mercado Pago todavía está confirmando la autorización.");
+        setState(["payment_pending", "trialing", "active"].includes(data.status) ? "success" : "pending");
+        setMessage(data.status === "payment_pending" ? `Tu prueba gratis está activa hasta el ${formatBillingDate(data.trial_ends_at)}. Confirmá el medio de pago antes de esa fecha.` : ["trialing", "active"].includes(data.status) ? "Tu suscripción quedó activa y la prueba gratis sigue vigente." : "Mercado Pago todavía está confirmando la autorización.");
         return refreshMe?.({ preserveOnError: true });
       })
       .catch((error) => { setState("failure"); setMessage(error.message); });

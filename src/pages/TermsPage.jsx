@@ -31,7 +31,7 @@ export function TermsPage() {
 
       <h2>Planes para librerias</h2>
       <p>Bookia ofrece suscripciones mensuales para librerias, con limites de catalogo y funciones segun el plan elegido. La contratacion se autoriza y cobra de forma recurrente mediante Mercado Pago. Bookia no recibe ni almacena los datos completos de la tarjeta.</p>
-      <p>Las nuevas librerias acceden a una prueba gratis de 30 dias una vez que Mercado Pago confirma la autorizacion. Finalizada la prueba, Mercado Pago realiza el cobro mensual automatico del importe informado al contratar. Un cambio de plan o capacidad solicitado por la libreria se aplica en la renovacion siguiente, sin prorrateo.</p>
+      <p>Las nuevas librerias acceden a una prueba gratis de 30 dias desde el registro. Durante ese plazo deben confirmar su medio de pago en Mercado Pago. Finalizada la prueba, Mercado Pago realiza el cobro mensual automatico del importe informado al contratar; sin una suscripcion autorizada, Bookia restringe las modificaciones. Un cambio de plan o capacidad solicitado por la libreria se aplica en la renovacion siguiente, sin prorrateo.</p>
       <p>Ante un cobro rechazado, Bookia mantiene por 7 dias el acceso para administrar el catalogo. Vencido ese plazo sin regularizacion, se restringen las altas, bajas, ediciones y funciones con IA, pero la vidriera y el catalogo ya publicado permanecen visibles. La cancelacion evita nuevas renovaciones y conserva el acceso hasta finalizar el periodo vigente.</p>
       <p>Los precios en ARS para nuevas contrataciones pueden cambiar. El importe de una suscripcion existente se mantiene hasta que Bookia comunique y aplique expresamente una actualizacion o la libreria solicite un cambio de plan.</p>
 

@@ -18,6 +18,7 @@ export function registerBillingStateTests(test) {
     assert.deepEqual(getBillingAccessState({ status: "active" }), { canManageCatalog: true, needsPayment: false });
     assert.deepEqual(getBillingAccessState({ status: "grace_period" }), { canManageCatalog: true, needsPayment: true });
     assert.deepEqual(getBillingAccessState({ status: "restricted" }), { canManageCatalog: false, needsPayment: true });
+    assert.deepEqual(getBillingAccessState({ status: "payment_pending", trial_ends_at: "2099-01-01T00:00:00Z" }), { canManageCatalog: true, needsPayment: true });
     assert.deepEqual(getBillingAccessState(null), { canManageCatalog: true, needsPayment: false });
   });
 

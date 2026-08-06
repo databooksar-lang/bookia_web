@@ -93,10 +93,10 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
         <div><span>Plan</span><strong>{billing.plan_code === "plus_ai" ? "Plus AI" : "Base"}</strong></div>
         <div><span>Catálogo</span><strong>Hasta {billing.catalog_limit} libros</strong></div>
         <div><span>Total mensual</span><strong>{formatBillingAmount(billing.total_amount_ars, billing.currency)}</strong></div>
-        <div><span>Próximo vencimiento</span><strong>{formatBillingDate(billing.current_period_end || billing.trial_ends_at)}</strong></div>
+        <div><span>{billing.status === "payment_pending" || billing.status === "trialing" ? "Fin de la prueba gratis" : "Próximo vencimiento"}</span><strong>{formatBillingDate(billing.current_period_end || billing.trial_ends_at)}</strong></div>
       </div>
 
-      {billing.status === "payment_pending" ? <button className="primary-button" type="button" onClick={authorizePayment} disabled={busy}>Autorizar en Mercado Pago</button> : null}
+      {billing.status === "payment_pending" ? <button className="primary-button" type="button" onClick={authorizePayment} disabled={busy}>Confirmar medio de pago</button> : null}
       {["grace_period", "restricted"].includes(billing.status) ? <button className="secondary-button" type="button" onClick={syncPayment} disabled={busy}>Comprobar pago</button> : null}
 
       {billing.scheduled_change ? <p className="billing-notice">Próximo cambio: {billing.scheduled_change.plan_code === "plus_ai" ? "Plus AI" : "Base"}, hasta {billing.scheduled_change.catalog_limit} libros, desde el {formatBillingDate(billing.scheduled_change.effective_at)}.</p> : null}
