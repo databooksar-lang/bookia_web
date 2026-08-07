@@ -39,6 +39,14 @@ export function buildBillingChangeRequest(planCode, catalogLimit) {
   return { plan_code: planCode, catalog_limit: normalizedLimit };
 }
 
+export function buildBillingCheckoutRequest(payerEmail) {
+  const normalized = String(payerEmail || "").trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) {
+    throw new Error("Ingresá un correo válido para autorizar la suscripción en Mercado Pago.");
+  }
+  return { payer_email: normalized };
+}
+
 export function getTrustedMercadoPagoCheckoutUrl(value) {
   let checkoutUrl;
   try {

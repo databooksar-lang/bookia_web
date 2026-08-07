@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { apiFetch } from "../api";
-import { getTrustedMercadoPagoCheckoutUrl } from "../billingState";
+import { buildBillingCheckoutRequest, getTrustedMercadoPagoCheckoutUrl } from "../billingState";
 import { formatCommercialPrice, getCommercialPrices } from "../plansPricingState";
 import { AppLink, navigate } from "../navigation";
 import { Redirect } from "../components/Redirect";
@@ -27,6 +27,8 @@ function RegistrationChoice({ type, title, description, image, onChoose }) {
 export function RegisterPage({ onRegister, me, locationSearch }) {
   const [bookstoreStep, setBookstoreStep] = useState("account");
   const [email, setEmail] = useState("");
+  const [payerEmail, setPayerEmail] = useState("");
+  const [payerEmailTouched, setPayerEmailTouched] = useState(false);
   const [password, setPassword] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [displayName, setDisplayName] = useState("");
@@ -119,7 +121,14 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
       return;
     }
 
-    const { path, body } = buildRegistrationRequest({ profileType, email, password, displayName, bookstoreName, planCode, catalogLimit, expectedMonthlyTotal: monthlyTotal, privacyAccepted });
+    let checkoutBody = null;
+    try {
+      if (!isReader) checkoutBody = buildBillingCheckoutRequest(payerEmail);
+    } catch (validationError) {
+      setError(validationError.message);
+      return;
+    }
+    const { path, body } = buildRegistrationRequest({ profileType, email, payerEmail, password, displayName, bookstoreName, planCode, catalogLimit, expectedMonthlyTotal: monthlyTotal, privacyAccepted });
     setBusy(true);
     apiFetch(path, { method: "POST", body: JSON.stringify(body) })
         .then(() => {
@@ -129,7 +138,7 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
               navigate("/");
             });
           }
-          return apiFetch("/billing/subscription/checkout", { method: "POST" })
+          return apiFetch("/billing/subscription/checkout", { method: "POST", body: JSON.stringify(checkoutBody) })
             .then((checkout) => {
               if (!checkout?.checkout_url) throw new Error("Mercado Pago no devolvió el enlace de autorización.");
               window.location.assign(getTrustedMercadoPagoCheckoutUrl(checkout.checkout_url));
@@ -169,7 +178,11 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
           <p>{isReader ? "Guarda tus proximos libros y segui explorando." : isBookstoreSummary ? "Revisa el importe y la renovacion antes de autorizar Mercado Pago." : isBookstoreDetails ? "Elegi si queres ampliar el catalogo incluido en tu plan." : "Primero, defini los datos para ingresar a Bookia."}</p>
           <form className="register-form" onSubmit={submit}>
             {isReader ? <label>Como queres que te llamemos?<input value={displayName} onChange={(event) => setDisplayName(event.target.value)} autoComplete="name" /></label> : null}
-            {(isReader || bookstoreStep === "account") ? <><label>Correo electronico<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" required /></label><div className="register-password-group">
+            {(isReader || bookstoreStep === "account") ? <><label>Correo electronico<input type="email" value={email} onChange={(event) => {
+              const nextEmail = event.target.value;
+              setEmail(nextEmail);
+              if (!payerEmailTouched) setPayerEmail(nextEmail);
+            }} autoComplete="email" required /></label><div className="register-password-group">
                 <label htmlFor="register-password">Contrasena</label>
                 <div className="register-password-field">
                   <input id="register-password" type={passwordVisible ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" minLength="8" required />
@@ -192,6 +205,10 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
               <div className="register-subscription-total"><span>Total mensual</span><strong>{formatCommercialPrice(monthlyTotal || 0)}</strong></div>
               <p><strong>Hoy: ARS 0.</strong> Tenes 30 dias de prueba gratis. El primer cobro se estima para el {firstChargeEstimate}, luego se renueva automaticamente cada mes.</p>
               <p>Podes cancelar la renovacion desde Bookia y conservar el acceso hasta el final del periodo vigente.</p>
+              <label className="register-payer-email">Correo de la cuenta de Mercado Pago
+                <input type="email" value={payerEmail} onChange={(event) => { setPayerEmailTouched(true); setPayerEmail(event.target.value); }} autoComplete="email" required />
+                <small>Ingresá el correo de la cuenta que autorizará la suscripción. Puede ser distinto de tu correo de acceso a Bookia.</small>
+              </label>
             </div>}
             {(isReader || isBookstoreDetails) ? <label className="register-legal"><input type="checkbox" checked={privacyAccepted} onChange={(event) => setPrivacyAccepted(event.target.checked)} required />Acepto los <AppLink href="/terms">Terminos y Condiciones</AppLink> y la <AppLink href="/privacy">Politica de Privacidad</AppLink>.</label> : null}
             {error ? <p className="feedback error">{error}</p> : null}

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import * as billingState from "../src/billingState.js";
 
 const {
+  buildBillingCheckoutRequest,
   buildBillingChangeRequest,
   getBillingAccessState,
   getBillingReturnState,
@@ -29,6 +30,11 @@ export function registerBillingStateTests(test) {
   test("builds a validated next-renewal change request", () => {
     assert.deepEqual(buildBillingChangeRequest("base", "200"), { plan_code: "base", catalog_limit: 200 });
     assert.throws(() => buildBillingChangeRequest("trial", "50"), /plan/i);
+  });
+
+  test("builds and validates the Mercado Pago payer request", () => {
+    assert.deepEqual(buildBillingCheckoutRequest(" Payments@Example.com "), { payer_email: "payments@example.com" });
+    assert.throws(() => buildBillingCheckoutRequest("not-an-email"), /correo válido/i);
   });
 
   test("recognizes Mercado Pago return outcomes", () => {

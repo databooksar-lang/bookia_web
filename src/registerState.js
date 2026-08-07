@@ -39,6 +39,7 @@ export function getRegisterStep({ profileType, email, password }) {
 export function buildRegistrationRequest({
   profileType,
   email,
+  payerEmail,
   password,
   displayName,
   bookstoreName,
@@ -64,6 +65,7 @@ export function buildRegistrationRequest({
     body: {
       name: bookstoreName,
       email,
+      ...(payerEmail ? { payer_email: payerEmail.trim().toLowerCase() } : {}),
       password,
       plan_code: planCode,
       catalog_limit: Number(catalogLimit),
