@@ -616,7 +616,7 @@ tests.push(["shows Bookia's copyright notice beneath the footer description", ()
 }]);
 tests.push(["presents bookstore plans and AI capabilities without public pricing", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
-  const bookstoresPageSource = publicPagesSource.match(/export function BookstoresPage\(\) \{([\s\S]*?)\n\}\nfunction PlansPlan/);
+  const bookstoresPageSource = publicPagesSource.match(/export function BookstoresPage\(\) \{([\s\S]*?)\r?\n\}\r?\nfunction PlansPlan/);
 
   assert.ok(bookstoresPageSource, "BookstoresPage should remain isolated before PlansPlan");
   const page = bookstoresPageSource[1];
