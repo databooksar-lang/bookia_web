@@ -529,6 +529,7 @@ tests.push(["publishes terms and conditions for Bookia's marketplace role", () =
 tests.push(["offers paid reactivation for canceled hidden bookstores", () => {
   const billingPanelSource = readFileSync(new URL("../src/components/BillingSubscriptionPanel.jsx", import.meta.url), "utf8");
   const dashboardSource = readFileSync(new URL("../src/pages/DashboardPage.jsx", import.meta.url), "utf8");
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
 
   assert.match(billingPanelSource, /\/billing\/subscription\/reactivate/);
   assert.match(billingPanelSource, /Reactivar librería/);
@@ -536,6 +537,12 @@ tests.push(["offers paid reactivation for canceled hidden bookstores", () => {
   assert.match(billingPanelSource, /volverá a publicarse cuando Mercado Pago confirme la autorización/);
   assert.match(dashboardSource, /billingAccess\.catalogIsPublic/);
   assert.match(dashboardSource, /Tu librería y su catálogo no están visibles públicamente/);
+  assert.match(dashboardSource, /Vidriera oculta/);
+  assert.match(dashboardSource, /La reactivación está pendiente\. Confirmá el medio de pago desde Suscripción\./);
+  assert.match(billingPanelSource, /Finalizó el/);
+  assert.match(billingPanelSource, /Inicio de facturación/);
+  assert.match(editorialStyles, /\.billing-change-form \.billing-notice/);
+  assert.match(editorialStyles, /grid-column: 1 \/ -1/);
 }]);
 tests.push(["renders the visual pricing composition with catalog growth band", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");

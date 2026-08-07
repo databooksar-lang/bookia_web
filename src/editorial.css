@@ -3911,8 +3911,13 @@ textarea:focus {
 }
 
 .billing-change-form h3,
+.billing-change-form .billing-notice,
 .billing-change-form button {
   grid-column: 1 / -1;
+}
+
+.billing-change-form .billing-notice {
+  margin: 0;
 }
 
 .billing-change-form label {

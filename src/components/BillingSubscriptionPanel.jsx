@@ -109,11 +109,17 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
   const canChange = ["trialing", "active", "grace_period"].includes(billing.status);
   const changeIsNoop = planCode === billing.plan_code && Number(catalogLimit) === billing.catalog_limit;
   const isReactivationPending = billing.status === "payment_pending" && !billing.trial_ends_at;
-  const billingDateLabel = billing.status === "payment_pending" && billing.trial_ends_at
-    ? "Fin de la prueba gratis"
-    : billing.status === "trialing"
-      ? "Fin de la prueba gratis"
-      : "Próximo vencimiento";
+  let billingDateLabel = "Próximo vencimiento";
+  if ((billing.status === "payment_pending" && billing.trial_ends_at) || billing.status === "trialing") {
+    billingDateLabel = "Fin de la prueba gratis";
+  } else if (billing.status === "canceled") {
+    billingDateLabel = "Finalizó el";
+  } else if (isReactivationPending) {
+    billingDateLabel = "Inicio de facturación";
+  }
+  const billingDateValue = isReactivationPending
+    ? "Al autorizar"
+    : formatBillingDate(billing.current_period_end || billing.trial_ends_at);
 
   return (
     <div className="billing-panel">
@@ -122,7 +128,7 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
         <div><span>Plan</span><strong>{billing.plan_code === "plus_ai" ? "Plus AI" : "Base"}</strong></div>
         <div><span>Catálogo</span><strong>Hasta {billing.catalog_limit} libros</strong></div>
         <div><span>Total mensual</span><strong>{formatBillingAmount(billing.total_amount_ars, billing.currency)}</strong></div>
-        <div><span>{billingDateLabel}</span><strong>{formatBillingDate(billing.current_period_end || billing.trial_ends_at)}</strong></div>
+        <div><span>{billingDateLabel}</span><strong>{billingDateValue}</strong></div>
       </div>
 
       {billing.status === "payment_pending" ? <button className="primary-button" type="button" onClick={authorizePayment} disabled={busy}>Confirmar medio de pago</button> : null}

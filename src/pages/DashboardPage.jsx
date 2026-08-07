@@ -183,6 +183,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
   const hasActiveFilters = Boolean(titleQuery.trim() || authorQuery.trim());
   const canAutocompleteWithAi = canUseAiAutocomplete(me?.current_plan_code);
   const billingAccess = getBillingAccessState(me?.billing);
+  const reactivationIsPending = me?.billing?.status === "payment_pending" && !me.billing.trial_ends_at;
 
   function loadAnalytics() {
     setAnalyticsLoading(true);
@@ -406,13 +407,14 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
     <section className="dashboard-shell">
       <header className="dashboard-top">
         <div><p className="section-label">Gestiona tu vidriera</p><h1>{me.bookstore.name}</h1><p>Gestiona tu vidriera y lo que ven los lectores en Bookia.</p></div>
-        <div className="dashboard-actions"><button className="secondary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver vidriera digital <ArrowIcon /></button><button className="text-link" onClick={logout}>Cerrar sesion</button></div>
+        <div className="dashboard-actions">{billingAccess.catalogIsPublic ? <button className="secondary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver vidriera digital <ArrowIcon /></button> : <span className="secondary-button button-disabled" aria-disabled="true">Vidriera oculta</span>}<button className="text-link" onClick={logout}>Cerrar sesion</button></div>
       </header>
 
       {registrationPending && me.billing?.status !== "payment_pending" ? <p className="feedback success">Registramos tu libreria.</p> : null}
       {me.billing?.status === "payment_pending" && billingAccess.canManageCatalog ? <p className="feedback success">Tu prueba gratis está activa hasta el {formatBillingDate(me.billing.trial_ends_at)}. Confirmá el medio de pago antes de esa fecha para conservar el acceso.</p> : null}
       {!billingAccess.canManageCatalog && billingAccess.catalogIsPublic ? <p className="feedback error">La prueba o suscripción necesita regularizarse. Tu catálogo sigue público, pero no podés modificarlo hasta confirmar el pago.</p> : null}
-      {!billingAccess.canManageCatalog && !billingAccess.catalogIsPublic ? <p className="feedback error">Tu librería y su catálogo no están visibles públicamente. Podés reactivar la suscripción desde este panel.</p> : null}
+      {!billingAccess.canManageCatalog && !billingAccess.catalogIsPublic && !reactivationIsPending ? <p className="feedback error">Tu librería y su catálogo no están visibles públicamente. Podés reactivar la suscripción desde este panel.</p> : null}
+      {reactivationIsPending ? <p className="feedback error">Tu librería y su catálogo no están visibles públicamente. La reactivación está pendiente. Confirmá el medio de pago desde Suscripción.</p> : null}
       {error ? <p className="feedback error">{error}</p> : null}
 
       <DashboardTabs section={section} />
