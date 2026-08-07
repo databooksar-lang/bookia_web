@@ -154,7 +154,13 @@ tests.push(["offers a reusable favorite control throughout public book discovery
   assert.match(publicPagesSource, /<FavoriteBookButton itemId=\{selectedBook\.id\}/);
   assert.match(publicPagesSource, /navigate\("\/login"\)/);
   assert.match(editorialStyles, /\.favorite-book-label\s*\{/);
-  assert.match(editorialStyles, /\.book-card > \.favorite-book-button\s*\{[^}]*width:\s*auto;/s);
+  assert.match(publicPagesSource, /className="book-card-meta-row"/);
+  assert.match(publicPagesSource, /className="book-card-statuses"/);
+  assert.match(publicPagesSource, /<div className="book-card-meta-row">\s*<div className="book-card-statuses">[\s\S]*?<\/div>\s*<FavoriteBookButton itemId=\{item\.id\}/);
+  assert.match(editorialStyles, /\.book-card-meta-row\s*\{[^}]*display:\s*flex;[^}]*flex-wrap:\s*wrap;/s);
+  assert.match(editorialStyles, /\.book-card-statuses\s*\{[^}]*display:\s*flex;[^}]*flex-wrap:\s*wrap;/s);
+  assert.match(editorialStyles, /\.book-card-meta-row\s*>\s*\.favorite-book-button\s*\{[^}]*flex:\s*0\s+0\s+auto;[^}]*margin-left:\s*auto;/s);
+  assert.doesNotMatch(editorialStyles, /\.book-card\s*>\s*\.favorite-book-button\s*\{[^}]*position:\s*absolute;/s);
 }]);
 
 tests.push(["resolves API calls against an external runtime base", async () => {

@@ -675,10 +675,14 @@ export function BookstorePage({ slug, me }) {
                 }}
               >
                 <BookCover item={item} />
-                <FavoriteBookButton itemId={item.id} isFavorite={favorites.favoriteIds.has(item.id)} isPending={favorites.pendingIds.has(item.id)} isSessionLoading={me === undefined} onToggle={(itemId, event) => { event.stopPropagation(); favorites.toggleFavorite(itemId); }} />
                 <div>
-                  <span className={`status-pill status-${item.availability_status}`}>{bookAvailabilityLabel(item.availability_status)}</span>
-                  {item.is_featured ? <span className="status-pill status-featured">Destacado</span> : null}
+                  <div className="book-card-meta-row">
+                    <div className="book-card-statuses">
+                      <span className={`status-pill status-${item.availability_status}`}>{bookAvailabilityLabel(item.availability_status)}</span>
+                      {item.is_featured ? <span className="status-pill status-featured">Destacado</span> : null}
+                    </div>
+                    <FavoriteBookButton itemId={item.id} isFavorite={favorites.favoriteIds.has(item.id)} isPending={favorites.pendingIds.has(item.id)} isSessionLoading={me === undefined} onToggle={(itemId, event) => { event.stopPropagation(); favorites.toggleFavorite(itemId); }} />
+                  </div>
                   <h3>{item.title}</h3>
                   <p>{item.author || "Autor no visible"}</p>
                   <BookGenreTags item={item} />
