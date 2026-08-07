@@ -209,6 +209,8 @@ tests.push(["keeps plan selection inside the bookstore registration flow", () =>
   assert.match(registerSource, /return <Redirect to="\/register" \/>/);
   assert.match(registerSource, /navigate\("\/plans\?register=bookstore"\)/);
   assert.match(registerSource, /buildRegisterPath/);
+  assert.match(registerSource, /getTrustedMercadoPagoCheckoutUrl/);
+  assert.match(registerSource, /window\.location\.assign\(getTrustedMercadoPagoCheckoutUrl\(checkout\.checkout_url\)\)/);
   assert.doesNotMatch(registerSource, /Plan inicial<select/);
   assert.match(plansSource, /isRegistrationFlow/);
   assert.match(plansSource, /\{ code: "base", name: "Prueba gratis"/);
@@ -254,6 +256,28 @@ tests.push(["renders an accessible password visibility control in registration f
     assert.match(editorialStyles, /\.register-password-field input\s*\{[^}]*padding-right:\s*48px;/s);
     assert.match(editorialStyles, /\.register-password-toggle\s*\{[^}]*min-width:\s*44px;/s);
     assert.match(editorialStyles, /\.register-legal input\[type="checkbox"\]\s*\{[^}]*width:\s*14px;[^}]*height:\s*14px;/s);
+  } finally {
+    await vite.close();
+  }
+}]);
+tests.push(["renders editable pending payer email and read-only active payer", async () => {
+  const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
+  try {
+    const { BillingSubscriptionPanel } = await vite.ssrLoadModule("/src/components/BillingSubscriptionPanel.jsx");
+    const baseBilling = {
+      plan_code: "base", catalog_limit: 50, total_amount_ars: 20000, currency: "ARS",
+      trial_ends_at: "2026-09-01T00:00:00Z", current_period_end: "2026-09-01T00:00:00Z",
+      payer_email: "payments@example.com", payer_email_editable: true, scheduled_change: null,
+    };
+    const pendingMarkup = renderToStaticMarkup(createElement(BillingSubscriptionPanel, { initialBilling: { ...baseBilling, status: "payment_pending" } }));
+    const activeMarkup = renderToStaticMarkup(createElement(BillingSubscriptionPanel, { initialBilling: { ...baseBilling, status: "active", payer_email_editable: false } }));
+
+    assert.match(pendingMarkup, /Correo de la cuenta de Mercado Pago/);
+    assert.match(pendingMarkup, /value="payments@example.com"/);
+    assert.match(pendingMarkup, /Confirmar en Mercado Pago/);
+    assert.match(activeMarkup, /Cuenta pagadora/);
+    assert.match(activeMarkup, /payments@example.com/);
+    assert.doesNotMatch(activeMarkup, /type="email"/);
   } finally {
     await vite.close();
   }
@@ -510,13 +534,15 @@ tests.push(["publishes terms and conditions for Bookia's marketplace role", () =
   assert.match(registerSource, /href="\/privacy"/);
   assert.match(privacySource, /href="\/terms"/);
   assert.match(termsSource, /Terminos y Condiciones/);
-  assert.match(termsSource, /Vigente desde el 6 de agosto de 2026/);
+  assert.match(termsSource, /Vigente desde el 7 de agosto de 2026/);
   assert.match(termsSource, /Marcelo Gabriel Gonzalez/);
   assert.match(termsSource, /bookia.app.admin@gmail.com/);
   assert.match(termsSource, /Bookia no vende libros directamente/);
   assert.match(termsSource, /operacion comercial se acuerda directamente entre la persona interesada y la libreria/);
   assert.match(termsSource, /OpenAI/);
   assert.match(termsSource, /Mercado Pago/);
+  assert.match(termsSource, /correo distinto del correo de acceso a Bookia/);
+  assert.match(privacySource, /correo de la cuenta pagadora de Mercado Pago/);
   assert.match(termsSource, /prueba gratis de 30 dias/);
   assert.match(termsSource, /7 dias/);
   assert.match(termsSource, /oculta la vidriera y el catalogo publico/);
@@ -525,10 +551,10 @@ tests.push(["publishes terms and conditions for Bookia's marketplace role", () =
   assert.match(termsSource, /Politica de Privacidad/);
   assert.match(termsSource, /Politica de Cookies/);
   assert.match(termsSource, /no reemplaza asesoramiento legal profesional/);
-}]);
-tests.push(["offers paid reactivation for canceled hidden bookstores", () => {
+}], ["offers paid reactivation for canceled hidden bookstores", () => {
   const billingPanelSource = readFileSync(new URL("../src/components/BillingSubscriptionPanel.jsx", import.meta.url), "utf8");
   const dashboardSource = readFileSync(new URL("../src/pages/DashboardPage.jsx", import.meta.url), "utf8");
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
 
   assert.match(billingPanelSource, /\/billing\/subscription\/reactivate/);
   assert.match(billingPanelSource, /Reactivar librería/);
@@ -536,6 +562,12 @@ tests.push(["offers paid reactivation for canceled hidden bookstores", () => {
   assert.match(billingPanelSource, /volverá a publicarse cuando Mercado Pago confirme la autorización/);
   assert.match(dashboardSource, /billingAccess\.catalogIsPublic/);
   assert.match(dashboardSource, /Tu librería y su catálogo no están visibles públicamente/);
+  assert.match(dashboardSource, /Vidriera oculta/);
+  assert.match(dashboardSource, /La reactivación está pendiente\. Confirmá el medio de pago desde Suscripción\./);
+  assert.match(billingPanelSource, /Finalizó el/);
+  assert.match(billingPanelSource, /Inicio de facturación/);
+  assert.match(editorialStyles, /\.billing-change-form \.billing-notice/);
+  assert.match(editorialStyles, /grid-column: 1 \/ -1/);
 }]);
 tests.push(["renders the visual pricing composition with catalog growth band", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");

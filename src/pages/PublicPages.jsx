@@ -4,7 +4,7 @@ import { apiFetch, resolveApiUrl } from "../api";
 import { trackWebInteractionEvent } from "../analyticsState";
 import { createFavoriteBookIds, isReaderAccount, toggleFavoriteBookId } from "../favoritesState";
 import { formatCommercialPrice, getCommercialPrices } from "../plansPricingState";
-import { buildFacebookHref, buildInstagramHref, buildWebsiteHref, buildWhatsAppHref, formatDisplayPhone, formatDisplayUrl } from "../formatters";
+import { buildFacebookHref, buildInstagramHref, buildWebsiteHref, buildWhatsAppHref, formatDisplayUrl, formatDisplayWhatsApp } from "../formatters";
 import { AppLink, navigate } from "../navigation";
 import { buildRegisterPath } from "../registerState";
 import { displayBookstoreDescription } from "../profileEditorState";
@@ -204,7 +204,7 @@ function SearchResults({ filters, stores, me }) {
                 <span>Libreria</span>
                 <AppLink href={`/bookstores/${item.bookstore.slug}`} onClick={() => trackBookstoreOpened(item.bookstore, "search_results")}>{item.bookstore.name} <ArrowIcon size={15} /></AppLink>
               </div>
-              <WhatsAppButton className="primary-button search-result-whatsapp" whatsappPhone={item.bookstore.whatsapp_phone} phoneCountryCd={item.bookstore.phone_country_cd} phone={item.bookstore.phone} onClick={() => trackWhatsAppClicked(item.bookstore, "search_results", item.id)}>
+              <WhatsAppButton className="primary-button search-result-whatsapp" whatsappPhone={item.bookstore.whatsapp_phone} onClick={() => trackWhatsAppClicked(item.bookstore, "search_results", item.id)}>
                 <WhatsAppIcon size={19} /> Contactar
               </WhatsAppButton>
               <FavoriteBookButton itemId={item.id} isFavorite={favorites.favoriteIds.has(item.id)} isPending={favorites.pendingIds.has(item.id)} isSessionLoading={me === undefined} onToggle={favorites.toggleFavorite} />
@@ -540,7 +540,7 @@ function BookDetailModal({ selectedBook, selectedBookImageUrl, onImageChange, on
 
   const selectedBookGallery = bookImageGallery(selectedBook);
   const bookstore = selectedBook.bookstore;
-  const hasBookstoreContact = Boolean(buildWhatsAppHref(bookstore?.whatsapp_phone, bookstore?.phone_country_cd, bookstore?.phone));
+  const hasBookstoreContact = Boolean(buildWhatsAppHref(bookstore?.whatsapp_phone));
 
   return (
     <div className="book-detail-modal" role="dialog" aria-modal="true" aria-labelledby="book-detail-title" onClick={onClose}>
@@ -583,7 +583,7 @@ function BookDetailModal({ selectedBook, selectedBookImageUrl, onImageChange, on
               <div><dt>Libreria</dt><dd>{bookstore ? <AppLink className="book-detail-store-link" href={`/bookstores/${bookstore.slug}`} onClick={() => trackBookstoreOpened(bookstore, "book_detail_modal")}>{bookstore.name} <ArrowIcon size={14} /></AppLink> : "Libreria no visible"}</dd></div>
             </dl>
             {hasBookstoreContact ? (
-              <WhatsAppButton className="primary-button book-detail-whatsapp" whatsappPhone={bookstore.whatsapp_phone} phoneCountryCd={bookstore.phone_country_cd} phone={bookstore.phone} onClick={() => trackWhatsAppClicked(bookstore, "book_detail_modal", selectedBook.id)}>
+              <WhatsAppButton className="primary-button book-detail-whatsapp" whatsappPhone={bookstore.whatsapp_phone} onClick={() => trackWhatsAppClicked(bookstore, "book_detail_modal", selectedBook.id)}>
                 <WhatsAppIcon size={19} /> Contactar por WhatsApp
               </WhatsAppButton>
             ) : null}
@@ -633,14 +633,14 @@ export function BookstorePage({ slug, me }) {
 
   const heroImageUrl = resolveApiUrl(store.hero_image_url);
   const logoUrl = resolveApiUrl(store.logo_url);
-  const phoneLabel = formatDisplayPhone(store.phone_country_cd, store.phone);
-  const hasWhatsApp = Boolean(buildWhatsAppHref(store.whatsapp_phone, store.phone_country_cd, store.phone));
+  const whatsappLabel = formatDisplayWhatsApp(store.whatsapp_phone);
+  const hasWhatsApp = Boolean(buildWhatsAppHref(store.whatsapp_phone));
   const instagramHref = buildInstagramHref(store.instagram_handle);
   const facebookHref = buildFacebookHref(store.facebook_handle);
   const websiteHref = buildWebsiteHref(store.website_url);
   const bookstoreTags = [store.tag_1, store.tag_2].map((tag) => String(tag || '').trim()).filter(Boolean);
   const contactItems = [
-    phoneLabel ? { label: "Telefono", content: phoneLabel } : null,
+    whatsappLabel ? { label: "Celular con WhatsApp", content: whatsappLabel } : null,
     store.correo && String(store.correo).trim() ? { label: "Correo", content: <a href={`mailto:${store.correo}`}>{store.correo}</a> } : null,
     instagramHref ? { label: "Instagram", content: <ContactLink href={instagramHref}>{formatDisplayUrl(instagramHref)}</ContactLink> } : null,
     facebookHref ? { label: "Facebook", content: <ContactLink href={facebookHref}>{formatDisplayUrl(facebookHref)}</ContactLink> } : null,
@@ -653,7 +653,7 @@ export function BookstorePage({ slug, me }) {
       <div className={`store-hero${heroImageUrl ? " has-hero" : ""}`} style={heroImageUrl ? { backgroundImage: `url(${heroImageUrl})` } : undefined} />
       <div className="store-profile-panel">
         <div className="store-identity"><p className="section-label">Libreria en Bookia</p>{logoUrl ? <img className="store-logo" src={logoUrl} alt={`Logo de ${store.name}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : null}<h1>{store.name}</h1><p>{displayBookstoreDescription(store.description)}</p>{bookstoreTags.length > 0 ? <div className="store-tags" aria-label="Etiquetas de la libreria">{bookstoreTags.map((tag) => <span key={tag} className="store-tag">{tag}</span>)}</div> : null}</div>
-        {contactItems.length > 0 || hasWhatsApp ? <aside className="store-contact-card"><p className="contact-label">Datos de interes</p>{contactItems.length > 0 ? <dl>{contactItems.map((item) => <div key={item.label}><dt>{item.label}</dt><dd>{item.content}</dd></div>)}</dl> : null}{hasWhatsApp ? <WhatsAppButton whatsappPhone={store.whatsapp_phone} phoneCountryCd={store.phone_country_cd} phone={store.phone}><WhatsAppIcon size={19} /> Hablar por WhatsApp</WhatsAppButton> : null}</aside> : null}
+        {contactItems.length > 0 || hasWhatsApp ? <aside className="store-contact-card"><p className="contact-label">Datos de interes</p>{contactItems.length > 0 ? <dl>{contactItems.map((item) => <div key={item.label}><dt>{item.label}</dt><dd>{item.content}</dd></div>)}</dl> : null}{hasWhatsApp ? <WhatsAppButton whatsappPhone={store.whatsapp_phone}><WhatsAppIcon size={19} /> Hablar por WhatsApp</WhatsAppButton> : null}</aside> : null}
       </div>
       <div className="store-catalog">
         <div className="section-heading results-heading"><div><p className="section-label">Estantes disponibles</p><h2>Catalogo de {store.name}</h2><p>{visibleItems.length} {visibleItems.length === 1 ? "libro publicado" : "libros publicados"}</p></div><button className="secondary-button" onClick={() => navigate("/")}>Volver a buscar</button></div>

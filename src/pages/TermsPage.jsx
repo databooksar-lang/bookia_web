@@ -5,7 +5,7 @@ export function TermsPage() {
     <article className="editorial-page about-page legal-page">
       <p className="section-label">Terminos y Condiciones</p>
       <h1>Reglas claras para buscar, publicar y conectar.</h1>
-      <p>Vigente desde el 6 de agosto de 2026.</p>
+      <p>Vigente desde el 7 de agosto de 2026.</p>
       <p>Este documento resume las condiciones de uso de Bookia y no reemplaza asesoramiento legal profesional.</p>
 
       <h2>Responsable</h2>
@@ -31,6 +31,7 @@ export function TermsPage() {
 
       <h2>Planes para librerias</h2>
       <p>Bookia ofrece suscripciones mensuales para librerias, con limites de catalogo y funciones segun el plan elegido. La contratacion se autoriza y cobra de forma recurrente mediante Mercado Pago. Bookia no recibe ni almacena los datos completos de la tarjeta.</p>
+      <p>La cuenta de Mercado Pago que autoriza la suscripcion puede usar un correo distinto del correo de acceso a Bookia y puede pertenecer a la libreria o a una tercera persona que preste su consentimiento. El correo informado en Bookia debe coincidir con el de la cuenta que complete la autorizacion en Mercado Pago.</p>
       <p>Las nuevas librerias acceden a una prueba gratis de 30 dias desde el registro. Durante ese plazo deben confirmar su medio de pago en Mercado Pago. Finalizada la prueba, Mercado Pago realiza el cobro mensual automatico del importe informado al contratar; sin una suscripcion autorizada, Bookia restringe las modificaciones. Un cambio de plan o capacidad solicitado por la libreria se aplica en la renovacion siguiente, sin prorrateo.</p>
       <p>Ante un cobro rechazado, Bookia mantiene por 7 dias el acceso para administrar el catalogo. Vencido ese plazo sin regularizacion, se restringen las altas, bajas, ediciones y funciones con IA, pero la vidriera y el catalogo ya publicado permanecen visibles. La cancelacion evita nuevas renovaciones y conserva el acceso y la publicacion hasta finalizar el periodo vigente. Cuando la cancelacion se hace efectiva, Bookia oculta la vidriera y el catalogo publico, pero conserva la cuenta y sus datos.</p>
       <p>La libreria puede reactivar la suscripcion desde su panel. La reactivacion no incluye una nueva prueba gratis: crea una nueva suscripcion mensual en Mercado Pago y la libreria vuelve a publicarse cuando la autorizacion queda confirmada.</p>

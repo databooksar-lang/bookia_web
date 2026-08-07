@@ -31,15 +31,17 @@ export function isPlansRegistrationContext(search) {
   return params.size === 1 && params.get("register") === "bookstore";
 }
 
-export function getRegisterStep({ profileType, email, password }) {
+export function getRegisterStep({ profileType, email, password, whatsappPhone }) {
   if (profileType !== "bookstore") return "form";
-  return email && password.length >= 8 ? "details" : "account";
+  return email && password.length >= 8 && whatsappPhone?.trim() ? "details" : "account";
 }
 
 export function buildRegistrationRequest({
   profileType,
   email,
+  payerEmail,
   password,
+  whatsappPhone,
   displayName,
   bookstoreName,
   planCode,
@@ -64,7 +66,9 @@ export function buildRegistrationRequest({
     body: {
       name: bookstoreName,
       email,
+      ...(payerEmail ? { payer_email: payerEmail.trim().toLowerCase() } : {}),
       password,
+      whatsapp_phone: whatsappPhone.trim(),
       plan_code: planCode,
       catalog_limit: Number(catalogLimit),
       ...(Number.isInteger(expectedMonthlyTotal) ? { expected_total_amount_ars: expectedMonthlyTotal } : {}),

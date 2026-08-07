@@ -3,14 +3,12 @@ import { readFileSync } from "node:fs";
 
 import {
   buildProfileFormData,
-  buildWhatsAppFromPhone,
   createProfileDraft,
   displayBookstoreDescription,
   removeProfileImage,
   requireRefreshedBookstore,
   selectProfileImage,
   setProfileDraftField,
-  setUsePhoneForWhatsApp,
 } from "../src/profileEditorState.js";
 import { buildRequestHeaders } from "../src/api.js";
 import { buildWhatsAppHref } from "../src/formatters.js";
@@ -30,13 +28,10 @@ export function registerProfileEditorStateTests(test) {
       tag2: "",
       address: "",
       contactEmail: "",
-      phoneCountryCd: "",
-      phone: "",
       whatsappPhone: "",
       instagramHandle: "",
       facebookHandle: "",
       websiteUrl: "",
-      usePhoneForWhatsApp: false,
       logoFile: null,
       bannerFile: null,
       removeLogo: false,
@@ -51,8 +46,6 @@ export function registerProfileEditorStateTests(test) {
       tag_2: "Barrio",
       address: "Corrientes 123",
       correo: "hola@example.com",
-      phone_country_cd: 54,
-      phone: "11 2222-3333",
       whatsapp_phone: "5491122223333",
       instagram_handle: "bookia.libros",
       facebook_handle: "bookia.libros",
@@ -61,28 +54,16 @@ export function registerProfileEditorStateTests(test) {
 
     assert.equal(draft.tag1, "Usados");
     assert.equal(draft.contactEmail, "hola@example.com");
-    assert.equal(draft.phoneCountryCd, "54");
     assert.equal(draft.whatsappPhone, "5491122223333");
     assert.equal(draft.facebookHandle, "bookia.libros");
     assert.equal(draft.websiteUrl, "https://bookia.example");
-    assert.equal(draft.usePhoneForWhatsApp, false);
   });
 
-  test("derives and keeps WhatsApp synchronized when using the public phone", () => {
-    assert.equal(buildWhatsAppFromPhone("+54", "11 2222-3333"), "541122223333");
-
-    const enabled = setUsePhoneForWhatsApp(createProfileDraft({ phone_country_cd: 54, phone: "11 2222-3333" }), true);
-    const changed = setProfileDraftField(enabled, "phone", "11 9999-0000");
-
-    assert.equal(enabled.usePhoneForWhatsApp, true);
-    assert.equal(enabled.whatsappPhone, "541122223333");
-    assert.equal(changed.whatsappPhone, "541199990000");
-  });
-
-  test("prefers an explicit WhatsApp number and falls back to the legacy phone", () => {
-    assert.equal(buildWhatsAppHref("5491112345678", 54, "11 9999-0000"), "https://wa.me/5491112345678");
-    assert.equal(buildWhatsAppHref("", 54, "11 9999-0000"), "https://wa.me/541199990000");
-    assert.equal(buildWhatsAppHref("", null, "11 9999-0000"), null);
+  test("builds WhatsApp links only from canonical Argentine mobile values", () => {
+    assert.equal(buildWhatsAppHref("5491112345678"), "https://wa.me/5491112345678");
+    assert.equal(buildWhatsAppHref("541199990000"), null);
+    assert.equal(buildWhatsAppHref("+54 9 11 1234-5678"), null);
+    assert.equal(buildWhatsAppHref(""), null);
   });
 
   test("removing an image clears its selected file immutably", () => {
@@ -115,8 +96,6 @@ export function registerProfileEditorStateTests(test) {
         description: "Especializada",
         tag_1: "Curada",
         correo: "hola@example.com",
-        phone_country_cd: 54,
-        phone: "1122223333",
         whatsapp_phone: "5491122223333",
         facebook_handle: "bookia.libros",
       }),
@@ -129,7 +108,8 @@ export function registerProfileEditorStateTests(test) {
     assert.equal(formData.get("description"), "Especializada");
     assert.equal(formData.get("tag_1"), "Curada");
     assert.equal(formData.get("correo"), "hola@example.com");
-    assert.equal(formData.get("phone_country_cd"), "54");
+    assert.equal(formData.has("phone_country_cd"), false);
+    assert.equal(formData.has("phone"), false);
     assert.equal(formData.get("whatsapp_phone"), "5491122223333");
     assert.equal(formData.get("facebook_handle"), "bookia.libros");
     assert.equal(formData.get("remove_logo"), "false");
@@ -205,7 +185,7 @@ export function registerProfileEditorStateTests(test) {
     assert.match(editorSource, /draft\.contactEmail/);
     assert.match(editorSource, /draft\.whatsappPhone/);
     assert.match(editorSource, /draft\.facebookHandle/);
-    assert.match(editorSource, /setUsePhoneForWhatsApp/);
+    assert.doesNotMatch(editorSource, /setUsePhoneForWhatsApp/);
     assert.match(editorSource, /bookstore-profile-summary-grid/);
     assert.match(editorSource, /Datos por completar/);
     assert.match(editorialSource, /\.bookstore-profile-group/);
@@ -229,7 +209,7 @@ export function registerProfileEditorStateTests(test) {
 
     assert.equal((publicPagesSource.match(/whatsappPhone=\{/g) || []).length, 3);
     assert.match(publicPagesSource, /mailto:\$\{store\.correo\}/);
-    assert.match(commerceSource, /buildWhatsAppHref\(whatsappPhone, phoneCountryCd, phone\)/);
+    assert.match(commerceSource, /buildWhatsAppHref\(whatsappPhone\)/);
   });
   test("opens public bookstore book details from clickable cards", () => {
     const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");

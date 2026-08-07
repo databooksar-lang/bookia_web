@@ -9,17 +9,15 @@ import {
   requireRefreshedBookstore,
   selectProfileImage,
   setProfileDraftField,
-  setUsePhoneForWhatsApp,
 } from "../profileEditorState";
-import { formatDisplayPhone } from "../formatters";
+import { formatDisplayWhatsApp } from "../formatters";
 
 const PROFILE_IMAGE_ACCEPT = "image/png,image/jpeg,image/webp";
 
 function profileSummary(bookstore) {
   return [
     { label: "Correo", value: bookstore.correo },
-    { label: "Telefono", value: formatDisplayPhone(bookstore.phone_country_cd, bookstore.phone) },
-    { label: "WhatsApp", value: bookstore.whatsapp_phone ? `+${bookstore.whatsapp_phone}` : "" },
+    { label: "Celular con WhatsApp", value: formatDisplayWhatsApp(bookstore.whatsapp_phone) },
     { label: "Instagram", value: bookstore.instagram_handle },
     { label: "Facebook", value: bookstore.facebook_handle },
     { label: "Sitio web", value: bookstore.website_url },
@@ -195,12 +193,7 @@ export default function BookstoreProfileEditor({ bookstore, onSaved, onError }) 
           <div className="bookstore-profile-fields">
             <label className="bookstore-profile-field-wide"><span>Direccion</span><input value={draft.address} onChange={(event) => changeField("address", event.target.value)} disabled={isSaving} placeholder="Calle, numero, ciudad" /></label>
             <label><span>Correo publico</span><input type="email" value={draft.contactEmail} onChange={(event) => changeField("contactEmail", event.target.value)} maxLength={255} disabled={isSaving} placeholder="contacto@libreria.com" /></label>
-            <div className="bookstore-profile-phone-row">
-              <label><span>Codigo de pais</span><input type="tel" inputMode="numeric" value={draft.phoneCountryCd} onChange={(event) => changeField("phoneCountryCd", event.target.value)} maxLength={3} disabled={isSaving} placeholder="54" /></label>
-              <label><span>Telefono</span><input type="tel" value={draft.phone} onChange={(event) => changeField("phone", event.target.value)} maxLength={50} disabled={isSaving} placeholder="11 2222-3333" /></label>
-            </div>
-            <label><span>WhatsApp internacional</span><input type="tel" value={draft.whatsappPhone} onChange={(event) => changeField("whatsappPhone", event.target.value)} maxLength={50} disabled={isSaving || draft.usePhoneForWhatsApp} placeholder="5491122223333" /></label>
-            <label className="bookstore-profile-checkbox"><input type="checkbox" checked={draft.usePhoneForWhatsApp} onChange={(event) => setDraft((current) => setUsePhoneForWhatsApp(current, event.target.checked))} disabled={isSaving} /><span>Usar el mismo numero de telefono para WhatsApp</span></label>
+            <label><span>Celular con WhatsApp</span><input type="tel" value={draft.whatsappPhone} onChange={(event) => changeField("whatsappPhone", event.target.value)} maxLength={50} disabled={isSaving} required placeholder="11 2222-3333" /><small>Podes escribirlo en formato local argentino.</small></label>
           </div>
         </fieldset>
 
