@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import { apiFetch } from "../api";
 import {
+  buildBillingCheckoutRequest,
   buildBillingChangeRequest,
   formatBillingAmount,
   formatBillingDate,
@@ -38,6 +39,7 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
   const [billing, setBilling] = useState(initialBilling);
   const [planCode, setPlanCode] = useState(initialBilling?.plan_code || "base");
   const [catalogLimit, setCatalogLimit] = useState(String(initialBilling?.catalog_limit || 50));
+  const [payerEmail, setPayerEmail] = useState(initialBilling?.payer_email || "");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
@@ -51,6 +53,7 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
     setBilling(nextBilling);
     setPlanCode(nextBilling.plan_code);
     setCatalogLimit(String(nextBilling.catalog_limit));
+    setPayerEmail(nextBilling.payer_email || "");
     onBillingChange?.(nextBilling);
     return nextBilling;
   }
@@ -61,9 +64,17 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
 
   useEffect(() => { loadBilling(); }, []);
 
-  function authorizePayment() {
+  function authorizePayment(event) {
+    event?.preventDefault();
     setError("");
-    runAction(() => apiFetch("/billing/subscription/checkout", { method: "POST" })
+    let body;
+    try {
+      body = buildBillingCheckoutRequest(payerEmail);
+    } catch (validationError) {
+      setError(validationError.message);
+      return;
+    }
+    runAction(() => apiFetch("/billing/subscription/checkout", { method: "POST", body: JSON.stringify(body) })
         .then(redirectToMercadoPago)
         .catch((actionError) => setError(actionError.message)));
   }
@@ -74,15 +85,17 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
     setMessage("");
     runAction(() => {
       let body;
+      let checkoutBody;
       try {
         body = buildBillingChangeRequest(planCode, catalogLimit);
+        checkoutBody = buildBillingCheckoutRequest(payerEmail);
       } catch (validationError) {
         setError(validationError.message);
         return Promise.resolve();
       }
       return apiFetch("/billing/subscription/reactivate", { method: "POST", body: JSON.stringify(body) })
         .then(acceptBilling)
-        .then(() => apiFetch("/billing/subscription/checkout", { method: "POST" }))
+        .then(() => apiFetch("/billing/subscription/checkout", { method: "POST", body: JSON.stringify(checkoutBody) }))
         .then(redirectToMercadoPago)
         .catch((actionError) => setError(actionError.message));
     });
@@ -129,6 +142,7 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
   const canChange = ["trialing", "active", "grace_period"].includes(billing.status);
   const changeIsNoop = planCode === billing.plan_code && Number(catalogLimit) === billing.catalog_limit;
   const isReactivationPending = billing.status === "payment_pending" && !billing.trial_ends_at;
+  const payerEmailChanged = payerEmail.trim().toLowerCase() !== String(billing.payer_email || "").trim().toLowerCase();
   const billingDate = getBillingDateDetails(billing, isReactivationPending);
 
   return (
@@ -139,9 +153,16 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
         <div><span>Catálogo</span><strong>Hasta {billing.catalog_limit} libros</strong></div>
         <div><span>Total mensual</span><strong>{formatBillingAmount(billing.total_amount_ars, billing.currency)}</strong></div>
         <div><span>{billingDate.label}</span><strong>{billingDate.value}</strong></div>
+        {billing.status !== "payment_pending" && billing.payer_email ? <div><span>Cuenta pagadora</span><strong>{billing.payer_email}</strong></div> : null}
       </div>
 
-      {billing.status === "payment_pending" ? <button className="primary-button" type="button" onClick={authorizePayment} disabled={busy}>Confirmar medio de pago</button> : null}
+      {billing.status === "payment_pending" ? <form className="billing-payer-form" onSubmit={authorizePayment}>
+        <label>Correo de la cuenta de Mercado Pago
+          <input type="email" value={payerEmail} onChange={(event) => setPayerEmail(event.target.value)} autoComplete="email" required disabled={busy || !billing.payer_email_editable} />
+          <small>Debe coincidir con la cuenta que usarás para autorizar la suscripción.</small>
+        </label>
+        <button className="primary-button" type="submit" disabled={busy}>{payerEmailChanged ? "Actualizar correo y continuar" : "Confirmar en Mercado Pago"}</button>
+      </form> : null}
       {isReactivationPending ? <p className="billing-notice">Tu librería sigue oculta. Volverá a publicarse cuando Mercado Pago confirme la autorización.</p> : null}
       {["grace_period", "restricted"].includes(billing.status) ? <button className="secondary-button" type="button" onClick={syncPayment} disabled={busy}>Comprobar pago</button> : null}
 
@@ -161,6 +182,7 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
         <p className="billing-notice">Elegí el plan y la capacidad. La reactivación es paga, sin una nueva prueba gratis, y tu librería volverá a publicarse cuando Mercado Pago confirme la autorización.</p>
         <label>Plan<select value={planCode} onChange={(event) => setPlanCode(event.target.value)}><option value="base">Base</option><option value="plus_ai">Plus AI</option></select></label>
         <label>Capacidad<select value={catalogLimit} onChange={(event) => setCatalogLimit(event.target.value)}><option value="50">50 libros</option><option value="100">100 libros</option><option value="200">200 libros</option></select></label>
+        <label>Correo de la cuenta de Mercado Pago<input type="email" value={payerEmail} onChange={(event) => setPayerEmail(event.target.value)} autoComplete="email" required /></label>
         <button className="primary-button" type="submit" disabled={busy}>Reactivar librería</button>
       </form> : null}
       {message ? <p className="feedback success">{message}</p> : null}

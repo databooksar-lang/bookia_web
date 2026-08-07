@@ -260,6 +260,28 @@ tests.push(["renders an accessible password visibility control in registration f
     await vite.close();
   }
 }]);
+tests.push(["renders editable pending payer email and read-only active payer", async () => {
+  const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
+  try {
+    const { BillingSubscriptionPanel } = await vite.ssrLoadModule("/src/components/BillingSubscriptionPanel.jsx");
+    const baseBilling = {
+      plan_code: "base", catalog_limit: 50, total_amount_ars: 20000, currency: "ARS",
+      trial_ends_at: "2026-09-01T00:00:00Z", current_period_end: "2026-09-01T00:00:00Z",
+      payer_email: "payments@example.com", payer_email_editable: true, scheduled_change: null,
+    };
+    const pendingMarkup = renderToStaticMarkup(createElement(BillingSubscriptionPanel, { initialBilling: { ...baseBilling, status: "payment_pending" } }));
+    const activeMarkup = renderToStaticMarkup(createElement(BillingSubscriptionPanel, { initialBilling: { ...baseBilling, status: "active", payer_email_editable: false } }));
+
+    assert.match(pendingMarkup, /Correo de la cuenta de Mercado Pago/);
+    assert.match(pendingMarkup, /value="payments@example.com"/);
+    assert.match(pendingMarkup, /Confirmar en Mercado Pago/);
+    assert.match(activeMarkup, /Cuenta pagadora/);
+    assert.match(activeMarkup, /payments@example.com/);
+    assert.doesNotMatch(activeMarkup, /type="email"/);
+  } finally {
+    await vite.close();
+  }
+}]);
 let failures = 0;
 tests.push(["renders one decorative image in the public search hero illustration", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");

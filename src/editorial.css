@@ -3936,6 +3936,28 @@ textarea:focus {
   gap: 7px;
 }
 
+.billing-payer-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 16px;
+  background: rgba(18, 63, 50, .06);
+}
+
+.billing-payer-form label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: .86rem;
+}
+
+.billing-payer-form small {
+  font-size: .75rem;
+  line-height: 1.4;
+}
+
 .billing-notice {
   padding: 14px 16px;
   border-left: 4px solid var(--forest);
@@ -3964,6 +3986,7 @@ textarea:focus {
 }
 
 @media (max-width: 620px) {
-  .billing-change-form { grid-template-columns: 1fr; }
+  .billing-change-form,
+  .billing-payer-form { grid-template-columns: 1fr; }
   .billing-return { margin: 24px 12px; padding: 28px 20px; }
 }
