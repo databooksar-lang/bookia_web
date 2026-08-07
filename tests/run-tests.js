@@ -534,13 +534,15 @@ tests.push(["publishes terms and conditions for Bookia's marketplace role", () =
   assert.match(registerSource, /href="\/privacy"/);
   assert.match(privacySource, /href="\/terms"/);
   assert.match(termsSource, /Terminos y Condiciones/);
-  assert.match(termsSource, /Vigente desde el 6 de agosto de 2026/);
+  assert.match(termsSource, /Vigente desde el 7 de agosto de 2026/);
   assert.match(termsSource, /Marcelo Gabriel Gonzalez/);
   assert.match(termsSource, /bookia.app.admin@gmail.com/);
   assert.match(termsSource, /Bookia no vende libros directamente/);
   assert.match(termsSource, /operacion comercial se acuerda directamente entre la persona interesada y la libreria/);
   assert.match(termsSource, /OpenAI/);
   assert.match(termsSource, /Mercado Pago/);
+  assert.match(termsSource, /correo distinto del correo de acceso a Bookia/);
+  assert.match(privacySource, /correo de la cuenta pagadora de Mercado Pago/);
   assert.match(termsSource, /prueba gratis de 30 dias/);
   assert.match(termsSource, /7 dias/);
   assert.match(termsSource, /oculta la vidriera y el catalogo publico/);
