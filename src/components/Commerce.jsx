@@ -1,14 +1,10 @@
 import { buildWhatsAppHref } from "../formatters";
 
-export function WhatsAppButton({ className = "primary-button", whatsappPhone, phoneCountryCd, phone, children, onClick }) {
-  const href = buildWhatsAppHref(whatsappPhone, phoneCountryCd, phone);
+export function WhatsAppButton({ className = "primary-button", whatsappPhone, children, onClick }) {
+  const href = buildWhatsAppHref(whatsappPhone);
 
   if (!href) {
-    return (
-      <span className={`${className} button-disabled`} aria-disabled="true">
-        {children}
-      </span>
-    );
+    return null;
   }
 
   return (

@@ -21,31 +21,14 @@ function normalizeSocialHandle(value, domainPattern) {
     .replace(/\/+$/, "");
 }
 
-export function buildWhatsAppHref(whatsappPhone, phoneCountryCd, phone) {
-  const explicitWhatsApp = normalizePhonePart(whatsappPhone).replace(/\D/g, "");
-  if (explicitWhatsApp) {
-    return `https://wa.me/${explicitWhatsApp}`;
-  }
-
-  const normalizedCountry = normalizePhonePart(phoneCountryCd).replace(/\D/g, "");
-  const normalizedPhone = normalizePhonePart(phone).replace(/\D/g, "");
-
-  if (!normalizedCountry || !normalizedPhone) {
-    return null;
-  }
-
-  return `https://wa.me/${normalizedCountry}${normalizedPhone}`;
+export function buildWhatsAppHref(whatsappPhone) {
+  const canonical = normalizePhonePart(whatsappPhone);
+  return /^549\d{10}$/.test(canonical) ? `https://wa.me/${canonical}` : null;
 }
 
-export function formatDisplayPhone(phoneCountryCd, phone) {
-  const normalizedCountry = normalizePhonePart(phoneCountryCd);
-  const normalizedPhone = normalizePhonePart(phone);
-
-  if (!normalizedCountry || !normalizedPhone) {
-    return null;
-  }
-
-  return `+${normalizedCountry}${normalizedPhone}`;
+export function formatDisplayWhatsApp(whatsappPhone) {
+  const canonical = normalizePhonePart(whatsappPhone);
+  return /^549\d{10}$/.test(canonical) ? `+${canonical}` : null;
 }
 
 export function buildInstagramHref(handle) {
