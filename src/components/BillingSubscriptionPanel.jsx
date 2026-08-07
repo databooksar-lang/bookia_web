@@ -6,7 +6,33 @@ import {
   formatBillingAmount,
   formatBillingDate,
   getBillingStatusLabel,
+  getTrustedMercadoPagoCheckoutUrl,
 } from "../billingState";
+
+function redirectToMercadoPago(data) {
+  if (!data.checkout_url) {
+    throw new Error("La autorización ya fue iniciada. Comprobá el estado del pago.");
+  }
+  window.location.assign(getTrustedMercadoPagoCheckoutUrl(data.checkout_url));
+}
+
+function getBillingDateDetails(billing, isReactivationPending) {
+  let label = "Próximo vencimiento";
+  if ((billing.status === "payment_pending" && billing.trial_ends_at) || billing.status === "trialing") {
+    label = "Fin de la prueba gratis";
+  } else if (billing.status === "canceled") {
+    label = "Finalizó el";
+  } else if (isReactivationPending) {
+    label = "Inicio de facturación";
+  }
+
+  return {
+    label,
+    value: isReactivationPending
+      ? "Al autorizar"
+      : formatBillingDate(billing.current_period_end || billing.trial_ends_at),
+  };
+}
 
 export function BillingSubscriptionPanel({ initialBilling = null, onBillingChange }) {
   const [billing, setBilling] = useState(initialBilling);
@@ -38,10 +64,7 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
   function authorizePayment() {
     setError("");
     runAction(() => apiFetch("/billing/subscription/checkout", { method: "POST" })
-        .then((data) => {
-          if (!data.checkout_url) throw new Error("La autorización ya fue iniciada. Comprobá el estado del pago.");
-          window.location.assign(data.checkout_url);
-        })
+        .then(redirectToMercadoPago)
         .catch((actionError) => setError(actionError.message)));
   }
 
@@ -60,10 +83,7 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
       return apiFetch("/billing/subscription/reactivate", { method: "POST", body: JSON.stringify(body) })
         .then(acceptBilling)
         .then(() => apiFetch("/billing/subscription/checkout", { method: "POST" }))
-        .then((data) => {
-          if (!data.checkout_url) throw new Error("La autorización ya fue iniciada. Comprobá el estado del pago.");
-          window.location.assign(data.checkout_url);
-        })
+        .then(redirectToMercadoPago)
         .catch((actionError) => setError(actionError.message));
     });
   }
@@ -109,17 +129,7 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
   const canChange = ["trialing", "active", "grace_period"].includes(billing.status);
   const changeIsNoop = planCode === billing.plan_code && Number(catalogLimit) === billing.catalog_limit;
   const isReactivationPending = billing.status === "payment_pending" && !billing.trial_ends_at;
-  let billingDateLabel = "Próximo vencimiento";
-  if ((billing.status === "payment_pending" && billing.trial_ends_at) || billing.status === "trialing") {
-    billingDateLabel = "Fin de la prueba gratis";
-  } else if (billing.status === "canceled") {
-    billingDateLabel = "Finalizó el";
-  } else if (isReactivationPending) {
-    billingDateLabel = "Inicio de facturación";
-  }
-  const billingDateValue = isReactivationPending
-    ? "Al autorizar"
-    : formatBillingDate(billing.current_period_end || billing.trial_ends_at);
+  const billingDate = getBillingDateDetails(billing, isReactivationPending);
 
   return (
     <div className="billing-panel">
@@ -128,7 +138,7 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
         <div><span>Plan</span><strong>{billing.plan_code === "plus_ai" ? "Plus AI" : "Base"}</strong></div>
         <div><span>Catálogo</span><strong>Hasta {billing.catalog_limit} libros</strong></div>
         <div><span>Total mensual</span><strong>{formatBillingAmount(billing.total_amount_ars, billing.currency)}</strong></div>
-        <div><span>{billingDateLabel}</span><strong>{billingDateValue}</strong></div>
+        <div><span>{billingDate.label}</span><strong>{billingDate.value}</strong></div>
       </div>
 
       {billing.status === "payment_pending" ? <button className="primary-button" type="button" onClick={authorizePayment} disabled={busy}>Confirmar medio de pago</button> : null}

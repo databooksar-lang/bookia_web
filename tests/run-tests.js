@@ -209,6 +209,8 @@ tests.push(["keeps plan selection inside the bookstore registration flow", () =>
   assert.match(registerSource, /return <Redirect to="\/register" \/>/);
   assert.match(registerSource, /navigate\("\/plans\?register=bookstore"\)/);
   assert.match(registerSource, /buildRegisterPath/);
+  assert.match(registerSource, /getTrustedMercadoPagoCheckoutUrl/);
+  assert.match(registerSource, /window\.location\.assign\(getTrustedMercadoPagoCheckoutUrl\(checkout\.checkout_url\)\)/);
   assert.doesNotMatch(registerSource, /Plan inicial<select/);
   assert.match(plansSource, /isRegistrationFlow/);
   assert.match(plansSource, /\{ code: "base", name: "Prueba gratis"/);
@@ -525,8 +527,7 @@ tests.push(["publishes terms and conditions for Bookia's marketplace role", () =
   assert.match(termsSource, /Politica de Privacidad/);
   assert.match(termsSource, /Politica de Cookies/);
   assert.match(termsSource, /no reemplaza asesoramiento legal profesional/);
-}]);
-tests.push(["offers paid reactivation for canceled hidden bookstores", () => {
+}], ["offers paid reactivation for canceled hidden bookstores", () => {
   const billingPanelSource = readFileSync(new URL("../src/components/BillingSubscriptionPanel.jsx", import.meta.url), "utf8");
   const dashboardSource = readFileSync(new URL("../src/pages/DashboardPage.jsx", import.meta.url), "utf8");
   const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");

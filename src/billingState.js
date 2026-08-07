@@ -2,6 +2,7 @@ const ACTIVE_MANAGEMENT_STATES = new Set(["trialing", "active", "grace_period", 
 const PAYMENT_ATTENTION_STATES = new Set(["payment_pending", "grace_period", "restricted"]);
 const PLAN_CODES = new Set(["base", "plus_ai"]);
 const CATALOG_LIMITS = new Set([50, 100, 200]);
+const MERCADO_PAGO_HOSTS = ["mercadopago.com", "mercadopago.com.ar"];
 
 const STATUS_LABELS = {
   payment_pending: "Autorización pendiente",
@@ -36,6 +37,31 @@ export function buildBillingChangeRequest(planCode, catalogLimit) {
   if (!PLAN_CODES.has(planCode)) throw new Error("El plan seleccionado no es válido.");
   if (!CATALOG_LIMITS.has(normalizedLimit)) throw new Error("La capacidad de catálogo no es válida.");
   return { plan_code: planCode, catalog_limit: normalizedLimit };
+}
+
+export function getTrustedMercadoPagoCheckoutUrl(value) {
+  let checkoutUrl;
+  try {
+    checkoutUrl = new URL(value);
+  } catch {
+    throw new Error("Mercado Pago devolvió una URL de autorización no segura.");
+  }
+
+  const hostname = checkoutUrl.hostname.toLowerCase();
+  const isTrustedHost = MERCADO_PAGO_HOSTS.some(
+    (trustedHost) => hostname === trustedHost || hostname.endsWith(`.${trustedHost}`),
+  );
+  if (
+    checkoutUrl.protocol !== "https:"
+    || !isTrustedHost
+    || checkoutUrl.port !== ""
+    || checkoutUrl.username
+    || checkoutUrl.password
+  ) {
+    throw new Error("Mercado Pago devolvió una URL de autorización no segura.");
+  }
+
+  return checkoutUrl.href;
 }
 
 export function getBillingReturnState(search = "") {

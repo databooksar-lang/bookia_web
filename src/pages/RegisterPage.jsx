@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { apiFetch } from "../api";
+import { getTrustedMercadoPagoCheckoutUrl } from "../billingState";
 import { formatCommercialPrice, getCommercialPrices } from "../plansPricingState";
 import { AppLink, navigate } from "../navigation";
 import { Redirect } from "../components/Redirect";
@@ -131,7 +132,7 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
           return apiFetch("/billing/subscription/checkout", { method: "POST" })
             .then((checkout) => {
               if (!checkout?.checkout_url) throw new Error("Mercado Pago no devolvió el enlace de autorización.");
-              window.location.assign(checkout.checkout_url);
+              window.location.assign(getTrustedMercadoPagoCheckoutUrl(checkout.checkout_url));
             });
         })
         .catch((registrationError) => {

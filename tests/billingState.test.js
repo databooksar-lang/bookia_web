@@ -1,11 +1,13 @@
 import assert from "node:assert/strict";
 
-import {
+import * as billingState from "../src/billingState.js";
+
+const {
   buildBillingChangeRequest,
   getBillingAccessState,
   getBillingReturnState,
   getBillingStatusLabel,
-} from "../src/billingState.js";
+} = billingState;
 
 export function registerBillingStateTests(test) {
   test("maps billing lifecycle states to customer-facing labels", () => {
@@ -33,5 +35,27 @@ export function registerBillingStateTests(test) {
     assert.equal(getBillingReturnState("?status=authorized").kind, "syncing");
     assert.equal(getBillingReturnState("?status=failure").kind, "syncing");
     assert.equal(getBillingReturnState("?status=failure").reportedFailure, true);
+  });
+
+  test("accepts only official HTTPS Mercado Pago checkout hosts", () => {
+    assert.equal(typeof billingState.getTrustedMercadoPagoCheckoutUrl, "function");
+    assert.equal(
+      billingState.getTrustedMercadoPagoCheckoutUrl("https://www.mercadopago.com.ar/subscriptions/checkout?id=123"),
+      "https://www.mercadopago.com.ar/subscriptions/checkout?id=123",
+    );
+    assert.equal(
+      billingState.getTrustedMercadoPagoCheckoutUrl("https://subscriptions.mercadopago.com/checkout?id=456"),
+      "https://subscriptions.mercadopago.com/checkout?id=456",
+    );
+  });
+
+  test("rejects manipulated Mercado Pago checkout redirects", () => {
+    assert.equal(typeof billingState.getTrustedMercadoPagoCheckoutUrl, "function");
+    const validate = billingState.getTrustedMercadoPagoCheckoutUrl;
+    assert.throws(() => validate("http://www.mercadopago.com.ar/checkout"), /segura/i);
+    assert.throws(() => validate("https://mercadopago.com.ar.evil.example/checkout"), /segura/i);
+    assert.throws(() => validate("https://user:password@mercadopago.com.ar/checkout"), /segura/i);
+    assert.throws(() => validate("https://mercadopago.com.ar:444/checkout"), /segura/i);
+    assert.throws(() => validate("/billing/return"), /segura/i);
   });
 }
