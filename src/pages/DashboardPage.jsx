@@ -48,12 +48,12 @@ const CATALOG_IMAGE_ACCEPT = "image/png,image/jpeg,image/webp";
 const MAX_CATALOG_IMAGES = 3;
 
 const DASHBOARD_TABS = [
-  { section: "profile", label: "Perfil" },
-  { section: "new-book", label: "Alta de libros" },
-  { section: "catalog", label: "Catalogo" },
-  { section: "clubs", label: "Clubes de lectura" },
-  { section: "metrics", label: "Metricas" },
-  { section: "subscription", label: "Suscripcion" },
+  { section: "profile", label: "Perfil", emoji: "👤" },
+  { section: "new-book", label: "Alta de libros", emoji: "➕" },
+  { section: "catalog", label: "Catalogo", emoji: "📚" },
+  { section: "clubs", label: "Clubes de lectura", emoji: "📖" },
+  { section: "metrics", label: "Metricas", emoji: "📊" },
+  { section: "subscription", label: "Suscripcion", emoji: "💳" },
 ];
 
 function DashboardTabs({ section }) {
@@ -67,7 +67,8 @@ function DashboardTabs({ section }) {
           className={`dashboard-tab${section === tab.section ? " is-active" : ""}`}
           aria-current={section === tab.section ? "page" : undefined}
         >
-          {tab.label}
+          <span>{tab.label}</span>
+          <span aria-hidden="true">{tab.emoji}</span>
         </AppLink>
       ))}
     </nav>
