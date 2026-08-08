@@ -90,4 +90,13 @@ export function registerDashboardNavigationStateTests(test) {
     assert.match(editorialSource, /\.dashboard-subtab\.is-active/);
     assert.match(editorialSource, /\.dashboard-tab:focus-visible/);
   });
+
+  test('styles the active catalog search with botanical fields and a rectangular filter button', () => {
+    const editorialSource = readFileSync(new URL('../src/editorial.css', import.meta.url), 'utf8');
+
+    assert.match(editorialSource, /\.dashboard-search\s*\{[^}]*background:\s*#e3eee8;[^}]*border:\s*1px solid #a8c5b5;/s);
+    assert.match(editorialSource, /\.dashboard-search-field > input,[\s\S]*?\.dashboard-search \.input-with-icon\s*\{[^}]*background:\s*#fffdf8;[^}]*border:\s*1px solid #a8c5b5;/s);
+    assert.match(editorialSource, /\.dashboard-search button\s*\{[^}]*background:\s*var\(--forest\);[^}]*border-radius:\s*7px;/s);
+    assert.match(editorialSource, /\.dashboard-search button:hover\s*\{[^}]*background:\s*var\(--forest-deep\);/s);
+  });
 }
