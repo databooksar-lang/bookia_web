@@ -3745,8 +3745,9 @@ textarea:focus {
 .favorite-book-button.is-favorite { color: var(--coral-dark); }
 .favorite-book-button:disabled { cursor: wait; opacity: 0.65; }
 .search-result-row > .favorite-book-button { justify-self: end; }
-.book-card > .favorite-book-button { position: absolute; top: 14px; right: 14px; width: auto; }
-.book-card { position: relative; }
+.book-card-meta-row { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 8px 10px; }
+.book-card-statuses { min-width: 0; flex: 1 1 auto; display: flex; flex-wrap: wrap; gap: 6px; }
+.book-card-meta-row > .favorite-book-button { flex: 0 0 auto; margin-left: auto; }
 .book-detail-copy > .favorite-book-button { margin-top: 16px; }
 @media (min-width: 821px) { .search-result-row { grid-template-columns: minmax(0, 1.5fr) minmax(170px, 0.75fr) 150px auto; } }
 
