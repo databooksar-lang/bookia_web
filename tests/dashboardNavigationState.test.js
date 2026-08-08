@@ -73,6 +73,12 @@ export function registerDashboardNavigationStateTests(test) {
     assert.doesNotMatch(dashboardSource, /isCreateOpen|isActiveOpen|isHiddenOpen|isReadingClubsOpen/);
   });
 
+  test('highlights the public storefront action in the dashboard header', () => {
+    const dashboardSource = readFileSync(new URL('../src/pages/DashboardPage.jsx', import.meta.url), 'utf8');
+
+    assert.match(dashboardSource, /className="primary-button" onClick=\{\(\) => navigate\(`\/bookstores\/\$\{me\.bookstore\.slug\}`\)\}>🏬 Ver vidriera digital <ArrowIcon \/>/);
+  });
+
   test('opens the unfiltered active catalog after creating a book', () => {
     const dashboardSource = readFileSync(new URL('../src/pages/DashboardPage.jsx', import.meta.url), 'utf8');
 

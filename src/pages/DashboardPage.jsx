@@ -431,7 +431,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
     <section className="dashboard-shell">
       <header className="dashboard-top">
         <div><p className="section-label">Gestiona tu vidriera</p><h1>{me.bookstore.name}</h1><p>Gestiona tu vidriera y lo que ven los lectores en Bookia.</p></div>
-        <div className="dashboard-actions">{billingAccess.catalogIsPublic ? <button className="secondary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver vidriera digital <ArrowIcon /></button> : <span className="secondary-button button-disabled" aria-disabled="true">Vidriera oculta</span>}<button className="text-link" onClick={logout}>Cerrar sesion</button></div>
+        <div className="dashboard-actions">{billingAccess.catalogIsPublic ? <button className="primary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>🏬 Ver vidriera digital <ArrowIcon /></button> : <span className="secondary-button button-disabled" aria-disabled="true">Vidriera oculta</span>}<button className="text-link" onClick={logout}>Cerrar sesion</button></div>
       </header>
 
       {registrationPending && me.billing?.status !== "payment_pending" ? <p className="feedback success">Registramos tu libreria.</p> : null}
