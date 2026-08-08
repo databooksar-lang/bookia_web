@@ -11,6 +11,7 @@ const NAV_ITEMS = [
 ];
 
 const BOOKIA_LOGO_SRC = "/images/bookia-logo-circular-transparent.png";
+const FOOTER_LOGO_SRC = "/images/logo-cuadrado.png";
 
 function isActive(pathname, href) {
   return href === "/" ? pathname === "/" : pathname === href;
@@ -74,7 +75,7 @@ export function SiteFooter() {
       <div className="footer-inner">
         <div>
           <AppLink className="brand footer-brand" href="/">
-            <span className="brand-mark"><img src={BOOKIA_LOGO_SRC} alt="" /></span>
+            <span className="brand-mark"><img src={FOOTER_LOGO_SRC} alt="" /></span>
             <span className="brand-name">Bookia</span>
           </AppLink>
           <p>Libros, librerias y lectores mas cerca.</p>
