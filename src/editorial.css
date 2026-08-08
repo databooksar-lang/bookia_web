@@ -1825,8 +1825,8 @@ button:disabled {
   grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
   gap: 12px;
   align-items: end;
-  background: rgba(255, 250, 240, 0.72);
-  border: 1px solid var(--line);
+  background: #e3eee8;
+  border: 1px solid #a8c5b5;
   border-radius: 13px;
 }
 
@@ -1842,11 +1842,38 @@ button:disabled {
   color: var(--muted);
 }
 
+.dashboard-search-field > input,
 .dashboard-search .input-with-icon {
-  padding-left: 12px;
+  min-height: 50px;
+  box-sizing: border-box;
+  padding: 0 14px;
+  background: #fffdf8;
+  border: 1px solid #a8c5b5;
+  border-radius: 7px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.86);
+  transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
 }
 
-.dashboard-search input {
+.dashboard-search-field > input:hover,
+.dashboard-search .input-with-icon:hover {
+  background: #fff;
+  border-color: #6c9b82;
+}
+
+.dashboard-search-field > input:focus,
+.dashboard-search .input-with-icon:focus-within {
+  background: #fff;
+  border-color: var(--forest);
+  box-shadow: 0 0 0 3px rgba(18, 63, 50, 0.13);
+}
+
+.dashboard-search .input-with-icon {
+  gap: 10px;
+}
+
+.dashboard-search .input-with-icon input {
+  min-height: 48px;
+  padding: 0;
   background: transparent;
   border: 0;
   box-shadow: none;
@@ -1854,6 +1881,22 @@ button:disabled {
 
 .dashboard-search button {
   align-self: stretch;
+  min-width: 112px;
+  padding: 12px 20px;
+  color: #fff;
+  background: var(--forest);
+  border-radius: 7px;
+  box-shadow: 0 7px 16px rgba(18, 63, 50, 0.17);
+}
+
+.dashboard-search button:hover {
+  background: var(--forest-deep);
+  transform: translateY(-1px);
+}
+
+.dashboard-search button:focus-visible {
+  background: var(--forest-deep);
+  outline-color: rgba(18, 63, 50, 0.5);
 }
 
 .dashboard-card {
