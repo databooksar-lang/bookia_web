@@ -2579,6 +2579,27 @@ textarea:focus {
   font-size: 0.76rem;
 }
 
+.footer-payment-badge {
+  width: fit-content;
+  margin-top: 16px;
+  padding: 7px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
+  color: #1f2d52;
+  background: #f8f9fb;
+  font-size: 0.69rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.footer-payment-badge img {
+  width: 28px;
+  height: auto;
+  flex: 0 0 auto;
+}
+
 .footer-links {
   display: grid;
   grid-template-columns: repeat(2, auto);

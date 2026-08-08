@@ -78,6 +78,10 @@ export function SiteFooter() {
             <span className="brand-name">Bookia</span>
           </AppLink>
           <p>Libros, librerias y lectores mas cerca.</p>
+          <div className="footer-payment-badge">
+            <img src="/images/mercado-pago-logo.svg" alt="Mercado Pago" />
+            <span>Suscripciones con Mercado Pago</span>
+          </div>
           <p className="footer-copyright">© 2026 Bookia. Todos los derechos reservados.</p>
         </div>
         <nav className="footer-links" aria-label="Navegacion secundaria">

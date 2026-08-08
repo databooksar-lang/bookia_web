@@ -626,8 +626,20 @@ tests.push(["shows Bookia's copyright notice beneath the footer description", ()
 
   assert.match(
     siteChromeSource,
-    /Libros, librerias y lectores mas cerca\.<\/p>\s*<p className="footer-copyright">© 2026 Bookia\. Todos los derechos reservados\.<\/p>/,
+    /Libros, librerias y lectores mas cerca\.<\/p>[\s\S]*?<p className="footer-copyright">© 2026 Bookia\. Todos los derechos reservados\.<\/p>/,
   );
+}]);
+tests.push(["shows a non-interactive Mercado Pago subscriptions badge in the footer", () => {
+  const siteChromeSource = readFileSync(new URL("../src/components/SiteChrome.jsx", import.meta.url), "utf8");
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+  assert.match(siteChromeSource, /className="footer-payment-badge"/);
+  assert.match(siteChromeSource, /src="\/images\/mercado-pago-logo\.svg"/);
+  assert.match(siteChromeSource, /alt="Mercado Pago"/);
+  assert.match(siteChromeSource, /Suscripciones con Mercado Pago/);
+  assert.match(siteChromeSource, /<div className="footer-payment-badge">\s*<img[^>]*>\s*<span>Suscripciones con Mercado Pago<\/span>\s*<\/div>/);
+  assert.match(editorialStyles, /\.footer-payment-badge\s*\{/);
+  assert.match(editorialStyles, /\.footer-payment-badge img\s*\{/);
 }]);
 tests.push(["presents bookstore plans and AI capabilities without public pricing", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
