@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { apiFetch } from "../api";
+import { createLatestBillingRequestGuard, loadBillingSubscription } from "../billingSubscriptionState";
 import {
   buildBillingCheckoutRequest,
   buildBillingChangeRequest,
@@ -41,10 +42,16 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
   const [catalogLimit, setCatalogLimit] = useState(String(initialBilling?.catalog_limit || 50));
   const [payerEmail, setPayerEmail] = useState(initialBilling?.payer_email || "");
   const [error, setError] = useState("");
+  const [loadError, setLoadError] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(!initialBilling);
+  const billingRequestGuardRef = useRef(null);
+  if (!billingRequestGuardRef.current) billingRequestGuardRef.current = createLatestBillingRequestGuard();
+  const billingRequestGuard = billingRequestGuardRef.current;
 
   function runAction(action) {
+    billingRequestGuard.invalidate();
     setBusy(true);
     return action().finally(() => setBusy(false));
   }
@@ -58,11 +65,26 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
     return nextBilling;
   }
 
-  function loadBilling() {
-    return apiFetch("/billing/subscription").then(acceptBilling).catch((fetchError) => setError(fetchError.message));
+  function loadBilling({ showLoading = true } = {}) {
+    const requestId = billingRequestGuard.begin();
+    if (showLoading) setLoading(true);
+    setLoadError("");
+    return loadBillingSubscription((options) => apiFetch("/billing/subscription", options))
+      .then((nextBilling) => {
+        if (billingRequestGuard.isCurrent(requestId)) acceptBilling(nextBilling);
+      })
+      .catch((fetchError) => {
+        if (billingRequestGuard.isCurrent(requestId)) setLoadError(fetchError.message);
+      })
+      .finally(() => {
+        if (billingRequestGuard.isCurrent(requestId)) setLoading(false);
+      });
   }
 
-  useEffect(() => { loadBilling(); }, []);
+  useEffect(() => {
+    loadBilling({ showLoading: !initialBilling });
+    return () => billingRequestGuard.invalidate();
+  }, []);
 
   function authorizePayment(event) {
     event?.preventDefault();
@@ -138,7 +160,11 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
         .catch((actionError) => setError(actionError.message)));
   }
 
-  if (!billing) return <p>Cargando suscripción...</p>;
+  if (loading) return <p>Cargando suscripción...</p>;
+  if (!billing) return <div className="billing-panel">
+    <p className="feedback error">{loadError || "No pudimos cargar la suscripción."}</p>
+    <button className="secondary-button" type="button" onClick={() => loadBilling()}>Reintentar</button>
+  </div>;
   const canChange = ["trialing", "active", "grace_period"].includes(billing.status);
   const changeIsNoop = planCode === billing.plan_code && Number(catalogLimit) === billing.catalog_limit;
   const isReactivationPending = billing.status === "payment_pending" && !billing.trial_ends_at;
@@ -186,6 +212,7 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
         <button className="primary-button" type="submit" disabled={busy}>Reactivar librería</button>
       </form> : null}
       {message ? <p className="feedback success">{message}</p> : null}
+      {loadError ? <><p className="feedback error">{loadError}</p><button className="secondary-button" type="button" onClick={() => loadBilling()}>Reintentar</button></> : null}
       {error ? <p className="feedback error">{error}</p> : null}
     </div>
   );
