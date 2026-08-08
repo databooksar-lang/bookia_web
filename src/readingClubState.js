@@ -6,6 +6,7 @@ export function createReadingClubDraft(club = null) {
     genre_id: club?.genre_id != null ? String(club.genre_id) : "",
     meeting_date: club?.meeting_date ?? "",
     location: club?.location ?? "",
+    external_url: club?.external_url ?? "",
     is_visible: club?.is_visible ?? true,
   };
 }
@@ -17,6 +18,7 @@ export function buildReadingClubPayload(draft) {
     genre_id: Number(draft.genre_id),
     meeting_date: draft.meeting_date || null,
     location: String(draft.location || "").trim() || null,
+    external_url: String(draft.external_url || "").trim() || null,
     is_visible: Boolean(draft.is_visible),
   };
 }

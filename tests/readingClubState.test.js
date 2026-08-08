@@ -16,6 +16,7 @@ export function registerReadingClubStateTests(test) {
       genre_id: "",
       meeting_date: "",
       location: "",
+      external_url: "",
       is_visible: true,
     });
   });
@@ -29,6 +30,7 @@ export function registerReadingClubStateTests(test) {
         genre_id: 7,
         meeting_date: "2026-08-20",
         location: "Sala del fondo",
+        external_url: "https://libreria.example.com/clubes/misterio",
         is_visible: false,
       }),
       {
@@ -38,6 +40,7 @@ export function registerReadingClubStateTests(test) {
         genre_id: "7",
         meeting_date: "2026-08-20",
         location: "Sala del fondo",
+        external_url: "https://libreria.example.com/clubes/misterio",
         is_visible: false,
       },
     );
@@ -51,6 +54,7 @@ export function registerReadingClubStateTests(test) {
         genre_id: "7",
         meeting_date: "",
         location: "  ",
+        external_url: "  https://example.com/club  ",
         is_visible: false,
       }),
       {
@@ -59,6 +63,7 @@ export function registerReadingClubStateTests(test) {
         genre_id: 7,
         meeting_date: null,
         location: null,
+        external_url: "https://example.com/club",
         is_visible: false,
       },
     );
@@ -78,8 +83,11 @@ export function registerReadingClubStateTests(test) {
     assert.match(dashboardSource, /Club de lectura/);
     assert.match(dashboardSource, /\/dashboard\/reading-clubs/);
     assert.match(dashboardSource, /createReadingClubDraft/);
+    assert.match(dashboardSource, /external_url/);
     assert.match(publicPagesSource, /reading_clubs/);
     assert.match(publicPagesSource, /Club de lectura/);
+    assert.match(publicPagesSource, /reading-club-external-link/);
+    assert.match(publicPagesSource, /noopener noreferrer/);
     assert.match(routesSource, /dashboard/);
   });
 }

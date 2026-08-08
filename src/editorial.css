@@ -1306,6 +1306,12 @@ button:disabled {
   text-align: right;
   font-weight: 800;
 }
+
+.reading-club-external-link {
+  color: var(--forest);
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
 .book-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

@@ -324,12 +324,15 @@ function ReadingClubsSection() {
             const host = club.host;
             const hostName = host?.type === "bookstore" ? host.name : host?.display_name;
             const hostPath = host?.type === "bookstore" ? `/bookstores/${host.slug}` : `/readers/${host?.slug}`;
-            return <AppLink key={club.id} className="reading-club-public-card reading-club-link" href={hostPath}>
+            return <article key={club.id} className="reading-club-public-card">
+              <AppLink className="reading-club-link" href={hostPath}>
               <div className="store-tags" aria-label="G\u00E9nero del club"><span className="store-tag">{club.genre?.name || "Sin g\u00E9nero"}</span></div>
               <h3>{club.title}</h3>
               <p>{club.description}</p>
               <dl><div><dt>Fecha</dt><dd>{displayReadingClubDate(club.meeting_date)}</dd></div><div><dt>Lugar</dt><dd>{club.location || "Lugar a confirmar"}</dd></div><div><dt>Organiza</dt><dd>{hostName || "Anfitri\u00F3n de Bookia"}</dd></div></dl>
-            </AppLink>;
+              </AppLink>
+              {club.external_url ? <a className="reading-club-external-link" href={club.external_url} target="_blank" rel="noopener noreferrer">{club.external_url}</a> : null}
+            </article>;
           })}
         </div>
       ) : null}
@@ -707,6 +710,7 @@ export function BookstorePage({ slug, me }) {
                   <div><dt>Fecha</dt><dd>{displayReadingClubDate(club.meeting_date)}</dd></div>
                   {club.location ? <div><dt>Lugar</dt><dd>{club.location}</dd></div> : null}
                 </dl>
+                {club.external_url ? <a className="reading-club-external-link" href={club.external_url} target="_blank" rel="noopener noreferrer">{club.external_url}</a> : null}
               </article>
             ))}
           </div>
@@ -734,7 +738,7 @@ export function ReaderPage({ slug }) {
   return <section className="store-page reader-page">
     <div className="store-profile-panel reader-profile-panel"><div className="store-identity"><p className="section-label">Lector en Bookia</p><h1>{reader.display_name}</h1><p>{reader.description || "Comparte clubes de lectura con la comunidad Bookia."}</p>{reader.favorite_genres?.length ? <div className="store-tags" aria-label="Generos favoritos">{reader.favorite_genres.map((genre) => <span key={genre.id} className="store-tag">{genre.name}</span>)}</div> : null}</div></div>
     <section className="store-reading-clubs"><div className="section-heading results-heading"><div><p className="section-label">Clubes de lectura</p><h2>Encuentros de {reader.display_name}</h2><p>{readingClubs.length} {readingClubs.length === 1 ? "club publicado" : "clubes publicados"}</p></div><button className="secondary-button" onClick={() => navigate("/")}>Volver a buscar</button></div>
-      {readingClubs.length === 0 ? <EmptyState title="Todav\u00EDa no public\u00F3 clubes">Volv\u00E9 pronto para conocer sus pr\u00F3ximos encuentros.</EmptyState> : <div className="reading-club-public-list">{readingClubs.map((club) => <article key={club.id} className="reading-club-public-card"><div className="store-tags" aria-label="G\u00E9nero del club"><span className="store-tag">{club.genre?.name || "Sin g\u00E9nero"}</span></div><h3>{club.title}</h3><p>{club.description}</p><dl><div><dt>Fecha</dt><dd>{displayReadingClubDate(club.meeting_date)}</dd></div><div><dt>Lugar</dt><dd>{club.location || "Lugar a confirmar"}</dd></div></dl></article>)}</div>}
+      {readingClubs.length === 0 ? <EmptyState title="Todav\u00EDa no public\u00F3 clubes">Volv\u00E9 pronto para conocer sus pr\u00F3ximos encuentros.</EmptyState> : <div className="reading-club-public-list">{readingClubs.map((club) => <article key={club.id} className="reading-club-public-card"><div className="store-tags" aria-label="G\u00E9nero del club"><span className="store-tag">{club.genre?.name || "Sin g\u00E9nero"}</span></div><h3>{club.title}</h3><p>{club.description}</p><dl><div><dt>Fecha</dt><dd>{displayReadingClubDate(club.meeting_date)}</dd></div><div><dt>Lugar</dt><dd>{club.location || "Lugar a confirmar"}</dd></div></dl>{club.external_url ? <a className="reading-club-external-link" href={club.external_url} target="_blank" rel="noopener noreferrer">{club.external_url}</a> : null}</article>)}</div>}
     </section>
   </section>;
 }

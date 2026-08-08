@@ -618,6 +618,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
             <ReadingClubGenreField genres={genres} genresLoading={genresLoading} genresError={genresError} value={newReadingClub.genre_id} onChange={(genreId) => setNewReadingClub((current) => ({ ...current, genre_id: genreId }))} />
             <label>Fecha<input type="date" value={newReadingClub.meeting_date} onChange={(event) => setNewReadingClub((current) => ({ ...current, meeting_date: event.target.value }))} /></label>
             <label>Lugar<input value={newReadingClub.location} onChange={(event) => setNewReadingClub((current) => ({ ...current, location: event.target.value }))} placeholder="Ej: Sala del fondo" /></label>
+            <label>Página externa<input value={newReadingClub.external_url} onChange={(event) => setNewReadingClub((current) => ({ ...current, external_url: event.target.value }))} placeholder="Ej: sitio.com/club" /></label>
             <label className="dashboard-field-wide">Descripcion *<textarea value={newReadingClub.description} onChange={(event) => setNewReadingClub((current) => ({ ...current, description: event.target.value }))} rows={4} required /></label>
             <label className="dashboard-checkbox-field"><input type="checkbox" checked={newReadingClub.is_visible} onChange={(event) => setNewReadingClub((current) => ({ ...current, is_visible: event.target.checked }))} /> Publicar en vidriera digital</label>
           </div>
@@ -635,6 +636,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
                   <ReadingClubGenreField genres={genres} genresLoading={genresLoading} genresError={genresError} value={draftReadingClub.genre_id} onChange={(genreId) => setDraftReadingClub((current) => ({ ...current, genre_id: genreId }))} />
                   <label>Fecha<input type="date" value={draftReadingClub.meeting_date} onChange={(event) => setDraftReadingClub((current) => ({ ...current, meeting_date: event.target.value }))} /></label>
                   <label>Lugar<input value={draftReadingClub.location} onChange={(event) => setDraftReadingClub((current) => ({ ...current, location: event.target.value }))} /></label>
+                  <label>Página externa<input value={draftReadingClub.external_url} onChange={(event) => setDraftReadingClub((current) => ({ ...current, external_url: event.target.value }))} placeholder="Ej: sitio.com/club" /></label>
                   <label className="dashboard-field-wide">Descripcion *<textarea value={draftReadingClub.description} onChange={(event) => setDraftReadingClub((current) => ({ ...current, description: event.target.value }))} rows={4} required /></label>
                   <label className="dashboard-checkbox-field"><input type="checkbox" checked={draftReadingClub.is_visible} onChange={(event) => setDraftReadingClub((current) => ({ ...current, is_visible: event.target.checked }))} /> Publicar en vidriera digital</label>
                 </div>
