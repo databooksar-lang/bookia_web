@@ -1864,6 +1864,13 @@ button:disabled {
   box-shadow: 0 12px 30px rgba(22, 38, 30, 0.055);
 }
 
+.catalog-edit-fields {
+  min-width: 0;
+  margin: 1rem 0;
+  padding: 0;
+  border: 0;
+}
+
 .bookstore-profile-section {
   margin: 0;
   overflow: hidden;

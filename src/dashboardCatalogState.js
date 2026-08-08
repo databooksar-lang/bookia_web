@@ -99,3 +99,11 @@ export function buildCatalogItemUpdatePayload(originalItem, draftItem) {
 export function hasCatalogItemAvailabilityChanged(originalItem, draftItem) {
   return normalizeEditableAvailability(draftItem.availability_status) !== normalizeEditableAvailability(originalItem.availability_status);
 }
+
+export function getCatalogSaveUiState(saveBusyItemId, itemId) {
+  const isSavePending = saveBusyItemId !== null;
+  return {
+    isSavePending,
+    isCurrentItemSaving: isSavePending && saveBusyItemId === itemId,
+  };
+}

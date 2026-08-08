@@ -3,7 +3,7 @@ import { useEffect, useState, useTransition } from "react";
 import { apiFetch, resolveApiUrl } from "../api";
 import { getAiAutocompleteSourceState, mergeAiAutocompleteSuggestion } from "../aiAutocompleteState";
 import { canUseAiAutocomplete } from "../aiAutocompleteAccess";
-import { buildCatalogItemUpdatePayload, buildCatalogSaveErrorMessage, buildDraftFromCatalogItem, hasCatalogItemAvailabilityChanged, normalizeBookStatus, normalizeEditableAvailability } from "../dashboardCatalogState";
+import { buildCatalogItemUpdatePayload, buildCatalogSaveErrorMessage, buildDraftFromCatalogItem, getCatalogSaveUiState, hasCatalogItemAvailabilityChanged, normalizeBookStatus, normalizeEditableAvailability } from "../dashboardCatalogState";
 import { buildDashboardUrl, parseDashboardNavigation } from "../dashboardNavigationState";
 import BookstoreProfileEditor from "../components/BookstoreProfileEditor";
 import { EmptyState } from "../components/Commerce";
@@ -166,7 +166,9 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
   const [editingItemId, setEditingItemId] = useState(null);
   const [draftItem, setDraftItem] = useState(EMPTY_ITEM);
   const [createBusy, startCreateTransition] = useTransition();
-  const [saveBusy, startSaveTransition] = useTransition();
+  const [saveBusyItemId, setSaveBusyItemId] = useState(null);
+  const [saveErrorsByItemId, setSaveErrorsByItemId] = useState({});
+  const [catalogActionBusy, setCatalogActionBusy] = useState(false);
   const [imageBusyId, setImageBusyId] = useState(null);
   const [aiBusyId, setAiBusyId] = useState(null);
   const [aiSuggestionsByItemId, setAiSuggestionsByItemId] = useState({});
@@ -185,6 +187,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
   const canAutocompleteWithAi = canUseAiAutocomplete(me?.current_plan_code);
   const billingAccess = getBillingAccessState(me?.billing);
   const reactivationIsPending = me?.billing?.status === "payment_pending" && !me.billing.trial_ends_at;
+  const catalogMutationBusy = catalogActionBusy || saveBusyItemId !== null || aiBusyId !== null || imageBusyId !== null;
 
   function loadAnalytics() {
     setAnalyticsLoading(true);
@@ -242,7 +245,12 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
     return <div className="page-state"><EmptyState title="Tu cuenta lectora esta activa">El panel de catalogo es exclusivo para librerias. Podes seguir explorando libros desde la busqueda.</EmptyState><button className="primary-button" onClick={() => navigate("/")}>Explorar libros</button></div>;
   }
   function updateItem(itemId, payload) {
-    apiFetch(`/dashboard/catalog/${itemId}`, { method: "PATCH", body: JSON.stringify(payload) }).then(() => loadCatalog()).catch((fetchError) => setError(fetchError.message));
+    if (catalogMutationBusy) return;
+    setCatalogActionBusy(true);
+    apiFetch(`/dashboard/catalog/${itemId}`, { method: "PATCH", body: JSON.stringify(payload) })
+      .then(() => loadCatalog())
+      .catch((fetchError) => setError(fetchError.message))
+      .finally(() => setCatalogActionBusy(false));
   }
 
   function toggleFeatured(item) {
@@ -250,7 +258,12 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
   }
 
   function updateAvailability(itemId, availabilityStatus) {
-    apiFetch(`/dashboard/catalog/${itemId}/availability`, { method: "PATCH", body: JSON.stringify({ availability_status: availabilityStatus }) }).then(() => loadCatalog()).catch((fetchError) => setError(fetchError.message));
+    if (catalogMutationBusy) return;
+    setCatalogActionBusy(true);
+    apiFetch(`/dashboard/catalog/${itemId}/availability`, { method: "PATCH", body: JSON.stringify({ availability_status: availabilityStatus }) })
+      .then(() => loadCatalog())
+      .catch((fetchError) => setError(fetchError.message))
+      .finally(() => setCatalogActionBusy(false));
   }
 
   function hideItem(itemId) {
@@ -258,6 +271,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
   }
 
   function autocompleteItem(item) {
+    if (catalogMutationBusy) return;
     const isCurrentEditing = editingItemId === item.id;
     const baseDraft = isCurrentEditing ? draftItem : buildDraftFromCatalogItem(item);
     setAiBusyId(item.id);
@@ -284,6 +298,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
   }
 
   function uploadItemImages(itemId, files) {
+    if (catalogMutationBusy) return;
     const selectedFiles = Array.from(files || []);
     if (selectedFiles.length === 0) return;
     const formData = new FormData();
@@ -296,6 +311,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
   }
 
   function markPrimaryImage(itemId, imageId) {
+    if (catalogMutationBusy) return;
     setImageBusyId(itemId);
     apiFetch(`/dashboard/catalog/${itemId}/images/${imageId}`, { method: "PATCH", body: JSON.stringify({ is_primary: true }) })
       .then(() => { setError(""); loadCatalog(); })
@@ -304,6 +320,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
   }
 
   function deleteItemImage(itemId, imageId) {
+    if (catalogMutationBusy) return;
     setImageBusyId(itemId);
     apiFetch(`/dashboard/catalog/${itemId}/images/${imageId}`, { method: "DELETE" })
       .then(() => { setError(""); loadCatalog(); })
@@ -314,6 +331,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
   function startEditing(item) {
     setEditingItemId(item.id);
     setDraftItem(buildDraftFromCatalogItem(item));
+    setSaveErrorsByItemId((current) => ({ ...current, [item.id]: "" }));
   }
 
   function cancelEditing() {
@@ -322,30 +340,35 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
   }
 
   function saveItem(item) {
+    if (catalogMutationBusy) return;
     const payload = buildCatalogItemUpdatePayload(item, draftItem);
     const nextAvailabilityStatus = normalizeEditableAvailability(draftItem.availability_status);
     const shouldUpdateCatalog = Object.keys(payload).length > 0;
     const shouldUpdateAvailability = hasCatalogItemAvailabilityChanged(item, draftItem);
 
-    startSaveTransition(() => {
-      const catalogUpdate = shouldUpdateCatalog
-        ? apiFetch(`/dashboard/catalog/${item.id}`, { method: "PATCH", body: JSON.stringify(payload) })
-        : Promise.resolve(null);
+    setSaveBusyItemId(item.id);
+    setSaveErrorsByItemId((current) => ({ ...current, [item.id]: "" }));
+    const catalogUpdate = shouldUpdateCatalog
+      ? apiFetch(`/dashboard/catalog/${item.id}`, { method: "PATCH", body: JSON.stringify(payload) })
+      : Promise.resolve(null);
 
-      catalogUpdate.then(() => {
-        if (shouldUpdateAvailability) {
-          return apiFetch(`/dashboard/catalog/${item.id}/availability`, {
-            method: "PATCH",
-            body: JSON.stringify({ availability_status: nextAvailabilityStatus }),
-          });
-        }
-        return null;
-      }).then(() => {
-        cancelEditing();
-        setError("");
-        loadCatalog();
-      }).catch((fetchError) => setError(buildCatalogSaveErrorMessage(fetchError.message)));
-    });
+    catalogUpdate.then(() => {
+      if (shouldUpdateAvailability) {
+        return apiFetch(`/dashboard/catalog/${item.id}/availability`, {
+          method: "PATCH",
+          body: JSON.stringify({ availability_status: nextAvailabilityStatus }),
+        });
+      }
+      return null;
+    }).then(() => {
+      cancelEditing();
+      setError("");
+      setSaveErrorsByItemId((current) => ({ ...current, [item.id]: "" }));
+      loadCatalog();
+    }).catch((fetchError) => {
+      const saveError = buildCatalogSaveErrorMessage(fetchError.message);
+      setSaveErrorsByItemId((current) => ({ ...current, [item.id]: saveError }));
+    }).finally(() => setSaveBusyItemId((current) => current === item.id ? null : current));
   }
 
   function createItem(event) {
@@ -501,19 +524,22 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
           const aiSuggestion = aiSuggestionsByItemId[item.id];
           const aiSourceState = getAiAutocompleteSourceState(aiSuggestion);
           const isAiBusy = aiBusyId === item.id;
+          const saveUiState = getCatalogSaveUiState(saveBusyItemId, item.id);
+          const catalogActionsBusy = catalogMutationBusy;
+          const saveError = saveErrorsByItemId[item.id] || "";
           return (
             <article key={item.id} className={`dashboard-card catalog-item${isEditing ? " is-editing" : ""}`}>
               <div className="catalog-item-summary">{coverUrl ? <img src={coverUrl} alt={`Tapa de ${item.title}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : <span className="catalog-cover-placeholder"><BookIcon /></span>}<div><span className="catalog-id">Libro #{item.id}</span>{item.is_featured ? <span className="status-pill">Destacado</span> : null}<h3>{item.title}</h3><p>{item.author || "Autor no visible"}</p><p>Estado: {isEditing ? BOOK_STATUS_LABELS[normalizeBookStatus(draftItem.book_status)] : bookStatusLabel}</p></div>{isEditing ? <span className={`status-pill status-${draftItem.availability_status}`}>{AVAILABILITY_LABELS[draftItem.availability_status] || statusLabel}</span> : <span className={`status-pill status-${normalizeEditableAvailability(item.availability_status)}`}>{statusLabel}</span>}</div>
               {item.genres?.length ? <div className="store-tags" aria-label="Generos del libro">{item.genres.map((genre) => <span key={genre.id} className="store-tag">{genre.name}</span>)}</div> : null}
               {item.description ? <p className="catalog-item-description">{item.description}</p> : null}
-              {isEditing ? <div className="dashboard-form-grid dashboard-form-grid-extended"><label>Titulo<input value={draftItem.title} onChange={(event) => setDraftItem((current) => ({ ...current, title: event.target.value }))} /></label><label>Autor<input value={draftItem.author} onChange={(event) => setDraftItem((current) => ({ ...current, author: event.target.value }))} /></label><label>Disponibilidad<select value={draftItem.availability_status} onChange={(event) => setDraftItem((current) => ({ ...current, availability_status: event.target.value }))}>{EDITABLE_AVAILABILITY_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label><label>Editorial<input value={draftItem.publisher} onChange={(event) => setDraftItem((current) => ({ ...current, publisher: event.target.value }))} /></label><label>Idioma<input value={draftItem.language} onChange={(event) => setDraftItem((current) => ({ ...current, language: event.target.value }))} /></label><label>Estado<select value={draftItem.book_status} onChange={(event) => setDraftItem((current) => ({ ...current, book_status: event.target.value }))}>{EDITABLE_BOOK_STATUS_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label><GenreSelector genres={genres} genresLoading={genresLoading} genresError={genresError} selectedGenreIds={draftItem.genre_ids || []} onChange={(genreIds) => setDraftItem((current) => ({ ...current, genre_ids: genreIds }))} /><label className="dashboard-field-wide">Descripcion<textarea value={draftItem.description} onChange={(event) => setDraftItem((current) => ({ ...current, description: event.target.value }))} rows={4} /></label></div> : null}
+              {isEditing ? <fieldset className="dashboard-form-grid dashboard-form-grid-extended catalog-edit-fields" disabled={catalogActionsBusy}><label>Titulo<input value={draftItem.title} onChange={(event) => setDraftItem((current) => ({ ...current, title: event.target.value }))} /></label><label>Autor<input value={draftItem.author} onChange={(event) => setDraftItem((current) => ({ ...current, author: event.target.value }))} /></label><label>Disponibilidad<select value={draftItem.availability_status} onChange={(event) => setDraftItem((current) => ({ ...current, availability_status: event.target.value }))}>{EDITABLE_AVAILABILITY_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label><label>Editorial<input value={draftItem.publisher} onChange={(event) => setDraftItem((current) => ({ ...current, publisher: event.target.value }))} /></label><label>Idioma<input value={draftItem.language} onChange={(event) => setDraftItem((current) => ({ ...current, language: event.target.value }))} /></label><label>Estado<select value={draftItem.book_status} onChange={(event) => setDraftItem((current) => ({ ...current, book_status: event.target.value }))}>{EDITABLE_BOOK_STATUS_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label><GenreSelector genres={genres} genresLoading={genresLoading} genresError={genresError} selectedGenreIds={draftItem.genre_ids || []} onChange={(genreIds) => setDraftItem((current) => ({ ...current, genre_ids: genreIds }))} /><label className="dashboard-field-wide">Descripcion<textarea value={draftItem.description} onChange={(event) => setDraftItem((current) => ({ ...current, description: event.target.value }))} rows={4} /></label></fieldset> : null}
               {isEditing ? (
                 <div className="catalog-image-editor">
                   <div className="catalog-image-editor-head">
                     <div><h4>Fotos del libro</h4><p>{(item.images || []).length} de {MAX_CATALOG_IMAGES} imagenes cargadas.</p></div>
-                    <label className={`secondary-button${(item.images || []).length >= MAX_CATALOG_IMAGES || imageBusyId === item.id ? " button-disabled" : ""}`}>
+                    <label className={`secondary-button${(item.images || []).length >= MAX_CATALOG_IMAGES || catalogActionsBusy ? " button-disabled" : ""}`}>
                       {imageBusyId === item.id ? "Subiendo..." : "Subir fotos"}
-                      <input type="file" accept="image/png,image/jpeg,image/webp" multiple disabled={(item.images || []).length >= MAX_CATALOG_IMAGES || imageBusyId === item.id} onChange={(event) => { uploadItemImages(item.id, event.target.files); event.target.value = ""; }} />
+                      <input type="file" accept="image/png,image/jpeg,image/webp" multiple disabled={(item.images || []).length >= MAX_CATALOG_IMAGES || catalogActionsBusy} onChange={(event) => { uploadItemImages(item.id, event.target.files); event.target.value = ""; }} />
                     </label>
                   </div>
                   {(item.images || []).length ? (
@@ -527,8 +553,8 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
                             <img src={imageUrl} alt={`Foto de ${item.title}`} />
                             <div>
                               {image.is_primary ? <span className="status-pill">Principal</span> : null}
-                              {isCatalogImage && !image.is_primary ? <button type="button" className="secondary-button" onClick={() => markPrimaryImage(item.id, image.id)} disabled={imageBusyId === item.id}>Marcar principal</button> : null}
-                              {isCatalogImage ? <button type="button" className="danger-button" onClick={() => deleteItemImage(item.id, image.id)} disabled={imageBusyId === item.id}>Quitar foto</button> : null}
+                              {isCatalogImage && !image.is_primary ? <button type="button" className="secondary-button" onClick={() => markPrimaryImage(item.id, image.id)} disabled={catalogActionsBusy || imageBusyId === item.id}>Marcar principal</button> : null}
+                              {isCatalogImage ? <button type="button" className="danger-button" onClick={() => deleteItemImage(item.id, image.id)} disabled={catalogActionsBusy || imageBusyId === item.id}>Quitar foto</button> : null}
                               {isCurrentCover ? <span className="status-pill">Foto actual</span> : null}
                             </div>
                           </div>
@@ -544,7 +570,8 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
                   {aiSourceState.sources.map((source) => <a key={source.url} href={source.url} target="_blank" rel="noreferrer">{source.title}</a>)}
                 </div>
               ) : null}
-              <div className="card-actions"><div className="card-actions-main">{isEditing ? <button type="button" className="secondary-button" onClick={cancelEditing}>Cancelar</button> : <><button type="button" className="secondary-button" onClick={() => startEditing(item)}>Editar</button><button type="button" className="secondary-button" onClick={() => toggleFeatured(item)}>{item.is_featured ? "Quitar destacado" : "Destacar"}</button></>}{canAutocompleteWithAi ? <button type="button" className="secondary-button" onClick={() => autocompleteItem(item)} disabled={isAiBusy}>{isAiBusy ? <><SparkleIcon size={16} /> Autocompletando...</> : <><SparkleIcon size={16} /> Autocompletar con IA</>}</button> : null}{isEditing ? <button type="button" className="primary-button" onClick={() => saveItem(item)} disabled={saveBusy}>{saveBusy ? "Guardando..." : "Guardar"}</button> : null}</div><button type="button" className="danger-button" onClick={() => hideItem(item.id)}>Eliminar</button></div>
+              {isEditing && saveError ? <p className="feedback error catalog-save-error" role="alert">{saveError}</p> : null}
+              <div className="card-actions"><div className="card-actions-main">{isEditing ? <button type="button" className="secondary-button" onClick={cancelEditing} disabled={catalogActionsBusy}>Cancelar</button> : <><button type="button" className="secondary-button" onClick={() => startEditing(item)} disabled={catalogActionsBusy}>Editar</button><button type="button" className="secondary-button" onClick={() => toggleFeatured(item)} disabled={catalogActionsBusy}>{item.is_featured ? "Quitar destacado" : "Destacar"}</button></>}{canAutocompleteWithAi ? <button type="button" className="secondary-button" onClick={() => autocompleteItem(item)} disabled={catalogActionsBusy}>{isAiBusy ? <><SparkleIcon size={16} /> Autocompletando...</> : <><SparkleIcon size={16} /> Autocompletar con IA</>}</button> : null}{isEditing ? <button type="button" className="primary-button" onClick={() => saveItem(item)} disabled={catalogActionsBusy}>{saveUiState.isCurrentItemSaving ? "Guardando..." : "Guardar"}</button> : null}</div><button type="button" className="danger-button" onClick={() => hideItem(item.id)} disabled={catalogActionsBusy}>Eliminar</button></div>
             </article>
           );
         })}</div> : null}
@@ -574,7 +601,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
                   <p><strong>Generos:</strong> {item.genres?.length ? item.genres.map((genre) => genre.name).join(", ") : "Sin generos"}</p>
                   <p><strong>Estado:</strong> {bookStatusLabel}</p>
                 </div>
-                <div className="card-actions"><button type="button" className="primary-button" onClick={() => updateAvailability(item.id, "available")}>Volver a publicar</button><button type="button" className="secondary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver vidriera digital</button></div>
+                <div className="card-actions"><button type="button" className="primary-button" onClick={() => updateAvailability(item.id, "available")} disabled={catalogMutationBusy}>Volver a publicar</button><button type="button" className="secondary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver vidriera digital</button></div>
               </article>
             );
           })}</div> : null}
