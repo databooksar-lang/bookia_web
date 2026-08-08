@@ -61,6 +61,13 @@ export function registerDashboardNavigationStateTests(test) {
     assert.match(dashboardSource, /Agotados/);
     assert.match(dashboardSource, /Clubes de lectura/);
     assert.match(dashboardSource, /Metricas/);
+    assert.match(dashboardSource, /label: .Perfil., emoji: .👤./);
+    assert.match(dashboardSource, /label: .Alta de libros., emoji: .➕./);
+    assert.match(dashboardSource, /label: .Catalogo., emoji: .📚./);
+    assert.match(dashboardSource, /label: .Clubes de lectura., emoji: .📖./);
+    assert.match(dashboardSource, /label: .Metricas., emoji: .📊./);
+    assert.match(dashboardSource, /label: .Suscripcion., emoji: .💳./);
+    assert.match(dashboardSource, /aria-hidden=.true./);
     assert.match(dashboardSource, /\/dashboard\/analytics/);
     assert.match(dashboardSource, /hidden=\{section !==/);
     assert.doesNotMatch(dashboardSource, /isCreateOpen|isActiveOpen|isHiddenOpen|isReadingClubsOpen/);

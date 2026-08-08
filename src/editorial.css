@@ -1735,6 +1735,7 @@ button:disabled {
   flex: 1 0 auto;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   color: var(--forest-deep);
   border-radius: 11px;
   font-size: 0.84rem;
