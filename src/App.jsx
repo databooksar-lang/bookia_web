@@ -66,7 +66,7 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <SiteHeader pathname={pathname} me={me} />
+      <SiteHeader pathname={pathname} me={me} refreshMe={refreshMe} />
       <main>{page}</main>
       <SiteFooter />
     </div>

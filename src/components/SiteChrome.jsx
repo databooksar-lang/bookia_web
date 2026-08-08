@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 
 import { MenuIcon } from "./Icons";
-import { AppLink } from "../navigation";
+import { AppLink, navigate } from "../navigation";
+import { apiFetch } from "../api";
 
 const NAV_ITEMS = [
   { href: "/", label: "Buscar" },
@@ -15,10 +16,17 @@ function isActive(pathname, href) {
   return href === "/" ? pathname === "/" : pathname === href;
 }
 
-export function SiteHeader({ pathname, me }) {
+export function SiteHeader({ pathname, me, refreshMe }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const accountHref = me?.bookstore ? "/dashboard" : me ? "/profile" : "/login";
   const accountLabel = me?.bookstore ? "Mi cuenta" : me ? "Mi Perfil" : "Ingresar";
+
+  function logout() {
+    apiFetch("/auth/logout", { method: "POST" })
+      .catch(() => null)
+      .then(() => refreshMe())
+      .finally(() => navigate("/"));
+  }
 
   useEffect(() => {
     setMenuOpen(false);
@@ -50,6 +58,7 @@ export function SiteHeader({ pathname, me }) {
             </AppLink>
           ))}
           {!me ? <AppLink href="/register" className="header-account">Registrate</AppLink> : null}
+          {me ? <button className="header-logout" type="button" onClick={logout}>Cerrar sesion</button> : null}
           <AppLink href={accountHref} className={`header-account${pathname === accountHref || pathname === "/dashboard" ? " is-active" : ""}`}>
             {accountLabel}
           </AppLink>

@@ -198,6 +198,19 @@ tests.push(["styles the public navbar with the reference green and circular tran
   assert.match(styles, /\.brand-mark\s*\{[^}]*border-radius:\s*50%;[^}]*overflow:\s*hidden;/s);
   assert.match(styles, /\.brand-mark img\s*\{[^}]*object-fit:\s*cover;/s);
 }]);
+tests.push(["centralizes logout in the authenticated site header", () => {
+  const headerSource = readFileSync(new URL("../src/components/SiteChrome.jsx", import.meta.url), "utf8");
+  const dashboardSource = readFileSync(new URL("../src/pages/DashboardPage.jsx", import.meta.url), "utf8");
+  const readerProfileSource = readFileSync(new URL("../src/pages/ReaderProfilePage.jsx", import.meta.url), "utf8");
+
+  assert.match(headerSource, /apiFetch\("\/auth\/logout", \{ method: "POST" \}\)/);
+  assert.match(headerSource, /\.finally\(\(\) => navigate\("\/"\)\)/);
+  assert.match(headerSource, /\{me \? <button[^>]*>Cerrar sesion<\/button> : null\}/s);
+  assert.doesNotMatch(dashboardSource, /function logout\(\)/);
+  assert.doesNotMatch(dashboardSource, /Cerrar sesion/);
+  assert.doesNotMatch(readerProfileSource, /function logout\(\)/);
+  assert.doesNotMatch(readerProfileSource, /Cerrar sesion/);
+}]);
 tests.push(["keeps plan selection inside the bookstore registration flow", () => {
   const appSource = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
   const registerSource = readFileSync(new URL("../src/pages/RegisterPage.jsx", import.meta.url), "utf8");

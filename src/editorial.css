@@ -160,14 +160,21 @@ p {
   gap: 7px;
 }
 
-.header-links > a {
+.header-links > a,
+.header-links > button {
   position: relative;
   padding: 10px 13px;
   color: #fffaf3;
   font-size: 0.88rem;
   font-weight: 700;
 }
-.header-links > a:not(.header-account)::after {
+.header-links > button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.header-links > a:not(.header-account)::after,
+.header-links > button.header-logout::after {
   content: "";
   position: absolute;
   left: 13px;
@@ -179,7 +186,8 @@ p {
   transition: transform 180ms ease;
 }
 .header-links > a:hover::after,
-.header-links > a.is-active::after {
+.header-links > a.is-active::after,
+.header-links > button:hover::after {
   transform: scaleX(1);
 }
 
@@ -2684,7 +2692,8 @@ textarea:focus {
     animation: menu-enter 160ms ease both;
   }
 
-  .header-links > a {
+  .header-links > a,
+  .header-links > button {
     padding: 13px;
   }
 
