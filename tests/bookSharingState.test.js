@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-import { buildBookShareMessage, buildBookShareUrl, buildInstagramStoryCoverPath, buildInstagramStoryMetadata, buildTelegramShareHref, buildWhatsAppShareHref, copyBookShareUrl, getSharedBookId, loadInstagramStoryCover, shareBookToInstagram, shareInstagramStoryFile } from "../src/bookSharingState.js";
+import { buildBookShareMessage, buildBookShareUrl, buildInstagramStoryCoverPath, buildInstagramStoryMetadata, buildTelegramShareHref, buildWhatsAppShareHref, copyBookShareUrl, getSharedBookId, loadInstagramStoryCover, loadInstagramStoryLogo, shareBookToInstagram, shareInstagramStoryFile } from "../src/bookSharingState.js";
 
 export function registerBookSharingStateTests(register) {
   register("builds a canonical bookstore book-share URL", () => {
@@ -154,10 +154,18 @@ export function registerBookSharingStateTests(register) {
     assert.equal(result, "cancelled");
   });
 
-  register("builds only the canonical dashboard cover path for a Story", () => {
-    assert.equal(buildInstagramStoryCoverPath(42), "/dashboard/catalog/42/cover");
-    assert.equal(buildInstagramStoryCoverPath(0), null);
-    assert.equal(buildInstagramStoryCoverPath("42"), null);
+  register("keeps the catalog source-cover route for a Story", () => {
+    assert.equal(buildInstagramStoryCoverPath({ id: 42, cover_image_url: "/dashboard/catalog/42/cover" }), "/dashboard/catalog/42/cover");
+  });
+
+  register("keeps the catalog primary-gallery route for a Story", () => {
+    assert.equal(buildInstagramStoryCoverPath({ id: 42, cover_image_url: "/dashboard/catalog/42/images/7" }), "/dashboard/catalog/42/images/7");
+  });
+
+  register("rejects a Story cover path that does not belong to the catalog item", () => {
+    assert.equal(buildInstagramStoryCoverPath({ id: 42, cover_image_url: "/dashboard/catalog/43/images/7" }), null);
+    assert.equal(buildInstagramStoryCoverPath({ id: 42, cover_image_url: "https://untrusted.example/cover.png" }), null);
+    assert.equal(buildInstagramStoryCoverPath({ id: 42, cover_image_url: null }), null);
   });
 
   register("rejects a non-image cover response before downloading it", async () => {
@@ -192,5 +200,16 @@ export function registerBookSharingStateTests(register) {
       }),
       /demasiado grande/i,
     );
+  });
+
+  register("continues without a logo when the Story logo cannot load", async () => {
+    let requestedSource = "";
+    const image = {};
+    Object.defineProperty(image, "src", { set(value) { requestedSource = value; queueMicrotask(() => image.onerror()); } });
+
+    const logo = await loadInstagramStoryLogo({ imageFactory: () => image });
+
+    assert.equal(logo, null);
+    assert.equal(requestedSource, "/images/logo-cuadrado.png");
   });
 }

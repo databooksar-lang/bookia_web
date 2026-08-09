@@ -9,6 +9,7 @@ const STORY_TITLE_LIMIT = 56;
 const STORY_COVER_MAX_BYTES = 10 * 1024 * 1024;
 const STORY_COVER_MAX_EDGE = 6000;
 const STORY_COVER_MAX_PIXELS = 24 * 1024 * 1024;
+const STORY_LOGO_URL = "/images/logo-cuadrado.png";
 
 const STORY_AVAILABILITY_LABELS = {
   available: "Disponible",
@@ -169,6 +170,20 @@ export async function loadInstagramStoryCover({ coverUrl, fetchLike = globalThis
   }
 }
 
+export async function loadInstagramStoryLogo({ imageFactory = () => globalThis.document?.createElement("img") } = {}) {
+  try {
+    const image = imageFactory();
+    await new Promise((resolve, reject) => {
+      image.onload = resolve;
+      image.onerror = reject;
+      image.src = STORY_LOGO_URL;
+    });
+    return image;
+  } catch {
+    return null;
+  }
+}
+
 function drawStoryCover(context, image, x, y, width, height) {
   context.save();
   context.shadowColor = "rgba(11, 45, 36, 0.28)";
@@ -216,8 +231,12 @@ export function buildInstagramStoryMetadata({ item, bookstore }) {
   };
 }
 
-export function buildInstagramStoryCoverPath(itemId) {
-  return Number.isSafeInteger(itemId) && itemId > 0 ? `/dashboard/catalog/${itemId}/cover` : null;
+export function buildInstagramStoryCoverPath(item) {
+  const itemId = item?.id;
+  const coverPath = String(item?.cover_image_url || "").trim();
+  if (!Number.isSafeInteger(itemId) || itemId <= 0) return null;
+  const allowedPath = new RegExp(`^/dashboard/catalog/${itemId}(?:/cover|/images/\\d+)$`);
+  return allowedPath.test(coverPath) ? coverPath : null;
 }
 
 export async function createInstagramStoryFile({ item, bookstore, coverUrl, fetchLike = globalThis.fetch, documentLike = globalThis.document, FileCtor = globalThis.File }) {
@@ -238,12 +257,10 @@ export async function createInstagramStoryFile({ item, bookstore, coverUrl, fetc
   context.font = "700 24px system-ui, sans-serif";
   context.fillText("LIBRO RECOMENDADO", 88, 180);
 
-  let cover = null;
-  try {
-    cover = await loadInstagramStoryCover({ coverUrl, fetchLike, imageFactory: () => documentLike.createElement("img") });
-  } catch {
-    cover = null;
-  }
+  const coverPromise = loadInstagramStoryCover({ coverUrl, fetchLike, imageFactory: () => documentLike.createElement("img") }).catch(() => null);
+  const logoPromise = loadInstagramStoryLogo({ imageFactory: () => documentLike.createElement("img") });
+  const [cover, logo] = await Promise.all([coverPromise, logoPromise]);
+  if (logo) context.drawImage(logo, 860, 44, 112, 112);
   drawStoryCover(context, cover, 180, 250, 720, 820);
 
   context.fillStyle = "#e4e6db";
