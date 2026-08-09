@@ -613,6 +613,8 @@ tests.push(["adds direct contact channels to the site footer", () => {
   assert.match(siteChromeSource, /className="footer-contact"/);
   assert.match(siteChromeSource, /<nav className="footer-links"[\s\S]*?<\/nav>\s*<section className="footer-contact"/);
   assert.match(siteChromeSource, /href="mailto:bookia\.app\.admin@gmail\.com"/);
+  assert.match(siteChromeSource, />Informar un problema<\/a>/);
+  assert.match(siteChromeSource, /href="mailto:bookia\.app\.admin@gmail\.com\?subject=Reporte%20o%20comentario%20sobre%20Bookia"/);
   assert.match(siteChromeSource, /href="https:\/\/wa\.me\/5491162366344"/);
   assert.match(siteChromeSource, /href="https:\/\/www\.instagram\.com\/bookia_app\?igsh=MWRveTNhanV4Y3J4eg=="/);
   assert.match(siteChromeSource, /target="_blank"/);

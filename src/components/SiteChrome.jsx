@@ -97,6 +97,7 @@ export function SiteFooter() {
         <section className="footer-contact" aria-labelledby="footer-contact-title">
           <h2 id="footer-contact-title">Contacto</h2>
           <a href="mailto:bookia.app.admin@gmail.com">bookia.app.admin@gmail.com</a>
+          <a href="mailto:bookia.app.admin@gmail.com?subject=Reporte%20o%20comentario%20sobre%20Bookia">Informar un problema</a>
           <a href="https://wa.me/5491162366344">+54 9 11 6236-6344</a>
           <a href="https://www.instagram.com/bookia_app?igsh=MWRveTNhanV4Y3J4eg==" target="_blank" rel="noreferrer">Instagram</a>
         </section>

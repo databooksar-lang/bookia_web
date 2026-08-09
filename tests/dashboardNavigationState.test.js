@@ -85,7 +85,7 @@ export function registerDashboardNavigationStateTests(test) {
     assert.match(dashboardSource, /href="https:\/\/t\.me\/bookia_ext_bot"/);
     assert.match(dashboardSource, /target="_blank"/);
     assert.match(dashboardSource, /rel="noreferrer"/);
-    assert.match(dashboardSource, /Usar bot de Telegram/);
+    assert.match(dashboardSource, /🤖 Usar bot de Telegram/);
     assert.match(dashboardSource, /Iniciá sesión en el bot con el correo y la contraseña de tu librería para cargar libros desde Telegram\./);
   });
 
