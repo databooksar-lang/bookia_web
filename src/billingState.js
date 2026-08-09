@@ -72,6 +72,13 @@ export function getTrustedMercadoPagoCheckoutUrl(value) {
   return checkoutUrl.href;
 }
 
+export async function copyTrustedMercadoPagoCheckoutUrl(value, { writeText = globalThis.navigator?.clipboard?.writeText } = {}) {
+  const checkoutUrl = getTrustedMercadoPagoCheckoutUrl(value);
+  if (typeof writeText !== "function") throw new Error("No pudimos copiar el enlace. Copialo manualmente desde el campo mostrado.");
+  await writeText(checkoutUrl);
+  return checkoutUrl;
+}
+
 export function getBillingReturnState(search = "") {
   const status = new URLSearchParams(search).get("status");
   const reportedFailure = ["failure", "rejected", "cancelled", "canceled"].includes(status);

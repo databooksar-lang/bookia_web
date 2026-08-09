@@ -9,6 +9,7 @@ import {
   formatBillingDate,
   getBillingStatusLabel,
   getTrustedMercadoPagoCheckoutUrl,
+  copyTrustedMercadoPagoCheckoutUrl,
 } from "../billingState";
 
 function redirectToMercadoPago(data) {
@@ -44,6 +45,7 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
   const [error, setError] = useState("");
   const [loadError, setLoadError] = useState("");
   const [message, setMessage] = useState("");
+  const [checkoutFallbackUrl, setCheckoutFallbackUrl] = useState("");
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(!initialBilling);
   const billingRequestGuardRef = useRef(null);
@@ -99,6 +101,31 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
     runAction(() => apiFetch("/billing/subscription/checkout", { method: "POST", body: JSON.stringify(body) })
         .then(redirectToMercadoPago)
         .catch((actionError) => setError(actionError.message)));
+  }
+
+  function copyCheckoutLink() {
+    setError("");
+    setMessage("");
+    setCheckoutFallbackUrl("");
+    let body;
+    try {
+      body = buildBillingCheckoutRequest(payerEmail);
+    } catch (validationError) {
+      setError(validationError.message);
+      return;
+    }
+    runAction(() => apiFetch("/billing/subscription/checkout", { method: "POST", body: JSON.stringify(body) })
+      .then(async (checkout) => {
+        const checkoutUrl = getTrustedMercadoPagoCheckoutUrl(checkout.checkout_url);
+        setCheckoutFallbackUrl(checkoutUrl);
+        try {
+          await copyTrustedMercadoPagoCheckoutUrl(checkoutUrl);
+          setMessage("Copiamos el enlace de Mercado Pago. Pegalo en Chrome o abrilo desde otro dispositivo para continuar.");
+        } catch {
+          setMessage("No pudimos copiar el enlace automáticamente. Copialo manualmente desde el campo.");
+        }
+      })
+      .catch((actionError) => setError(actionError.message)));
   }
 
   function reactivateSubscription(event) {
@@ -188,6 +215,10 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
           <small>Debe coincidir con la cuenta que usarás para autorizar la suscripción.</small>
         </label>
         <button className="primary-button" type="submit" disabled={busy}>{payerEmailChanged ? "Actualizar correo y continuar" : "Confirmar en Mercado Pago"}</button>
+        <button className="secondary-button" type="button" onClick={copyCheckoutLink} disabled={busy}>Copiar enlace de Mercado Pago</button>
+        {checkoutFallbackUrl ? <label>Enlace de Mercado Pago
+          <input type="text" value={checkoutFallbackUrl} readOnly onFocus={(event) => event.currentTarget.select()} aria-label="Enlace de Mercado Pago para copiar manualmente" />
+        </label> : null}
       </form> : null}
       {isReactivationPending ? <p className="billing-notice">Tu librería sigue oculta. Volverá a publicarse cuando Mercado Pago confirme la autorización.</p> : null}
       {["grace_period", "restricted"].includes(billing.status) ? <button className="secondary-button" type="button" onClick={syncPayment} disabled={busy}>Comprobar pago</button> : null}

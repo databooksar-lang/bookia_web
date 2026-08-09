@@ -64,4 +64,19 @@ export function registerBillingStateTests(test) {
     assert.throws(() => validate("https://mercadopago.com.ar:444/checkout"), /segura/i);
     assert.throws(() => validate("/billing/return"), /segura/i);
   });
+
+  test("copies only trusted Mercado Pago checkout links and retains the link when copying fails", async () => {
+    assert.equal(typeof billingState.copyTrustedMercadoPagoCheckoutUrl, "function");
+    const copied = [];
+    const url = await billingState.copyTrustedMercadoPagoCheckoutUrl(
+      "https://www.mercadopago.com.ar/subscriptions/checkout?id=123",
+      { writeText: async (value) => copied.push(value) },
+    );
+    assert.equal(url, "https://www.mercadopago.com.ar/subscriptions/checkout?id=123");
+    assert.deepEqual(copied, [url]);
+    await assert.rejects(
+      billingState.copyTrustedMercadoPagoCheckoutUrl("https://evil.example/checkout", { writeText: async () => {} }),
+      /segura/i,
+    );
+  });
 }
