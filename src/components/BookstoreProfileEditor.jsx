@@ -5,12 +5,15 @@ import {
   buildProfileFormData,
   createProfileDraft,
   displayBookstoreDescription,
+  displayBookstoreType,
+  getBookstoreTagOptions,
   removeProfileImage,
   requireRefreshedBookstore,
   selectProfileImage,
   setProfileDraftField,
 } from "../profileEditorState";
 import { formatDisplayWhatsApp } from "../formatters";
+import { getGenreSelectorState } from "../genreSelectorState";
 
 const PROFILE_IMAGE_ACCEPT = "image/png,image/jpeg,image/webp";
 
@@ -22,10 +25,28 @@ function profileSummary(bookstore) {
     { label: "Facebook", value: bookstore.facebook_handle },
     { label: "Sitio web", value: bookstore.website_url },
     { label: "Direccion", value: bookstore.address },
+    { label: "Tipo de libreria", value: displayBookstoreType(bookstore.bookstore_type) },
   ];
 }
 
-export default function BookstoreProfileEditor({ bookstore, onSaved, onError }) {
+function BookstoreTagField({ label, value, otherValue, genres, genresLoading, genresError, isSaving, onChange }) {
+  const state = getGenreSelectorState({ genresLoading, genresError, genres });
+  const options = getBookstoreTagOptions(genres, value, otherValue);
+  const isDisabled = isSaving || state.kind !== "ready";
+
+  return (
+    <label>
+      <span>{label}</span>
+      <select value={value} onChange={(event) => onChange(event.target.value)} disabled={isDisabled}>
+        <option value="">Sin etiqueta</option>
+        {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+      </select>
+      {state.kind !== "ready" ? <small className={`bookstore-tag-status is-${state.kind}`} role={state.kind === "error" ? "alert" : undefined}>{state.message}</small> : null}
+    </label>
+  );
+}
+
+export default function BookstoreProfileEditor({ bookstore, onSaved, onError, genres = [], genresLoading = false, genresError = "" }) {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [draft, setDraft] = useState(() => createProfileDraft(bookstore));
@@ -183,8 +204,9 @@ export default function BookstoreProfileEditor({ bookstore, onSaved, onError }) 
               <span>Descripcion</span>
               <textarea value={draft.description} onChange={(event) => changeField("description", event.target.value)} rows={4} disabled={isSaving} placeholder="Conta que hace especial a tu libreria." />
             </label>
-            <label><span>Etiqueta 1</span><input value={draft.tag1} onChange={(event) => changeField("tag1", event.target.value)} maxLength={100} disabled={isSaving} placeholder="Ej. Usados" /></label>
-            <label><span>Etiqueta 2</span><input value={draft.tag2} onChange={(event) => changeField("tag2", event.target.value)} maxLength={100} disabled={isSaving} placeholder="Ej. Literatura argentina" /></label>
+            <label className="bookstore-profile-field-wide"><span>Tipo de libreria</span><select value={draft.bookstoreType} onChange={(event) => changeField("bookstoreType", event.target.value)} disabled={isSaving} required><option value="">Selecciona una opcion</option><option value="physical">Libreria fisica</option><option value="virtual">Libreria virtual</option><option value="hybrid">Libreria fisica y virtual</option></select></label>
+            <BookstoreTagField label="Etiqueta 1" value={draft.tag1} otherValue={draft.tag2} genres={genres} genresLoading={genresLoading} genresError={genresError} isSaving={isSaving} onChange={(value) => changeField("tag1", value)} />
+            <BookstoreTagField label="Etiqueta 2" value={draft.tag2} otherValue={draft.tag1} genres={genres} genresLoading={genresLoading} genresError={genresError} isSaving={isSaving} onChange={(value) => changeField("tag2", value)} />
           </div>
         </fieldset>
 

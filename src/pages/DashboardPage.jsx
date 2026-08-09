@@ -444,7 +444,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
 
       <div className="dashboard-workspace">
         <div className="dashboard-tab-panel" hidden={section !== "profile"}>
-          <BookstoreProfileEditor bookstore={me.bookstore} onSaved={() => refreshMe({ preserveOnError: true })} onError={setError} />
+          <BookstoreProfileEditor bookstore={me.bookstore} genres={genres} genresLoading={genresLoading} genresError={genresError} onSaved={() => refreshMe({ preserveOnError: true })} onError={setError} />
         </div>
 
       <DashboardPanel

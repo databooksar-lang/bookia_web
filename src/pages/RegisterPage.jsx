@@ -31,6 +31,7 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
   const [payerEmailTouched, setPayerEmailTouched] = useState(false);
   const [password, setPassword] = useState("");
   const [whatsappPhone, setWhatsAppPhone] = useState("");
+  const [bookstoreType, setBookstoreType] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [bookstoreName, setBookstoreName] = useState("");
@@ -109,7 +110,7 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
       setError("Eleg\u00ED un plan v\u00E1lido para continuar.");
       return;
     }
-    if (profileType === "bookstore" && getRegisterStep({ profileType, email, password, whatsappPhone }) === "details" && bookstoreStep === "account") {
+    if (profileType === "bookstore" && getRegisterStep({ profileType, email, password, whatsappPhone, bookstoreType }) === "details" && bookstoreStep === "account") {
       setBookstoreStep("details");
       return;
     }
@@ -129,7 +130,7 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
       setError(validationError.message);
       return;
     }
-    const { path, body } = buildRegistrationRequest({ profileType, email, payerEmail, password, whatsappPhone, displayName, bookstoreName, planCode, catalogLimit, expectedMonthlyTotal: monthlyTotal, privacyAccepted });
+    const { path, body } = buildRegistrationRequest({ profileType, email, payerEmail, password, whatsappPhone, bookstoreType, displayName, bookstoreName, planCode, catalogLimit, expectedMonthlyTotal: monthlyTotal, privacyAccepted });
     setBusy(true);
     apiFetch(path, { method: "POST", body: JSON.stringify(body) })
         .then(() => {
@@ -191,7 +192,7 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
                     {passwordVisible ? <EyeOffIcon /> : <EyeIcon />}
                   </button>
                 </div>
-              </div>{!isReader ? <label>Celular con WhatsApp<input type="tel" value={whatsappPhone} onChange={(event) => setWhatsAppPhone(event.target.value)} autoComplete="tel" required placeholder="11 2222-3333" /><small>Podes escribirlo en formato local; lo usaremos para que los lectores te contacten por WhatsApp.</small></label> : null}</> : isBookstoreDetails ? <>
+              </div>{!isReader ? <><label>Celular con WhatsApp<input type="tel" value={whatsappPhone} onChange={(event) => setWhatsAppPhone(event.target.value)} autoComplete="tel" required placeholder="11 2222-3333" /><small>Podes escribirlo en formato local; lo usaremos para que los lectores te contacten por WhatsApp.</small></label><label>Tipo de libreria<select value={bookstoreType} onChange={(event) => setBookstoreType(event.target.value)} required><option value="">Selecciona una opcion</option><option value="physical">Libreria fisica</option><option value="virtual">Libreria virtual</option><option value="hybrid">Libreria fisica y virtual</option></select></label></> : null}</> : isBookstoreDetails ? <>
               <label>Nombre de la libreria<input value={bookstoreName} onChange={(event) => setBookstoreName(event.target.value)} autoComplete="organization" required /></label>
               <fieldset className="register-catalog-options"><legend>Queres ampliar tu catalogo?</legend>
                 {CATALOG_OPTIONS.map((option) => <label className={`register-catalog-option${catalogLimit === option.limit ? " is-selected" : ""}`} key={option.limit}>

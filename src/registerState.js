@@ -1,7 +1,12 @@
 const BOOKSTORE_PLAN_CODES = new Set(["base", "plus_ai"]);
+const BOOKSTORE_TYPES = new Set(["physical", "virtual", "hybrid"]);
 
 export function isSupportedBookstorePlan(planCode) {
   return BOOKSTORE_PLAN_CODES.has(planCode);
+}
+
+export function isSupportedBookstoreType(bookstoreType) {
+  return BOOKSTORE_TYPES.has(bookstoreType);
 }
 
 export function getRegisterQueryState(search) {
@@ -31,9 +36,9 @@ export function isPlansRegistrationContext(search) {
   return params.size === 1 && params.get("register") === "bookstore";
 }
 
-export function getRegisterStep({ profileType, email, password, whatsappPhone }) {
+export function getRegisterStep({ profileType, email, password, whatsappPhone, bookstoreType }) {
   if (profileType !== "bookstore") return "form";
-  return email && password.length >= 8 && whatsappPhone?.trim() ? "details" : "account";
+  return email && password.length >= 8 && whatsappPhone?.trim() && isSupportedBookstoreType(bookstoreType) ? "details" : "account";
 }
 
 export function buildRegistrationRequest({
@@ -42,6 +47,7 @@ export function buildRegistrationRequest({
   payerEmail,
   password,
   whatsappPhone,
+  bookstoreType,
   displayName,
   bookstoreName,
   planCode,
@@ -69,6 +75,7 @@ export function buildRegistrationRequest({
       ...(payerEmail ? { payer_email: payerEmail.trim().toLowerCase() } : {}),
       password,
       whatsapp_phone: whatsappPhone.trim(),
+      bookstore_type: bookstoreType,
       plan_code: planCode,
       catalog_limit: Number(catalogLimit),
       ...(Number.isInteger(expectedMonthlyTotal) ? { expected_total_amount_ars: expectedMonthlyTotal } : {}),
