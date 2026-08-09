@@ -5,7 +5,7 @@ import { AppLink, navigate } from "../navigation";
 import { apiFetch } from "../api";
 
 const NAV_ITEMS = [
-  { href: "/", label: "Buscar" },
+  { href: "/", label: "Buscar libros" },
   { href: "/para-librerias", label: "Para librerias" },
   { href: "/about", label: "Sobre Bookia" },
 ];
@@ -87,7 +87,7 @@ export function SiteFooter() {
         </div>
         <nav className="footer-links" aria-label="Navegacion secundaria">
           <AppLink href="/para-librerias">Para librerias</AppLink>
-          <AppLink href="/">Buscar</AppLink>
+          <AppLink href="/">Buscar libros</AppLink>
           <AppLink href="/about">Sobre Bookia</AppLink>
           <AppLink href="/privacy">Privacidad</AppLink>
           <AppLink href="/terms">Terminos</AppLink>

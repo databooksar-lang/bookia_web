@@ -4,6 +4,13 @@ import { buildPublicSearchParams } from "../src/publicSearchState.js";
 import * as publicSearchState from "../src/publicSearchState.js";
 
 export function registerPublicSearchStateTests(register) {
+  register("builds one general query for title, author, or publisher searches", () => {
+    assert.deepEqual(
+      [...buildPublicSearchParams({ query: "Julio Cortázar" }).entries()],
+      [["query", "Julio Cortázar"]],
+    );
+  });
+
   register("builds public search parameters with the selected book status", () => {
     assert.deepEqual(
       [...buildPublicSearchParams({

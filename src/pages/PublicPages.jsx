@@ -90,28 +90,39 @@ function useFavoriteBooks(me) {
 
   return { favoriteIds, pendingIds, favoriteError, toggleFavorite };
 }
+const EMPTY_SEARCH_FILTERS = { query: "", bookStatus: "", language: "", genreSlug: "" };
+
+function createSearchFilters(filters = {}) {
+  return { query: filters.query || "", bookStatus: filters.bookStatus || "", language: filters.language || "", genreSlug: filters.genreSlug || "" };
+}
+
 function HeroSearch({ initialFilters, genres, genresLoading, onSearch }) {
-  const [filters, setFilters] = useState(() => ({ title: initialFilters.title || "", author: initialFilters.author || "", bookStatus: initialFilters.bookStatus || "", language: initialFilters.language || "", genreSlug: initialFilters.genreSlug || "" }));
+  const [filters, setFilters] = useState(() => createSearchFilters(initialFilters));
+  useEffect(() => setFilters(createSearchFilters(initialFilters)), [initialFilters]);
   function submit(event) { event.preventDefault(); onSearch(filters); }
   function updateFilter(name) { return (event) => setFilters((current) => ({ ...current, [name]: event.target.value })); }
   return (
     <section className="hero">
-      <div className="hero-copy"><p className="section-label">{"ENCONTR\u00C1 TU PR\u00D3XIMA LECTURA"}</p><h1>{"Los libros que busc\u00E1s, en un solo lugar."}</h1><p className="hero-lead">{"Explora librerias, descubri catalogos reales y conectate con clubes de lectura. Bookia reúne todo en un solo lugar para que encuentres el libro que buscas y consultes directamente con quien lo tiene."}</p></div>
+      <div className="hero-copy"><p className="section-label">ENCONTRÁ TU PRÓXIMO LIBRO</p><h1>Encontrá el libro que buscás.</h1><p className="hero-lead">Buscá por título, autor o editorial. Después, contactá directamente a la librería para confirmar disponibilidad.</p></div>
       <div className="hero-books" aria-hidden="true"><img className="hero-illustration" src="/images/hero-bookia-discovery.webp" alt="" /></div>
       <form className="search-panel" onSubmit={submit} aria-label="Buscar libros">
-        <p className="search-panel-heading">Buscar libros</p>
-        <label className="search-field search-field-title"><span>Nombre del libro</span><span className="input-with-icon"><SearchIcon /><input value={filters.title} onChange={updateFilter("title")} placeholder="Ej: Rayuela" /></span></label>
-        <label className="search-field search-field-author"><span>Autor</span><input value={filters.author} onChange={updateFilter("author")} placeholder={"Ej: Julio Cort\u00E1zar"} /></label>
-        <label className="search-field search-field-status"><span>Estado</span><select value={filters.bookStatus} onChange={updateFilter("bookStatus")}><option value="">Todos los estados</option><option value="nuevo">Nuevo</option><option value="usado">Usado</option></select></label>
-        <label className="search-field search-field-language"><span>Idioma</span><input value={filters.language} onChange={updateFilter("language")} placeholder={"Ej: Espa\u00F1ol"} /></label>
-        <label className="search-field search-field-genre"><span>{"G\u00E9nero"}</span><select value={filters.genreSlug} onChange={updateFilter("genreSlug")} disabled={genresLoading}><option value="">{genresLoading ? "Cargando g\u00E9neros..." : "Todos los g\u00E9neros"}</option>{genres.map((genre) => <option key={genre.id} value={genre.slug}>{genre.name}</option>)}</select></label>
-        <button className="primary-button search-submit" type="submit">Buscar libros <ArrowIcon /></button>
+        <p className="search-panel-heading">Buscá un libro</p>
+        <label className="search-field search-field-query"><span>¿Qué libro buscás?</span><span className="input-with-icon"><SearchIcon /><input value={filters.query} onChange={updateFilter("query")} placeholder="Ej.: Rayuela, Julio Cortázar o Sudamericana" /></span></label>
+        <details className="search-filters">
+          <summary>Más filtros</summary>
+          <div className="search-filter-fields">
+            <label className="search-field"><span>Estado</span><select value={filters.bookStatus} onChange={updateFilter("bookStatus")}><option value="">Todos los estados</option><option value="nuevo">Nuevo</option><option value="usado">Usado</option></select></label>
+            <label className="search-field"><span>Idioma</span><input value={filters.language} onChange={updateFilter("language")} placeholder="Ej.: Español" /></label>
+            <label className="search-field"><span>Género</span><select value={filters.genreSlug} onChange={updateFilter("genreSlug")} disabled={genresLoading}><option value="">{genresLoading ? "Cargando géneros..." : "Todos los géneros"}</option>{genres.map((genre) => <option key={genre.id} value={genre.slug}>{genre.name}</option>)}</select></label>
+          </div>
+        </details>
+        <button className="primary-button search-submit" type="submit">Buscar <ArrowIcon /></button>
       </form>
     </section>
   );
 }
 
-function SearchResults({ filters, stores, me }) {
+function SearchResults({ filters, stores, me, onClearFilters }) {
   const [items, setItems] = useState([]);
   const [selectedStore, setSelectedStore] = useState("");
   const [selectedBook, setSelectedBook] = useState(null);
@@ -121,6 +132,13 @@ function SearchResults({ filters, stores, me }) {
   const favorites = useFavoriteBooks(me);
   const hasSearched = filters !== null;
   const visibleItems = items.filter((item) => item.availability_status !== "hidden");
+  const activeFilters = [
+    filters?.query ? `Búsqueda: ${filters.query}` : "",
+    filters?.bookStatus ? `Estado: ${filters.bookStatus === "nuevo" ? "Nuevo" : "Usado"}` : "",
+    filters?.language ? `Idioma: ${filters.language}` : "",
+    filters?.genreSlug ? `Género: ${filters.genreSlug}` : "",
+    selectedStore ? `Librería: ${stores.find((store) => store.slug === selectedStore)?.name || selectedStore}` : "",
+  ].filter(Boolean);
 
   function openBookDetail(item) {
     trackBookDetailOpened(item, "search_results");
@@ -168,13 +186,19 @@ function SearchResults({ filters, stores, me }) {
 
   if (!hasSearched) return null;
 
+  function clearFilters() {
+    setSelectedStore("");
+    onClearFilters();
+  }
+
   return (
     <section className="results-section" id="resultados" aria-live="polite">
       <div className="section-heading results-heading">
         <div>
           <p className="section-label">{"RESULTADOS DE B\u00DASQUEDA"}</p>
-          <h2>{"Libros que pod\u00E9s consultar"}</h2>
+          <h2>{filters.query ? `Resultados para «${filters.query}»` : "Libros para explorar"}</h2>
           <p>{loading ? "Buscando en los cat\u00E1logos..." : `${visibleItems.length} ${visibleItems.length === 1 ? "libro encontrado" : "libros encontrados"}`}</p>
+          {activeFilters.length > 0 ? <div className="active-search-filters" aria-label="Filtros activos">{activeFilters.map((filter) => <span key={filter}>{filter}</span>)}</div> : null}
         </div>
         <div className="compact-filter-group">
           <label className="compact-filter">
@@ -189,7 +213,7 @@ function SearchResults({ filters, stores, me }) {
       </div>
       {error ? <p className="feedback error">{error}</p> : null}{favorites.favoriteError ? <p className="feedback error">{favorites.favoriteError}</p> : null}
       {loading ? <div className="loading-list" aria-label="Cargando resultados"><span /><span /><span /></div> : null}
-      {!loading && !error && visibleItems.length === 0 ? <EmptyState title={"Todav\u00EDa no encontramos ese libro"}>{"Prob\u00E1 con otro t\u00EDtulo, autor, editorial, idioma o g\u00E9nero. Tambi\u00E9n pod\u00E9s ampliar la b\u00FAsqueda a todas las librer\u00EDas."}</EmptyState> : null}
+      {!loading && !error && visibleItems.length === 0 ? <div className="search-empty-result"><EmptyState title="No encontramos libros con esos filtros">Probá con otra búsqueda o limpiá los filtros para explorar todo el catálogo.</EmptyState><button type="button" className="secondary-button" onClick={clearFilters}>Limpiar filtros</button></div> : null}
       {!loading && visibleItems.length > 0 ? (
         <div className="search-results-list" role="list">
           {visibleItems.map((item) => (
@@ -228,9 +252,9 @@ const BOOKSTORE_BENEFITS = [
 ];
 
 const SEARCH_BENEFITS = [
-  [<BookIcon key="icon" />, "Encontr\u00E1 tu pr\u00F3ximo libro", "Busc\u00E1 por t\u00EDtulo, autor o editorial."],
-  [<SearchIcon key="icon" />, "Eleg\u00ED c\u00F3mo quer\u00E9s leer", "Nuevos y usados, g\u00E9neros e idiomas para explorar."],
-  [<WhatsAppIcon key="icon" />, "Consult\u00E1 a la librer\u00EDa", "Confirm\u00E1 disponibilidad antes de ir o comprar."],
+  [<BookIcon key="icon" />, "Buscá como te resulte más fácil", "Escribí el título, autor o editorial."],
+  [<SearchIcon key="icon" />, "Elegí cómo querés leer", "Filtrá por estado, idioma o género."],
+  [<WhatsAppIcon key="icon" />, "Consultá a la librería", "Confirmá disponibilidad por WhatsApp antes de ir."],
 ];
 const READING_CLUB_BENEFITS = [
   [<LocationIcon key="icon" />, "Comunidad lectora", "Encontr\u00E1 clubes para compartir tus lecturas."],
@@ -392,7 +416,7 @@ export function HomePage({ me }) {
   const [genres, setGenres] = useState([]);
   const [genresLoading, setGenresLoading] = useState(true);
   const [storesLoading, setStoresLoading] = useState(true);
-  const [draftFilters, setDraftFilters] = useState({ title: "", author: "", publisher: "", language: "", genreSlug: "" });
+  const [draftFilters, setDraftFilters] = useState(EMPTY_SEARCH_FILTERS);
   const [searchFilters, setSearchFilters] = useState(null);
 
   useEffect(() => {
@@ -404,7 +428,7 @@ export function HomePage({ me }) {
     <>
       <HeroSearch initialFilters={draftFilters} genres={genres} genresLoading={genresLoading} onSearch={(nextFilters) => { setDraftFilters(nextFilters); setSearchFilters(nextFilters); setTimeout(() => document.getElementById("resultados")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0); }} />
       <BenefitsStrip benefits={SEARCH_BENEFITS} ariaLabel="Beneficios de la búsqueda de libros" />
-      <SearchResults filters={searchFilters} stores={stores} me={me} />
+      <SearchResults filters={searchFilters} stores={stores} me={me} onClearFilters={() => { setDraftFilters(EMPTY_SEARCH_FILTERS); setSearchFilters(EMPTY_SEARCH_FILTERS); }} />
       <BookstoresSection stores={stores} loading={storesLoading} />
       <ReadingClubsSection />
       <NewsletterSignup />

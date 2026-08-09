@@ -351,29 +351,33 @@ tests.push(["keeps the public search form hierarchy responsive", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
   const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
 
-  assert.match(publicPagesSource, /<p className="search-panel-heading">Buscar libros<\/p>/);
+  assert.match(publicPagesSource, /<p className="search-panel-heading">Busc. un libro<\/p>/);
   assert.match(editorialStyles, /\.search-panel-heading\s*\{[^}]*grid-column:\s*1\s*\/\s*-1;/s);
-  assert.match(publicPagesSource, /search-field-title/);
-  assert.match(publicPagesSource, /search-field-author/);
-  assert.match(publicPagesSource, /search-field-status/);
-  assert.match(editorialStyles, /\.search-field-title\s*\{\s*grid-column:\s*span 7;/);
-  assert.match(editorialStyles, /\.search-field-author\s*\{\s*grid-column:\s*span 5;/);
-  assert.match(editorialStyles, /\.search-field-status\s*\{\s*grid-column:\s*span 4;/);
-  assert.match(editorialStyles, /\.search-submit\s*\{[^}]*grid-column:\s*span 3;/s);
-  assert.match(editorialStyles, /@media \(max-width: 1040px\)[\s\S]*?\.search-panel\s*\{\s*grid-template-columns:\s*repeat\(6,/);
+  assert.match(publicPagesSource, /search-field-query/);
+  assert.match(publicPagesSource, /search-filters/);
+  assert.match(editorialStyles, /\.search-filter-fields\s*\{[^}]*grid-template-columns:\s*repeat\(3,/s);
+  assert.match(editorialStyles, /\.search-submit\s*\{[^}]*grid-column:\s*2;/s);
   assert.match(editorialStyles, /@media \(max-width: 820px\)[\s\S]*?\.search-panel\s*\{\s*grid-template-columns:\s*1fr;/);
-  assert.match(editorialStyles, /\.search-panel\s*\{[^}]*box-sizing:\s*border-box;/s);
-  assert.match(editorialStyles, /\.search-panel \.search-field > input,[\s\S]*?box-sizing:\s*border-box;/);
+}]);
+tests.push(["uses a progressive and accessible public book search flow", () => {
+  const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+
+  assert.match(publicPagesSource, /¿Qué libro buscás\?/);
+  assert.match(publicPagesSource, /Ej\.: Rayuela, Julio Cortázar o Sudamericana/);
+  assert.match(publicPagesSource, /<details className="search-filters">/);
+  assert.match(publicPagesSource, /<summary>Más filtros<\/summary>/);
+  assert.match(publicPagesSource, /No encontramos libros con esos filtros/);
+  assert.match(publicPagesSource, /Limpiar filtros/);
 }]);
 tests.push(["keeps Buscar as the home page with Bookia's approved public-search copy", () => {
   const appSource = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
 
   assert.match(appSource, /let page = <HomePage me=\{me\} \/>;/);
-  assert.match(publicPagesSource, /ENCONTR\\u00C1 TU PR\\u00D3XIMA LECTURA/);
-  assert.match(publicPagesSource, /Los libros que busc\\u00E1s, en un solo lugar\./);
-  assert.match(publicPagesSource, /Consult\\u00E1 disponibilidad por WhatsApp/);
-  assert.match(publicPagesSource, /Explora librerias, descubri catalogos reales y conectate con clubes de lectura\./);
+  assert.match(publicPagesSource, /ENCONTR. TU PR.XIMO LIBRO/);
+  assert.match(publicPagesSource, /Encontr. el libro que busc.s\./);
+  assert.match(publicPagesSource, /Busc. por t.tulo, autor o editorial\./);
+  assert.match(publicPagesSource, /Confirm. disponibilidad por WhatsApp antes de ir\./);
   assert.match(publicPagesSource, /Hac\\u00E9 que tus libros lleguen a m\\u00E1s lectores\./);
   assert.match(publicPagesSource, /Crear cuenta para mi librer/);
   assert.match(publicPagesSource, /newsletter-subscribers/);
@@ -390,9 +394,9 @@ tests.push(["places contextual benefit strips after the bookstore and reading-cl
   assert.ok(bookstoresSectionSource, "BookstoresSection should remain isolated before ReadingClubsSection");
   assert.ok(readingClubsSectionSource, "ReadingClubsSection should remain isolated before NewsletterSignup");
   assert.match(homePageSource[1], /<HeroSearch[\s\S]*?<BenefitsStrip benefits=\{SEARCH_BENEFITS\} ariaLabel="Beneficios de la b\u00FAsqueda de libros" \/>[\s\S]*?<SearchResults[\s\S]*?<BookstoresSection/s);
-  assert.match(publicPagesSource, /Encontr\\u00E1 tu pr\\u00F3ximo libro/);
-  assert.match(publicPagesSource, /Eleg\\u00ED c\\u00F3mo quer\\u00E9s leer/);
-  assert.match(publicPagesSource, /Consult\\u00E1 a la librer\\u00EDa/);
+  assert.match(publicPagesSource, /Busc. como te resulte m.s f.cil/);
+  assert.match(publicPagesSource, /Eleg. c.mo quer.s leer/);
+  assert.match(publicPagesSource, /Consult. a la librer.a/);
   assert.match(bookstoresSectionSource[1], /<BenefitsStrip(?: className="bookstores-benefits-strip")? benefits=\{BOOKSTORE_BENEFITS\} ariaLabel="Beneficios para librer\u00EDas" \/>/);
   assert.match(readingClubsSectionSource[1], /<BenefitsStrip(?: className="reading-clubs-benefits-strip")? benefits=\{READING_CLUB_BENEFITS\} ariaLabel="Beneficios de los clubes de lectura" \/>/);
   assert.match(publicPagesSource, /Comunidad lectora/);
@@ -405,7 +409,7 @@ tests.push(["separates the reader search and bookstore acquisition routes", () =
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
 
   assert.match(appSource, /pathname === "\/para-librerias"\) page = <BookstoresPage \/>;/);
-  assert.match(headerSource, /\{ href: "\/", label: "Buscar" \}/);
+  assert.match(headerSource, /\{ href: "\/", label: "Buscar libros" \}/);
   assert.match(headerSource, /\{ href: "\/para-librerias", label: "Para librerias" \}/);
   assert.match(headerSource, /<AppLink href="\/para-librerias">Para librerias<\/AppLink>/);
   assert.match(publicPagesSource, /export function BookstoresPage\(\)/);
