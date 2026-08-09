@@ -246,9 +246,9 @@ function SearchResults({ filters, stores, me, onClearFilters }) {
 }
 
 const BOOKSTORE_BENEFITS = [
-  [<LocationIcon key="icon" />, "Cat\u00E1logos reales", "Libros publicados por librer\u00EDas y vendedores."],
-  [<StoreIcon key="icon" />, "Nuevos y usados", "Opciones para cada b\u00FAsqueda."],
-  [<WhatsAppIcon key="icon" />, "Contacto directo", "Consult\u00E1 disponibilidad por WhatsApp"],
+  [<StoreIcon key="icon" />, "Catálogos publicados", "Descubrí librerías con libros disponibles para explorar."],
+  [<BookIcon key="icon" />, "Nuevos y usados", "Elegí la opción que mejor se adapte a tu búsqueda."],
+  [<WhatsAppIcon key="icon" />, "Contacto directo", "Consultá disponibilidad por WhatsApp."],
 ];
 
 const SEARCH_BENEFITS = [
@@ -257,9 +257,9 @@ const SEARCH_BENEFITS = [
   [<WhatsAppIcon key="icon" />, "Consultá a la librería", "Confirmá disponibilidad por WhatsApp antes de ir."],
 ];
 const READING_CLUB_BENEFITS = [
-  [<LocationIcon key="icon" />, "Comunidad lectora", "Encontr\u00E1 clubes para compartir tus lecturas."],
-  [<BookIcon key="icon" />, "Lecturas compartidas", "Sumate a conversaciones con otros lectores."],
-  [<LocationIcon key="icon" />, "Encuentros cercanos", "Conoc\u00E9 fecha y lugar de cada encuentro."],
+  [<BookIcon key="icon" />, "Encontrá tu comunidad", "Descubrí clubes por nombre, tema o género."],
+  [<LocationIcon key="icon" />, "Conocé cada encuentro", "Revisá fecha, lugar y quién lo organiza."],
+  [<WhatsAppIcon key="icon" />, "Compartí la invitación", "Compartí los clubes que te interesan."],
 ];
 
 function BenefitsStrip({ benefits, ariaLabel, className = "" }) {
@@ -268,39 +268,49 @@ function BenefitsStrip({ benefits, ariaLabel, className = "" }) {
 function BookstoresSection({ stores, loading }) {
   const [query, setQuery] = useState("");
   const [tag, setTag] = useState("");
+  const [showAll, setShowAll] = useState(false);
   const tags = getBookstoreTags(stores);
   const filteredStores = filterBookstores(stores, { query, tag });
   const hasActiveFilters = Boolean(query.trim() || tag);
-  const visibleStores = hasActiveFilters ? filteredStores : stores.slice(0, 6);
+  const visibleStores = hasActiveFilters || showAll ? filteredStores : filteredStores.slice(0, 6);
+  const canExpand = !hasActiveFilters && filteredStores.length > 6;
+
+  function clearFilters() {
+    setQuery("");
+    setTag("");
+    setShowAll(false);
+  }
 
   return (
     <section className="home-section bookstores-section">
       <div className="section-heading">
-        <div><p className="section-label">{"LIBRER\u00CDAS EN BOOKIA"}</p><h2>{"Descubr\u00ED las librerias que son parte de la comunidad"}</h2></div>
+        <div><p className="section-label">LIBRERÍAS EN BOOKIA</p><h2>Encontrá librerías para tu próxima lectura</h2></div>
         <img className="bookstores-section-illustration" src="/images/bookstores-section-facade.png" alt="" />
       </div>
-      {!loading && stores.length > 0 ? <form className="bookstore-filters" role="search" aria-label={"Buscar librer\u00EDas"} onSubmit={(event) => event.preventDefault()}>
-        <label className="bookstore-filter-field"><span>Nombre de la libreria</span><span className="input-with-icon"><SearchIcon /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Ej: DataBooksAr" /></span></label>
-        <label className="bookstore-filter-field"><span>Etiqueta</span><select value={tag} onChange={(event) => setTag(event.target.value)}><option value="">Todas las etiquetas</option>{tags.map((option) => <option key={option} value={option}>{option}</option>)}</select></label>
+      {!loading && stores.length > 0 ? <form className="bookstore-filters" role="search" aria-label="Buscar librerías" onSubmit={(event) => event.preventDefault()}>
+        <label className="bookstore-filter-field"><span>Buscá una librería</span><span className="input-with-icon"><SearchIcon /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Ej.: DataBooksAr" /></span></label>
+        <label className="bookstore-filter-field"><span>Género</span><select value={tag} onChange={(event) => setTag(event.target.value)}><option value="">Todos los géneros</option>{tags.map((option) => <option key={option} value={option}>{option}</option>)}</select></label>
       </form> : null}
       {loading ? <div className="store-grid loading-stores"><span /><span /><span /></div> : null}
-      {!loading && stores.length === 0 ? <EmptyState compact title={"Pronto vas a encontrar m\u00E1s librer\u00EDas"}>{"Estamos sumando nuevos cat\u00E1logos para que tengas m\u00E1s libros para buscar."}</EmptyState> : null}
-      {!loading && stores.length > 0 && visibleStores.length === 0 ? <EmptyState compact title="No encontramos librerias con esos filtros">Proba con otro nombre o elegi una etiqueta diferente.</EmptyState> : null}
+      {!loading && stores.length === 0 ? <EmptyState compact title="Todavía no hay librerías disponibles">Estamos sumando catálogos. Volvé pronto para descubrir nuevos libros.</EmptyState> : null}
+      {!loading && stores.length > 0 ? <p className="discovery-results-summary" aria-live="polite">{filteredStores.length} {filteredStores.length === 1 ? "librería encontrada" : "librerías encontradas"}</p> : null}
+      {!loading && stores.length > 0 && visibleStores.length === 0 ? <div className="discovery-empty-result"><EmptyState compact title="No encontramos librerías con esos filtros">Probá otro nombre, otro género o limpiá los filtros.</EmptyState><button type="button" className="secondary-button" onClick={clearFilters}>Limpiar filtros</button></div> : null}
       {!loading && visibleStores.length > 0 ? (
-        <div className="store-grid">
+        <div id="bookstores-results" className="store-grid">
           {visibleStores.map((store, index) => {
             const logoUrl = resolveApiUrl(store.logo_url);
             return (
               <AppLink className="store-card" href={`/bookstores/${store.slug}`} key={store.id} onClick={() => trackBookstoreOpened(store, "home_bookstores")}>
                 <span className="store-card-number">{String(index + 1).padStart(2, "0")}</span>
                 {logoUrl ? <img src={logoUrl} alt="" onError={(event) => { event.currentTarget.hidden = true; }} /> : <span className="store-card-placeholder"><StoreIcon /></span>}
-                <span><strong>{store.name}</strong><small>{store.address || "Catalogo disponible online"}</small></span>
+                <span><strong>{store.name}</strong><small>{store.address || "Catálogo disponible online"}</small></span>
                 <ArrowIcon />
               </AppLink>
             );
           })}
         </div>
       ) : null}
+      {canExpand ? <button type="button" className="secondary-button discovery-expand-button" aria-controls="bookstores-results" aria-expanded={showAll} onClick={() => setShowAll((current) => !current)}>{showAll ? "Mostrar menos" : "Ver todas las librerías"}</button> : null}
       <BenefitsStrip className="bookstores-benefits-strip" benefits={BOOKSTORE_BENEFITS} ariaLabel="Beneficios para librerías" />
     </section>
   );
@@ -312,6 +322,7 @@ function ReadingClubsSection() {
   const [availableGenres, setAvailableGenres] = useState([]);
   const [genreSlug, setGenreSlug] = useState("");
   const [query, setQuery] = useState("");
+  const [showAll, setShowAll] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -332,21 +343,30 @@ function ReadingClubsSection() {
       .finally(() => setLoading(false));
   }, [genreSlug]);
 
-  const visibleClubs = getVisibleReadingClubs(clubs, genreSlug, query);
-  const hasQuery = query.trim().length > 0;
+  const hasActiveFilters = Boolean(query.trim() || genreSlug);
+  const visibleClubs = getVisibleReadingClubs(clubs, genreSlug, query, showAll);
+  const canExpand = !hasActiveFilters && clubs.length > 6;
+
+  function clearFilters() {
+    setGenreSlug("");
+    setQuery("");
+    setShowAll(false);
+  }
 
   return (
     <section className="home-section reading-clubs-section">
-      <div className="section-heading"><div><p className="section-label">CLUBES DE LECTURA</p><h2>{"Encontr\u00E1 tu pr\u00F3ximo club de lectura"}</h2></div><img className="reading-clubs-section-illustration" src="/images/reading-clubs-section.png" alt="" /></div>
+      <div className="section-heading"><div><p className="section-label">CLUBES DE LECTURA</p><h2>Encontrá un club para compartir lecturas</h2></div><img className="reading-clubs-section-illustration" src="/images/reading-clubs-section.png" alt="" /></div>
       <form className="bookstore-filters reading-club-filters" role="search" aria-label="Buscar clubes de lectura" onSubmit={(event) => event.preventDefault()}>
-        <label className="bookstore-filter-field"><span>Buscar por nombre o palabras clave</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Ej: Club de novela" /></label>
-        <label className="bookstore-filter-field"><span>{"G\u00E9nero"}</span><select value={genreSlug} onChange={(event) => setGenreSlug(event.target.value)} disabled={loading}><option value="">{loading ? "Cargando g\u00E9neros..." : "Todos los g\u00E9neros"}</option>{availableGenres.map((genre) => <option key={genre.id} value={genre.slug}>{genre.name}</option>)}</select></label>
+        <label className="bookstore-filter-field"><span>Buscá por nombre o tema</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Ej.: ciencia ficción, poesía o Club de novela" /></label>
+        <label className="bookstore-filter-field"><span>Género</span><select value={genreSlug} onChange={(event) => setGenreSlug(event.target.value)} disabled={loading}><option value="">{loading ? "Cargando géneros..." : "Todos los géneros"}</option>{availableGenres.map((genre) => <option key={genre.id} value={genre.slug}>{genre.name}</option>)}</select></label>
       </form>
       {loading ? <div className="reading-club-public-list loading-stores" aria-label="Cargando clubes de lectura"><span /><span /><span /></div> : null}
       {error ? <p className="feedback error" role="alert">{error}</p> : null}
-      {!loading && !error && visibleClubs.length === 0 ? <EmptyState compact title={genreSlug ? "No encontramos clubes de ese g\u00E9nero" : "Pronto vas a encontrar clubes de lectura"}>{genreSlug ? "Prob\u00E1 con otro g\u00E9nero." : "Estamos sumando encuentros para que encuentres tu pr\u00F3xima conversaci\u00F3n."}</EmptyState> : null}
+      {!loading && !error && clubs.length > 0 ? <p className="discovery-results-summary" aria-live="polite">{visibleClubs.length} {visibleClubs.length === 1 ? "club encontrado" : "clubes encontrados"}</p> : null}
+      {!loading && !error && clubs.length === 0 && !hasActiveFilters ? <EmptyState compact title="Todavía no hay clubes de lectura disponibles">Estamos sumando encuentros para que encuentres tu próxima conversación.</EmptyState> : null}
+      {!loading && !error && clubs.length === 0 && hasActiveFilters ? <div className="discovery-empty-result"><EmptyState compact title="No encontramos clubes con esos filtros">Probá otro nombre, tema o género, o limpiá los filtros.</EmptyState><button type="button" className="secondary-button" onClick={clearFilters}>Limpiar filtros</button></div> : null}
       {!loading && !error && visibleClubs.length > 0 ? (
-        <div className="reading-club-public-list">
+        <div id="reading-clubs-results" className="reading-club-public-list">
           {visibleClubs.map((club) => {
             const host = club.host;
             const hostName = host?.type === "bookstore" ? host.name : host?.display_name;
@@ -359,11 +379,12 @@ function ReadingClubsSection() {
               <dl><div><dt>Fecha</dt><dd>{displayReadingClubDate(club.meeting_date)}</dd></div><div><dt>Lugar</dt><dd>{club.location || "Lugar a confirmar"}</dd></div><div><dt>Organiza</dt><dd>{hostName || "Anfitri\u00F3n de Bookia"}</dd></div></dl>
               </AppLink>
               <ReadingClubShareMenu club={club} host={host} hostName={hostName} bookstoreId={host?.type === "bookstore" ? club.bookstore_id : null} source="public_reading_clubs" />
-              {club.external_url ? <a className="reading-club-external-link" href={club.external_url} target="_blank" rel="noopener noreferrer">{club.external_url}</a> : null}
+              {club.external_url ? <a className="reading-club-external-link" href={club.external_url} target="_blank" rel="noopener noreferrer">Ver más sobre este encuentro <ArrowIcon size={15} /></a> : null}
             </article>;
           })}
         </div>
       ) : null}
+      {canExpand ? <button type="button" className="secondary-button discovery-expand-button" aria-controls="reading-clubs-results" aria-expanded={showAll} onClick={() => setShowAll((current) => !current)}>{showAll ? "Mostrar menos" : "Ver todos los clubes"}</button> : null}
       <BenefitsStrip className="reading-clubs-benefits-strip" benefits={READING_CLUB_BENEFITS} ariaLabel="Beneficios de los clubes de lectura" />
     </section>
   );

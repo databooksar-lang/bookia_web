@@ -3737,6 +3737,24 @@ textarea:focus {
   grid-template-columns: minmax(220px, 1fr) minmax(220px, 0.65fr);
 }
 
+.discovery-results-summary {
+  margin: -16px 0 22px;
+  color: var(--muted);
+  font-size: .9rem;
+}
+
+.discovery-empty-result {
+  display: grid;
+  justify-items: start;
+  gap: 16px;
+}
+
+.discovery-expand-button {
+  display: flex;
+  width: fit-content;
+  margin: 26px auto 0;
+}
+
 .reading-club-link {
   color: inherit;
   text-decoration: none;
