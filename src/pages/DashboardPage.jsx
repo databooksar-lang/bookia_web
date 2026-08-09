@@ -14,6 +14,7 @@ import { buildReadingClubPayload, createReadingClubDraft, displayReadingClubDate
 import { AppLink, navigate } from "../navigation";
 import { formatBillingDate, getBillingAccessState } from "../billingState";
 import { BillingSubscriptionPanel } from "../components/BillingSubscriptionPanel";
+import { BookShareMenu } from "../components/BookShareMenu";
 
 const EMPTY_ITEM = {
   title: "",
@@ -81,7 +82,9 @@ const EMPTY_ANALYTICS = {
     book_detail_opened: 0,
     bookstore_opened: 0,
     whatsapp_clicked: 0,
+    book_shared: 0,
   },
+  share_channels: { whatsapp: 0, instagram: 0, copy_link: 0 },
   top_books: [],
 };
 
@@ -570,7 +573,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
                 </div>
               ) : null}
               {isEditing && saveError ? <p className="feedback error catalog-save-error" role="alert">{saveError}</p> : null}
-              <div className="card-actions"><div className="card-actions-main">{isEditing ? <button type="button" className="secondary-button" onClick={cancelEditing} disabled={catalogActionsBusy}>Cancelar</button> : <><button type="button" className="secondary-button" onClick={() => startEditing(item)} disabled={catalogActionsBusy}>Editar</button><button type="button" className="secondary-button" onClick={() => toggleFeatured(item)} disabled={catalogActionsBusy}>{item.is_featured ? "Quitar destacado" : "Destacar"}</button></>}{canAutocompleteWithAi ? <button type="button" className="secondary-button" onClick={() => autocompleteItem(item)} disabled={catalogActionsBusy}>{isAiBusy ? <><SparkleIcon size={16} /> Autocompletando...</> : <><SparkleIcon size={16} /> Autocompletar con IA</>}</button> : null}{isEditing ? <button type="button" className="primary-button" onClick={() => saveItem(item)} disabled={catalogActionsBusy}>{saveUiState.isCurrentItemSaving ? "Guardando..." : "Guardar"}</button> : null}</div><button type="button" className="danger-button" onClick={() => hideItem(item.id)} disabled={catalogActionsBusy}>Eliminar</button></div>
+              <div className="card-actions"><div className="card-actions-main">{isEditing ? <button type="button" className="secondary-button" onClick={cancelEditing} disabled={catalogActionsBusy}>Cancelar</button> : <><button type="button" className="secondary-button" onClick={() => startEditing(item)} disabled={catalogActionsBusy}>Editar</button><button type="button" className="secondary-button" onClick={() => toggleFeatured(item)} disabled={catalogActionsBusy}>{item.is_featured ? "Quitar destacado" : "Destacar"}</button><BookShareMenu item={item} bookstore={me.bookstore} /></>}{canAutocompleteWithAi ? <button type="button" className="secondary-button" onClick={() => autocompleteItem(item)} disabled={catalogActionsBusy}>{isAiBusy ? <><SparkleIcon size={16} /> Autocompletando...</> : <><SparkleIcon size={16} /> Autocompletar con IA</>}</button> : null}{isEditing ? <button type="button" className="primary-button" onClick={() => saveItem(item)} disabled={catalogActionsBusy}>{saveUiState.isCurrentItemSaving ? "Guardando..." : "Guardar"}</button> : null}</div><button type="button" className="danger-button" onClick={() => hideItem(item.id)} disabled={catalogActionsBusy}>Eliminar</button></div>
             </article>
           );
         })}</div> : null}
@@ -677,6 +680,10 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
               <article><span>Aperturas de libros</span><strong>{formatMetricValue(analytics.totals.book_detail_opened)}</strong></article>
               <article><span>Visitas a libreria</span><strong>{formatMetricValue(analytics.totals.bookstore_opened)}</strong></article>
               <article><span>Clicks en WhatsApp</span><strong>{formatMetricValue(analytics.totals.whatsapp_clicked)}</strong></article>
+              <article><span>Libros compartidos</span><strong>{formatMetricValue(analytics.totals.book_shared)}</strong></article>
+              <article><span>Compartidos por WhatsApp</span><strong>{formatMetricValue(analytics.share_channels?.whatsapp)}</strong></article>
+              <article><span>Compartidos por Instagram</span><strong>{formatMetricValue(analytics.share_channels?.instagram)}</strong></article>
+              <article><span>Enlaces copiados</span><strong>{formatMetricValue(analytics.share_channels?.copy_link)}</strong></article>
             </div>
             {analytics.top_books.length === 0 ? <EmptyState title="Todavia no hay metricas">Cuando las personas interactuen con tu vidriera, vas a ver los libros con mas interes aca.</EmptyState> : (
               <div className="dashboard-list metrics-book-list">
@@ -686,6 +693,9 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
                     <dl>
                       <div><dt>Aperturas</dt><dd>{formatMetricValue(book.book_detail_opened)}</dd></div>
                       <div><dt>WhatsApp</dt><dd>{formatMetricValue(book.whatsapp_clicked)}</dd></div>
+                      <div><dt>Compartidos por WhatsApp</dt><dd>{formatMetricValue(book.shares_by_channel?.whatsapp)}</dd></div>
+                      <div><dt>Compartidos por Instagram</dt><dd>{formatMetricValue(book.shares_by_channel?.instagram)}</dd></div>
+                      <div><dt>Enlaces copiados</dt><dd>{formatMetricValue(book.shares_by_channel?.copy_link)}</dd></div>
                     </dl>
                   </article>
                 ))}

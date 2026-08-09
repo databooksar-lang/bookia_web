@@ -22,6 +22,7 @@ import { registerReaderProfileStateTests } from "./readerProfileState.test.js";
 import { registerReaderProfileNavigationStateTests } from "./readerProfileNavigationState.test.js";
 import { registerFavoritesStateTests } from "./favoritesState.test.js";
 import { registerAccountDestinationTests } from "./accountDestination.test.js";
+import { registerBookSharingStateTests } from "./bookSharingState.test.js";
 
 import { registerDashboardNavigationStateTests } from './dashboardNavigationState.test.js';
 
@@ -143,6 +144,7 @@ registerReaderProfileStateTests((name, fn) => tests.push([name, fn]));
 registerReaderProfileNavigationStateTests((name, fn) => tests.push([name, fn]));
 registerFavoritesStateTests((name, fn) => tests.push([name, fn]));
 registerAccountDestinationTests((name, fn) => tests.push([name, fn]));
+registerBookSharingStateTests((name, fn) => tests.push([name, fn]));
 
 tests.push(["offers a reusable favorite control throughout public book discovery", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
