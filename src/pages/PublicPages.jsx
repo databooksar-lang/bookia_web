@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { apiFetch, resolveApiUrl } from "../api";
 import { trackWebInteractionEvent } from "../analyticsState";
 import { getSharedBookId } from "../bookSharingState";
+import { getSharedReadingClubId } from "../readingClubSharingState";
 import { createFavoriteBookIds, isReaderAccount, toggleFavoriteBookId } from "../favoritesState";
 import { formatCommercialPrice, getCommercialPrices } from "../plansPricingState";
 import { buildFacebookHref, buildInstagramHref, buildWebsiteHref, buildWhatsAppHref, formatDisplayUrl, formatDisplayWhatsApp } from "../formatters";
@@ -12,6 +13,7 @@ import { displayBookstoreDescription } from "../profileEditorState";
 import { displayReadingClubDate } from "../readingClubState";
 import { buildGoogleMapsAddressUrl, buildPublicSearchParams, buildReadingClubSearchParams, filterBookstores, getAvailableReadingClubGenres, getBookstoreTags, getVisibleReadingClubs } from "../publicSearchState";
 import { EmptyState, WhatsAppButton } from "../components/Commerce";
+import { ReadingClubShareMenu } from "../components/ReadingClubShareMenu";
 import { FavoriteBookButton } from "../components/FavoriteBookButton";
 import { ArrowIcon, BookIcon, LocationIcon, SearchIcon, StoreIcon, WhatsAppIcon } from "../components/Icons";
 
@@ -332,6 +334,7 @@ function ReadingClubsSection() {
               <p>{club.description}</p>
               <dl><div><dt>Fecha</dt><dd>{displayReadingClubDate(club.meeting_date)}</dd></div><div><dt>Lugar</dt><dd>{club.location || "Lugar a confirmar"}</dd></div><div><dt>Organiza</dt><dd>{hostName || "Anfitri\u00F3n de Bookia"}</dd></div></dl>
               </AppLink>
+              <ReadingClubShareMenu club={club} host={host} hostName={hostName} bookstoreId={host?.type === "bookstore" ? club.bookstore_id : null} source="public_reading_clubs" />
               {club.external_url ? <a className="reading-club-external-link" href={club.external_url} target="_blank" rel="noopener noreferrer">{club.external_url}</a> : null}
             </article>;
           })}
@@ -711,7 +714,7 @@ export function BookstorePage({ slug, me }) {
           <div className="section-heading results-heading"><div><p className="section-label">Club de lectura</p><h2>Encuentros de {store.name}</h2><p>{readingClubs.length} {readingClubs.length === 1 ? "club publicado" : "clubes publicados"}</p></div></div>
           <div className="reading-club-public-list">
             {readingClubs.map((club) => (
-              <article key={club.id} className="reading-club-public-card">
+              <article key={club.id} id={`club-${club.id}`} className={`reading-club-public-card${getSharedReadingClubId(window.location.search) === club.id ? " is-shared-club" : ""}`}>
                 <div className="store-tags" aria-label="Genero del club"><span className="store-tag">{club.genre?.name || "Sin genero"}</span></div>
                 <h3>{club.title}</h3>
                 <p>{club.description}</p>
@@ -719,6 +722,7 @@ export function BookstorePage({ slug, me }) {
                   <div><dt>Fecha</dt><dd>{displayReadingClubDate(club.meeting_date)}</dd></div>
                   {club.location ? <div><dt>Lugar</dt><dd>{club.location}</dd></div> : null}
                 </dl>
+                <ReadingClubShareMenu club={club} host={{ type: "bookstore", slug: store.slug }} hostName={store.name} bookstoreId={store.id} source="bookstore_reading_clubs" />
                 {club.external_url ? <a className="reading-club-external-link" href={club.external_url} target="_blank" rel="noopener noreferrer">{club.external_url}</a> : null}
               </article>
             ))}

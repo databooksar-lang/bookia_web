@@ -15,6 +15,7 @@ import { AppLink, navigate } from "../navigation";
 import { formatBillingDate, getBillingAccessState } from "../billingState";
 import { BillingSubscriptionPanel } from "../components/BillingSubscriptionPanel";
 import { BookShareMenu } from "../components/BookShareMenu";
+import { ReadingClubShareMenu } from "../components/ReadingClubShareMenu";
 
 const EMPTY_ITEM = {
   title: "",
@@ -83,9 +84,12 @@ const EMPTY_ANALYTICS = {
     bookstore_opened: 0,
     whatsapp_clicked: 0,
     book_shared: 0,
+    reading_club_shared: 0,
   },
   share_channels: { whatsapp: 0, instagram: 0, copy_link: 0, telegram: 0 },
+  reading_club_share_channels: { whatsapp: 0, instagram: 0, copy_link: 0, telegram: 0 },
   top_books: [],
+  top_reading_clubs: [],
 };
 
 function formatMetricValue(value) {
@@ -196,7 +200,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
     setAnalyticsLoading(true);
     setAnalyticsError("");
     apiFetch("/dashboard/analytics")
-      .then((data) => { setAnalytics({ ...EMPTY_ANALYTICS, ...data, totals: { ...EMPTY_ANALYTICS.totals, ...(data.totals || {}) }, top_books: data.top_books || [] }); setAnalyticsError(""); })
+      .then((data) => { setAnalytics({ ...EMPTY_ANALYTICS, ...data, totals: { ...EMPTY_ANALYTICS.totals, ...(data.totals || {}) }, top_books: data.top_books || [], top_reading_clubs: data.top_reading_clubs || [] }); setAnalyticsError(""); })
       .catch((fetchError) => { setAnalytics(EMPTY_ANALYTICS); setAnalyticsError(fetchError.message || "No pudimos cargar las metricas."); })
       .finally(() => setAnalyticsLoading(false));
   }
@@ -658,7 +662,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
                   <p className="catalog-item-description">{club.description}</p>
                 </>
               )}
-              <div className="card-actions"><div className="card-actions-main">{isEditingClub ? <button type="button" className="secondary-button" onClick={cancelEditingReadingClub}>Cancelar</button> : <button type="button" className="secondary-button" onClick={() => startEditingReadingClub(club)}>Editar</button>}{isEditingClub ? <button type="button" className="primary-button" onClick={() => saveReadingClub(club.id)} disabled={readingClubBusy}>{readingClubBusy ? "Guardando..." : "Guardar"}</button> : null}</div></div>
+              <div className="card-actions"><div className="card-actions-main">{isEditingClub ? <button type="button" className="secondary-button" onClick={cancelEditingReadingClub}>Cancelar</button> : <><button type="button" className="secondary-button" onClick={() => startEditingReadingClub(club)}>Editar</button>{club.is_visible && me?.bookstore ? <ReadingClubShareMenu club={club} host={{ type: "bookstore", slug: me.bookstore.slug }} hostName={me.bookstore.name} bookstoreId={me.bookstore.id} source="dashboard_reading_clubs" /> : null}</>}{isEditingClub ? <button type="button" className="primary-button" onClick={() => saveReadingClub(club.id)} disabled={readingClubBusy}>{readingClubBusy ? "Guardando..." : "Guardar"}</button> : null}</div></div>
             </article>
           );
         })}</div> : null}
@@ -681,6 +685,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
               <article><span>Visitas a libreria</span><strong>{formatMetricValue(analytics.totals.bookstore_opened)}</strong></article>
               <article><span>Clicks en WhatsApp</span><strong>{formatMetricValue(analytics.totals.whatsapp_clicked)}</strong></article>
               <article><span>Libros compartidos</span><strong>{formatMetricValue(analytics.totals.book_shared)}</strong></article>
+              <article><span>Clubes compartidos</span><strong>{formatMetricValue(analytics.totals.reading_club_shared)}</strong></article>
               <article><span>Compartidos por WhatsApp</span><strong>{formatMetricValue(analytics.share_channels?.whatsapp)}</strong></article>
               <article><span>Compartidos por Instagram</span><strong>{formatMetricValue(analytics.share_channels?.instagram)}</strong></article>
               <article><span>Compartidos por Telegram</span><strong>{formatMetricValue(analytics.share_channels?.telegram)}</strong></article>
@@ -703,6 +708,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
                 ))}
               </div>
             )}
+            {analytics.top_reading_clubs.length > 0 ? <div className="dashboard-list metrics-book-list">{analytics.top_reading_clubs.map((club) => <article key={club.id} className="dashboard-card metrics-book-item"><div><span className="catalog-id">Club de lectura</span><h3>{club.title}</h3></div><dl><div><dt>WhatsApp</dt><dd>{formatMetricValue(club.shares_by_channel?.whatsapp)}</dd></div><div><dt>Instagram</dt><dd>{formatMetricValue(club.shares_by_channel?.instagram)}</dd></div><div><dt>Telegram</dt><dd>{formatMetricValue(club.shares_by_channel?.telegram)}</dd></div><div><dt>Enlaces copiados</dt><dd>{formatMetricValue(club.shares_by_channel?.copy_link)}</dd></div></dl></article>)}</div> : null}
           </>
         ) : null}
       </DashboardPanel>
