@@ -5,6 +5,7 @@ import {
   buildProfileFormData,
   createProfileDraft,
   displayBookstoreDescription,
+  displayBookstoreType,
   getBookstoreTagOptions,
   removeProfileImage,
   requireRefreshedBookstore,
@@ -24,6 +25,7 @@ function profileSummary(bookstore) {
     { label: "Facebook", value: bookstore.facebook_handle },
     { label: "Sitio web", value: bookstore.website_url },
     { label: "Direccion", value: bookstore.address },
+    { label: "Tipo de libreria", value: displayBookstoreType(bookstore.bookstore_type) },
   ];
 }
 
@@ -202,6 +204,7 @@ export default function BookstoreProfileEditor({ bookstore, onSaved, onError, ge
               <span>Descripcion</span>
               <textarea value={draft.description} onChange={(event) => changeField("description", event.target.value)} rows={4} disabled={isSaving} placeholder="Conta que hace especial a tu libreria." />
             </label>
+            <label className="bookstore-profile-field-wide"><span>Tipo de libreria</span><select value={draft.bookstoreType} onChange={(event) => changeField("bookstoreType", event.target.value)} disabled={isSaving} required><option value="">Selecciona una opcion</option><option value="physical">Libreria fisica</option><option value="virtual">Libreria virtual</option><option value="hybrid">Libreria fisica y virtual</option></select></label>
             <BookstoreTagField label="Etiqueta 1" value={draft.tag1} otherValue={draft.tag2} genres={genres} genresLoading={genresLoading} genresError={genresError} isSaving={isSaving} onChange={(value) => changeField("tag1", value)} />
             <BookstoreTagField label="Etiqueta 2" value={draft.tag2} otherValue={draft.tag1} genres={genres} genresLoading={genresLoading} genresError={genresError} isSaving={isSaving} onChange={(value) => changeField("tag2", value)} />
           </div>

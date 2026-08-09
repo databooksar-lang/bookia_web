@@ -1,5 +1,15 @@
 const EMPTY_DESCRIPTION = "Sin descripción";
 
+const BOOKSTORE_TYPE_LABELS = {
+  physical: "Libreria fisica",
+  virtual: "Libreria virtual",
+  hybrid: "Libreria fisica y virtual",
+};
+
+export function displayBookstoreType(value) {
+  return BOOKSTORE_TYPE_LABELS[value] || "";
+}
+
 export function displayBookstoreDescription(value) {
   const description = typeof value === "string" ? value.trim() : "";
   return description || EMPTY_DESCRIPTION;
@@ -40,6 +50,7 @@ export function createProfileDraft(bookstore = {}) {
     instagramHandle: bookstore.instagram_handle ?? "",
     facebookHandle: bookstore.facebook_handle ?? "",
     websiteUrl: bookstore.website_url ?? "",
+    bookstoreType: bookstore.bookstore_type ?? "",
     logoFile: null,
     bannerFile: null,
     removeLogo: false,
@@ -76,6 +87,7 @@ export function buildProfileFormData(draft) {
   formData.append("instagram_handle", draft.instagramHandle);
   formData.append("facebook_handle", draft.facebookHandle);
   formData.append("website_url", draft.websiteUrl);
+  formData.append("bookstore_type", draft.bookstoreType);
   formData.append("remove_logo", String(draft.removeLogo));
   formData.append("remove_banner", String(draft.removeBanner));
 

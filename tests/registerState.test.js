@@ -40,7 +40,8 @@ export function registerRegisterStateTests(test) {
   test("keeps bookstore registration on account details until credentials are complete", () => {
     assert.equal(getRegisterStep({ profileType: "bookstore", email: "", password: "" }), "account");
     assert.equal(getRegisterStep({ profileType: "bookstore", email: "libreria@example.com", password: "secreto123", whatsappPhone: "" }), "account");
-    assert.equal(getRegisterStep({ profileType: "bookstore", email: "libreria@example.com", password: "secreto123", whatsappPhone: "11 2222-3333" }), "details");
+    assert.equal(getRegisterStep({ profileType: "bookstore", email: "libreria@example.com", password: "secreto123", whatsappPhone: "11 2222-3333", bookstoreType: "" }), "account");
+    assert.equal(getRegisterStep({ profileType: "bookstore", email: "libreria@example.com", password: "secreto123", whatsappPhone: "11 2222-3333", bookstoreType: "physical" }), "details");
   });
 
   test("builds the existing reader registration payload", () => {
@@ -53,8 +54,8 @@ export function registerRegisterStateTests(test) {
   test("builds bookstore registration payloads for every catalog capacity", () => {
     for (const catalogLimit of ["50", "100", "200"]) {
       assert.deepEqual(
-        buildRegistrationRequest({ profileType: "bookstore", email: "libreria@example.com", password: "secreto123", whatsappPhone: "11 2222-3333", bookstoreName: "La Esquina", planCode: "plus_ai", catalogLimit, privacyAccepted: true }),
-        { path: "/auth/register/bookstore", body: { name: "La Esquina", email: "libreria@example.com", password: "secreto123", whatsapp_phone: "11 2222-3333", plan_code: "plus_ai", catalog_limit: Number(catalogLimit), privacy_accepted: true } },
+        buildRegistrationRequest({ profileType: "bookstore", email: "libreria@example.com", password: "secreto123", whatsappPhone: "11 2222-3333", bookstoreType: "hybrid", bookstoreName: "La Esquina", planCode: "plus_ai", catalogLimit, privacyAccepted: true }),
+        { path: "/auth/register/bookstore", body: { name: "La Esquina", email: "libreria@example.com", password: "secreto123", whatsapp_phone: "11 2222-3333", bookstore_type: "hybrid", plan_code: "plus_ai", catalog_limit: Number(catalogLimit), privacy_accepted: true } },
       );
     }
   });

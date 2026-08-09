@@ -57,6 +57,7 @@ export function registerProfileEditorStateTests(test) {
       instagramHandle: "",
       facebookHandle: "",
       websiteUrl: "",
+      bookstoreType: "",
       logoFile: null,
       bannerFile: null,
       removeLogo: false,
@@ -75,6 +76,7 @@ export function registerProfileEditorStateTests(test) {
       instagram_handle: "bookia.libros",
       facebook_handle: "bookia.libros",
       website_url: "https://bookia.example",
+      bookstore_type: "virtual",
     });
 
     assert.equal(draft.tag1, "Usados");
@@ -82,6 +84,7 @@ export function registerProfileEditorStateTests(test) {
     assert.equal(draft.whatsappPhone, "5491122223333");
     assert.equal(draft.facebookHandle, "bookia.libros");
     assert.equal(draft.websiteUrl, "https://bookia.example");
+    assert.equal(draft.bookstoreType, "virtual");
   });
 
   test("builds WhatsApp links only from canonical Argentine mobile values", () => {
@@ -123,6 +126,7 @@ export function registerProfileEditorStateTests(test) {
         correo: "hola@example.com",
         whatsapp_phone: "5491122223333",
         facebook_handle: "bookia.libros",
+        bookstore_type: "physical",
       }),
       logoFile: logo,
       bannerFile: banner,
@@ -137,6 +141,7 @@ export function registerProfileEditorStateTests(test) {
     assert.equal(formData.has("phone"), false);
     assert.equal(formData.get("whatsapp_phone"), "5491122223333");
     assert.equal(formData.get("facebook_handle"), "bookia.libros");
+    assert.equal(formData.get("bookstore_type"), "physical");
     assert.equal(formData.get("remove_logo"), "false");
     assert.equal(formData.get("remove_banner"), "true");
     assert.equal(formData.get("logo").size, logo.size);
@@ -222,6 +227,7 @@ export function registerProfileEditorStateTests(test) {
     assert.match(editorSource, /draft\.contactEmail/);
     assert.match(editorSource, /draft\.whatsappPhone/);
     assert.match(editorSource, /draft\.facebookHandle/);
+    assert.match(editorSource, /className="bookstore-profile-field-wide"><span>Tipo de libreria<\/span><select/);
     assert.doesNotMatch(editorSource, /setUsePhoneForWhatsApp/);
     assert.match(editorSource, /bookstore-profile-summary-grid/);
     assert.match(editorSource, /Datos por completar/);
