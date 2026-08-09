@@ -399,9 +399,26 @@ tests.push(["places contextual benefit strips after the bookstore and reading-cl
   assert.match(publicPagesSource, /Consult. a la librer.a/);
   assert.match(bookstoresSectionSource[1], /<BenefitsStrip(?: className="bookstores-benefits-strip")? benefits=\{BOOKSTORE_BENEFITS\} ariaLabel="Beneficios para librer\u00EDas" \/>/);
   assert.match(readingClubsSectionSource[1], /<BenefitsStrip(?: className="reading-clubs-benefits-strip")? benefits=\{READING_CLUB_BENEFITS\} ariaLabel="Beneficios de los clubes de lectura" \/>/);
-  assert.match(publicPagesSource, /Comunidad lectora/);
-  assert.match(publicPagesSource, /Lecturas compartidas/);
-  assert.match(publicPagesSource, /Encuentros cercanos/);
+  assert.match(publicPagesSource, /Encontr. tu comunidad/);
+  assert.match(publicPagesSource, /Conoc. cada encuentro/);
+  assert.match(publicPagesSource, /Compart. la invitaci.n/);
+}]);
+tests.push(["makes bookstore and reading-club discovery recoverable", () => {
+  const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+
+  assert.match(publicPagesSource, /Encontr. librer.as para tu pr.xima lectura/);
+  assert.match(publicPagesSource, /Busc. una librer.a/);
+  assert.match(publicPagesSource, /Todos los g.neros/);
+  assert.match(publicPagesSource, /Ver todas las librer.as/);
+  assert.match(publicPagesSource, /Mostrar menos/);
+  assert.match(publicPagesSource, /Todav.a no hay librer.as disponibles/);
+  assert.match(publicPagesSource, /Encontr. un club para compartir lecturas/);
+  assert.match(publicPagesSource, /Busc. por nombre o tema/);
+  assert.match(publicPagesSource, /Ej\.: ciencia ficci.n, poes.a o Club de novela/);
+  assert.match(publicPagesSource, /Ver todos los clubes/);
+  assert.match(publicPagesSource, /Ver m.s sobre este encuentro/);
+  assert.match(publicPagesSource, /aria-expanded=\{showAll/);
+  assert.match(publicPagesSource, /Limpiar filtros/);
 }]);
 tests.push(["separates the reader search and bookstore acquisition routes", () => {
   const appSource = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");

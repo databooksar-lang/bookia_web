@@ -79,11 +79,11 @@ export function getAvailableReadingClubGenres(genres = [], clubs = []) {
 
   return genres.filter((genre) => genre?.slug && (!availableSlugs.size || availableSlugs.has(genre.slug)));
 }
-export function getVisibleReadingClubs(clubs = [], genreSlug = "", query = "") {
+export function getVisibleReadingClubs(clubs = [], genreSlug = "", query = "", showAll = false) {
   const normalizedQuery = normalizeBookstoreSearchValue(query);
   const matchingClubs = normalizedQuery
-    ? clubs.filter((club) => normalizeBookstoreSearchValue(club?.title).includes(normalizedQuery))
+    ? clubs.filter((club) => [club?.title, club?.description].some((value) => normalizeBookstoreSearchValue(value).includes(normalizedQuery)))
     : clubs;
 
-  return genreSlug || normalizedQuery ? matchingClubs : matchingClubs.slice(0, 6);
+  return genreSlug || normalizedQuery || showAll ? matchingClubs : matchingClubs.slice(0, 6);
 }

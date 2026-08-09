@@ -105,6 +105,32 @@ export function registerPublicSearchStateTests(register) {
     );
   });
 
+  register("finds reading clubs by title or description without case or accent sensitivity", () => {
+    const clubs = [
+      { id: 1, title: "Círculo de narrativa", description: "Leemos ciencia ficción contemporánea." },
+      { id: 2, title: "Lecturas del mes", description: "Un encuentro de poesía latinoamericana." },
+      { id: 3, title: "Novela histórica", description: "Conversamos sobre clásicos." },
+    ];
+
+    assert.deepEqual(
+      publicSearchState.getVisibleReadingClubs(clubs, "", "POESIA").map((club) => club.id),
+      [2],
+    );
+    assert.deepEqual(
+      publicSearchState.getVisibleReadingClubs(clubs, "", "circulo").map((club) => club.id),
+      [1],
+    );
+  });
+
+  register("shows all unfiltered reading clubs when the preview is expanded", () => {
+    const clubs = Array.from({ length: 7 }, (_, index) => ({ id: index + 1 }));
+
+    assert.deepEqual(
+      publicSearchState.getVisibleReadingClubs(clubs, "", "", true).map((club) => club.id),
+      [1, 2, 3, 4, 5, 6, 7],
+    );
+  });
+
   register("keeps only genres that are available in public reading clubs", () => {
     assert.deepEqual(
       publicSearchState.getAvailableReadingClubGenres([
