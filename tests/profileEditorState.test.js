@@ -5,6 +5,7 @@ import {
   buildProfileFormData,
   createProfileDraft,
   displayBookstoreDescription,
+  getBookstoreTagOptions,
   removeProfileImage,
   requireRefreshedBookstore,
   selectProfileImage,
@@ -14,6 +15,30 @@ import { buildRequestHeaders } from "../src/api.js";
 import { buildWhatsAppHref } from "../src/formatters.js";
 
 export function registerProfileEditorStateTests(test) {
+  test("offers active genres as distinct bookstore tag options and keeps a legacy value selectable", () => {
+    const genres = [
+      { id: 1, name: "Narrativa" },
+      { id: 2, name: "Poesia" },
+      { id: 3, name: "Infantil" },
+    ];
+
+    assert.deepEqual(
+      getBookstoreTagOptions(genres, "Narrativa", "Poesia"),
+      [
+        { value: "Narrativa", label: "Narrativa" },
+        { value: "Infantil", label: "Infantil" },
+      ],
+    );
+    assert.deepEqual(
+      getBookstoreTagOptions(genres, "Historieta", "Poesia"),
+      [
+        { value: "Historieta", label: "Historieta (ya no disponible)" },
+        { value: "Narrativa", label: "Narrativa" },
+        { value: "Infantil", label: "Infantil" },
+      ],
+    );
+  });
+
   test("uses the exact fallback for missing bookstore descriptions", () => {
     assert.equal(displayBookstoreDescription(null), "Sin descripción");
     assert.equal(displayBookstoreDescription(""), "Sin descripción");
@@ -149,6 +174,18 @@ export function registerProfileEditorStateTests(test) {
     assert.match(dashboardSource, /<BookstoreProfileEditor\b[^>]*\bonSaved\s*=\s*\{\s*\(\s*\)\s*=>\s*refreshMe\(\s*\{\s*preserveOnError\s*:\s*true\s*\}\s*\)\s*\}/s);
     assert.match(publicPagesSource, /import\s*\{[^}]*\bdisplayBookstoreDescription\b[^}]*\}\s*from\s*["']\.\.\/profileEditorState["']/s);
     assert.match(publicPagesSource, /displayBookstoreDescription\(\s*store\.description\s*\)/);
+  });
+
+  test("uses the dashboard genre request for distinct bookstore tag dropdowns", () => {
+    const dashboardSource = readFileSync(new URL("../src/pages/DashboardPage.jsx", import.meta.url), "utf8");
+    const editorSource = readFileSync(new URL("../src/components/BookstoreProfileEditor.jsx", import.meta.url), "utf8");
+
+    assert.match(dashboardSource, /<BookstoreProfileEditor\b[^>]*\bgenres=\{genres\}[^>]*\bgenresLoading=\{genresLoading\}[^>]*\bgenresError=\{genresError\}/s);
+    assert.match(editorSource, /getBookstoreTagOptions/);
+    assert.match(editorSource, /getGenreSelectorState/);
+    assert.match(editorSource, /<select[^>]*value=\{value\}/);
+    assert.match(editorSource, /Sin etiqueta/);
+    assert.match(editorSource, /otherValue/);
   });
 
   test("hides profile images until the editor is opened", () => {

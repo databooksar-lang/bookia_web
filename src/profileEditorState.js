@@ -5,6 +5,21 @@ export function displayBookstoreDescription(value) {
   return description || EMPTY_DESCRIPTION;
 }
 
+export function getBookstoreTagOptions(genres = [], value = "", otherValue = "") {
+  const selectedValue = typeof value === "string" ? value.trim() : "";
+  const excludedValue = typeof otherValue === "string" ? otherValue.trim() : "";
+  const activeOptions = genres
+    .map((genre) => typeof genre?.name === "string" ? genre.name.trim() : "")
+    .filter((name) => name && (name !== excludedValue || name === selectedValue))
+    .map((name) => ({ value: name, label: name }));
+
+  if (selectedValue && !activeOptions.some((option) => option.value === selectedValue)) {
+    return [{ value: selectedValue, label: `${selectedValue} (ya no disponible)` }, ...activeOptions];
+  }
+
+  return activeOptions;
+}
+
 export function requireRefreshedBookstore(result) {
   if (!result?.bookstore) {
     throw new Error("No pudimos actualizar los datos de la librer\u00eda.");
