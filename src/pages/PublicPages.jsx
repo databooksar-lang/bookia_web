@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import { apiFetch, resolveApiUrl } from "../api";
 import { trackWebInteractionEvent } from "../analyticsState";
+import { getSharedBookId } from "../bookSharingState";
 import { createFavoriteBookIds, isReaderAccount, toggleFavoriteBookId } from "../favoritesState";
 import { formatCommercialPrice, getCommercialPrices } from "../plansPricingState";
 import { buildFacebookHref, buildInstagramHref, buildWebsiteHref, buildWhatsAppHref, formatDisplayUrl, formatDisplayWhatsApp } from "../formatters";
@@ -612,6 +613,13 @@ export function BookstorePage({ slug, me }) {
     setLoading(true);
     apiFetch(`/bookstores/${slug}`).then((data) => { setStore(data.bookstore); setItems(data.items); setReadingClubs(data.reading_clubs || []); setError(""); }).catch((fetchError) => setError(fetchError.message)).finally(() => setLoading(false));
   }, [slug]);
+
+  useEffect(() => {
+    const sharedBookId = getSharedBookId(window.location.search);
+    if (!sharedBookId || selectedBook || items.length === 0) return;
+    const sharedItem = items.find((item) => item.id === sharedBookId && item.availability_status !== "hidden");
+    if (sharedItem) openBookDetail(sharedItem);
+  }, [items, selectedBook]);
 
   function openBookDetail(item) {
     trackBookDetailOpened(item, "bookstore_page");
