@@ -42,6 +42,24 @@ export function WhatsAppIcon({ size = 22 }) {
   );
 }
 
+export function InstagramIcon({ size = 22 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="3.5" y="3.5" width="17" height="17" rx="5" stroke="currentColor" strokeWidth="1.7" />
+      <circle cx="12" cy="12" r="3.7" stroke="currentColor" strokeWidth="1.7" />
+      <circle cx="17.4" cy="6.7" r="1" fill="currentColor" />
+    </svg>
+  );
+}
+
+export function TelegramIcon({ size = 22 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="m20.4 4.5-2.7 14.1c-.2 1-.8 1.2-1.6.7l-4.5-3.3-2.2 2.1c-.2.2-.4.4-.8.4l.3-4.6 8.4-7.6c.4-.3-.1-.5-.5-.2L6.4 12.9 2 11.5c-1-.3-1-1 .2-1.5L19.5 3.4c.8-.3 1.2.2.9 1.1Z" fill="currentColor" />
+    </svg>
+  );
+}
+
 export function BookIcon({ size = 22 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">

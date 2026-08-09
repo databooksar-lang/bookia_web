@@ -84,7 +84,7 @@ const EMPTY_ANALYTICS = {
     whatsapp_clicked: 0,
     book_shared: 0,
   },
-  share_channels: { whatsapp: 0, instagram: 0, copy_link: 0 },
+  share_channels: { whatsapp: 0, instagram: 0, copy_link: 0, telegram: 0 },
   top_books: [],
 };
 
@@ -683,6 +683,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
               <article><span>Libros compartidos</span><strong>{formatMetricValue(analytics.totals.book_shared)}</strong></article>
               <article><span>Compartidos por WhatsApp</span><strong>{formatMetricValue(analytics.share_channels?.whatsapp)}</strong></article>
               <article><span>Compartidos por Instagram</span><strong>{formatMetricValue(analytics.share_channels?.instagram)}</strong></article>
+              <article><span>Compartidos por Telegram</span><strong>{formatMetricValue(analytics.share_channels?.telegram)}</strong></article>
               <article><span>Enlaces copiados</span><strong>{formatMetricValue(analytics.share_channels?.copy_link)}</strong></article>
             </div>
             {analytics.top_books.length === 0 ? <EmptyState title="Todavia no hay metricas">Cuando las personas interactuen con tu vidriera, vas a ver los libros con mas interes aca.</EmptyState> : (
@@ -695,6 +696,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
                       <div><dt>WhatsApp</dt><dd>{formatMetricValue(book.whatsapp_clicked)}</dd></div>
                       <div><dt>Compartidos por WhatsApp</dt><dd>{formatMetricValue(book.shares_by_channel?.whatsapp)}</dd></div>
                       <div><dt>Compartidos por Instagram</dt><dd>{formatMetricValue(book.shares_by_channel?.instagram)}</dd></div>
+                      <div><dt>Compartidos por Telegram</dt><dd>{formatMetricValue(book.shares_by_channel?.telegram)}</dd></div>
                       <div><dt>Enlaces copiados</dt><dd>{formatMetricValue(book.shares_by_channel?.copy_link)}</dd></div>
                     </dl>
                   </article>
