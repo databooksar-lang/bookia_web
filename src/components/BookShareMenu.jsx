@@ -41,7 +41,7 @@ export function BookShareMenu({ item, bookstore }) {
       const file = await createInstagramStoryFile({
         item,
         bookstore,
-        coverUrl: resolveApiUrl(buildInstagramStoryCoverPath(item.id)),
+        coverUrl: resolveApiUrl(buildInstagramStoryCoverPath(item)),
       });
       const result = await shareInstagramStoryFile({ file, title: item.title });
       if (result === "cancelled") {
