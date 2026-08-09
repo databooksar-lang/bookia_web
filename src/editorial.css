@@ -4125,3 +4125,127 @@ textarea:focus {
   .billing-payer-form { grid-template-columns: 1fr; }
   .billing-return { margin: 24px 12px; padding: 28px 20px; }
 }
+
+/* Progressive public book search */
+.search-panel {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.search-panel-heading,
+.search-filters {
+  grid-column: 1 / -1;
+}
+
+.search-field-query {
+  grid-column: 1;
+}
+
+.search-field-query .input-with-icon {
+  min-height: 50px;
+  box-sizing: border-box;
+  padding: 0 14px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(18, 63, 50, 0.18);
+  border-radius: 12px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.search-field-query .input-with-icon:hover {
+  background: #fff;
+  border-color: rgba(18, 63, 50, 0.34);
+}
+
+.search-field-query .input-with-icon:focus-within {
+  background: #fff;
+  border-color: rgba(18, 63, 50, 0.68);
+  box-shadow: 0 0 0 3px rgba(18, 63, 50, 0.1);
+}
+
+.search-field-query .input-with-icon input {
+  min-height: 48px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+}
+
+.search-submit {
+  grid-column: 2;
+  min-height: 52px;
+}
+
+.search-filters {
+  padding: 0 8px 7px;
+}
+
+.search-filters summary {
+  width: fit-content;
+  cursor: pointer;
+  color: var(--forest);
+  font-size: .82rem;
+  font-weight: 800;
+}
+
+.search-filters summary:focus-visible {
+  outline: 3px solid rgba(18, 63, 50, 0.22);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.search-filters summary::marker {
+  color: var(--coral);
+}
+
+.search-filter-fields {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.search-filter-fields .search-field {
+  padding: 6px 0;
+}
+
+.active-search-filters {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.active-search-filters span {
+  padding: 5px 9px;
+  color: var(--forest);
+  background: rgba(18, 63, 50, .08);
+  border-radius: 999px;
+  font-size: .76rem;
+  font-weight: 700;
+}
+
+.search-empty-result {
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+}
+
+@media (max-width: 820px) {
+  .search-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .search-field-query,
+  .search-submit {
+    grid-column: 1;
+  }
+
+  .search-filter-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .search-submit {
+    width: 100%;
+  }
+}

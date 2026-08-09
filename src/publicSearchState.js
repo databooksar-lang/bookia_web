@@ -6,6 +6,7 @@ function appendTrimmedParam(params, key, value) {
 
 export function buildPublicSearchParams(filters = {}) {
   const params = new URLSearchParams();
+  appendTrimmedParam(params, "query", filters.query);
   appendTrimmedParam(params, "title", filters.title);
   appendTrimmedParam(params, "author", filters.author);
   if (filters.bookStatus === "nuevo" || filters.bookStatus === "usado") {
