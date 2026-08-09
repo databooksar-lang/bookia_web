@@ -21,6 +21,10 @@ export function buildWhatsAppShareHref({ text, url }) {
   return `https://wa.me/?text=${encodeURIComponent(`${text}\n${url}`)}`;
 }
 
+export function buildTelegramShareHref({ text, url }) {
+  return `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+}
+
 export function getSharedBookId(search) {
   const value = new URLSearchParams(search).get("book");
   if (!value || !/^\d+$/.test(value)) return null;

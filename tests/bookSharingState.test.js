@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-import { buildBookShareMessage, buildBookShareUrl, buildWhatsAppShareHref, copyBookShareUrl, getSharedBookId, shareBookToInstagram } from "../src/bookSharingState.js";
+import { buildBookShareMessage, buildBookShareUrl, buildTelegramShareHref, buildWhatsAppShareHref, copyBookShareUrl, getSharedBookId, shareBookToInstagram } from "../src/bookSharingState.js";
 
 export function registerBookSharingStateTests(register) {
   register("builds a canonical bookstore book-share URL", () => {
@@ -21,6 +21,13 @@ export function registerBookSharingStateTests(register) {
     assert.equal(
       buildWhatsAppShareHref({ text: "Mira Rayuela.", url: "https://bookia.app/bookstores/libros-del-pasaje?book=42" }),
       "https://wa.me/?text=Mira%20Rayuela.%0Ahttps%3A%2F%2Fbookia.app%2Fbookstores%2Flibros-del-pasaje%3Fbook%3D42",
+    );
+  });
+
+  register("builds a Telegram share link with the complete message and URL", () => {
+    assert.equal(
+      buildTelegramShareHref({ text: "Mira Rayuela.", url: "https://bookia.app/bookstores/libros-del-pasaje?book=42" }),
+      "https://t.me/share/url?url=https%3A%2F%2Fbookia.app%2Fbookstores%2Flibros-del-pasaje%3Fbook%3D42&text=Mira%20Rayuela.",
     );
   });
 

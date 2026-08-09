@@ -1,8 +1,9 @@
 import { useId, useState } from "react";
 
 import { trackWebInteractionEvent } from "../analyticsState";
-import { buildBookShareMessage, buildBookShareUrl, buildWhatsAppShareHref, copyBookShareUrl, shareBookToInstagram } from "../bookSharingState";
+import { buildBookShareMessage, buildBookShareUrl, buildTelegramShareHref, buildWhatsAppShareHref, copyBookShareUrl, shareBookToInstagram } from "../bookSharingState";
 import { basePath } from "../routing";
+import { InstagramIcon, TelegramIcon, WhatsAppIcon } from "./Icons";
 
 function getShareData(item, bookstore) {
   const url = buildBookShareUrl({ origin: window.location.origin, basePath, bookstoreSlug: bookstore.slug, itemId: item.id });
@@ -47,8 +48,9 @@ export function BookShareMenu({ item, bookstore }) {
   return <div className="book-share-menu">
     <button type="button" className="secondary-button book-share-trigger" aria-expanded={isOpen} aria-controls={menuId} onClick={() => { setIsOpen((open) => !open); setMessage(""); }}>Compartir</button>
     {isOpen ? <div id={menuId} className="book-share-options" role="group" aria-label={`Compartir ${item.title}`}>
-      <a href={buildWhatsAppShareHref(data)} target="_blank" rel="noreferrer" onClick={() => { recordShare("whatsapp"); setMessage("Abriendo WhatsApp..."); setIsOpen(false); }}>WhatsApp</a>
-      <button type="button" onClick={shareInstagram}>Instagram</button>
+      <a className="book-share-icon-button" href={buildWhatsAppShareHref(data)} target="_blank" rel="noreferrer" aria-label="Compartir por WhatsApp" title="Compartir por WhatsApp" onClick={() => { recordShare("whatsapp"); setMessage("Abriendo WhatsApp..."); setIsOpen(false); }}><WhatsAppIcon size={21} /></a>
+      <button type="button" className="book-share-icon-button" aria-label="Compartir por Instagram" title="Compartir por Instagram" onClick={shareInstagram}><InstagramIcon size={21} /></button>
+      <a className="book-share-icon-button" href={buildTelegramShareHref(data)} target="_blank" rel="noreferrer" aria-label="Compartir por Telegram" title="Compartir por Telegram" onClick={() => { recordShare("telegram"); setMessage("Abriendo Telegram..."); setIsOpen(false); }}><TelegramIcon size={21} /></a>
       <button type="button" onClick={copyLink}>Copiar enlace</button>
     </div> : null}
     {message ? <p className="book-share-feedback" role="status">{message}</p> : null}
