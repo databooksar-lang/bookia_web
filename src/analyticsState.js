@@ -1,6 +1,6 @@
 import { apiFetch } from "./api.js";
 
-export function buildWebInteractionEventPayload({ eventType, bookstoreId, catalogItemId, source, metadata }) {
+export function buildWebInteractionEventPayload({ eventType, bookstoreId, catalogItemId, readingClubId, source, metadata }) {
   const payload = {
     event_type: eventType,
     bookstore_id: bookstoreId,
@@ -9,6 +9,7 @@ export function buildWebInteractionEventPayload({ eventType, bookstoreId, catalo
   if (catalogItemId !== undefined && catalogItemId !== null) {
     payload.catalog_item_id = catalogItemId;
   }
+  if (readingClubId !== undefined && readingClubId !== null) payload.reading_club_id = readingClubId;
   if (source && String(source).trim()) {
     payload.source = String(source).trim();
   }
