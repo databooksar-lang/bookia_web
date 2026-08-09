@@ -79,6 +79,16 @@ export function registerDashboardNavigationStateTests(test) {
     assert.match(dashboardSource, /className="primary-button" onClick=\{\(\) => navigate\(`\/bookstores\/\$\{me\.bookstore\.slug\}`\)\}>🏬 Ver vidriera digital <ArrowIcon \/>/);
   });
 
+  test('offers the Telegram bot from the dashboard header with safe external navigation', () => {
+    const dashboardSource = readFileSync(new URL('../src/pages/DashboardPage.jsx', import.meta.url), 'utf8');
+
+    assert.match(dashboardSource, /href="https:\/\/t\.me\/bookia_ext_bot"/);
+    assert.match(dashboardSource, /target="_blank"/);
+    assert.match(dashboardSource, /rel="noreferrer"/);
+    assert.match(dashboardSource, /Usar bot de Telegram/);
+    assert.match(dashboardSource, /Iniciá sesión en el bot con el correo y la contraseña de tu librería para cargar libros desde Telegram\./);
+  });
+
   test('opens the unfiltered active catalog after creating a book', () => {
     const dashboardSource = readFileSync(new URL('../src/pages/DashboardPage.jsx', import.meta.url), 'utf8');
 

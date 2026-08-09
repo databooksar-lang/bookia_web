@@ -1727,6 +1727,27 @@ button:disabled {
   gap: 14px;
 }
 
+.dashboard-actions {
+  align-items: flex-end;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dashboard-actions-buttons {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.dashboard-telegram-help {
+  max-width: 360px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.76rem;
+  line-height: 1.45;
+  text-align: right;
+}
+
 .dashboard-tabs {
   margin-top: 24px;
   padding: 6px;
@@ -2984,6 +3005,22 @@ textarea:focus {
     width: 100%;
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .dashboard-actions-buttons {
+    width: 100%;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .dashboard-actions-buttons .secondary-button,
+  .dashboard-actions-buttons .primary-button {
+    width: 100%;
+  }
+
+  .dashboard-telegram-help {
+    max-width: none;
+    text-align: left;
   }
 
   
