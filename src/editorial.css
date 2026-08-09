@@ -3873,6 +3873,8 @@ textarea:focus {
 .book-share-options { position: absolute; z-index: 4; right: 0; top: calc(100% + 6px); min-width: 170px; padding: 6px; display: grid; gap: 2px; background: var(--cream); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 12px 28px rgba(11, 45, 36, 0.18); }
 .book-share-options a, .book-share-options button { width: 100%; padding: 9px 10px; color: var(--forest-deep); background: transparent; border-radius: 7px; text-align: left; font: inherit; font-weight: 700; }
 .book-share-options .book-share-icon-button { min-height: 40px; display: grid; place-items: center; text-align: center; }
+.book-share-options .book-share-story-button { min-height: 42px; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--line); font-size: 0.78rem; text-align: center; }
+.book-share-options .book-share-story-button:disabled { cursor: wait; opacity: 0.7; }
 .book-share-options a:hover, .book-share-options a:focus-visible, .book-share-options button:hover, .book-share-options button:focus-visible { background: rgba(11, 45, 36, 0.08); outline: none; }
 .book-share-feedback { max-width: 220px; margin: 0; color: var(--forest-deep); font-size: 0.8rem; font-weight: 700; }
 .search-result-row > .favorite-book-button { justify-self: end; }
