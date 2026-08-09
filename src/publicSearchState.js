@@ -24,6 +24,13 @@ function normalizeBookstoreSearchValue(value) {
     .toLocaleLowerCase();
 }
 
+export function buildGoogleMapsAddressUrl(address) {
+  const normalizedAddress = String(address || "").trim();
+  if (!normalizedAddress) return "";
+
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(normalizedAddress)}`;
+}
+
 function getBookstoreTagValues(bookstore) {
   return [bookstore?.tag_1, bookstore?.tag_2]
     .map((tag) => String(tag || "").trim())

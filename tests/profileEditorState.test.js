@@ -211,6 +211,13 @@ export function registerProfileEditorStateTests(test) {
     assert.match(publicPagesSource, /mailto:\$\{store\.correo\}/);
     assert.match(commerceSource, /buildWhatsAppHref\(whatsappPhone\)/);
   });
+  test("links a public bookstore address to Google Maps in a new secure tab", () => {
+    const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+
+    assert.match(publicPagesSource, /const mapsHref = buildGoogleMapsAddressUrl\(store\.address\)/);
+    assert.match(publicPagesSource, /content: <ContactLink href=\{mapsHref\}>\{store\.address\.trim\(\)\}<\/ContactLink>/);
+    assert.match(publicPagesSource, /function ContactLink\(\{ href, children \}\) \{\s*return <a href=\{href\} target="_blank" rel="noopener noreferrer">/);
+  });
   test("opens public bookstore book details from clickable cards", () => {
     const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
 

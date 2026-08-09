@@ -116,4 +116,23 @@ export function registerPublicSearchStateTests(register) {
     );
   });
 
+  register("builds a Google Maps search URL from a bookstore address", () => {
+    assert.equal(
+      publicSearchState.buildGoogleMapsAddressUrl("Av. Corrientes 1234, CABA"),
+      "https://www.google.com/maps/search/?api=1&query=Av.%20Corrientes%201234%2C%20CABA",
+    );
+  });
+
+  register("encodes accents and special characters in a Google Maps address URL", () => {
+    assert.equal(
+      publicSearchState.buildGoogleMapsAddressUrl("Córdoba & Suárez 45"),
+      "https://www.google.com/maps/search/?api=1&query=C%C3%B3rdoba%20%26%20Su%C3%A1rez%2045",
+    );
+  });
+
+  register("does not build a Google Maps URL for an empty bookstore address", () => {
+    assert.equal(publicSearchState.buildGoogleMapsAddressUrl("  "), "");
+    assert.equal(publicSearchState.buildGoogleMapsAddressUrl(undefined), "");
+  });
+
 }

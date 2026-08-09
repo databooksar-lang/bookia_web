@@ -9,7 +9,7 @@ import { AppLink, navigate } from "../navigation";
 import { buildRegisterPath } from "../registerState";
 import { displayBookstoreDescription } from "../profileEditorState";
 import { displayReadingClubDate } from "../readingClubState";
-import { buildPublicSearchParams, buildReadingClubSearchParams, filterBookstores, getAvailableReadingClubGenres, getBookstoreTags, getVisibleReadingClubs } from "../publicSearchState";
+import { buildGoogleMapsAddressUrl, buildPublicSearchParams, buildReadingClubSearchParams, filterBookstores, getAvailableReadingClubGenres, getBookstoreTags, getVisibleReadingClubs } from "../publicSearchState";
 import { EmptyState, WhatsAppButton } from "../components/Commerce";
 import { FavoriteBookButton } from "../components/FavoriteBookButton";
 import { ArrowIcon, BookIcon, LocationIcon, SearchIcon, StoreIcon, WhatsAppIcon } from "../components/Icons";
@@ -380,7 +380,7 @@ function NewsletterSignup() {
 }
 
 function ContactLink({ href, children }) {
-  return <a href={href} target="_blank" rel="noreferrer">{children}</a>;
+  return <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>;
 }
 
 export function HomePage({ me }) {
@@ -641,6 +641,7 @@ export function BookstorePage({ slug, me }) {
   const instagramHref = buildInstagramHref(store.instagram_handle);
   const facebookHref = buildFacebookHref(store.facebook_handle);
   const websiteHref = buildWebsiteHref(store.website_url);
+  const mapsHref = buildGoogleMapsAddressUrl(store.address);
   const bookstoreTags = [store.tag_1, store.tag_2].map((tag) => String(tag || '').trim()).filter(Boolean);
   const contactItems = [
     whatsappLabel ? { label: "Celular con WhatsApp", content: whatsappLabel } : null,
@@ -648,7 +649,7 @@ export function BookstorePage({ slug, me }) {
     instagramHref ? { label: "Instagram", content: <ContactLink href={instagramHref}>{formatDisplayUrl(instagramHref)}</ContactLink> } : null,
     facebookHref ? { label: "Facebook", content: <ContactLink href={facebookHref}>{formatDisplayUrl(facebookHref)}</ContactLink> } : null,
     websiteHref ? { label: "Sitio web", content: <ContactLink href={websiteHref}>{formatDisplayUrl(websiteHref)}</ContactLink> } : null,
-    store.address && String(store.address).trim() ? { label: "Direccion", content: store.address.trim() } : null,
+    mapsHref ? { label: "Direccion", content: <ContactLink href={mapsHref}>{store.address.trim()}</ContactLink> } : null,
   ].filter(Boolean);
 
   return (
