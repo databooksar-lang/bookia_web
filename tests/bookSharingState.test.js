@@ -158,6 +158,10 @@ export function registerBookSharingStateTests(register) {
     assert.equal(buildInstagramStoryCoverPath({ id: 42, cover_image_url: "/dashboard/catalog/42/cover" }), "/dashboard/catalog/42/cover");
   });
 
+  register("keeps the public catalog cover route for a Story", () => {
+    assert.equal(buildInstagramStoryCoverPath({ id: 42, cover_image_url: "/catalog/42/cover" }), "/catalog/42/cover");
+  });
+
   register("keeps the catalog primary-gallery route for a Story", () => {
     assert.equal(buildInstagramStoryCoverPath({ id: 42, cover_image_url: "/dashboard/catalog/42/images/7" }), "/dashboard/catalog/42/images/7");
   });
