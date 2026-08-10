@@ -1727,6 +1727,116 @@ button:disabled {
   gap: 14px;
 }
 
+#buscar,
+#librerias,
+#clubes,
+#novedades {
+  scroll-margin-top: 96px;
+}
+
+.section-index {
+  position: fixed;
+  z-index: 15;
+  left: 50%;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  display: flex;
+  box-sizing: border-box;
+  width: min(calc(100% - 32px), 440px);
+  justify-content: space-between;
+  padding: 6px;
+  border: 1px solid rgba(18, 63, 50, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 250, 240, 0.9);
+  box-shadow: 0 12px 30px rgba(15, 70, 56, 0.18);
+  backdrop-filter: blur(14px);
+  transform: translateX(-50%);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.section-index.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(14px);
+}
+
+.section-index a {
+  display: inline-flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 38px;
+  padding: 0 5px;
+  border-radius: 999px;
+  color: var(--forest);
+  font-size: .72rem;
+  font-weight: 800;
+  white-space: nowrap;
+  transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.section-index a.is-active {
+  color: #fffaf3;
+  background: var(--forest);
+}
+
+.section-index a:hover {
+  background: rgba(18, 63, 50, 0.1);
+}
+
+.section-index a.is-active:hover {
+  background: var(--forest-deep);
+}
+
+@media (max-width: 1099px) {
+  .newsletter-signup { margin-bottom: calc(82px + env(safe-area-inset-bottom)); }
+}
+
+@media (min-width: 1100px) {
+  .section-index {
+    top: 50%;
+    right: clamp(16px, 2vw, 34px);
+    left: auto;
+    bottom: auto;
+    display: grid;
+    width: auto;
+    padding: 5px;
+    border-radius: 18px;
+    transform: translateY(-50%);
+  }
+
+  .section-index.is-hidden { transform: translateY(calc(-50% + 14px)); }
+
+  .section-index a {
+    position: relative;
+    width: 42px;
+    min-width: 42px;
+    min-height: 42px;
+    padding: 0;
+  }
+
+  .section-index a span {
+    position: absolute;
+    right: calc(100% + 10px);
+    padding: 5px 9px;
+    border-radius: 7px;
+    color: #fffaf3;
+    background: var(--forest-deep);
+    font-size: .72rem;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(4px);
+    transition: opacity 160ms ease, transform 160ms ease;
+  }
+
+  .section-index a:hover span,
+  .section-index a:focus-visible span {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 .dashboard-actions {
   align-items: flex-end;
   flex-direction: column;

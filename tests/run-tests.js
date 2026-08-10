@@ -24,6 +24,7 @@ import { registerFavoritesStateTests } from "./favoritesState.test.js";
 import { registerAccountDestinationTests } from "./accountDestination.test.js";
 import { registerBookSharingStateTests } from "./bookSharingState.test.js";
 import { registerReadingClubSharingStateTests } from "./readingClubSharingState.test.js";
+import { registerSectionIndexTests } from "./sectionIndex.test.js";
 
 import { registerDashboardNavigationStateTests } from './dashboardNavigationState.test.js';
 
@@ -135,6 +136,7 @@ registerReadingClubStateTests((name, fn) => tests.push([name, fn]));
 registerAiAutocompleteStateTests((name, fn) => tests.push([name, fn]));
 registerDashboardCatalogStateTests((name, fn) => tests.push([name, fn]));
 registerPublicSearchStateTests((name, fn) => tests.push([name, fn]));
+registerSectionIndexTests((name, fn) => tests.push([name, fn]));
 registerPlansPricingStateTests((name, fn) => tests.push([name, fn]));
 registerAnalyticsStateTests((name, fn) => tests.push([name, fn]));
 registerRegisterStateTests((name, fn) => tests.push([name, fn]));

@@ -15,6 +15,7 @@ import { buildGoogleMapsAddressUrl, buildPublicSearchParams, buildReadingClubSea
 import { EmptyState, WhatsAppButton } from "../components/Commerce";
 import { ReadingClubShareMenu } from "../components/ReadingClubShareMenu";
 import { FavoriteBookButton } from "../components/FavoriteBookButton";
+import { SectionIndex } from "../components/SectionIndex";
 import { ArrowIcon, BookIcon, LocationIcon, SearchIcon, StoreIcon, WhatsAppIcon } from "../components/Icons";
 
 function BookCover({ item, className = "book-cover", interactive = false, onOpen }) {
@@ -102,7 +103,7 @@ function HeroSearch({ initialFilters, genres, genresLoading, onSearch }) {
   function submit(event) { event.preventDefault(); onSearch(filters); }
   function updateFilter(name) { return (event) => setFilters((current) => ({ ...current, [name]: event.target.value })); }
   return (
-    <section className="hero">
+    <section className="hero" id="buscar">
       <div className="hero-copy"><p className="section-label">ENCONTRÁ TU PRÓXIMO LIBRO</p><h1>Encontrá el libro que buscás.</h1><p className="hero-lead">Buscá por título, autor o editorial. Después, contactá directamente a la librería para confirmar disponibilidad.</p></div>
       <div className="hero-books" aria-hidden="true"><img className="hero-illustration" src="/images/hero-bookia-discovery.webp" alt="" /></div>
       <form className="search-panel" onSubmit={submit} aria-label="Buscar libros">
@@ -282,7 +283,7 @@ function BookstoresSection({ stores, loading }) {
   }
 
   return (
-    <section className="home-section bookstores-section">
+    <section className="home-section bookstores-section" id="librerias">
       <div className="section-heading">
         <div><p className="section-label">LIBRERÍAS EN BOOKIA</p><h2>Encontrá librerías para tu próxima lectura</h2></div>
         <img className="bookstores-section-illustration" src="/images/bookstores-section-facade.png" alt="" />
@@ -354,7 +355,7 @@ function ReadingClubsSection() {
   }
 
   return (
-    <section className="home-section reading-clubs-section">
+    <section className="home-section reading-clubs-section" id="clubes">
       <div className="section-heading"><div><p className="section-label">CLUBES DE LECTURA</p><h2>Encontrá un club para compartir lecturas</h2></div><img className="reading-clubs-section-illustration" src="/images/reading-clubs-section.png" alt="" /></div>
       <form className="bookstore-filters reading-club-filters" role="search" aria-label="Buscar clubes de lectura" onSubmit={(event) => event.preventDefault()}>
         <label className="bookstore-filter-field"><span>Buscá por nombre o tema</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Ej.: ciencia ficción, poesía o Club de novela" /></label>
@@ -412,7 +413,7 @@ function NewsletterSignup() {
   }
 
   return (
-    <section className="newsletter-signup" aria-labelledby="newsletter-title">
+    <section className="newsletter-signup" id="novedades" aria-labelledby="newsletter-title">
       <div>
         <p className="section-label">{"NOVEDADES DE BOOKIA"}</p>
         <h2 id="newsletter-title">{"M\u00E1s para descubrir."}</h2>
@@ -447,6 +448,7 @@ export function HomePage({ me }) {
 
   return (
     <>
+      <SectionIndex />
       <HeroSearch initialFilters={draftFilters} genres={genres} genresLoading={genresLoading} onSearch={(nextFilters) => { setDraftFilters(nextFilters); setSearchFilters(nextFilters); setTimeout(() => document.getElementById("resultados")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0); }} />
       <BenefitsStrip benefits={SEARCH_BENEFITS} ariaLabel="Beneficios de la búsqueda de libros" />
       <SearchResults filters={searchFilters} stores={stores} me={me} onClearFilters={() => { setDraftFilters(EMPTY_SEARCH_FILTERS); setSearchFilters(EMPTY_SEARCH_FILTERS); }} />
