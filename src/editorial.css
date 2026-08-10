@@ -2656,7 +2656,9 @@ textarea:focus {
   min-width: 6rem;
 }
 
-.dashboard-list-active .card-actions button {
+.dashboard-list-active .card-actions-main > button,
+.dashboard-list-active .card-actions-main > .book-share-menu > .book-share-trigger,
+.dashboard-list-active .card-actions > .danger-button {
   flex: 1 1 6.25rem;
   min-width: 6.25rem;
   min-height: clamp(2.5rem, 8vw, 2.75rem);
@@ -2667,7 +2669,7 @@ textarea:focus {
   white-space: normal;
 }
 
-.dashboard-list-active .card-actions button:has(svg) {
+.dashboard-list-active .card-actions-main > button:has(svg) {
   flex: 2 1 16rem;
   min-width: 16rem;
 }
@@ -4032,13 +4034,16 @@ textarea:focus {
 .favorite-book-button:disabled { cursor: wait; opacity: 0.65; }
 .book-share-menu { position: relative; display: grid; gap: 6px; }
 .book-share-trigger { min-height: 38px; padding: 7px 12px; }
-.book-share-options { position: absolute; z-index: 4; right: 0; top: calc(100% + 6px); min-width: 170px; padding: 6px; display: grid; gap: 2px; background: var(--cream); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 12px 28px rgba(11, 45, 36, 0.18); }
+.book-share-options { position: absolute; z-index: 4; right: 0; top: calc(100% + 6px); min-width: 170px; padding: 6px; display: grid; gap: 2px; box-sizing: border-box; background: var(--cream); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 12px 28px rgba(11, 45, 36, 0.18); }
 .book-share-options a, .book-share-options button { width: 100%; padding: 9px 10px; color: var(--forest-deep); background: transparent; border-radius: 7px; text-align: left; font: inherit; font-weight: 700; }
 .book-share-options .book-share-icon-button { min-height: 40px; display: grid; place-items: center; text-align: center; }
-.book-share-options .book-share-story-button { min-height: 42px; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--line); font-size: 0.78rem; text-align: center; }
+.book-share-options .book-share-story-button { min-width: 0; min-height: 42px; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--line); font-size: 0.78rem; text-align: center; white-space: normal; overflow-wrap: anywhere; }
 .book-share-options .book-share-story-button:disabled { cursor: wait; opacity: 0.7; }
 .book-share-options a:hover, .book-share-options a:focus-visible, .book-share-options button:hover, .book-share-options button:focus-visible { background: rgba(11, 45, 36, 0.08); outline: none; }
 .book-share-feedback { max-width: 220px; margin: 0; color: var(--forest-deep); font-size: 0.8rem; font-weight: 700; }
+@media (max-width: 620px) {
+  .book-share-options { width: min(220px, calc(100vw - 32px)); min-width: 0; }
+}
 .reading-club-public-card.is-shared-club { outline: 3px solid var(--forest-deep); outline-offset: 3px; }
 .search-result-row > .favorite-book-button { justify-self: end; }
 .book-card-meta-row { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 8px 10px; }
