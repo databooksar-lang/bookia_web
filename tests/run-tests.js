@@ -741,7 +741,13 @@ tests.push(["adds a gap only before the reading-club benefits strip", () => {
 
   assert.match(publicPagesSource, /<BenefitsStrip className="reading-clubs-benefits-strip" benefits=\{READING_CLUB_BENEFITS\}/);
   assert.match(editorialStyles, /\.reading-clubs-benefits-strip\s*\{[^}]*margin-top:\s*12px;/s);
-}]);for (const [name, fn] of tests) {
+}]);
+tests.push(["centers bookstore and reading-club illustrations at the mobile breakpoint", () => {
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+  assert.match(editorialStyles, /@media \(max-width: 820px\)\s*\{[\s\S]*?\.bookstores-section-illustration,\s*\.reading-clubs-section-illustration\s*\{[^}]*align-self:\s*center;/);
+}]);
+for (const [name, fn] of tests) {
   try {
     await fn();
     console.log(`PASS ${name}`);
