@@ -3667,6 +3667,27 @@ textarea:focus {
 .plans-featured .plans-select-action { color: white; }
 @media (max-width: 760px) { .plans-hero { width: min(100% - 28px, 100%); min-height: 0; grid-template-columns: 1fr; } .plans-hero-copy { padding: 72px 0 30px; } .plans-hero-copy h1 { font-size: clamp(3.2rem, 15vw, 4.4rem); } .plans-hero-art { min-height: 250px; } .plans-hero-art img { width: 140%; transform: translate(-24%, 0%); } .plans-pricing, .plans-growth-band { width: min(100% - 28px, 100%); grid-template-columns: 1fr; } .plans-plan { min-height: 285px; padding: 27px 23px; } .plans-growth-band > div { min-height: 150px; padding: 27px 23px; border-left: 0; border-top: 1px solid rgba(246, 163, 143, .55); } .plans-growth-title { border-top: 0; } }
 
+.dashboard-analytics-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.dashboard-analytics-filters label {
+  display: grid;
+  gap: 6px;
+  color: var(--forest);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.dashboard-analytics-filters select,
+.dashboard-analytics-filters input {
+  min-height: 42px;
+}
+
 .metrics-summary-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -4376,6 +4397,8 @@ textarea:focus {
   .search-panel {
     grid-template-columns: 1fr;
   }
+
+  .dashboard-analytics-filters > * { width: 100%; }
 
   .search-field-query,
   .search-submit {

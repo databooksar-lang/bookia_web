@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 
 import {
   buildDashboardUrl,
+  getAnalyticsMinimumDate,
   parseDashboardNavigation,
 } from "../src/dashboardNavigationState.js";
 
@@ -12,6 +13,7 @@ export function registerDashboardNavigationStateTests(test) {
     assert.deepEqual(parseDashboardNavigation(""), {
       section: "profile",
       catalogView: "active",
+      analytics: { mode: "month", month: null, startDate: null, endDate: null },
     });
   });
 
@@ -33,10 +35,12 @@ export function registerDashboardNavigationStateTests(test) {
     assert.deepEqual(parseDashboardNavigation("?section=unknown&view=archived"), {
       section: "profile",
       catalogView: "active",
+      analytics: { mode: "month", month: null, startDate: null, endDate: null },
     });
     assert.deepEqual(parseDashboardNavigation("?section=catalog&view=archived"), {
       section: "catalog",
       catalogView: "active",
+      analytics: { mode: "month", month: null, startDate: null, endDate: null },
     });
   });
 
@@ -48,12 +52,47 @@ export function registerDashboardNavigationStateTests(test) {
     assert.equal(buildDashboardUrl("catalog"), "/dashboard?section=catalog&view=active");
     assert.equal(buildDashboardUrl("catalog", "sold-out"), "/dashboard?section=catalog&view=sold-out");
   });
+
+  test("persists a custom analytics date range in the dashboard URL", () => {
+    assert.deepEqual(parseDashboardNavigation("?section=metrics&analytics_mode=custom&analytics_start=2026-07-03&analytics_end=2026-07-21").analytics, {
+      mode: "custom",
+      month: null,
+      startDate: "2026-07-03",
+      endDate: "2026-07-21",
+    });
+    assert.equal(
+      buildDashboardUrl("metrics", "active", { mode: "custom", startDate: "2026-07-03", endDate: "2026-07-21" }),
+      "/dashboard?section=metrics&analytics_mode=custom&analytics_start=2026-07-03&analytics_end=2026-07-21",
+    );
+  });
+
+  test("normalizes incomplete analytics ranges to the month view", () => {
+    assert.deepEqual(parseDashboardNavigation("?section=metrics&analytics_mode=custom&analytics_start=2026-07-03").analytics, {
+      mode: "month",
+      month: null,
+      startDate: null,
+      endDate: null,
+    });
+  });
+
+  test("normalizes analytics URLs outside the allowed calendar window", () => {
+    assert.deepEqual(parseDashboardNavigation("?section=metrics&analytics_mode=month&analytics_month=2026-09", "2026-08-10").analytics, {
+      mode: "month", month: null, startDate: null, endDate: null,
+    });
+    assert.deepEqual(parseDashboardNavigation("?section=metrics&analytics_mode=custom&analytics_start=2024-08-31&analytics_end=2024-09-01", "2026-08-10").analytics, {
+      mode: "month", month: null, startDate: null, endDate: null,
+    });
+  });
+
+  test("limits custom analytics ranges to the first day of the oldest available month", () => {
+    assert.equal(getAnalyticsMinimumDate("2026-08-10"), "2024-09-01");
+  });
   test('connects URL navigation to mounted dashboard panels', () => {
     const appSource = readFileSync(new URL('../src/App.jsx', import.meta.url), 'utf8');
     const dashboardSource = readFileSync(new URL('../src/pages/DashboardPage.jsx', import.meta.url), 'utf8');
 
     assert.match(appSource, /<DashboardPage[^>]*locationSearch=\{search\}/);
-    assert.match(dashboardSource, /parseDashboardNavigation\(locationSearch\)/);
+    assert.match(dashboardSource, /parseDashboardNavigation\(locationSearch(?:, [^)]+)?\)/);
     assert.match(dashboardSource, /className=.dashboard-tabs./);
     assert.match(dashboardSource, /Perfil/);
     assert.match(dashboardSource, /Alta de libros/);

@@ -4,7 +4,7 @@ import { apiFetch, resolveApiUrl } from "../api";
 import { getAiAutocompleteSourceState, mergeAiAutocompleteSuggestion } from "../aiAutocompleteState";
 import { canUseAiAutocomplete } from "../aiAutocompleteAccess";
 import { buildCatalogItemUpdatePayload, buildCatalogSaveErrorMessage, buildDraftFromCatalogItem, getCatalogSaveUiState, hasCatalogItemAvailabilityChanged, normalizeBookStatus, normalizeEditableAvailability } from "../dashboardCatalogState";
-import { buildDashboardUrl, parseDashboardNavigation } from "../dashboardNavigationState";
+import { buildDashboardUrl, getAnalyticsMinimumDate, parseDashboardNavigation } from "../dashboardNavigationState";
 import BookstoreProfileEditor from "../components/BookstoreProfileEditor";
 import { EmptyState } from "../components/Commerce";
 import { ArrowIcon, BookIcon, SearchIcon, SparkleIcon } from "../components/Icons";
@@ -96,6 +96,36 @@ function formatMetricValue(value) {
   return new Intl.NumberFormat("es-AR").format(Number(value || 0));
 }
 
+function getArgentinaToday() {
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Argentina/Buenos_Aires", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
+  const values = Object.fromEntries(parts.filter((part) => part.type !== "literal").map((part) => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
+function getMonthBounds(month, today = getArgentinaToday()) {
+  const targetMonth = month || today.slice(0, 7);
+  const [year, monthNumber] = targetMonth.split("-").map(Number);
+  const lastDay = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate();
+  const startDate = `${targetMonth}-01`;
+  const endDate = targetMonth === today.slice(0, 7) ? today : `${targetMonth}-${String(lastDay).padStart(2, "0")}`;
+  return { startDate, endDate };
+}
+
+function getAnalyticsMonthOptions(today = getArgentinaToday()) {
+  const [year, month] = today.slice(0, 7).split("-").map(Number);
+  return Array.from({ length: 24 }, (_, index) => {
+    const current = new Date(Date.UTC(year, month - 1 - index, 1));
+    const value = `${current.getUTCFullYear()}-${String(current.getUTCMonth() + 1).padStart(2, "0")}`;
+    return { value, label: new Intl.DateTimeFormat("es-AR", { month: "long", year: "numeric", timeZone: "UTC" }).format(current) };
+  });
+}
+
+function formatAnalyticsPeriod(analytics) {
+  if (!analytics.period_start || !analytics.period_end) return `Resumen de los ultimos ${analytics.period_days || 0} dias.`;
+  const format = new Intl.DateTimeFormat("es-AR", { dateStyle: "medium", timeZone: "UTC" });
+  return `Del ${format.format(new Date(`${analytics.period_start}T00:00:00Z`))} al ${format.format(new Date(`${analytics.period_end}T00:00:00Z`))}.`;
+}
+
 function DashboardPanel({ label, title, description, countLabel, isActive, children, className = "" }) {
   return (
     <section className={`dashboard-section dashboard-card ${className}`.trim()} hidden={!isActive}>
@@ -159,7 +189,7 @@ function ReadingClubGenreField({ genres, genresLoading, genresError, value, onCh
 }
 
 export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
-  const { section, catalogView } = parseDashboardNavigation(locationSearch);
+  const { section, catalogView, analytics: analyticsFilter } = parseDashboardNavigation(locationSearch, getArgentinaToday());
   const registrationPending = new URLSearchParams(locationSearch).get("registered") === "pending";
   const [items, setItems] = useState([]);
   const [titleQuery, setTitleQuery] = useState("");
@@ -188,18 +218,26 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
   const [analytics, setAnalytics] = useState(EMPTY_ANALYTICS);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [analyticsError, setAnalyticsError] = useState("");
+  const [analyticsDraft, setAnalyticsDraft] = useState({ startDate: analyticsFilter.startDate || getArgentinaToday(), endDate: analyticsFilter.endDate || getArgentinaToday() });
   const activeItems = items.filter((item) => item.availability_status !== "hidden");
   const hiddenItems = items.filter((item) => item.availability_status === "hidden");
   const hasActiveFilters = Boolean(titleQuery.trim() || authorQuery.trim());
   const canAutocompleteWithAi = canUseAiAutocomplete(me?.current_plan_code);
   const billingAccess = getBillingAccessState(me?.billing);
+  const analyticsMinimumDate = getAnalyticsMinimumDate(getArgentinaToday());
   const reactivationIsPending = me?.billing?.status === "payment_pending" && !me.billing.trial_ends_at;
   const catalogMutationBusy = catalogActionBusy || saveBusyItemId !== null || aiBusyId !== null || imageBusyId !== null;
 
   function loadAnalytics() {
+    const params = new URLSearchParams();
+    const period = analyticsFilter.mode === "custom"
+      ? { startDate: analyticsFilter.startDate, endDate: analyticsFilter.endDate }
+      : getMonthBounds(analyticsFilter.month);
+    if (period.startDate) params.set("start_date", period.startDate);
+    if (period.endDate) params.set("end_date", period.endDate);
     setAnalyticsLoading(true);
     setAnalyticsError("");
-    apiFetch("/dashboard/analytics")
+    apiFetch(`/dashboard/analytics?${params.toString()}`)
       .then((data) => { setAnalytics({ ...EMPTY_ANALYTICS, ...data, totals: { ...EMPTY_ANALYTICS.totals, ...(data.totals || {}) }, top_books: data.top_books || [], top_reading_clubs: data.top_reading_clubs || [] }); setAnalyticsError(""); })
       .catch((fetchError) => { setAnalytics(EMPTY_ANALYTICS); setAnalyticsError(fetchError.message || "No pudimos cargar las metricas."); })
       .finally(() => setAnalyticsLoading(false));
@@ -238,7 +276,8 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
   }, []);
 
   useEffect(() => { if (me?.bookstore) { loadCatalog(); loadReadingClubs(); } }, [me]);
-  useEffect(() => { if (me?.bookstore && section === "metrics") loadAnalytics(); }, [me, section]);
+  useEffect(() => { setAnalyticsDraft({ startDate: analyticsFilter.startDate || getArgentinaToday(), endDate: analyticsFilter.endDate || getArgentinaToday() }); }, [analyticsFilter.startDate, analyticsFilter.endDate, analyticsFilter.mode]);
+  useEffect(() => { if (me?.bookstore && section === "metrics") loadAnalytics(); }, [me, section, analyticsFilter.mode, analyticsFilter.month, analyticsFilter.startDate, analyticsFilter.endDate]);
 
   if (me === undefined) {
     return <div className="page-state"><div className="loading-mark" /><p>Preparando tu panel...</p></div>;
@@ -672,12 +711,35 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
       <DashboardPanel
         label="Metricas"
         title="Interes de lectores"
-        description={`Resumen de los ultimos ${analytics.period_days || 30} dias.`}
+        description={formatAnalyticsPeriod(analytics)}
         isActive={section === "metrics"}
         className="dashboard-metrics-panel"
       >
-        {analyticsLoading ? <div className="loading-list"><span /><span /><span /></div> : null}
-        {analyticsError ? <p className="feedback error">{analyticsError}</p> : null}
+        <div className="dashboard-analytics-filters">
+          <label>
+            Período
+            <select value={analyticsFilter.mode} onChange={(event) => {
+              const mode = event.target.value;
+              const today = getArgentinaToday();
+              navigate(buildDashboardUrl("metrics", "active", mode === "custom" ? { mode, startDate: today, endDate: today } : { mode, month: null }));
+            }}>
+              <option value="month">Mes</option>
+              <option value="custom">Rango personalizado</option>
+            </select>
+          </label>
+          {analyticsFilter.mode === "month" ? <label>
+            Mes
+            <select value={analyticsFilter.month || getArgentinaToday().slice(0, 7)} onChange={(event) => navigate(buildDashboardUrl("metrics", "active", { mode: "month", month: event.target.value }))}>
+              {getAnalyticsMonthOptions().map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+            </select>
+          </label> : <>
+            <label>Desde<input type="date" value={analyticsDraft.startDate} min={analyticsMinimumDate} max={analyticsDraft.endDate || getArgentinaToday()} onChange={(event) => setAnalyticsDraft((draft) => ({ ...draft, startDate: event.target.value }))} /></label>
+            <label>Hasta<input type="date" value={analyticsDraft.endDate} min={analyticsDraft.startDate || analyticsMinimumDate} max={getArgentinaToday()} onChange={(event) => setAnalyticsDraft((draft) => ({ ...draft, endDate: event.target.value }))} /></label>
+            <button type="button" className="secondary-button" disabled={!analyticsDraft.startDate || !analyticsDraft.endDate || analyticsDraft.startDate < analyticsMinimumDate || analyticsDraft.startDate > analyticsDraft.endDate} onClick={() => navigate(buildDashboardUrl("metrics", "active", { mode: "custom", ...analyticsDraft }))}>Aplicar</button>
+          </>}
+        </div>
+        {analyticsLoading ? <div className="loading-list" role="status" aria-label="Actualizando métricas"><span /><span /><span /></div> : null}
+        {analyticsError ? <p className="feedback error" role="alert">{analyticsError}</p> : null}
         {!analyticsLoading ? (
           <>
             <div className="metrics-summary-grid">
