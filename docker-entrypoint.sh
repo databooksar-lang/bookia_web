@@ -22,6 +22,9 @@ if [ -n "${BOOKIA_API_UPSTREAM_URL:-}" ]; then
   }
 
   @admin path /admin /admin/*
+  header @admin {
+    Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; connect-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'"
+  }
   handle @admin {
     reverse_proxy ${BOOKIA_API_UPSTREAM_URL}
   }
