@@ -158,13 +158,13 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
     return (
       <main className="register-page">
         <section className="register-hero" aria-labelledby="register-title">
-          <div className="register-heading"><span className="register-flourish" aria-hidden="true">Registrate</span><h1 id="register-title">Crea tu cuenta en Bookia</h1><p>Unite a la comunidad que conecta lectores y librerias independientes.</p></div>
-          <p className="register-question">Como queres unirte a Bookia?</p>
+          <div className="register-heading"><span className="register-flourish" aria-hidden="true">Registrate</span><h1 id="register-title">Creá tu cuenta en Bookia</h1><p>Unite a la comunidad que conecta lectores y librerías independientes.</p></div>
+          <p className="register-question">¿Cómo querés unirte a Bookia?</p>
           <div className="register-choice-grid">
             <RegistrationChoice type="reader" title="Soy lector/a" description="Crea tu cuenta para descubrir libros, seguir tus lecturas y guardar favoritos." image="/images/register/reader-books.png" onChoose={() => selectProfile("reader")} />
-            <RegistrationChoice type="bookstore" title="Tengo una libreria" description="Unite a Bookia para visibilizar tu libreria, llegar a mas lectores y formar parte de nuestra red." image="/images/register/bookstore-front.png" onChoose={() => selectProfile("bookstore")} />
+            <RegistrationChoice type="bookstore" title="Tengo una librería" description="Unite a Bookia para visibilizar tu librería, llegar a más lectores y formar parte de nuestra red." image="/images/register/bookstore-front.png" onChoose={() => selectProfile("bookstore")} />
           </div>
-          <p className="register-login">Ya tenes una cuenta? <AppLink href="/login">Ingresar</AppLink></p>
+          <p className="register-login">¿Ya tenés una cuenta? <AppLink href="/login">Ingresá</AppLink></p>
         </section>
       </main>
     );
@@ -177,22 +177,23 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
         <div className="register-form-art" aria-hidden="true"><img src={isReader ? "/images/register/reader-books.png" : "/images/register/bookstore-front.png"} alt="" /></div>
         <div className="register-form-panel">
           {!isReader ? <p className="register-progress"><span className={bookstoreStep === "account" ? "is-current" : "is-complete"}>1. Tu cuenta</span><span className={isBookstoreDetails ? "is-current" : isBookstoreSummary ? "is-complete" : ""}>2. Plan</span><span className={isBookstoreSummary ? "is-current" : ""}>3. Confirmacion</span></p> : null}
-          <h1 id="register-form-title">{isReader ? "Empeza a descubrir" : isBookstoreSummary ? "Confirma tu suscripcion" : isBookstoreDetails ? "Contanos sobre tu libreria" : "Crea tu cuenta"}</h1>
-          <p>{isReader ? "Guarda tus proximos libros y segui explorando." : isBookstoreSummary ? "Revisa el importe y la renovacion antes de autorizar Mercado Pago." : isBookstoreDetails ? "Elegi si queres ampliar el catalogo incluido en tu plan." : "Primero, defini los datos para ingresar a Bookia."}</p>
+          <h1 id="register-form-title">{isReader ? "Empezá a descubrir" : isBookstoreSummary ? "Confirma tu suscripcion" : isBookstoreDetails ? "Contanos sobre tu libreria" : "Crea tu cuenta"}</h1>
+          <p>{isReader ? "Guardá los libros que te interesan y volvé a encontrarlos cuando quieras." : isBookstoreSummary ? "Revisá el importe y la renovación antes de autorizar Mercado Pago." : isBookstoreDetails ? "Elegí si querés ampliar el catálogo incluido en tu plan." : "Primero, definí los datos para ingresar a Bookia."}</p>
           <form className="register-form" onSubmit={submit}>
-            {isReader ? <label>Como queres que te llamemos?<input value={displayName} onChange={(event) => setDisplayName(event.target.value)} autoComplete="name" /></label> : null}
-            {(isReader || bookstoreStep === "account") ? <><label>Correo electronico<input type="email" value={email} onChange={(event) => {
+            {isReader ? <label>¿Cómo querés que te llamemos? (opcional)<input value={displayName} onChange={(event) => setDisplayName(event.target.value)} autoComplete="name" /><small>Podés cambiarlo más adelante.</small></label> : null}
+            {(isReader || bookstoreStep === "account") ? <><label>Correo electrónico<input type="email" value={email} onChange={(event) => {
               const nextEmail = event.target.value;
               setEmail(nextEmail);
               if (!payerEmailTouched) setPayerEmail(nextEmail);
             }} autoComplete="email" required /></label><div className="register-password-group">
-                <label htmlFor="register-password">Contrasena</label>
+                <label htmlFor="register-password">Contraseña</label>
                 <div className="register-password-field">
                   <input id="register-password" type={passwordVisible ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" minLength="8" required />
                   <button type="button" className="register-password-toggle" aria-label={passwordVisible ? "Ocultar contrase\u00f1a" : "Mostrar contrase\u00f1a"} aria-pressed={passwordVisible} onClick={() => setPasswordVisible((visible) => !visible)}>
                     {passwordVisible ? <EyeOffIcon /> : <EyeIcon />}
                   </button>
                 </div>
+                <small>Mínimo 8 caracteres.</small>
               </div>{!isReader ? <><label>Celular con WhatsApp<input type="tel" value={whatsappPhone} onChange={(event) => setWhatsAppPhone(event.target.value)} autoComplete="tel" required placeholder="11 2222-3333" /><small>Podes escribirlo en formato local; lo usaremos para que los lectores te contacten por WhatsApp.</small></label><label>Tipo de libreria<select value={bookstoreType} onChange={(event) => setBookstoreType(event.target.value)} required><option value="">Selecciona una opcion</option><option value="physical">Libreria fisica</option><option value="virtual">Libreria virtual</option><option value="hybrid">Libreria fisica y virtual</option></select></label></> : null}</> : isBookstoreDetails ? <>
               <label>Nombre de la libreria<input value={bookstoreName} onChange={(event) => setBookstoreName(event.target.value)} autoComplete="organization" required /></label>
               <fieldset className="register-catalog-options"><legend>Queres ampliar tu catalogo?</legend>
@@ -213,10 +214,11 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
                 <small>Ingresá el correo de la cuenta que autorizará la suscripción. Puede ser distinto de tu correo de acceso a Bookia.</small>
               </label>
             </div>}
-            {(isReader || isBookstoreDetails) ? <label className="register-legal"><input type="checkbox" checked={privacyAccepted} onChange={(event) => setPrivacyAccepted(event.target.checked)} required />Acepto los <AppLink href="/terms">Terminos y Condiciones</AppLink> y la <AppLink href="/privacy">Politica de Privacidad</AppLink>.</label> : null}
+            {(isReader || isBookstoreDetails) ? <label className="register-legal"><input type="checkbox" checked={privacyAccepted} onChange={(event) => setPrivacyAccepted(event.target.checked)} required />Acepto los <AppLink href="/terms">Términos y Condiciones</AppLink> y la <AppLink href="/privacy">Política de Privacidad</AppLink>.</label> : null}
             {error ? <p className="feedback error">{error}</p> : null}
-            <button className="register-submit" type="submit" disabled={busy}>{busy ? "Creando cuenta..." : isBookstoreSummary ? "Crear cuenta y autorizar Mercado Pago" : profileType === "bookstore" ? "Continuar" : "Crear cuenta"} <ArrowIcon /></button>
+            <button className="register-submit" type="submit" disabled={busy}>{busy ? "Creando cuenta..." : isBookstoreSummary ? "Crear cuenta y autorizar Mercado Pago" : profileType === "bookstore" ? "Continuar" : "Crear cuenta gratis"} <ArrowIcon /></button>
             {isReader ? <GoogleButton intent="register" privacyAccepted={privacyAccepted} onError={setError} /> : null}
+            {isReader ? <p className="register-form-login">¿Ya tenés una cuenta? <AppLink href="/login">Ingresá</AppLink></p> : null}
           </form>
         </div>
       </section>
