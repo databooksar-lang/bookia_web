@@ -12,6 +12,16 @@ function getShareData(item, bookstore) {
   return { title: item.title, text, url };
 }
 
+function getTrustedApiOrigins() {
+  const origins = [window.location.origin];
+  try {
+    origins.push(new URL(resolveApiUrl("/"), window.location.origin).origin);
+  } catch {
+    // Keep the current origin as the only trusted source when the API base is invalid.
+  }
+  return [...new Set(origins)];
+}
+
 export function BookShareMenu({ item, bookstore }) {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
@@ -41,7 +51,7 @@ export function BookShareMenu({ item, bookstore }) {
       const file = await createInstagramStoryFile({
         item,
         bookstore,
-        coverUrl: resolveApiUrl(buildInstagramStoryCoverPath(item)),
+        coverUrl: resolveApiUrl(buildInstagramStoryCoverPath(item, { trustedOrigins: getTrustedApiOrigins() })),
       });
       const result = await shareInstagramStoryFile({ file, title: item.title });
       if (result === "cancelled") {

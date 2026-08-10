@@ -162,6 +162,11 @@ export function registerBookSharingStateTests(register) {
     assert.equal(buildInstagramStoryCoverPath({ id: 42, cover_image_url: "/dashboard/catalog/42/images/7" }), "/dashboard/catalog/42/images/7");
   });
 
+  register("keeps API-prefixed and absolute catalog cover URLs for a Story", () => {
+    assert.equal(buildInstagramStoryCoverPath({ id: 42, cover_image_url: "/api/dashboard/catalog/42/cover" }), "/api/dashboard/catalog/42/cover");
+    assert.equal(buildInstagramStoryCoverPath({ id: 42, cover_image_url: "https://api.bookia.example/dashboard/catalog/42/images/7" }, { trustedOrigins: ["https://api.bookia.example"] }), "https://api.bookia.example/dashboard/catalog/42/images/7");
+  });
+
   register("rejects a Story cover path that does not belong to the catalog item", () => {
     assert.equal(buildInstagramStoryCoverPath({ id: 42, cover_image_url: "/dashboard/catalog/43/images/7" }), null);
     assert.equal(buildInstagramStoryCoverPath({ id: 42, cover_image_url: "https://untrusted.example/cover.png" }), null);
