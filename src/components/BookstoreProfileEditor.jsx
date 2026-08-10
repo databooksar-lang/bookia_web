@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { apiFetch, resolveApiUrl } from "../api";
 import {
@@ -6,7 +6,6 @@ import {
   createProfileDraft,
   displayBookstoreDescription,
   displayBookstoreType,
-  formatDescriptionSelection,
   getBookstoreTagOptions,
   removeProfileImage,
   requireRefreshedBookstore,
@@ -16,6 +15,7 @@ import {
 import { formatDisplayWhatsApp } from "../formatters";
 import { getGenreSelectorState } from "../genreSelectorState";
 import { BookstoreDescription } from "./BookstoreDescription";
+import { RichDescriptionEditor } from "./RichDescriptionEditor";
 
 const PROFILE_IMAGE_ACCEPT = "image/png,image/jpeg,image/webp";
 
@@ -56,8 +56,6 @@ export default function BookstoreProfileEditor({ bookstore, onSaved, onError, ge
   const [bannerPreviewUrl, setBannerPreviewUrl] = useState("");
   const [failedLogoUrl, setFailedLogoUrl] = useState("");
   const [failedBannerUrl, setFailedBannerUrl] = useState("");
-  const [descriptionFormatError, setDescriptionFormatError] = useState("");
-  const descriptionTextareaRef = useRef(null);
   const logoFile = draft.logoFile;
   const bannerFile = draft.bannerFile;
   const savedLogoUrl = resolveApiUrl(bookstore.logo_url);
@@ -141,24 +139,6 @@ export default function BookstoreProfileEditor({ bookstore, onSaved, onError, ge
     setDraft((current) => setProfileDraftField(current, field, value));
   }
 
-  function applyDescriptionFormat(format) {
-    const textarea = descriptionTextareaRef.current;
-    if (!textarea) return;
-    const linkUrl = format === "link" ? window.prompt("Pegá una URL que comience con http:// o https://") : "";
-    if (format === "link" && linkUrl === null) return;
-    const result = formatDescriptionSelection(draft.description, textarea.selectionStart, textarea.selectionEnd, format, linkUrl);
-    if (!result) {
-      setDescriptionFormatError("El enlace debe comenzar con http:// o https://.");
-      return;
-    }
-    setDescriptionFormatError("");
-    changeField("description", result.value);
-    setTimeout(() => {
-      textarea.focus();
-      textarea.setSelectionRange(result.selectionStart, result.selectionEnd);
-    });
-  }
-
   async function saveProfile(event) {
     event.preventDefault();
     setIsSaving(true);
@@ -224,17 +204,7 @@ export default function BookstoreProfileEditor({ bookstore, onSaved, onError, ge
           <div className="bookstore-profile-fields">
             <label className="bookstore-profile-field-wide">
               <span>Descripcion</span>
-              <div className="description-toolbar" role="toolbar" aria-label="Formato de la descripcion">
-                <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => applyDescriptionFormat("bold")} disabled={isSaving} aria-label="Negrita"><strong>B</strong></button>
-                <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => applyDescriptionFormat("italic")} disabled={isSaving} aria-label="Cursiva"><em>I</em></button>
-                <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => applyDescriptionFormat("link")} disabled={isSaving} aria-label="Insertar enlace">Enlace</button>
-                <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => applyDescriptionFormat("unorderedList")} disabled={isSaving} aria-label="Lista con viñetas">• Lista</button>
-                <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => applyDescriptionFormat("orderedList")} disabled={isSaving} aria-label="Lista numerada">1. Lista</button>
-              </div>
-              <textarea ref={descriptionTextareaRef} value={draft.description} onChange={(event) => changeField("description", event.target.value)} rows={6} maxLength={5000} disabled={isSaving} placeholder="Conta que hace especial a tu libreria." aria-describedby="description-format-help" />
-              <small id="description-format-help">Usá los botones para resaltar texto, agregar enlaces o crear listas.</small>
-              {descriptionFormatError ? <small className="description-format-error" role="alert">{descriptionFormatError}</small> : null}
-              <div className="description-preview"><span>Vista previa</span><BookstoreDescription value={draft.description || "Sin descripción"} /></div>
+              <RichDescriptionEditor value={draft.description} onChange={(value) => changeField("description", value)} disabled={isSaving} placeholder="Conta que hace especial a tu libreria." />
             </label>
             <label className="bookstore-profile-field-wide"><span>Tipo de libreria</span><select value={draft.bookstoreType} onChange={(event) => changeField("bookstoreType", event.target.value)} disabled={isSaving} required><option value="">Selecciona una opcion</option><option value="physical">Libreria fisica</option><option value="virtual">Libreria virtual</option><option value="hybrid">Libreria fisica y virtual</option></select></label>
             <BookstoreTagField label="Etiqueta 1" value={draft.tag1} otherValue={draft.tag2} genres={genres} genresLoading={genresLoading} genresError={genresError} isSaving={isSaving} onChange={(value) => changeField("tag1", value)} />

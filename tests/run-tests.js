@@ -11,6 +11,7 @@ import { getGenreSelectorState } from "../src/genreSelectorState.js";
 import { registerProfileEditorStateTests } from "./profileEditorState.test.js";
 import { registerBookstoreDescriptionFormatTests } from "./bookstoreDescriptionFormat.test.js";
 import { registerBookstoreDescriptionRenderTests } from "./bookstoreDescriptionRender.test.js";
+import { registerRichDescriptionEditorTests } from "./richDescriptionEditor.test.js";
 import { registerReadingClubStateTests } from "./readingClubState.test.js";
 import { registerAiAutocompleteStateTests } from "./aiAutocompleteState.test.js";
 import { registerDashboardCatalogStateTests } from "./dashboardCatalogState.test.js";
@@ -146,6 +147,7 @@ const tests = [
 registerProfileEditorStateTests((name, fn) => tests.push([name, fn]));
 registerBookstoreDescriptionFormatTests((name, fn) => tests.push([name, fn]));
 registerBookstoreDescriptionRenderTests((name, fn) => tests.push([name, fn]));
+registerRichDescriptionEditorTests((name, fn) => tests.push([name, fn]));
 registerReadingClubStateTests((name, fn) => tests.push([name, fn]));
 registerAiAutocompleteStateTests((name, fn) => tests.push([name, fn]));
 registerDashboardCatalogStateTests((name, fn) => tests.push([name, fn]));
