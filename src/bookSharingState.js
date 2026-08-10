@@ -252,7 +252,7 @@ export function buildInstagramStoryCoverPath(item, { trustedOrigins = [] } = {})
     pathname = coverPath.split(/[?#]/, 1)[0];
   }
 
-  const allowedPath = new RegExp(`^/(?:api/)?dashboard/catalog/${itemId}(?:/cover|/images/\\d+)$`);
+  const allowedPath = new RegExp(`^/(?:api/)?(?:dashboard/catalog/${itemId}(?:/cover|/images/\\d+)|catalog/${itemId}/cover)$`);
   return allowedPath.test(pathname) ? coverPath : null;
 }
 
