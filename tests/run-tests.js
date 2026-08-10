@@ -504,6 +504,17 @@ tests.push(["offers catalog add-ons after bookstore account credentials", () => 
   assert.match(editorialStyles, /\.register-catalog-options/);
 }]);
 
+tests.push(["keeps the book share menu inside the mobile viewport", () => {
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+  assert.match(editorialStyles, /\.book-share-options\s*\{[^}]*box-sizing:\s*border-box;/);
+  assert.match(editorialStyles, /@media \(max-width: 620px\)[\s\S]*?\.book-share-options\s*\{[^}]*width:\s*min\(220px,\s*calc\(100vw\s*-\s*32px\)\);[^}]*min-width:\s*0;/);
+  assert.match(editorialStyles, /\.book-share-options \.book-share-story-button\s*\{[^}]*min-width:\s*0;[^}]*white-space:\s*normal;[^}]*overflow-wrap:\s*anywhere;/);
+  assert.doesNotMatch(editorialStyles, /\.dashboard-list-active \.card-actions button(?:\s*\{|:has)/);
+  assert.match(editorialStyles, /\.dashboard-list-active \.card-actions-main > button,\s*\.dashboard-list-active \.card-actions-main > \.book-share-menu > \.book-share-trigger,\s*\.dashboard-list-active \.card-actions > \.danger-button\s*\{/);
+  assert.match(editorialStyles, /\.dashboard-list-active \.card-actions-main > button:has\(svg\)\s*\{/);
+}]);
+
 tests.push(["emits one session-expiry event for repeated unauthorized API responses", async () => {
   const previousFetch = globalThis.fetch;
   const previousDocument = globalThis.document;
