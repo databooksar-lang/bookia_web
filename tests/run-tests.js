@@ -33,6 +33,7 @@ const tests = [
     assert.equal(isBookiaApiRoute("/reading-clubs?genre_slug=policial"), true);
     assert.equal(isBookiaApiRoute("/genres"), true);
     assert.equal(isBookiaApiRoute("/genres?active=true"), true);
+    assert.equal(isBookiaApiRoute("/analytics/acquisition-events"), true);
   }],
   ["keeps non-api frontend routes out of API detection", () => {
     assert.equal(isBookiaApiRoute("/dashboard"), false);
@@ -591,6 +592,7 @@ tests.push(["publishes terms and conditions for Bookia's marketplace role", () =
   assert.match(termsSource, /Mercado Pago/);
   assert.match(termsSource, /correo distinto del correo de acceso a Bookia/);
   assert.match(privacySource, /correo de la cuenta pagadora de Mercado Pago/);
+  assert.match(privacySource, /limite temporal en memoria/);
   assert.match(termsSource, /prueba gratis de 30 dias/);
   assert.match(termsSource, /7 dias/);
   assert.match(termsSource, /oculta la vidriera y el catalogo publico/);
@@ -670,21 +672,28 @@ tests.push(["shows a non-interactive Mercado Pago subscriptions badge in the foo
   assert.match(editorialStyles, /\.footer-payment-badge\s*\{/);
   assert.match(editorialStyles, /\.footer-payment-badge img\s*\{/);
 }]);
-tests.push(["presents bookstore plans and AI capabilities without public pricing", () => {
+tests.push(["presents a dual-path bookstore acquisition page without public pricing", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
   const bookstoresPageSource = publicPagesSource.match(/export function BookstoresPage\(\) \{([\s\S]*?)\r?\n\}\r?\nfunction PlansPlan/);
 
   assert.ok(bookstoresPageSource, "BookstoresPage should remain isolated before PlansPlan");
   const page = bookstoresPageSource[1];
-  assert.match(page, /Lleg\\u00E1 a m\\u00E1s lectores/);
-  assert.match(page, /Organiz\\u00E1 tu cat\\u00E1logo/);
-  assert.match(page, /Consultas directas/);
-  assert.match(page, /Planes que acompa\\u00F1an tu etapa/);
+  assert.match(page, /Tu catálogo, frente a lectores que buscan qué leer/);
+  assert.match(page, /Llegá a lectores que ya están buscando/);
+  assert.match(page, /Publicá y mantené tu catálogo al día/);
+  assert.match(page, /Recibí consultas directas/);
+  assert.match(page, /ASÍ FUNCIONA/);
+  assert.match(page, /Bookia facilita el descubrimiento y el contacto/);
+  assert.match(page, /Cargá tu catálogo sin sumar trabajo innecesario/);
   assert.match(page, /Carga desde foto/);
   assert.match(page, /Autocompletado con IA/);
-  assert.doesNotMatch(page, />Gesti\\u00F3n/);
-  assert.match(page, /<li>\{"Vidriera digital atractiva"\}<\/li>/);
-  assert.match(page, /href="\/register"/);
+  assert.match(page, /href="\/plans\?register=bookstore"/);
+  assert.match(page, /https:\/\/wa\.me\/5491162366344\?text=/);
+  assert.match(page, /target="_blank"/);
+  assert.match(page, /rel="noopener noreferrer"/);
+  assert.match(page, /trackAcquisitionEvent\("bookstore_trial_started"\)/);
+  assert.match(page, /trackAcquisitionEvent\("bookstore_demo_requested"\)/);
+  assert.match(page, /trackAcquisitionEvent\("bookstore_plans_opened"\)/);
   assert.doesNotMatch(page, /ARS|\$\s*\d|\/mes/);
 }]);
 tests.push(["composes the bookstore acquisition page around a responsive editorial library image and conversion hierarchy", () => {

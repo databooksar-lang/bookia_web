@@ -31,3 +31,15 @@ export async function trackWebInteractionEvent(event, { send = apiFetch } = {}) 
     return false;
   }
 }
+
+export async function trackAcquisitionEvent(eventType, { send = apiFetch } = {}) {
+  try {
+    await send("/analytics/acquisition-events", {
+      method: "POST",
+      body: JSON.stringify({ event_type: eventType, source: "bookstores_landing" }),
+    });
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
