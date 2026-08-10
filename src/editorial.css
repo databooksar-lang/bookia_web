@@ -1179,6 +1179,11 @@ button:disabled {
   color: rgba(255, 250, 240, 0.82);
 }
 
+.store-identity > .bookstore-description {
+  max-width: 650px;
+  color: rgba(255, 250, 240, 0.82);
+}
+
 .store-tags {
   display: flex;
   flex-wrap: wrap;
@@ -2089,6 +2094,32 @@ button:disabled {
   overflow-wrap: anywhere;
 }
 
+.bookstore-description {
+  min-width: 0;
+}
+
+.bookstore-description p,
+.bookstore-description ul,
+.bookstore-description ol {
+  margin: 0 0 10px;
+}
+
+.bookstore-description > :last-child {
+  margin-bottom: 0;
+}
+
+.bookstore-description a {
+  color: inherit;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+
+.bookstore-profile-heading .bookstore-description {
+  max-width: 720px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
 .bookstore-profile-actions,
 .bookstore-profile-preview-actions {
   display: flex;
@@ -2290,6 +2321,55 @@ button:disabled {
 .bookstore-profile-fields textarea {
   width: 100%;
   resize: vertical;
+}
+
+.description-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.description-toolbar button {
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid rgba(18, 63, 50, 0.2);
+  border-radius: 8px;
+  color: var(--forest-deep);
+  background: var(--cream);
+  cursor: pointer;
+}
+
+.description-toolbar button:hover:not(:disabled),
+.description-toolbar button:focus-visible {
+  border-color: var(--forest);
+  outline: 2px solid rgba(217, 116, 90, 0.34);
+  outline-offset: 2px;
+}
+
+.description-toolbar button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.description-format-error {
+  color: #b72f24;
+}
+
+.description-preview {
+  padding: 16px;
+  border: 1px solid rgba(18, 63, 50, 0.14);
+  border-radius: 10px;
+  color: var(--forest-deep);
+  background: rgba(18, 63, 50, 0.04);
+}
+
+.description-preview > span {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
 }
 
 .bookstore-profile-phone-row {

@@ -5,6 +5,7 @@ import {
   buildProfileFormData,
   createProfileDraft,
   displayBookstoreDescription,
+  formatDescriptionSelection,
   getBookstoreTagOptions,
   removeProfileImage,
   requireRefreshedBookstore,
@@ -15,6 +16,24 @@ import { buildRequestHeaders } from "../src/api.js";
 import { buildWhatsAppHref } from "../src/formatters.js";
 
 export function registerProfileEditorStateTests(test) {
+  test("formats the selected description text without losing its selection", () => {
+    assert.deepEqual(
+      formatDescriptionSelection("Una libreria", 4, 12, "bold"),
+      { value: "Una **libreria**", selectionStart: 6, selectionEnd: 14 },
+    );
+    assert.deepEqual(
+      formatDescriptionSelection("Talleres\nClubes", 0, 15, "unorderedList"),
+      { value: "- Talleres\n- Clubes", selectionStart: 0, selectionEnd: 19 },
+    );
+  });
+
+  test("formats safe links and rejects unsupported link protocols", () => {
+    assert.deepEqual(
+      formatDescriptionSelection("Visitanos", 0, 9, "link", "https://libreria.example"),
+      { value: "[Visitanos](https://libreria.example/)", selectionStart: 1, selectionEnd: 10 },
+    );
+    assert.equal(formatDescriptionSelection("Visitanos", 0, 9, "link", "javascript:alert(1)"), null);
+  });
   test("offers active genres as distinct bookstore tag options and keeps a legacy value selectable", () => {
     const genres = [
       { id: 1, name: "Narrativa" },
@@ -179,6 +198,25 @@ export function registerProfileEditorStateTests(test) {
     assert.match(dashboardSource, /<BookstoreProfileEditor\b[^>]*\bonSaved\s*=\s*\{\s*\(\s*\)\s*=>\s*refreshMe\(\s*\{\s*preserveOnError\s*:\s*true\s*\}\s*\)\s*\}/s);
     assert.match(publicPagesSource, /import\s*\{[^}]*\bdisplayBookstoreDescription\b[^}]*\}\s*from\s*["']\.\.\/profileEditorState["']/s);
     assert.match(publicPagesSource, /displayBookstoreDescription\(\s*store\.description\s*\)/);
+  });
+
+  test("uses the rich description editor and renderer in dashboard and storefront", () => {
+    const editorSource = readFileSync(new URL("../src/components/BookstoreProfileEditor.jsx", import.meta.url), "utf8");
+    const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+    const editorialSource = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+    assert.match(editorSource, /BookstoreDescription/);
+    assert.match(editorSource, /description-toolbar/);
+    assert.match(editorSource, /Negrita/);
+    assert.match(editorSource, /Cursiva/);
+    assert.match(editorSource, /Insertar enlace/);
+    assert.match(editorSource, /Lista con viñetas/);
+    assert.match(editorSource, /Lista numerada/);
+    assert.match(editorSource, /Vista previa/);
+    assert.match(editorSource, /formatDescriptionSelection/);
+    assert.match(publicPagesSource, /BookstoreDescription/);
+    assert.match(editorialSource, /\.description-toolbar/);
+    assert.match(editorialSource, /\.bookstore-description/);
   });
 
   test("uses the dashboard genre request for distinct bookstore tag dropdowns", () => {
