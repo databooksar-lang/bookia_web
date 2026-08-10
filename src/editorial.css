@@ -3810,6 +3810,7 @@ textarea:focus {
 .register-progress .is-complete { color: var(--forest); }
 .register-form { display: grid; gap: 16px; }
 .register-form label { display: grid; gap: 7px; color: var(--forest-deep); font-size: 0.78rem; font-weight: 800; }
+.register-form label small, .register-password-group > small { color: var(--muted); font-size: 0.72rem; font-weight: 500; line-height: 1.4; }
 .register-form input:not([type="checkbox"]), .register-form select { min-height: 47px; padding: 10px 12px; color: var(--forest-deep); background: #fffdf8; border: 1px solid #d9cdbb; border-radius: 5px; }
 .register-form input:focus, .register-form select:focus { outline: 3px solid rgba(200, 154, 43, 0.25); border-color: #c89a2b; }
 .register-password-group { display: grid; gap: 7px; }
@@ -3832,6 +3833,8 @@ textarea:focus {
 .register-submit { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; color: #fffaf3; cursor: pointer; background: #ed684f; border: 0; border-radius: 5px; font-weight: 800; }
 .register-submit:hover { background: #d9553e; }
 .register-submit:disabled { cursor: wait; opacity: 0.65; }
+.register-form-login { margin: 0; color: var(--muted); font-size: 0.78rem; text-align: center; }
+.register-form-login a { color: var(--forest); font-weight: 800; }
 
 @media (max-width: 720px) {
   .register-page { width: min(100% - 16px, 100%); margin: 12px auto 52px; border-radius: 15px; }
