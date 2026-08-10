@@ -2901,7 +2901,7 @@ textarea:focus {
   .reading-clubs-section-illustration {
     width: min(280px, 80vw);
     margin: -8px 0 -18px;
-    align-self: flex-end;
+    align-self: center;
   }
 
   .store-grid,
