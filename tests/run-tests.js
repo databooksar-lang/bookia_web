@@ -511,12 +511,12 @@ tests.push(["offers catalog add-ons after bookstore account credentials", () => 
   assert.match(editorialStyles, /\.register-catalog-options/);
 }]);
 
-tests.push(["keeps the book share menu inside the mobile viewport", () => {
+tests.push(["keeps the horizontal book share menu inside the mobile viewport", () => {
   const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
 
-  assert.match(editorialStyles, /\.book-share-options\s*\{[^}]*box-sizing:\s*border-box;/);
-  assert.match(editorialStyles, /@media \(max-width: 620px\)[\s\S]*?\.book-share-options\s*\{[^}]*width:\s*min\(220px,\s*calc\(100vw\s*-\s*32px\)\);[^}]*min-width:\s*0;/);
-  assert.match(editorialStyles, /\.book-share-options \.book-share-story-button\s*\{[^}]*min-width:\s*0;[^}]*white-space:\s*normal;[^}]*overflow-wrap:\s*anywhere;/);
+  assert.match(editorialStyles, /\.book-share-options\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*flex-wrap:\s*wrap;/);
+  assert.match(editorialStyles, /\.book-share-options \.book-share-story-button\s*\{[^}]*display:\s*inline-flex;[^}]*white-space:\s*nowrap;/);
+  assert.match(editorialStyles, /@media \(max-width: 620px\)[\s\S]*?\.book-share-options\s*\{[^}]*max-width:\s*calc\(100vw\s*-\s*32px\);/);
   assert.doesNotMatch(editorialStyles, /\.dashboard-list-active \.card-actions button(?:\s*\{|:has)/);
   assert.match(editorialStyles, /\.dashboard-list-active \.card-actions-main > button,\s*\.dashboard-list-active \.card-actions-main > \.book-share-menu > \.book-share-trigger,\s*\.dashboard-list-active \.card-actions > \.danger-button\s*\{/);
   assert.match(editorialStyles, /\.dashboard-list-active \.card-actions-main > button:has\(svg\)\s*\{/);
