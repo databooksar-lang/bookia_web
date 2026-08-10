@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { apiFetch, resolveApiUrl } from "../api";
-import { trackWebInteractionEvent } from "../analyticsState";
+import { trackAcquisitionEvent, trackWebInteractionEvent } from "../analyticsState";
 import { getSharedBookId } from "../bookSharingState";
 import { getSharedReadingClubId } from "../readingClubSharingState";
 import { createFavoriteBookIds, isReaderAccount, toggleFavoriteBookId } from "../favoritesState";
@@ -461,6 +461,50 @@ export function HomePage({ me }) {
 
 
 export function BookstoresPage() {
+  const demoHref = "https://wa.me/5491162366344?text=Hola%2C%20vengo%20desde%20la%20p%C3%A1gina%20Para%20librer%C3%ADas%20de%20Bookia.%20Quiero%20solicitar%20una%20demostraci%C3%B3n.";
+
+  return (
+    <div className="editorial-page bookstores-page">
+      <section className="bookstores-hero">
+        <div className="bookstores-hero-copy">
+          <p className="section-label">PARA LIBRERÍAS</p>
+          <h1>Tu catálogo, frente a lectores que buscan qué leer.</h1>
+          <p>Publicá tus libros en Bookia, recibí consultas directas y hacé visible tu librería en una comunidad de lectores.</p>
+          <div className="bookstores-hero-actions">
+            <AppLink className="primary-button" href="/plans?register=bookstore" onClick={() => trackAcquisitionEvent("bookstore_trial_started")}>Empezar 30 días gratis <ArrowIcon /></AppLink>
+            <a className="outline-light-button" href={demoHref} target="_blank" rel="noopener noreferrer" onClick={() => trackAcquisitionEvent("bookstore_demo_requested")}>Solicitar demostración <WhatsAppIcon size={18} /></a>
+          </div>
+          <p className="bookstores-trust-note">30 días gratis. Luego, suscripción mensual; podés cancelarla desde Bookia.</p>
+        </div>
+        <div className="bookstores-hero-art" aria-hidden="true"><img className="bookstores-hero-image" src="/images/bookstores-hero-library.png" alt="" /></div>
+      </section>
+
+      <section className="bookstores-benefits" aria-labelledby="bookstores-benefits-title">
+        <div className="bookstores-section-heading"><p className="section-label">UNA VIDRIERA PARA TU CATÁLOGO</p><h2 id="bookstores-benefits-title">Todo lo que necesitás para ganar más visibilidad.</h2></div>
+        <div className="bookstores-benefit-grid">
+          <article><span>01</span><h3>Llegá a lectores que ya están buscando</h3><p>Tu catálogo aparece en las búsquedas de Bookia cuando alguien busca su próxima lectura.</p></article>
+          <article><span>02</span><h3>Publicá y mantené tu catálogo al día</h3><p>Cargá tus libros y actualizá tu vidriera digital cuando lo necesites.</p></article>
+          <article><span>03</span><h3>Recibí consultas directas</h3><p>Las personas interesadas consultan disponibilidad por WhatsApp directamente con tu librería.</p></article>
+        </div>
+      </section>
+
+      <section className="bookstores-how" aria-labelledby="bookstores-how-title">
+        <div className="bookstores-section-heading"><p className="section-label">ASÍ FUNCIONA</p><h2 id="bookstores-how-title">Empezá a mostrar tu catálogo en tres pasos.</h2></div>
+        <ol><li><span>01</span><h3>Creás tu cuenta y elegís el plan.</h3></li><li><span>02</span><h3>Cargás tus libros, desde foto o con asistencia de IA según el plan.</h3></li><li><span>03</span><h3>Los lectores encuentran tu catálogo y te contactan directamente.</h3></li></ol>
+        <p className="bookstores-disclaimer">Bookia facilita el descubrimiento y el contacto; las ventas y pagos se acuerdan directamente con cada librería.</p>
+      </section>
+
+      <section className="bookstores-plans" aria-labelledby="bookstores-plans-title">
+        <div><p className="section-label">CRECÉ A TU RITMO</p><h2 id="bookstores-plans-title">Cargá tu catálogo sin sumar trabajo innecesario.</h2><p>Elegí el plan que acompañe el tamaño y la forma de trabajo de tu librería.</p><AppLink className="secondary-button bookstores-plans-link" href="/plans?register=bookstore" onClick={() => trackAcquisitionEvent("bookstore_plans_opened")}>Ver planes y funcionalidades <ArrowIcon /></AppLink></div>
+        <div className="bookstores-ai-card"><p>GESTIÓN MÁS SIMPLE</p><h3>Menos tiempo cargando, más tiempo entre libros.</h3><ul><li>Carga desde foto</li><li>Autocompletado con IA cuando corresponda</li><li>Perfil público para tu librería</li><li>Promocioná novedades y clubes de lectura.</li></ul></div>
+      </section>
+
+      <section className="bookstore-cta bookstores-final-cta"><div><p className="section-label">PARA LIBRERÍAS</p><h2>¿Preferís verlo antes de empezar?</h2><p>Pedinos una demostración y conocé cómo cargar, mostrar y compartir tu catálogo.</p></div><div className="bookstores-final-actions"><a className="light-button" href={demoHref} target="_blank" rel="noopener noreferrer" onClick={() => trackAcquisitionEvent("bookstore_demo_requested")}>Solicitar demostración por WhatsApp <WhatsAppIcon size={18} /></a><AppLink className="outline-light-button" href="/plans?register=bookstore" onClick={() => trackAcquisitionEvent("bookstore_trial_started")}>Empezar 30 días gratis <ArrowIcon /></AppLink></div></section>
+    </div>
+  );
+}
+
+function LegacyBookstoresPage() {
   return (
     <div className="editorial-page bookstores-page">
       <section className="bookstores-hero">

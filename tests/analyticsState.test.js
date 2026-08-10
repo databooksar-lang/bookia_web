@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-import { buildWebInteractionEventPayload, trackWebInteractionEvent } from "../src/analyticsState.js";
+import { buildWebInteractionEventPayload, trackAcquisitionEvent, trackWebInteractionEvent } from "../src/analyticsState.js";
 
 export function registerAnalyticsStateTests(register) {
   register("builds minimal web interaction analytics payloads", () => {
@@ -49,5 +49,18 @@ export function registerAnalyticsStateTests(register) {
       catalog_item_id: 9,
       source: "book_detail_modal",
     });
+  });
+
+  register("tracks bookstore acquisition events without collecting personal data", async () => {
+    const sent = [];
+    const ok = await trackAcquisitionEvent("bookstore_demo_requested", {
+      send: (path, options) => { sent.push([path, JSON.parse(options.body)]); return Promise.resolve({}); },
+    });
+
+    assert.equal(ok, true);
+    assert.deepEqual(sent, [["/analytics/acquisition-events", {
+      event_type: "bookstore_demo_requested",
+      source: "bookstores_landing",
+    }]]);
   });
 }
