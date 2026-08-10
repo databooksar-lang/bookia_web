@@ -177,6 +177,24 @@ export function registerBookSharingStateTests(register) {
     assert.equal(buildInstagramStoryCoverPath({ id: 42, cover_image_url: null }), null);
   });
 
+  register("loads a public catalog cover without session credentials", async () => {
+    const pngHeader = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 32, 0, 0, 0, 32]);
+    const requests = [];
+    const image = {};
+    Object.defineProperty(image, "src", { set() { queueMicrotask(() => image.onload()); } });
+
+    await loadInstagramStoryCover({
+      coverUrl: "/api/catalog/42/cover",
+      fetchLike: async (url, options) => {
+        requests.push({ url, options });
+        return { ok: true, headers: new Headers({ "content-type": "image/png", "content-length": String(pngHeader.byteLength) }), blob: async () => new Blob([pngHeader], { type: "image/png" }) };
+      },
+      imageFactory: () => image,
+    });
+
+    assert.deepEqual(requests, [{ url: "/api/catalog/42/cover", options: { credentials: "omit" } }]);
+  });
+
   register("rejects a non-image cover response before downloading it", async () => {
     await assert.rejects(
       () => loadInstagramStoryCover({
