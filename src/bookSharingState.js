@@ -231,12 +231,29 @@ export function buildInstagramStoryMetadata({ item, bookstore }) {
   };
 }
 
-export function buildInstagramStoryCoverPath(item) {
+export function buildInstagramStoryCoverPath(item, { trustedOrigins = [] } = {}) {
   const itemId = item?.id;
   const coverPath = String(item?.cover_image_url || "").trim();
   if (!Number.isSafeInteger(itemId) || itemId <= 0) return null;
-  const allowedPath = new RegExp(`^/dashboard/catalog/${itemId}(?:/cover|/images/\\d+)$`);
-  return allowedPath.test(coverPath) ? coverPath : null;
+  if (!coverPath || coverPath.startsWith("//")) return null;
+
+  let pathname = coverPath;
+  if (/^https?:\/\//i.test(coverPath)) {
+    try {
+      const parsedUrl = new URL(coverPath);
+      if (!trustedOrigins.includes(parsedUrl.origin)) return null;
+      pathname = parsedUrl.pathname;
+    } catch {
+      return null;
+    }
+  } else if (!coverPath.startsWith("/")) {
+    return null;
+  } else {
+    pathname = coverPath.split(/[?#]/, 1)[0];
+  }
+
+  const allowedPath = new RegExp(`^/(?:api/)?dashboard/catalog/${itemId}(?:/cover|/images/\\d+)$`);
+  return allowedPath.test(pathname) ? coverPath : null;
 }
 
 export async function createInstagramStoryFile({ item, bookstore, coverUrl, fetchLike = globalThis.fetch, documentLike = globalThis.document, FileCtor = globalThis.File }) {
