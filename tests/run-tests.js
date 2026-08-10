@@ -25,6 +25,7 @@ import { registerAccountDestinationTests } from "./accountDestination.test.js";
 import { registerBookSharingStateTests } from "./bookSharingState.test.js";
 import { registerReadingClubSharingStateTests } from "./readingClubSharingState.test.js";
 import { registerSectionIndexTests } from "./sectionIndex.test.js";
+import { registerGoogleOAuthStateTests } from "./googleOAuthState.test.js";
 
 import { registerDashboardNavigationStateTests } from './dashboardNavigationState.test.js';
 
@@ -138,6 +139,7 @@ registerAiAutocompleteStateTests((name, fn) => tests.push([name, fn]));
 registerDashboardCatalogStateTests((name, fn) => tests.push([name, fn]));
 registerPublicSearchStateTests((name, fn) => tests.push([name, fn]));
 registerSectionIndexTests((name, fn) => tests.push([name, fn]));
+registerGoogleOAuthStateTests((name, fn) => tests.push([name, fn]));
 registerPlansPricingStateTests((name, fn) => tests.push([name, fn]));
 registerAnalyticsStateTests((name, fn) => tests.push([name, fn]));
 registerRegisterStateTests((name, fn) => tests.push([name, fn]));
@@ -447,6 +449,10 @@ tests.push(["presents About Bookia as a dual-audience discovery and contact plat
   assert.match(page, /Contact. directamente/);
   assert.match(page, /Bookia no vende libros ni procesa pagos/);
   assert.match(page, /Creada por Marcelo G\. Gonz.lez/);
+  assert.match(page, /Bookia naci. de una pasi.n por los libros y de una idea simple: hacer m.s f.cil el encuentro entre lectores y librer.as\./);
+  assert.match(page, /Reunimos cat.logos en un solo lugar para que buscar un t.tulo, descubrir una librer.a y consultar su disponibilidad requiera menos vueltas\./);
+  assert.match(page, /las librer.as pueden dedicar m.s tiempo a lo que mejor hacen: recomendar libros y construir comunidad\./);
+  assert.doesNotMatch(page, /plataforma integral|automatizar y optimizar los procesos de gesti.n/i);
   assert.match(page, /href="\/"/);
   assert.match(page, /href="\/register"/);
   assert.match(page, /<img className="about-hero-logo" src="\/images\/logo-sin-fondo\.png" alt="Logo circular de Bookia" \/>/);

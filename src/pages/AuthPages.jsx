@@ -1,9 +1,24 @@
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 import { apiFetch } from "../api";
 import { getAccountDestination } from "../accountDestination";
 import { AppLink, navigate } from "../navigation";
 import { ArrowIcon, BookIcon } from "../components/Icons";
+import { getGoogleOAuthError } from "../googleOAuthState";
+
+export function GoogleButton({ intent, privacyAccepted = false, onError }) {
+  const [enabled, setEnabled] = useState(false);
+  const [busy, setBusy] = useState(false);
+  useEffect(() => { apiFetch("/auth/providers").then((data) => setEnabled(Boolean(data.google))).catch(() => setEnabled(false)); }, []);
+  if (!enabled) return null;
+  function start() {
+    setBusy(true);
+    apiFetch("/auth/google/start", { method: "POST", body: JSON.stringify({ intent, privacy_accepted: privacyAccepted }) })
+      .then((data) => window.location.assign(data.authorization_url))
+      .catch((error) => { setBusy(false); onError(error.message); });
+  }
+  return <button type="button" className="secondary-button auth-submit" onClick={start} disabled={busy}>{busy ? "Conectando..." : "Continuar con Google"}</button>;
+}
 
 function AuthLayout({ label, title, description, children }) {
   return (
@@ -33,6 +48,11 @@ export function LoginPage({ onLogin, me, sessionExpired = false }) {
   const [error, setError] = useState("");
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [busy, startTransition] = useTransition();
+  useEffect(() => {
+    const googleError = getGoogleOAuthError(new URLSearchParams(window.location.search).get("google_error"));
+    if (googleError) setError(googleError);
+    if (new URLSearchParams(window.location.search).get("google") === "success") onLogin().then((sessionData) => sessionData && navigate(getAccountDestination(sessionData)));
+  }, [onLogin]);
 
   if (me) {
     const destination = getAccountDestination(me);
@@ -63,6 +83,7 @@ export function LoginPage({ onLogin, me, sessionExpired = false }) {
         {error ? <p className="feedback error">{error}</p> : null}
         {sessionExpired ? <p className="feedback error">Tu sesion vencio porque se inicio sesion en otro dispositivo.</p> : null}
         <button className="primary-button auth-submit" type="submit" disabled={busy}>{busy ? "Ingresando..." : <>Ingresar <ArrowIcon /></>}</button>
+        <GoogleButton intent="login" onError={setError} />
       </form>
     </AuthLayout>
   );

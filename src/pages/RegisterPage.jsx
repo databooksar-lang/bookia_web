@@ -6,6 +6,7 @@ import { formatCommercialPrice, getCommercialPrices } from "../plansPricingState
 import { AppLink, navigate } from "../navigation";
 import { Redirect } from "../components/Redirect";
 import { ArrowIcon, EyeIcon, EyeOffIcon } from "../components/Icons";
+import { GoogleButton } from "./AuthPages";
 import { buildRegisterPath, buildRegistrationRequest, getRegisterQueryState, getRegisterStep, isSupportedBookstorePlan } from "../registerState";
 
 const CATALOG_OPTIONS = [
@@ -215,6 +216,7 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
             {(isReader || isBookstoreDetails) ? <label className="register-legal"><input type="checkbox" checked={privacyAccepted} onChange={(event) => setPrivacyAccepted(event.target.checked)} required />Acepto los <AppLink href="/terms">Terminos y Condiciones</AppLink> y la <AppLink href="/privacy">Politica de Privacidad</AppLink>.</label> : null}
             {error ? <p className="feedback error">{error}</p> : null}
             <button className="register-submit" type="submit" disabled={busy}>{busy ? "Creando cuenta..." : isBookstoreSummary ? "Crear cuenta y autorizar Mercado Pago" : profileType === "bookstore" ? "Continuar" : "Crear cuenta"} <ArrowIcon /></button>
+            {isReader ? <GoogleButton intent="register" privacyAccepted={privacyAccepted} onError={setError} /> : null}
           </form>
         </div>
       </section>
