@@ -202,18 +202,20 @@ export function registerProfileEditorStateTests(test) {
 
   test("uses the rich description editor and renderer in dashboard and storefront", () => {
     const editorSource = readFileSync(new URL("../src/components/BookstoreProfileEditor.jsx", import.meta.url), "utf8");
+    const richEditorSource = readFileSync(new URL("../src/components/RichDescriptionEditor.jsx", import.meta.url), "utf8");
     const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
     const editorialSource = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
 
     assert.match(editorSource, /BookstoreDescription/);
-    assert.match(editorSource, /description-toolbar/);
-    assert.match(editorSource, /Negrita/);
-    assert.match(editorSource, /Cursiva/);
-    assert.match(editorSource, /Insertar enlace/);
-    assert.match(editorSource, /Lista con viñetas/);
-    assert.match(editorSource, /Lista numerada/);
-    assert.match(editorSource, /Vista previa/);
-    assert.match(editorSource, /formatDescriptionSelection/);
+    assert.match(editorSource, /RichDescriptionEditor/);
+    assert.match(richEditorSource, /description-toolbar/);
+    assert.match(richEditorSource, /Negrita/);
+    assert.match(richEditorSource, /Cursiva/);
+    assert.match(richEditorSource, /Insertar enlace/);
+    assert.match(richEditorSource, /Lista con viñetas/);
+    assert.match(richEditorSource, /Lista numerada/);
+    assert.match(richEditorSource, /Vista previa/);
+    assert.match(richEditorSource, /formatDescriptionSelection/);
     assert.match(publicPagesSource, /BookstoreDescription/);
     assert.match(editorialSource, /\.description-toolbar/);
     assert.match(editorialSource, /\.bookstore-description/);

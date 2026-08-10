@@ -68,6 +68,15 @@ assert.match(profilePage, /<fieldset className="bookstore-profile-field-wide rea
     assert.match(privacyPage, /generos de lectura seleccionados/);
     assert.match(termsPage, /generos de lectura que seleccione/);
   });
+  test("uses the shared rich description editor in the reader profile and safely renders it publicly", () => {
+    const profilePage = readFileSync(new URL("../src/pages/ReaderProfilePage.jsx", import.meta.url), "utf8");
+    const publicPages = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+
+    assert.match(profilePage, /import\s*\{\s*RichDescriptionEditor\s*\}\s*from\s*["']\.\.\/components\/RichDescriptionEditor["']/);
+    assert.match(profilePage, /<RichDescriptionEditor\b[^>]*\bvalue=\{draft\.description\}[^>]*\bonChange=/s);
+    assert.match(profilePage, /maxLength=\{5000\}/);
+    assert.match(publicPages, /<BookstoreDescription value=\{reader\.description \|\| "Comparte clubes de lectura con la comunidad Bookia\."\}/);
+  });
   test("stops a pending favorites load after its cleanup runs", async () => {
     let resolveFavorites;
     const receivedFavorites = [];
