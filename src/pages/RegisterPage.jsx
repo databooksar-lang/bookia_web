@@ -214,7 +214,7 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
                 <small>Ingresá el correo de la cuenta que autorizará la suscripción. Puede ser distinto de tu correo de acceso a Bookia.</small>
               </label>
             </div>}
-            {(isReader || isBookstoreDetails) ? <label className="register-legal"><input type="checkbox" checked={privacyAccepted} onChange={(event) => setPrivacyAccepted(event.target.checked)} required />Acepto los <AppLink href="/terms">Términos y Condiciones</AppLink> y la <AppLink href="/privacy">Política de Privacidad</AppLink>.</label> : null}
+            {(isReader || isBookstoreDetails) ? <label className="register-legal"><input type="checkbox" checked={privacyAccepted} onChange={(event) => setPrivacyAccepted(event.target.checked)} required /><span className="register-legal-copy">Acepto los <AppLink href="/terms">Términos y Condiciones</AppLink> y la <AppLink href="/privacy">Política de Privacidad</AppLink>.</span></label> : null}
             {error ? <p className="feedback error">{error}</p> : null}
             <button className="register-submit" type="submit" disabled={busy}>{busy ? "Creando cuenta..." : isBookstoreSummary ? "Crear cuenta y autorizar Mercado Pago" : profileType === "bookstore" ? "Continuar" : "Crear cuenta gratis"} <ArrowIcon /></button>
             {isReader ? <GoogleButton intent="register" privacyAccepted={privacyAccepted} onError={setError} /> : null}

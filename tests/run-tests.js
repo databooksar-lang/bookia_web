@@ -281,6 +281,7 @@ tests.push(["renders an accessible password visibility control in registration f
     assert.match(markup, /type="password"/);
     assert.match(markup, /aria-label="Mostrar/);
     assert.match(markup, /class="register-password-toggle"/);
+    assert.match(markup, /class="register-legal"[^>]*>.*class="register-legal-copy"/s);
     const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
     assert.match(editorialStyles, /\.register-password-field\s*\{[^}]*position:\s*relative;/s);
     assert.match(editorialStyles, /\.register-password-field input\s*\{[^}]*padding-right:\s*48px;/s);
