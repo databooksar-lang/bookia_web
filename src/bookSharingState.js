@@ -148,9 +148,18 @@ function assertSafeStoryCoverDimensions({ width, height }) {
   }
 }
 
+function storyCoverRequestCredentials(coverUrl) {
+  try {
+    const pathname = new URL(coverUrl, "https://bookia.invalid").pathname;
+    return /^\/(?:api\/)?catalog\/\d+\/cover$/.test(pathname) ? "omit" : "include";
+  } catch {
+    return "include";
+  }
+}
+
 export async function loadInstagramStoryCover({ coverUrl, fetchLike = globalThis.fetch, imageFactory = () => globalThis.document?.createElement("img") }) {
   if (!coverUrl || typeof fetchLike !== "function") return null;
-  const response = await fetchLike(coverUrl, { credentials: "include" });
+  const response = await fetchLike(coverUrl, { credentials: storyCoverRequestCredentials(coverUrl) });
   if (!response.ok) throw new Error("No pudimos cargar la tapa del libro.");
   const contentType = String(response.headers?.get?.("content-type") || "").split(";", 1)[0].trim().toLowerCase();
   if (!new Set(["image/jpeg", "image/png", "image/webp"]).has(contentType)) throw new Error("La tapa no tiene un formato de imagen compatible.");
