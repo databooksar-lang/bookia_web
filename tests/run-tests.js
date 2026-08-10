@@ -64,6 +64,8 @@ const tests = [
   ["allows the embedded admin script without weakening the site-wide CSP", () => {
     const entrypoint = readFileSync(new URL("../docker-entrypoint.sh", import.meta.url), "utf8");
     assert.match(entrypoint, /@admin path \/admin \/admin\/\*/);
+    assert.match(entrypoint, /@non_admin not path \/admin \/admin\/\*/);
+    assert.match(entrypoint, /header @non_admin \{\s*Content-Security-Policy "[^"]*script-src 'self'"\s*\}/);
     assert.match(entrypoint, /header @admin \{\s*Content-Security-Policy "[^"]*script-src 'self' 'unsafe-inline'"\s*\}/);
   }],
   ["returns a JSON deployment error for /api when the Caddy proxy is missing", () => {
