@@ -8,3 +8,7 @@ export function getGoogleOAuthError(code) {
   };
   return messages[code] || "";
 }
+
+export function getGoogleOAuthLinkMessage(code) {
+  return code === "required" ? "Confirma tu contrasena actual para vincular el acceso con Google." : "";
+}

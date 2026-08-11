@@ -4,7 +4,7 @@ import { apiFetch } from "../api";
 import { getAccountDestination } from "../accountDestination";
 import { AppLink, navigate } from "../navigation";
 import { ArrowIcon, BookIcon } from "../components/Icons";
-import { getGoogleOAuthError } from "../googleOAuthState";
+import { getGoogleOAuthError, getGoogleOAuthLinkMessage } from "../googleOAuthState";
 
 export function GoogleButton({ intent, privacyAccepted = false, onError }) {
   const [enabled, setEnabled] = useState(false);
@@ -42,12 +42,39 @@ function AuthLayout({ label, title, description, children }) {
   );
 }
 
+function GoogleOwnerLinkForm({ onLogin }) {
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [busy, startTransition] = useTransition();
+
+  function submit(event) {
+    event.preventDefault();
+    startTransition(() => {
+      apiFetch("/auth/google/link-owner", { method: "POST", body: JSON.stringify({ password }) })
+        .then(() => onLogin())
+        .then((sessionData) => {
+          if (!sessionData) throw new Error("No pudimos recuperar tu sesion. Intenta ingresar nuevamente.");
+          navigate(getAccountDestination(sessionData));
+        })
+        .catch((linkError) => setError(linkError.message));
+    });
+  }
+
+  return <form className="auth-form" onSubmit={submit}>
+    <label>Contraseña actual<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" required autoFocus /></label>
+    {error ? <p className="feedback error">{error}</p> : null}
+    <button className="primary-button auth-submit" type="submit" disabled={busy}>{busy ? "Vinculando..." : "Vincular Google"} <ArrowIcon /></button>
+    <button type="button" className="text-link auth-link-button" onClick={() => navigate("/login")}>Cancelar</button>
+  </form>;
+}
+
 export function LoginPage({ onLogin, me, sessionExpired = false }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [busy, startTransition] = useTransition();
+  const googleLinkMessage = getGoogleOAuthLinkMessage(new URLSearchParams(window.location.search).get("google_link"));
   useEffect(() => {
     const googleError = getGoogleOAuthError(new URLSearchParams(window.location.search).get("google_error"));
     if (googleError) setError(googleError);
@@ -58,6 +85,9 @@ export function LoginPage({ onLogin, me, sessionExpired = false }) {
     const destination = getAccountDestination(me);
     const isReader = destination === "/profile";
     return <AuthLayout label="Sesión activa" title="Ya tenés una sesión activa" description="Tu cuenta está lista para continuar."><button className="primary-button auth-submit" onClick={() => navigate(destination)}>{isReader ? "Ir a mi perfil" : "Ir al panel"} <ArrowIcon /></button></AuthLayout>;
+  }
+  if (googleLinkMessage) {
+    return <AuthLayout label="Vincular Google" title="Confirma tu contraseña" description={googleLinkMessage}><GoogleOwnerLinkForm onLogin={onLogin} /></AuthLayout>;
   }
   function submit(event) {
     event.preventDefault();
