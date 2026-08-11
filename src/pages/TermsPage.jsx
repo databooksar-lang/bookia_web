@@ -18,7 +18,7 @@ export function TermsPage() {
       <p>Bookia es una plataforma digital que ayuda a lectores y visitantes a descubrir libros, librerias, vendedores de usados y proyectos relacionados con la circulacion de libros. Las librerias pueden crear y administrar una vidriera publica con datos de contacto, catalogo, imagenes, disponibilidad y actividades como clubes de lectura.</p>
 
       <h2>Usuarios lectores, visitantes y librerias</h2>
-      <p>Las personas visitantes pueden buscar libros, consultar perfiles publicos y contactar directamente a las librerias sin crear una cuenta. Las personas lectoras registradas pueden guardar libros, seguir o dejar de seguir librerias y administrar un perfil publico, su biografia y los generos de lectura que seleccione como preferencias publicas. Los libros guardados y las librerias seguidas son privados. Las librerias registradas pueden gestionar su perfil, catalogo, fotos, disponibilidad, datos de contacto y herramientas de carga segun su plan vigente.</p>
+      <p>Las personas visitantes pueden buscar libros, consultar perfiles publicos y contactar directamente a las librerias sin crear una cuenta. Las personas lectoras registradas pueden guardar libros, seguir o dejar de seguir librerias y administrar un perfil publico con su biografia, los generos de lectura que seleccione, sus rasgos lectores declarados y una lista de hasta 20 libros que desean encontrar. Los libros guardados como favoritos y las librerias seguidas son privados. Las librerias registradas pueden gestionar su perfil, catalogo, fotos, disponibilidad, datos de contacto y herramientas de carga segun su plan vigente.</p>
 
       <h2>Registro, cuentas y seguridad</h2>
       <p>Quien crea una cuenta debe brindar informacion verdadera, mantener actualizados sus datos y proteger sus credenciales. Cada libreria es responsable por las acciones realizadas desde su cuenta web o desde usuarios de Telegram vinculados a su libreria.</p>
@@ -40,8 +40,8 @@ export function TermsPage() {
       <h2>Uso permitido y usos prohibidos</h2>
       <p>Bookia debe usarse de buena fe, con fines licitos y respetando derechos de terceros. No esta permitido publicar informacion falsa o enganosa, cargar contenido ofensivo o ilegal, intentar acceder a cuentas ajenas, afectar la seguridad del servicio, automatizar usos abusivos, copiar masivamente informacion de la plataforma o usar Bookia para fraudes, spam o actividades no autorizadas.</p>
 
-      <h2>Contenido e imagenes cargadas por librerias</h2>
-      <p>Al cargar textos, fotos, logos, banners o datos de catalogo, la libreria declara que tiene derecho a usarlos y autoriza a Bookia a alojarlos, mostrarlos, adaptarlos tecnicamente y usarlos dentro de la plataforma para prestar el servicio. La libreria conserva la responsabilidad sobre ese contenido.</p>
+      <h2>Contenido cargado por usuarios y librerias</h2>
+      <p>Al cargar textos, listas de libros, fotos, logos, banners o datos de catalogo, cada usuario declara que tiene derecho a usarlos y autoriza a Bookia a alojarlos, mostrarlos y adaptarlos tecnicamente para prestar el servicio. Quien publica conserva la responsabilidad sobre ese contenido.</p>
 
       <h2>Funciones con IA</h2>
       <p>Bookia puede usar OpenAI u otros proveedores para asistir en la extraccion de datos desde fotos, autocompletar informacion de catalogo o sugerir descripciones. Estas funciones pueden cometer errores; la libreria debe revisar y confirmar la informacion antes de publicarla.</p>

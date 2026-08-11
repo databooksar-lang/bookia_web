@@ -1,3 +1,5 @@
+import { normalizeReaderTraits } from "./readerIdentityState.js";
+
 export function buildReaderProfilePayload(draft = {}) {
   return {
     display_name: draft.display_name || "",
@@ -5,6 +7,7 @@ export function buildReaderProfilePayload(draft = {}) {
     description: draft.description || "",
     is_public: draft.is_public ?? true,
     favorite_genre_ids: Array.isArray(draft.favorite_genre_ids) ? draft.favorite_genre_ids : [],
+    traits: normalizeReaderTraits(draft.traits),
   };
 }
 export function createReaderProfileDraft(profile = {}) {
@@ -14,6 +17,7 @@ export function createReaderProfileDraft(profile = {}) {
     description: profile?.description || "",
     is_public: profile?.is_public ?? true,
     favorite_genre_ids: (profile?.favorite_genres || []).map((genre) => genre?.id).filter(Number.isInteger),
+    traits: normalizeReaderTraits(profile?.traits),
   };
 }
 
