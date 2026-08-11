@@ -18,6 +18,7 @@ import { ReadingClubShareMenu } from "../components/ReadingClubShareMenu";
 import { FavoriteBookButton } from "../components/FavoriteBookButton";
 import { BookstoreDescription } from "../components/BookstoreDescription";
 import { SectionIndex } from "../components/SectionIndex";
+import { ReaderMonogram, ReaderPassport, ReaderWantedBooksPublic } from "../components/ReaderPublicProfile";
 import { ArrowIcon, BookIcon, LocationIcon, SearchIcon, StoreIcon, WhatsAppIcon } from "../components/Icons";
 
 function BookCover({ item, className = "book-cover", interactive = false, onOpen }) {
@@ -863,19 +864,22 @@ export function BookstorePage({ slug, me }) {
 export function ReaderPage({ slug }) {
   const [reader, setReader] = useState(null);
   const [readingClubs, setReadingClubs] = useState([]);
+  const [wantedBooks, setWantedBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     setLoading(true);
-    apiFetch(`/readers/${slug}`).then((data) => { setReader(data.reader); setReadingClubs(data.reading_clubs || []); setError(""); }).catch((fetchError) => setError(fetchError.message)).finally(() => setLoading(false));
+    apiFetch(`/readers/${slug}`).then((data) => { setReader(data.reader); setReadingClubs(data.reading_clubs || []); setWantedBooks(data.wanted_books || []); setError(""); }).catch((fetchError) => setError(fetchError.message)).finally(() => setLoading(false));
   }, [slug]);
 
   if (loading) return <div className="page-state"><div className="loading-mark" /><p>Cargando lector...</p></div>;
   if (error || !reader) return <div className="page-state"><EmptyState title="No encontramos a este lector">{error || "Revis\u00E1 el enlace o volv\u00E9 a la b\u00FAsqueda."}</EmptyState><button className="secondary-button" onClick={() => navigate("/")}>Volver a buscar</button></div>;
 
   return <section className="store-page reader-page">
-    <div className="store-profile-panel reader-profile-panel"><div className="store-identity"><p className="section-label">Lector en Bookia</p><h1>{reader.display_name}</h1><BookstoreDescription value={reader.description || "Comparte clubes de lectura con la comunidad Bookia."} />{reader.favorite_genres?.length ? <div className="store-tags" aria-label="Generos favoritos">{reader.favorite_genres.map((genre) => <span key={genre.id} className="store-tag">{genre.name}</span>)}</div> : null}</div></div>
+    <div className="store-profile-panel reader-profile-panel"><div className="reader-profile-identity"><ReaderMonogram displayName={reader.display_name} className="is-profile-hero" /><div className="store-identity"><p className="section-label">Lector en Bookia</p><h1>{reader.display_name}</h1><BookstoreDescription value={reader.description || "Comparte clubes de lectura con la comunidad Bookia."} />{reader.favorite_genres?.length ? <div className="store-tags" aria-label="Generos favoritos">{reader.favorite_genres.map((genre) => <span key={genre.id} className="store-tag">{genre.name}</span>)}</div> : null}</div></div></div>
+    <ReaderPassport reader={reader} />
+    <ReaderWantedBooksPublic items={wantedBooks} />
     <section className="store-reading-clubs"><div className="section-heading results-heading"><div><p className="section-label">Clubes de lectura</p><h2>Encuentros de {reader.display_name}</h2><p>{readingClubs.length} {readingClubs.length === 1 ? "club publicado" : "clubes publicados"}</p></div><button className="secondary-button" onClick={() => navigate("/")}>Volver a buscar</button></div>
       {readingClubs.length === 0 ? <EmptyState title="Todav\u00EDa no public\u00F3 clubes">Volv\u00E9 pronto para conocer sus pr\u00F3ximos encuentros.</EmptyState> : <div className="reading-club-public-list">{readingClubs.map((club) => <article key={club.id} className="reading-club-public-card"><div className="store-tags" aria-label="G\u00E9nero del club"><span className="store-tag">{club.genre?.name || "Sin g\u00E9nero"}</span></div><h3>{club.title}</h3><p>{club.description}</p><dl><div><dt>Fecha</dt><dd>{displayReadingClubDate(club.meeting_date)}</dd></div><div><dt>Lugar</dt><dd>{club.location || "Lugar a confirmar"}</dd></div></dl>{club.external_url ? <a className="reading-club-external-link" href={club.external_url} target="_blank" rel="noopener noreferrer">{club.external_url}</a> : null}</article>)}</div>}
     </section>

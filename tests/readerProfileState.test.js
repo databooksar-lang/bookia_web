@@ -12,15 +12,16 @@ export function registerReaderProfileStateTests(test) {
   test("creates a reader profile draft with selected favorite genre ids", () => {
     assert.deepEqual(
       createReaderProfileDraft({ favorite_genres: [{ id: 3, name: "Poesia" }, { id: 9, name: "Fantasia" }] }),
-      { display_name: "", slug: "", description: "", is_public: true, favorite_genre_ids: [3, 9] },
+      { display_name: "", slug: "", description: "", is_public: true, favorite_genre_ids: [3, 9], traits: { how_i_read: [], what_i_seek: [], book_relationship: [] } },
     );
   });
 
   test("builds reader profile payloads with empty and selected favorite genres", () => {
     const baseDraft = { display_name: "Ana", slug: "ana-lee", description: "Leo", is_public: true };
 
-    assert.deepEqual(buildReaderProfilePayload({ ...baseDraft, favorite_genre_ids: [] }), { ...baseDraft, favorite_genre_ids: [] });
-    assert.deepEqual(buildReaderProfilePayload({ ...baseDraft, favorite_genre_ids: [3, 9] }), { ...baseDraft, favorite_genre_ids: [3, 9] });
+    const traits = { how_i_read: ["daily_ritual"], what_i_seek: ["make_me_think"], book_relationship: [] };
+    assert.deepEqual(buildReaderProfilePayload({ ...baseDraft, favorite_genre_ids: [], traits }), { ...baseDraft, favorite_genre_ids: [], traits });
+    assert.deepEqual(buildReaderProfilePayload({ ...baseDraft, favorite_genre_ids: [3, 9], traits }), { ...baseDraft, favorite_genre_ids: [3, 9], traits });
   });
   test("labels zero and multiple favorite genre selections", () => {
     assert.equal(favoriteGenreSelectionLabel([]), "0 generos seleccionados");

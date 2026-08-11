@@ -4236,6 +4236,284 @@ textarea:focus {
   display: none !important;
 }
 
+.reader-profile-panel {
+  grid-template-columns: minmax(0, 1fr);
+  border-radius: 20px;
+}
+
+.reader-profile-identity {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(20px, 3vw, 34px);
+}
+
+.reader-passport,
+.reader-public-wanted {
+  margin-top: 28px;
+  padding: clamp(24px, 4vw, 40px);
+  background: rgba(255, 250, 240, 0.76);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow-card);
+}
+
+.reader-passport-heading {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 26px;
+}
+
+.reader-passport-heading h2,
+.reader-public-wanted h2,
+.reader-public-wanted h3,
+.reader-wanted-dashboard h2,
+.reader-wanted-dashboard h3 {
+  margin: 0;
+  color: var(--forest-deep);
+}
+
+.reader-passport-heading .section-label,
+.reader-public-wanted .section-label {
+  margin-bottom: 2px;
+}
+
+.reader-monogram {
+  width: 72px;
+  height: 72px;
+  flex: 0 0 72px;
+  display: grid;
+  place-items: center;
+  color: var(--cream);
+  background: var(--forest);
+  border-radius: 50%;
+  font-family: "Fraunces", serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.reader-monogram.is-profile-hero {
+  color: var(--forest-deep);
+  background: var(--cream);
+  border: 3px solid rgba(255, 250, 240, 0.45);
+  box-shadow: 0 8px 22px rgba(7, 34, 27, 0.22);
+}
+
+.reader-passport-groups,
+.reader-passport-editor-groups {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.reader-passport-group h3,
+.reader-passport-editor-group h3 {
+  margin: 0 0 10px;
+  color: var(--forest-deep);
+  font-size: 1rem;
+}
+
+.reader-trait-list,
+.reader-trait-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.reader-trait-chip,
+.reader-trait-option {
+  padding: 7px 11px;
+  color: var(--forest-deep);
+  background: rgba(18, 63, 50, 0.08);
+  border: 1px solid rgba(18, 63, 50, 0.14);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.reader-passport-editor {
+  min-width: 0;
+  margin: 4px 0 0;
+  padding: 22px 0 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+
+.reader-passport-editor > legend {
+  padding-right: 12px;
+  color: var(--forest-deep);
+  font-family: "Fraunces", serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.reader-passport-editor > p,
+.reader-passport-editor-group small,
+.reader-wanted-details {
+  color: var(--muted);
+}
+
+.reader-trait-option {
+  cursor: pointer;
+}
+
+.reader-trait-option:hover:not(:disabled),
+.reader-trait-option:focus-visible {
+  border-color: var(--forest);
+}
+
+.reader-trait-option.is-selected {
+  color: var(--cream);
+  background: var(--forest);
+  border-color: var(--forest);
+}
+
+.reader-trait-option:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.reader-public-wanted .section-heading {
+  margin-bottom: 10px;
+}
+
+.reader-public-wanted-list,
+.reader-wanted-dashboard-list {
+  display: grid;
+}
+
+.reader-public-wanted-item {
+  padding: 18px 0;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.reader-public-wanted-item h3,
+.reader-public-wanted-item p,
+.reader-wanted-dashboard-item h3,
+.reader-wanted-dashboard-item p {
+  margin-bottom: 4px;
+}
+
+.reader-wanted-index {
+  width: 38px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  color: var(--forest);
+  background: var(--paper-deep);
+  border-radius: 5px 8px 8px 5px;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.reader-wanted-expand {
+  margin-top: 18px;
+}
+
+.reader-wanted-dashboard {
+  padding-top: 8px;
+}
+
+.reader-wanted-form {
+  margin-bottom: 22px;
+}
+
+.reader-wanted-form-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.reader-wanted-form-fields label {
+  display: grid;
+  gap: 8px;
+  color: var(--forest-deep);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.reader-wanted-form-fields label small {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.reader-wanted-detail-field {
+  grid-column: 1 / -1;
+}
+
+.reader-wanted-detail-field textarea {
+  min-height: 92px;
+  box-sizing: border-box;
+}
+
+.reader-wanted-dashboard-list {
+  gap: 14px;
+}
+
+.reader-wanted-dashboard-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.reader-wanted-dashboard-item .card-actions {
+  flex: 0 0 auto;
+  padding: 0;
+  gap: 10px;
+  border: 0;
+}
+
+@media (max-width: 760px) {
+  .reader-passport-groups,
+  .reader-passport-editor-groups,
+  .reader-wanted-form-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .reader-wanted-detail-field {
+    grid-column: auto;
+  }
+
+  .reader-wanted-dashboard-item {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .reader-wanted-dashboard-item .card-actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .reader-profile-identity {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .reader-passport,
+  .reader-public-wanted {
+    padding: 20px 17px;
+  }
+
+  .reader-passport-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .reader-wanted-dashboard-item .card-actions {
+    flex-direction: column;
+  }
+
+  .reader-wanted-dashboard-item .card-actions button {
+    width: 100%;
+  }
+}
+
 .billing-panel {
   display: grid;
   gap: 22px;
