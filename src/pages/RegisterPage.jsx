@@ -8,6 +8,8 @@ import { Redirect } from "../components/Redirect";
 import { ArrowIcon, EyeIcon, EyeOffIcon } from "../components/Icons";
 import { GoogleButton } from "./AuthPages";
 import { buildRegisterPath, buildRegistrationRequest, getRegisterQueryState, getRegisterStep, isSupportedBookstorePlan } from "../registerState";
+import { trackReaderFunnelEvent } from "../analyticsState";
+import { getPendingReaderActionCopy } from "../pendingReaderAction";
 
 const CATALOG_OPTIONS = [
   { limit: "50", title: "Sin adicional", description: "Hasta 50 libros", offeringCode: null },
@@ -25,7 +27,7 @@ function RegistrationChoice({ type, title, description, image, onChoose }) {
   );
 }
 
-export function RegisterPage({ onRegister, me, locationSearch }) {
+export function RegisterPage({ onRegister, onAuthenticated, pendingAction, me, locationSearch }) {
   const [bookstoreStep, setBookstoreStep] = useState("account");
   const [email, setEmail] = useState("");
   const [payerEmail, setPayerEmail] = useState("");
@@ -42,6 +44,7 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
   const [pricingState, setPricingState] = useState({ loading: true, prices: null });
   const [busy, setBusy] = useState(false);
   const queryState = getRegisterQueryState(locationSearch);
+  const actionCopy = getPendingReaderActionCopy(pendingAction);
 
   useEffect(() => {
     if (queryState.profileType !== "bookstore") return undefined;
@@ -132,12 +135,14 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
       return;
     }
     const { path, body } = buildRegistrationRequest({ profileType, email, payerEmail, password, whatsappPhone, bookstoreType, displayName, bookstoreName, planCode, catalogLimit, expectedMonthlyTotal: monthlyTotal, privacyAccepted });
+    if (isReader && pendingAction) trackReaderFunnelEvent({ eventType: "reader_auth_started", actionType: pendingAction.type, bookstoreId: pendingAction.bookstore_id, attemptId: pendingAction.attempt_id });
     setBusy(true);
     apiFetch(path, { method: "POST", body: JSON.stringify(body) })
         .then(() => {
           if (isReader) {
             return onRegister().then((sessionData) => {
               if (!sessionData) throw new Error("El registro fue aceptado, pero no pudimos recuperar tu sesion.");
+              if (onAuthenticated) return onAuthenticated(sessionData, { registered: true });
               navigate("/");
             });
           }
@@ -177,8 +182,8 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
         <div className="register-form-art" aria-hidden="true"><img src={isReader ? "/images/register/reader-books.png" : "/images/register/bookstore-front.png"} alt="" /></div>
         <div className="register-form-panel">
           {!isReader ? <p className="register-progress"><span className={bookstoreStep === "account" ? "is-current" : "is-complete"}>1. Tu cuenta</span><span className={isBookstoreDetails ? "is-current" : isBookstoreSummary ? "is-complete" : ""}>2. Plan</span><span className={isBookstoreSummary ? "is-current" : ""}>3. Confirmacion</span></p> : null}
-          <h1 id="register-form-title">{isReader ? "Empezá a descubrir" : isBookstoreSummary ? "Confirma tu suscripcion" : isBookstoreDetails ? "Contanos sobre tu libreria" : "Crea tu cuenta"}</h1>
-          <p>{isReader ? "Guardá los libros que te interesan y volvé a encontrarlos cuando quieras." : isBookstoreSummary ? "Revisá el importe y la renovación antes de autorizar Mercado Pago." : isBookstoreDetails ? "Elegí si querés ampliar el catálogo incluido en tu plan." : "Primero, definí los datos para ingresar a Bookia."}</p>
+          <h1 id="register-form-title">{isReader ? (pendingAction ? actionCopy.title : "Empezá a descubrir") : isBookstoreSummary ? "Confirma tu suscripcion" : isBookstoreDetails ? "Contanos sobre tu libreria" : "Crea tu cuenta"}</h1>
+          <p>{isReader ? (pendingAction ? actionCopy.description : "Guardá los libros que te interesan y volvé a encontrarlos cuando quieras.") : isBookstoreSummary ? "Revisá el importe y la renovación antes de autorizar Mercado Pago." : isBookstoreDetails ? "Elegí si querés ampliar el catálogo incluido en tu plan." : "Primero, definí los datos para ingresar a Bookia."}</p>
           <form className="register-form" onSubmit={submit}>
             {isReader ? <label>¿Cómo querés que te llamemos? (opcional)<input value={displayName} onChange={(event) => setDisplayName(event.target.value)} autoComplete="name" /><small>Podés cambiarlo más adelante.</small></label> : null}
             {(isReader || bookstoreStep === "account") ? <><label>Correo electrónico<input type="email" value={email} onChange={(event) => {
@@ -216,8 +221,8 @@ export function RegisterPage({ onRegister, me, locationSearch }) {
             </div>}
             {(isReader || isBookstoreDetails) ? <label className="register-legal"><input type="checkbox" checked={privacyAccepted} onChange={(event) => setPrivacyAccepted(event.target.checked)} required /><span className="register-legal-copy">Acepto los <AppLink href="/terms">Términos y Condiciones</AppLink> y la <AppLink href="/privacy">Política de Privacidad</AppLink>.</span></label> : null}
             {error ? <p className="feedback error">{error}</p> : null}
-            <button className="register-submit" type="submit" disabled={busy}>{busy ? "Creando cuenta..." : isBookstoreSummary ? "Crear cuenta y autorizar Mercado Pago" : profileType === "bookstore" ? "Continuar" : "Crear cuenta gratis"} <ArrowIcon /></button>
-            {isReader ? <GoogleButton intent="register" privacyAccepted={privacyAccepted} onError={setError} /> : null}
+            <button className={`register-submit${isReader ? " reader-auth-email" : ""}`} type="submit" disabled={busy}>{busy ? "Creando cuenta..." : isBookstoreSummary ? "Crear cuenta y autorizar Mercado Pago" : profileType === "bookstore" ? "Continuar" : "Crear cuenta con correo"} <ArrowIcon /></button>
+            {isReader ? <GoogleButton intent="register" privacyAccepted={privacyAccepted} pendingAction={pendingAction} onError={setError} /> : null}
             {isReader ? <p className="register-form-login">¿Ya tenés una cuenta? <AppLink href="/login">Ingresá</AppLink></p> : null}
           </form>
         </div>

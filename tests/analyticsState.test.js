@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 
-import { buildWebInteractionEventPayload, trackAcquisitionEvent, trackWebInteractionEvent } from "../src/analyticsState.js";
+const ATTEMPT_ID = "123e4567-e89b-42d3-a456-426614174000";
+
+import { buildReaderFunnelEventPayload, buildWebInteractionEventPayload, normalizeFollowerMetrics, trackAcquisitionEvent, trackReaderFunnelEvent, trackWebInteractionEvent } from "../src/analyticsState.js";
 
 export function registerAnalyticsStateTests(register) {
   register("builds minimal web interaction analytics payloads", () => {
@@ -62,5 +64,29 @@ export function registerAnalyticsStateTests(register) {
       event_type: "bookstore_demo_requested",
       source: "bookstores_landing",
     }]]);
+  });
+
+  register("builds and sends reader funnel events to the dedicated endpoint", async () => {
+    const sent = [];
+    const event = { eventType: "reader_intent_started", actionType: "follow_bookstore", bookstoreId: 4, attemptId: ATTEMPT_ID };
+
+    assert.deepEqual(buildReaderFunnelEventPayload(event), {
+      event_type: "reader_intent_started",
+      action_type: "follow_bookstore",
+      bookstore_id: 4,
+      attempt_id: ATTEMPT_ID,
+    });
+    assert.equal(await trackReaderFunnelEvent(event, { send: async (path, options) => sent.push([path, JSON.parse(options.body)]) }), true);
+    assert.deepEqual(sent, [["/analytics/reader-funnel-events", buildReaderFunnelEventPayload(event)]]);
+  });
+
+  register("normalizes all four bookstore follower metrics", () => {
+    assert.deepEqual(normalizeFollowerMetrics({ active_followers: 18, follows: 6, unfollows: 2, net_change: 4 }), {
+      active_followers: 18,
+      follows: 6,
+      unfollows: 2,
+      net_change: 4,
+    });
+    assert.deepEqual(normalizeFollowerMetrics(), { active_followers: 0, follows: 0, unfollows: 0, net_change: 0 });
   });
 }

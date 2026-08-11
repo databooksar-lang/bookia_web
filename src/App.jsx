@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { apiFetch, subscribeToSessionExpiry } from "./api";
 import { SiteFooter, SiteHeader } from "./components/SiteChrome";
@@ -14,12 +14,17 @@ import { PrivacyPage } from "./pages/PrivacyPage";
 import { TermsPage } from "./pages/TermsPage";
 import { ReaderProfilePage } from "./pages/ReaderProfilePage";
 import { BillingReturnPage } from "./pages/BillingReturnPage";
+import { getAccountDestination } from "./accountDestination";
+import { trackReaderFunnelEvent } from "./analyticsState";
+import { applyPendingReaderAction, clearPendingReaderAction, readPendingReaderAction } from "./pendingReaderAction";
 
 export default function App() {
   const { pathname, search } = useLocationState();
   const [me, setMe] = useState(undefined);
+  const [readerActionFeedback, setReaderActionFeedback] = useState(null);
+  const pendingReaderAction = readPendingReaderAction();
 
-  function refreshMe({ preserveOnError = false } = {}) {
+  const refreshMe = useCallback(function refreshMe({ preserveOnError = false } = {}) {
     return apiFetch("/me", { suppressSessionExpiry: true })
       .then((data) => {
         setMe(data);
@@ -31,6 +36,46 @@ export default function App() {
         }
         return null;
       });
+  }, []);
+
+  const completeReaderAuthentication = useCallback(async (sessionData, { registered = false } = {}) => {
+    const action = readPendingReaderAction();
+    if (!action) {
+      navigate(getAccountDestination(sessionData));
+      return { status: "none" };
+    }
+    if (!sessionData?.reader_profile) {
+      clearPendingReaderAction();
+      setReaderActionFeedback({ kind: "error", message: "Esta acción necesita un perfil lector y no se aplicó a esta cuenta." });
+      navigate(getAccountDestination(sessionData));
+      return { status: "wrong_account" };
+    }
+    if (registered) {
+      trackReaderFunnelEvent({ eventType: "reader_registration_completed", actionType: action.type, bookstoreId: action.bookstore_id, attemptId: action.attempt_id });
+    }
+    try {
+      const result = await applyPendingReaderAction();
+      setReaderActionFeedback({ kind: "success", message: result.message });
+      navigate(result.returnPath);
+      return result;
+    } catch (error) {
+      setReaderActionFeedback({ kind: "error", message: `Tu cuenta está lista, pero no pudimos completar la acción. ${error.message}` });
+      navigate(action.return_path);
+      return { status: "error", error };
+    }
+  }, []);
+
+  function retryPendingReaderAction() {
+    if (!me?.reader_profile) return;
+    setReaderActionFeedback({ kind: "pending", message: "Reintentando..." });
+    applyPendingReaderAction()
+      .then((result) => {
+        if (result.status === "applied") {
+          setReaderActionFeedback({ kind: "success", message: result.message });
+          navigate(result.returnPath);
+        }
+      })
+      .catch((error) => setReaderActionFeedback({ kind: "error", message: `No pudimos completar la acción. ${error.message}` }));
   }
 
   useEffect(() => {
@@ -54,8 +99,8 @@ export default function App() {
   else if (pathname === "/privacy") page = <PrivacyPage />;
   else if (pathname === "/terms") page = <TermsPage />;
   else if (pathname === "/cookies") page = <CookiePolicyPage />;
-  else if (pathname === "/login") page = <LoginPage onLogin={refreshMe} me={me} sessionExpired={new URLSearchParams(search).get("reason") === "session-expired"} />;
-  else if (pathname === "/register") page = <RegisterPage onRegister={refreshMe} me={me} locationSearch={search} />;
+  else if (pathname === "/login") page = <LoginPage onLogin={refreshMe} onAuthenticated={completeReaderAuthentication} pendingAction={pendingReaderAction} me={me} sessionExpired={new URLSearchParams(search).get("reason") === "session-expired"} />;
+  else if (pathname === "/register") page = <RegisterPage onRegister={refreshMe} onAuthenticated={completeReaderAuthentication} pendingAction={pendingReaderAction} me={me} locationSearch={search} />;
   else if (pathname === "/forgot-password") page = <ForgotPasswordPage />;
   else if (pathname === "/reset-password") page = <ResetPasswordPage locationSearch={search} />;
   else if (pathname === "/dashboard") page = <DashboardPage me={me} refreshMe={refreshMe} locationSearch={search} />;
@@ -67,7 +112,10 @@ export default function App() {
   return (
     <div className="app-shell">
       <SiteHeader pathname={pathname} me={me} refreshMe={refreshMe} />
-      <main>{page}</main>
+      <main>
+        {readerActionFeedback ? <div className={`reader-action-feedback feedback ${readerActionFeedback.kind === "error" ? "error" : "success"}`} role={readerActionFeedback.kind === "error" ? "alert" : "status"}><span>{readerActionFeedback.message}</span>{readerActionFeedback.kind === "error" && pendingReaderAction && me?.reader_profile ? <button type="button" className="text-link" onClick={retryPendingReaderAction}>Reintentar</button> : null}<button type="button" className="reader-action-feedback-close" aria-label="Cerrar mensaje" onClick={() => setReaderActionFeedback(null)}>×</button></div> : null}
+        {page}
+      </main>
       <SiteFooter />
     </div>
   );

@@ -5,7 +5,7 @@ export function TermsPage() {
     <article className="editorial-page about-page legal-page">
       <p className="section-label">Terminos y Condiciones</p>
       <h1>Reglas claras para buscar, publicar y conectar.</h1>
-      <p>Vigente desde el 7 de agosto de 2026.</p>
+      <p>Vigente desde el 11 de agosto de 2026.</p>
       <p>Este documento resume las condiciones de uso de Bookia y no reemplaza asesoramiento legal profesional.</p>
 
       <h2>Responsable</h2>
@@ -18,7 +18,7 @@ export function TermsPage() {
       <p>Bookia es una plataforma digital que ayuda a lectores y visitantes a descubrir libros, librerias, vendedores de usados y proyectos relacionados con la circulacion de libros. Las librerias pueden crear y administrar una vidriera publica con datos de contacto, catalogo, imagenes, disponibilidad y actividades como clubes de lectura.</p>
 
       <h2>Usuarios lectores, visitantes y librerias</h2>
-      <p>Las personas visitantes pueden buscar libros y consultar perfiles publicos. Las personas lectoras registradas pueden administrar un perfil publico, su biografia, los generos de lectura que seleccione como preferencias publicas y sus favoritos privados. Las librerias registradas pueden gestionar su perfil, catalogo, fotos, disponibilidad, datos de contacto y herramientas de carga segun su plan vigente.</p>
+      <p>Las personas visitantes pueden buscar libros, consultar perfiles publicos y contactar directamente a las librerias sin crear una cuenta. Las personas lectoras registradas pueden guardar libros, seguir o dejar de seguir librerias y administrar un perfil publico, su biografia y los generos de lectura que seleccione como preferencias publicas. Los libros guardados y las librerias seguidas son privados. Las librerias registradas pueden gestionar su perfil, catalogo, fotos, disponibilidad, datos de contacto y herramientas de carga segun su plan vigente.</p>
 
       <h2>Registro, cuentas y seguridad</h2>
       <p>Quien crea una cuenta debe brindar informacion verdadera, mantener actualizados sus datos y proteger sus credenciales. Cada libreria es responsable por las acciones realizadas desde su cuenta web o desde usuarios de Telegram vinculados a su libreria.</p>
@@ -48,6 +48,7 @@ export function TermsPage() {
 
       <h2>Newsletter, privacidad y cookies</h2>
       <p>El newsletter es opcional y requiere consentimiento separado. El tratamiento de datos personales se explica en la <AppLink href="/privacy">Politica de Privacidad</AppLink>. Las cookies tecnicas necesarias para sesion y seguridad se explican en la <AppLink href="/cookies">Politica de Cookies</AppLink>.</p>
+      <p>Las estadisticas de seguimiento y los eventos del embudo son datos agregados para orientar el uso de Bookia. Son indicadores de interaccion y no prueban que haya existido una operacion comercial, reserva, venta ni pago entre una persona y una libreria.</p>
 
       <h2>Suspension o baja</h2>
       <p>Bookia puede suspender, limitar u ocultar cuentas, librerias, publicaciones o accesos cuando exista incumplimiento de estos terminos, actividad sospechosa, datos falsos, reclamos reiterados, riesgos de seguridad o uso que perjudique a usuarios, librerias o a la plataforma.</p>
