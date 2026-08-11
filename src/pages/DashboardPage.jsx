@@ -16,6 +16,7 @@ import { formatBillingDate, getBillingAccessState } from "../billingState";
 import { BillingSubscriptionPanel } from "../components/BillingSubscriptionPanel";
 import { BookShareMenu } from "../components/BookShareMenu";
 import { ReadingClubShareMenu } from "../components/ReadingClubShareMenu";
+import { normalizeFollowerMetrics } from "../analyticsState";
 
 const EMPTY_ITEM = {
   title: "",
@@ -90,6 +91,7 @@ const EMPTY_ANALYTICS = {
   reading_club_share_channels: { whatsapp: 0, instagram: 0, copy_link: 0, telegram: 0 },
   top_books: [],
   top_reading_clubs: [],
+  follower_metrics: { active_followers: 0, follows: 0, unfollows: 0, net_change: 0 },
 };
 
 function formatMetricValue(value) {
@@ -238,7 +240,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
     setAnalyticsLoading(true);
     setAnalyticsError("");
     apiFetch(`/dashboard/analytics?${params.toString()}`)
-      .then((data) => { setAnalytics({ ...EMPTY_ANALYTICS, ...data, totals: { ...EMPTY_ANALYTICS.totals, ...(data.totals || {}) }, top_books: data.top_books || [], top_reading_clubs: data.top_reading_clubs || [] }); setAnalyticsError(""); })
+      .then((data) => { setAnalytics({ ...EMPTY_ANALYTICS, ...data, totals: { ...EMPTY_ANALYTICS.totals, ...(data.totals || {}) }, follower_metrics: normalizeFollowerMetrics(data.follower_metrics), top_books: data.top_books || [], top_reading_clubs: data.top_reading_clubs || [] }); setAnalyticsError(""); })
       .catch((fetchError) => { setAnalytics(EMPTY_ANALYTICS); setAnalyticsError(fetchError.message || "No pudimos cargar las metricas."); })
       .finally(() => setAnalyticsLoading(false));
   }
@@ -752,6 +754,10 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
               <article><span>Compartidos por Instagram</span><strong>{formatMetricValue(analytics.share_channels?.instagram)}</strong></article>
               <article><span>Compartidos por Telegram</span><strong>{formatMetricValue(analytics.share_channels?.telegram)}</strong></article>
               <article><span>Enlaces copiados</span><strong>{formatMetricValue(analytics.share_channels?.copy_link)}</strong></article>
+              <article><span>Seguidores activos</span><strong>{formatMetricValue(analytics.follower_metrics.active_followers)}</strong></article>
+              <article><span>Nuevos seguidores</span><strong>{formatMetricValue(analytics.follower_metrics.follows)}</strong></article>
+              <article><span>Dejaron de seguir</span><strong>{formatMetricValue(analytics.follower_metrics.unfollows)}</strong></article>
+              <article><span>Cambio neto</span><strong>{formatMetricValue(analytics.follower_metrics.net_change)}</strong></article>
             </div>
             {analytics.top_books.length === 0 ? <EmptyState title="Todavia no hay metricas">Cuando las personas interactuen con tu vidriera, vas a ver los libros con mas interes aca.</EmptyState> : (
               <div className="dashboard-list metrics-book-list">

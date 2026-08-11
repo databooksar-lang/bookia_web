@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-import { createFavoriteBookIds, isReaderAccount, toggleFavoriteBookId } from "../src/favoritesState.js";
+import { createFavoriteBookIds, createFollowedBookstoreIds, isReaderAccount, toggleFavoriteBookId } from "../src/favoritesState.js";
 
 export function registerFavoritesStateTests(test) {
   test("creates favorite ids from the reader favorites response", () => {
@@ -20,5 +20,9 @@ export function registerFavoritesStateTests(test) {
     assert.equal(isReaderAccount({ reader_profile: { slug: "ana-lee" }, roles: ["reader"] }), true);
     assert.equal(isReaderAccount({ roles: ["bookstore_owner"] }), false);
     assert.equal(isReaderAccount(null), false);
+  });
+
+  test("creates followed bookstore ids from the shared favorites response", () => {
+    assert.deepEqual([...createFollowedBookstoreIds({ bookstores: [{ id: 3 }, { id: 8 }, { id: 0 }] })], [3, 8]);
   });
 }

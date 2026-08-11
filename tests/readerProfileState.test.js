@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-import { buildReaderProfilePayload, createReaderProfileDraft, favoriteGenreSelectionLabel, getReaderFavoriteGenresState, loadReaderFavorites, normalizeReaderFavoriteGenres, normalizeReaderFavorites, toggleReaderFavoriteGenre } from "../src/readerProfileState.js";
+import { buildReaderProfilePayload, createReaderProfileDraft, favoriteGenreSelectionLabel, getReaderFavoriteGenresState, loadReaderFavorites, normalizeReaderFavoriteGenres, normalizeReaderFavorites, normalizeReaderFollowedBookstores, toggleReaderFavoriteGenre } from "../src/readerProfileState.js";
 
 export function registerReaderProfileStateTests(test) {
   test("defaults a reader profile to public only when visibility is missing", () => {
@@ -115,6 +115,25 @@ assert.match(profilePage, /<fieldset className="bookstore-profile-field-wide rea
       normalizeReaderFavorites({ books: [{ id: 7, title: "Ficciones", author: "Borges" }, { id: 8, catalog_item_id: 4 }] }),
       [{ id: 7, title: "Ficciones", author: "Borges" }],
     );
+  });
+
+  test("normalizes followed bookstores from the favorites dashboard contract", () => {
+    assert.deepEqual(normalizeReaderFollowedBookstores({ bookstores: [
+      { id: 4, name: "Eterna Cadencia", slug: "eterna", logo_url: "/logo.webp", address: "Honduras 5574" },
+      { id: 0, name: "Inválida", slug: "invalida" },
+      { id: 8, name: "", slug: "sin-nombre" },
+    ] }), [{ id: 4, name: "Eterna Cadencia", slug: "eterna", logo_url: "/logo.webp", address: "Honduras 5574" }]);
+  });
+
+  test("turns inactive followed bookstores into safe tombstones", () => {
+    assert.deepEqual(normalizeReaderFollowedBookstores({ bookstores: [{
+      id: 12,
+      name: "Librería cerrada",
+      slug: "cerrada",
+      logo_url: "https://cdn.example/logo.png",
+      address: "Dirección privada",
+      is_active: false,
+    }] }), [{ id: 12, name: "Librería cerrada", slug: "", logo_url: "", address: "", is_active: false }]);
   });
 }
 

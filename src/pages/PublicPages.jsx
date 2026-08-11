@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 
 import { apiFetch, resolveApiUrl } from "../api";
-import { trackAcquisitionEvent, trackWebInteractionEvent } from "../analyticsState";
+import { trackAcquisitionEvent, trackReaderFunnelEvent, trackWebInteractionEvent } from "../analyticsState";
 import { getSharedBookId } from "../bookSharingState";
 import { getSharedReadingClubId } from "../readingClubSharingState";
-import { createFavoriteBookIds, isReaderAccount, toggleFavoriteBookId } from "../favoritesState";
+import { createFavoriteBookIds, createFollowedBookstoreIds, isReaderAccount, toggleFavoriteBookId } from "../favoritesState";
 import { formatCommercialPrice, getCommercialPrices } from "../plansPricingState";
 import { buildFacebookHref, buildInstagramHref, buildWebsiteHref, buildWhatsAppHref, formatDisplayUrl, formatDisplayWhatsApp } from "../formatters";
 import { AppLink, navigate } from "../navigation";
 import { buildRegisterPath } from "../registerState";
+import { savePendingReaderAction } from "../pendingReaderAction";
 import { displayBookstoreDescription } from "../profileEditorState";
 import { displayReadingClubDate } from "../readingClubState";
 import { buildGoogleMapsAddressUrl, buildPublicSearchParams, buildReadingClubSearchParams, filterBookstores, getAvailableReadingClubGenres, getBookstoreTags, getVisibleReadingClubs } from "../publicSearchState";
@@ -70,17 +71,34 @@ function bookImageGallery(item) {
 function useFavoriteBooks(me) {
   const [favoriteIds, setFavoriteIds] = useState(() => new Set());
   const [pendingIds, setPendingIds] = useState(() => new Set());
+  const [followedBookstoreIds, setFollowedBookstoreIds] = useState(() => new Set());
+  const [pendingBookstoreIds, setPendingBookstoreIds] = useState(() => new Set());
   const [favoriteError, setFavoriteError] = useState("");
 
   useEffect(() => {
-    if (!isReaderAccount(me)) { setFavoriteIds(new Set()); setFavoriteError(""); return undefined; }
+    if (!isReaderAccount(me)) { setFavoriteIds(new Set()); setFollowedBookstoreIds(new Set()); setFavoriteError(""); return undefined; }
     let active = true;
-    apiFetch("/dashboard/favorites").then((data) => { if (active) setFavoriteIds(createFavoriteBookIds(data)); }).catch((error) => { if (active) setFavoriteError(error.message); });
+    apiFetch("/dashboard/favorites").then((data) => {
+      if (!active) return;
+      setFavoriteIds(createFavoriteBookIds(data));
+      setFollowedBookstoreIds(createFollowedBookstoreIds(data));
+    }).catch((error) => { if (active) setFavoriteError(error.message); });
     return () => { active = false; };
   }, [me?.reader_profile]);
 
-  function toggleFavorite(itemId) {
-    if (!isReaderAccount(me)) { navigate("/login"); return; }
+  function startReaderIntent(type, targetId, bookstoreId) {
+    const action = savePendingReaderAction({
+      type,
+      targetId,
+      bookstoreId,
+      returnPath: `${window.location.pathname}${window.location.search}${window.location.hash}`,
+    });
+    if (action) trackReaderFunnelEvent({ eventType: "reader_intent_started", actionType: action.type, bookstoreId: action.bookstore_id, attemptId: action.attempt_id });
+    navigate(buildRegisterPath({ profileType: "reader" }));
+  }
+
+  function toggleFavorite(itemId, _event, bookstoreId) {
+    if (!isReaderAccount(me)) { startReaderIntent("favorite_book", itemId, bookstoreId); return; }
     const wasFavorite = favoriteIds.has(itemId);
     setFavoriteIds((ids) => toggleFavoriteBookId(ids, itemId, !wasFavorite));
     setPendingIds((ids) => toggleFavoriteBookId(ids, itemId, true));
@@ -90,7 +108,21 @@ function useFavoriteBooks(me) {
       .finally(() => setPendingIds((ids) => toggleFavoriteBookId(ids, itemId, false)));
   }
 
-  return { favoriteIds, pendingIds, favoriteError, toggleFavorite };
+  function toggleFollowBookstore(bookstore) {
+    if (!isReaderAccount(me)) { startReaderIntent("follow_bookstore", bookstore.id, bookstore.id); return; }
+    const wasFollowing = followedBookstoreIds.has(bookstore.id);
+    setFollowedBookstoreIds((ids) => toggleFavoriteBookId(ids, bookstore.id, !wasFollowing));
+    setPendingBookstoreIds((ids) => toggleFavoriteBookId(ids, bookstore.id, true));
+    setFavoriteError("");
+    apiFetch(`/dashboard/favorites/bookstores/${bookstore.id}`, { method: wasFollowing ? "DELETE" : "POST" })
+      .catch((error) => {
+        setFollowedBookstoreIds((ids) => toggleFavoriteBookId(ids, bookstore.id, wasFollowing));
+        setFavoriteError(error.message);
+      })
+      .finally(() => setPendingBookstoreIds((ids) => toggleFavoriteBookId(ids, bookstore.id, false)));
+  }
+
+  return { favoriteIds, pendingIds, followedBookstoreIds, pendingBookstoreIds, favoriteError, toggleFavorite, toggleFollowBookstore };
 }
 const EMPTY_SEARCH_FILTERS = { query: "", bookStatus: "", language: "", genreSlug: "" };
 
@@ -236,7 +268,7 @@ function SearchResults({ filters, stores, me, onClearFilters }) {
               <WhatsAppButton className="primary-button search-result-whatsapp" whatsappPhone={item.bookstore.whatsapp_phone} onClick={() => trackWhatsAppClicked(item.bookstore, "search_results", item.id)}>
                 <WhatsAppIcon size={19} /> Contactar
               </WhatsAppButton>
-              <FavoriteBookButton itemId={item.id} isFavorite={favorites.favoriteIds.has(item.id)} isPending={favorites.pendingIds.has(item.id)} isSessionLoading={me === undefined} onToggle={favorites.toggleFavorite} />
+              <FavoriteBookButton itemId={item.id} bookstoreId={item.bookstore?.id} isFavorite={favorites.favoriteIds.has(item.id)} isPending={favorites.pendingIds.has(item.id)} isSessionLoading={me === undefined} onToggle={favorites.toggleFavorite} />
 
             </article>
           ))}
@@ -670,7 +702,7 @@ function BookDetailModal({ selectedBook, selectedBookImageUrl, onImageChange, on
             <h2 id="book-detail-title">{selectedBook.title}</h2>
             <p className="book-detail-author">{selectedBook.author || "Autor no visible"}</p>
             <BookGenreTags item={selectedBook} />
-            <FavoriteBookButton itemId={selectedBook.id} isFavorite={favorites?.favoriteIds.has(selectedBook.id)} isPending={favorites?.pendingIds.has(selectedBook.id)} isSessionLoading={isSessionLoading} onToggle={favorites?.toggleFavorite || (() => {})} />
+            <FavoriteBookButton itemId={selectedBook.id} bookstoreId={bookstore?.id} isFavorite={favorites?.favoriteIds.has(selectedBook.id)} isPending={favorites?.pendingIds.has(selectedBook.id)} isSessionLoading={isSessionLoading} onToggle={favorites?.toggleFavorite || (() => {})} />
             <div className="book-detail-section">
               <span>Descripcion</span>
               <p>{selectedBook.description || "Sin descripcion visible."}</p>
@@ -746,6 +778,8 @@ export function BookstorePage({ slug, me }) {
   const websiteHref = buildWebsiteHref(store.website_url);
   const mapsHref = buildGoogleMapsAddressUrl(store.address);
   const bookstoreTags = [store.tag_1, store.tag_2].map((tag) => String(tag || '').trim()).filter(Boolean);
+  const isFollowing = favorites.followedBookstoreIds.has(store.id);
+  const followPending = favorites.pendingBookstoreIds.has(store.id);
   const contactItems = [
     whatsappLabel ? { label: "Celular con WhatsApp", content: whatsappLabel } : null,
     store.correo && String(store.correo).trim() ? { label: "Correo", content: <a href={`mailto:${store.correo}`}>{store.correo}</a> } : null,
@@ -759,7 +793,7 @@ export function BookstorePage({ slug, me }) {
     <section className="store-page">
       <div className={`store-hero${heroImageUrl ? " has-hero" : ""}`} style={heroImageUrl ? { backgroundImage: `url(${heroImageUrl})` } : undefined} />
       <div className="store-profile-panel">
-        <div className="store-identity"><p className="section-label">Libreria en Bookia</p>{logoUrl ? <img className="store-logo" src={logoUrl} alt={`Logo de ${store.name}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : null}<h1>{store.name}</h1><BookstoreDescription value={displayBookstoreDescription(store.description)} />{bookstoreTags.length > 0 ? <div className="store-tags" aria-label="Etiquetas de la libreria">{bookstoreTags.map((tag) => <span key={tag} className="store-tag">{tag}</span>)}</div> : null}</div>
+        <div className="store-identity"><p className="section-label">Libreria en Bookia</p>{logoUrl ? <img className="store-logo" src={logoUrl} alt={`Logo de ${store.name}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : null}<h1>{store.name}</h1><BookstoreDescription value={displayBookstoreDescription(store.description)} />{!me?.bookstore ? <button type="button" className={`secondary-button bookstore-follow-button${isFollowing ? " is-following" : ""}`} aria-pressed={isFollowing} aria-busy={followPending} disabled={followPending || me === undefined} onClick={() => favorites.toggleFollowBookstore(store)}>{isFollowing ? "Dejar de seguir" : "Seguir"}</button> : null}{bookstoreTags.length > 0 ? <div className="store-tags" aria-label="Etiquetas de la libreria">{bookstoreTags.map((tag) => <span key={tag} className="store-tag">{tag}</span>)}</div> : null}{favorites.favoriteError ? <p className="feedback error bookstore-follow-feedback" role="alert">{favorites.favoriteError}</p> : null}</div>
         {contactItems.length > 0 || hasWhatsApp ? <aside className="store-contact-card"><p className="contact-label">Datos de interes</p>{contactItems.length > 0 ? <dl>{contactItems.map((item) => <div key={item.label}><dt>{item.label}</dt><dd>{item.content}</dd></div>)}</dl> : null}{hasWhatsApp ? <WhatsAppButton whatsappPhone={store.whatsapp_phone}><WhatsAppIcon size={19} /> Hablar por WhatsApp</WhatsAppButton> : null}</aside> : null}
       </div>
       <div className="store-catalog">
@@ -788,7 +822,7 @@ export function BookstorePage({ slug, me }) {
                       <span className={`status-pill status-${item.availability_status}`}>{bookAvailabilityLabel(item.availability_status)}</span>
                       {item.is_featured ? <span className="status-pill status-featured">Destacado</span> : null}
                     </div>
-                    <FavoriteBookButton itemId={item.id} isFavorite={favorites.favoriteIds.has(item.id)} isPending={favorites.pendingIds.has(item.id)} isSessionLoading={me === undefined} onToggle={(itemId, event) => { event.stopPropagation(); favorites.toggleFavorite(itemId); }} />
+                    <FavoriteBookButton itemId={item.id} bookstoreId={store.id} isFavorite={favorites.favoriteIds.has(item.id)} isPending={favorites.pendingIds.has(item.id)} isSessionLoading={me === undefined} onToggle={(itemId, event, bookstoreId) => { event.stopPropagation(); favorites.toggleFavorite(itemId, event, bookstoreId); }} />
                   </div>
                   <h3>{item.title}</h3>
                   <p>{item.author || "Autor no visible"}</p>

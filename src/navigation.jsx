@@ -5,6 +5,7 @@ import { stripBasePath, withBasePath } from "./routing";
 export function navigate(path) {
   window.history.pushState({}, "", withBasePath(path));
   window.dispatchEvent(new PopStateEvent("popstate"));
+  window.scrollTo({ top: 0, left: 0 });
 }
 
 export function AppLink({ href, className, children, onClick, ...props }) {

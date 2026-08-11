@@ -3,7 +3,11 @@ export function isReaderAccount(me) {
 }
 
 export function createFavoriteBookIds(data = {}) {
-  return new Set((data.books || []).map((book) => book.id));
+  return new Set((data.books || []).map((book) => book.id).filter((id) => Number.isInteger(id) && id > 0));
+}
+
+export function createFollowedBookstoreIds(data = {}) {
+  return new Set((data.bookstores || []).map((bookstore) => bookstore.id).filter((id) => Number.isInteger(id) && id > 0));
 }
 
 export function toggleFavoriteBookId(ids, itemId, isFavorite) {

@@ -1,23 +1,27 @@
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 
 import { apiFetch } from "../api";
 import { getAccountDestination } from "../accountDestination";
 import { AppLink, navigate } from "../navigation";
 import { ArrowIcon, BookIcon } from "../components/Icons";
-import { getGoogleOAuthError, getGoogleOAuthLinkMessage } from "../googleOAuthState";
+import { getGoogleOAuthCallback, getGoogleOAuthError, getGoogleOAuthLinkMessage } from "../googleOAuthState";
+import { trackReaderFunnelEvent } from "../analyticsState";
+import { getPendingReaderActionCopy } from "../pendingReaderAction";
+import { buildRegisterPath } from "../registerState";
 
-export function GoogleButton({ intent, privacyAccepted = false, onError }) {
+export function GoogleButton({ intent, privacyAccepted = false, pendingAction, onError }) {
   const [enabled, setEnabled] = useState(false);
   const [busy, setBusy] = useState(false);
   useEffect(() => { apiFetch("/auth/providers").then((data) => setEnabled(Boolean(data.google))).catch(() => setEnabled(false)); }, []);
   if (!enabled) return null;
   function start() {
     setBusy(true);
+    if (pendingAction) trackReaderFunnelEvent({ eventType: "reader_auth_started", actionType: pendingAction.type, bookstoreId: pendingAction.bookstore_id, attemptId: pendingAction.attempt_id });
     apiFetch("/auth/google/start", { method: "POST", body: JSON.stringify({ intent, privacy_accepted: privacyAccepted }) })
       .then((data) => window.location.assign(data.authorization_url))
       .catch((error) => { setBusy(false); onError(error.message); });
   }
-  return <button type="button" className="secondary-button auth-submit" onClick={start} disabled={busy}>{busy ? "Conectando..." : "Continuar con Google"}</button>;
+  return <button type="button" className="primary-button auth-submit reader-auth-google" onClick={start} disabled={busy}>{busy ? "Conectando..." : "Continuar con Google"}</button>;
 }
 
 function AuthLayout({ label, title, description, children }) {
@@ -68,18 +72,35 @@ function GoogleOwnerLinkForm({ onLogin }) {
   </form>;
 }
 
-export function LoginPage({ onLogin, me, sessionExpired = false }) {
+export function LoginPage({ onLogin, onAuthenticated, pendingAction, me, sessionExpired = false }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [busy, startTransition] = useTransition();
+  const googleHandledRef = useRef(false);
+  const actionCopy = getPendingReaderActionCopy(pendingAction);
   const googleLinkMessage = getGoogleOAuthLinkMessage(new URLSearchParams(window.location.search).get("google_link"));
   useEffect(() => {
-    const googleError = getGoogleOAuthError(new URLSearchParams(window.location.search).get("google_error"));
+    const params = new URLSearchParams(window.location.search);
+    const googleError = getGoogleOAuthError(params.get("google_error"));
+    const googleCallback = getGoogleOAuthCallback(window.location.search);
     if (googleError) setError(googleError);
-    if (new URLSearchParams(window.location.search).get("google") === "success") onLogin().then((sessionData) => sessionData && navigate(getAccountDestination(sessionData)));
-  }, [onLogin]);
+    if (googleError || googleCallback.succeeded) {
+      params.delete("google");
+      params.delete("google_error");
+      const nextSearch = params.toString();
+      window.history.replaceState({}, "", `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ""}${window.location.hash}`);
+    }
+    if (googleCallback.succeeded && !googleHandledRef.current) {
+      googleHandledRef.current = true;
+      onLogin().then((sessionData) => {
+        if (!sessionData) return;
+        if (onAuthenticated) return onAuthenticated(sessionData, { registered: googleCallback.registered });
+        navigate(getAccountDestination(sessionData));
+      });
+    }
+  }, [onLogin, onAuthenticated]);
 
   if (me) {
     const destination = getAccountDestination(me);
@@ -91,6 +112,7 @@ export function LoginPage({ onLogin, me, sessionExpired = false }) {
   }
   function submit(event) {
     event.preventDefault();
+    if (pendingAction) trackReaderFunnelEvent({ eventType: "reader_auth_started", actionType: pendingAction.type, bookstoreId: pendingAction.bookstore_id, attemptId: pendingAction.attempt_id });
     startTransition(() => {
       apiFetch("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) })
         .then(() => onLogin())
@@ -98,6 +120,7 @@ export function LoginPage({ onLogin, me, sessionExpired = false }) {
           if (!sessionData) {
             throw new Error("El ingreso fue aceptado, pero no pudimos recuperar tu sesion. Revisa la configuracion de cookies del backend (SESSION_COOKIE_SECURE, SESSION_COOKIE_SAMESITE, FRONTEND_ORIGINS).");
           }
+          if (onAuthenticated) return onAuthenticated(sessionData);
           navigate(getAccountDestination(sessionData));
         })
         .catch((loginError) => setError(loginError.message));
@@ -105,15 +128,16 @@ export function LoginPage({ onLogin, me, sessionExpired = false }) {
   }
 
   return (
-    <AuthLayout label="Ingresar a Bookia" title="Qué bueno verte de nuevo" description="Ingresá con tu correo y contraseña para continuar.">
+    <AuthLayout label="Ingresar a Bookia" title={pendingAction ? actionCopy.title : "Qué bueno verte de nuevo"} description={pendingAction ? actionCopy.description : "Ingresá con tu correo y contraseña para continuar."}>
       <form className="auth-form" onSubmit={submit}>
         <label>Correo electronico<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" required /></label>
         <label>Contrasena<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" required /></label>
         <button type="button" className="text-link auth-link-button" onClick={() => navigate("/forgot-password")}>Olvide mi contrasena</button>
         {error ? <p className="feedback error">{error}</p> : null}
         {sessionExpired ? <p className="feedback error">Tu sesion vencio porque se inicio sesion en otro dispositivo.</p> : null}
-        <button className="primary-button auth-submit" type="submit" disabled={busy}>{busy ? "Ingresando..." : <>Ingresar <ArrowIcon /></>}</button>
-        <GoogleButton intent="login" onError={setError} />
+        <button className="secondary-button auth-submit reader-auth-email" type="submit" disabled={busy}>{busy ? "Ingresando..." : <>Ingresar con correo <ArrowIcon /></>}</button>
+        <GoogleButton intent="login" pendingAction={pendingAction} onError={setError} />
+        <p className="auth-register-link">¿Todavía no tenés cuenta? <AppLink href={buildRegisterPath({ profileType: "reader" })}>Creá tu perfil lector</AppLink></p>
       </form>
     </AuthLayout>
   );
