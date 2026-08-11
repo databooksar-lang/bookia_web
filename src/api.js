@@ -85,6 +85,12 @@ function buildNonJsonErrorMessage(path, response, contentType, bodyText) {
   return `La API respondio ${response.status} sin un error legible (${contentType || "sin content-type"}).`;
 }
 
+function createApiError(message, status) {
+  const error = new Error(message);
+  error.status = status;
+  return error;
+}
+
 export function resolveApiUrl(path) {
   if (!path) {
     return path;
@@ -151,7 +157,7 @@ export async function apiFetch(path, { suppressSessionExpiry = false, ...options
     if (response.ok) {
       throw new Error(buildInvalidApiResponseMessage(path, response, contentType));
     }
-    throw new Error(buildNonJsonErrorMessage(path, response, contentType, responseText));
+    throw createApiError(buildNonJsonErrorMessage(path, response, contentType, responseText), response.status);
   }
 
   let data = null;
@@ -162,7 +168,7 @@ export async function apiFetch(path, { suppressSessionExpiry = false, ...options
   }
 
   if (!response.ok) {
-    throw new Error(data?.detail || "No pudimos completar la accion.");
+    throw createApiError(data?.detail || "No pudimos completar la accion.", response.status);
   }
   return data;
 }

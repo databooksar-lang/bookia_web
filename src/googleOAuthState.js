@@ -12,3 +12,11 @@ export function getGoogleOAuthError(code) {
 export function getGoogleOAuthLinkMessage(code) {
   return code === "required" ? "Confirma tu contrasena actual para vincular el acceso con Google." : "";
 }
+
+export function getGoogleOAuthCallback(search = "") {
+  const value = new URLSearchParams(search).get("google");
+  return {
+    succeeded: value === "success" || value === "registered",
+    registered: value === "registered",
+  };
+}

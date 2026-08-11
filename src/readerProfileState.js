@@ -40,12 +40,23 @@ export function normalizeReaderFavorites(data = {}) {
   return (data.books || []).filter((book) => Number.isInteger(book?.id) && Boolean(String(book.title || "").trim()));
 }
 
-export function loadReaderFavorites({ fetchFavorites, onFavorites, onError, onSettled }) {
+export function normalizeReaderFollowedBookstores(data = {}) {
+  return (data.bookstores || []).flatMap((bookstore) => {
+    if (!Number.isInteger(bookstore?.id) || bookstore.id <= 0 || !String(bookstore.name || "").trim()) return [];
+    if (bookstore.is_active === false) {
+      return [{ id: bookstore.id, name: bookstore.name, slug: "", logo_url: "", address: "", is_active: false }];
+    }
+    return String(bookstore.slug || "").trim() ? [bookstore] : [];
+  });
+}
+
+export function loadReaderFavorites({ fetchFavorites, onFavorites, onBookstores, onError, onSettled }) {
   let active = true;
 
   fetchFavorites()
     .then((data) => {
       if (active) onFavorites(normalizeReaderFavorites(data));
+      if (active && onBookstores) onBookstores(normalizeReaderFollowedBookstores(data));
     })
     .catch((error) => {
       if (active) onError(error);

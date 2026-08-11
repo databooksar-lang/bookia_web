@@ -29,6 +29,8 @@ import { registerBookSharingStateTests } from "./bookSharingState.test.js";
 import { registerReadingClubSharingStateTests } from "./readingClubSharingState.test.js";
 import { registerSectionIndexTests } from "./sectionIndex.test.js";
 import { registerGoogleOAuthStateTests } from "./googleOAuthState.test.js";
+import { registerPendingReaderActionTests } from "./pendingReaderAction.test.js";
+import { registerProgressiveReaderAuthIntegrationTests } from "./progressiveReaderAuthIntegration.test.js";
 
 import { registerDashboardNavigationStateTests } from './dashboardNavigationState.test.js';
 
@@ -38,6 +40,7 @@ const tests = [
     assert.equal(isBookiaApiRoute("/genres"), true);
     assert.equal(isBookiaApiRoute("/genres?active=true"), true);
     assert.equal(isBookiaApiRoute("/analytics/acquisition-events"), true);
+    assert.equal(isBookiaApiRoute("/analytics/reader-funnel-events"), true);
   }],
   ["keeps non-api frontend routes out of API detection", () => {
     assert.equal(isBookiaApiRoute("/dashboard"), false);
@@ -154,6 +157,8 @@ registerDashboardCatalogStateTests((name, fn) => tests.push([name, fn]));
 registerPublicSearchStateTests((name, fn) => tests.push([name, fn]));
 registerSectionIndexTests((name, fn) => tests.push([name, fn]));
 registerGoogleOAuthStateTests((name, fn) => tests.push([name, fn]));
+registerPendingReaderActionTests((name, fn) => tests.push([name, fn]));
+registerProgressiveReaderAuthIntegrationTests((name, fn) => tests.push([name, fn]));
 registerPlansPricingStateTests((name, fn) => tests.push([name, fn]));
 registerAnalyticsStateTests((name, fn) => tests.push([name, fn]));
 registerRegisterStateTests((name, fn) => tests.push([name, fn]));
@@ -177,7 +182,7 @@ tests.push(["offers a reusable favorite control throughout public book discovery
   assert.match(publicPagesSource, /function useFavoriteBooks\(me\)/);
   assert.match(publicPagesSource, /<FavoriteBookButton itemId=\{item\.id\}/);
   assert.match(publicPagesSource, /<FavoriteBookButton itemId=\{selectedBook\.id\}/);
-  assert.match(publicPagesSource, /navigate\("\/login"\)/);
+  assert.match(publicPagesSource, /navigate\(buildRegisterPath\(\{ profileType: "reader" \}\)\)/);
   assert.match(editorialStyles, /\.favorite-book-label\s*\{/);
   assert.match(publicPagesSource, /className="book-card-meta-row"/);
   assert.match(publicPagesSource, /className="book-card-statuses"/);
@@ -580,9 +585,9 @@ tests.push(["uses inclusive copy across the access flow", () => {
   assert.match(authPagesSource, /Bookia, para quienes viven los libros\./);
   assert.match(authPagesSource, /Ingresá para seguir explorando, compartiendo y conectando alrededor de las historias que te gustan\./);
   assert.match(authPagesSource, /<AppLink href="\/about">Conocé Bookia/);
-  assert.match(authPagesSource, /label="Ingresar a Bookia" title="Qué bueno verte de nuevo" description="Ingresá con tu correo y contraseña para continuar\./);
+  assert.match(authPagesSource, /label="Ingresar a Bookia" title=\{pendingAction \? actionCopy\.title : "Qué bueno verte de nuevo"\}/);
   assert.match(authPagesSource, /Ya tenés una sesión activa/);
-  assert.match(authPagesSource, /\{busy \? "Ingresando\.\.\." : <>Ingresar <ArrowIcon \/><\/>\}/);
+  assert.match(authPagesSource, /\{busy \? "Ingresando\.\.\." : <>Ingresar con correo <ArrowIcon \/><\/>\}/);
   assert.match(siteChromeSource, /<AppLink href="\/login">Ingresar<\/AppLink>/);
 }]);
 tests.push(["publishes a cookies policy for technical session cookies", () => {
@@ -615,7 +620,7 @@ tests.push(["publishes terms and conditions for Bookia's marketplace role", () =
   assert.match(registerSource, /href="\/privacy"/);
   assert.match(privacySource, /href="\/terms"/);
   assert.match(termsSource, /Terminos y Condiciones/);
-  assert.match(termsSource, /Vigente desde el 7 de agosto de 2026/);
+  assert.match(termsSource, /Vigente desde el 11 de agosto de 2026/);
   assert.match(termsSource, /Marcelo Gabriel Gonzalez/);
   assert.match(termsSource, /bookia.app.admin@gmail.com/);
   assert.match(termsSource, /Bookia no vende libros directamente/);
@@ -624,7 +629,20 @@ tests.push(["publishes terms and conditions for Bookia's marketplace role", () =
   assert.match(termsSource, /Mercado Pago/);
   assert.match(termsSource, /correo distinto del correo de acceso a Bookia/);
   assert.match(privacySource, /correo de la cuenta pagadora de Mercado Pago/);
-  assert.match(privacySource, /limite temporal en memoria/);
+  assert.match(privacySource, /limitacion de frecuencia respaldada por la base de datos/);
+  assert.match(privacySource, /HMAC/);
+  assert.match(privacySource, /seudonimizado/);
+  assert.match(privacySource, /buckets seudonimizados que superan los 30 dias/);
+  assert.match(privacySource, /se eliminan de forma oportunista cuando vuelve a ejecutarse un control del mismo tipo/);
+  assert.match(privacySource, /pueden persistir por mas tiempo/);
+  assert.match(privacySource, /hasta esa limpieza o una solicitud valida de supresion/);
+  assert.doesNotMatch(privacySource, /se purgan como maximo a los 30 dias/);
+  assert.match(privacySource, /eventos del embudo.*agregados/s);
+  assert.match(privacySource, /no constituyen prueba de una operacion comercial/);
+  assert.doesNotMatch(privacySource, /limite temporal en memoria/);
+  assert.doesNotMatch(privacySource, /sin cookies de analitica ni identificadores personales de visitantes/);
+  assert.match(termsSource, /eventos del embudo.*agregados/s);
+  assert.match(termsSource, /no prueban que haya existido una operacion comercial/);
   assert.match(termsSource, /prueba gratis de 30 dias/);
   assert.match(termsSource, /7 dias/);
   assert.match(termsSource, /oculta la vidriera y el catalogo publico/);
