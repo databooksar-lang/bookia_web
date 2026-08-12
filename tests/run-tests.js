@@ -635,6 +635,8 @@ tests.push(["publishes terms and conditions for Bookia's marketplace role", () =
   assert.match(termsSource, /operacion comercial se acuerda directamente entre la persona interesada y la libreria/);
   assert.match(termsSource, /OpenAI/);
   assert.match(termsSource, /Mercado Pago/);
+  assert.match(termsSource, /acceso con Google/);
+  assert.match(termsSource, /Politica de Privacidad/);
   assert.match(termsSource, /no solicita previamente el correo pagador/);
   assert.match(privacySource, /correo de la cuenta pagadora de Mercado Pago/);
   assert.match(privacySource, /Google/);
