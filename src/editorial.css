@@ -1682,6 +1682,46 @@ button:disabled {
   justify-self: start;
 }
 
+.auth-password-group {
+  display: grid;
+  gap: 7px;
+}
+
+.auth-password-field {
+  position: relative;
+}
+
+.auth-password-field input {
+  width: 100%;
+  padding-right: 48px;
+  box-sizing: border-box;
+}
+
+.auth-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 2px;
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  color: var(--forest);
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  transform: translateY(-50%);
+}
+
+.auth-password-toggle:hover {
+  color: #c89a2b;
+}
+
+.auth-password-toggle:focus-visible {
+  outline: 3px solid rgba(200, 154, 43, 0.35);
+}
+
 .feedback {
   margin: 0;
   padding: 13px 15px;
@@ -4724,9 +4764,23 @@ textarea:focus {
 
 .reader-auth-google {
   width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   color: var(--cream);
   background: var(--forest);
   box-shadow: 0 8px 20px rgba(18, 63, 50, 0.2);
+}
+
+.reader-auth-google-icon {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+  background: #fff;
+  border-radius: 50%;
 }
 
 .reader-auth-google:hover,

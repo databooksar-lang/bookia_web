@@ -316,6 +316,36 @@ tests.push(["renders an accessible password visibility control in registration f
     await vite.close();
   }
 }]);
+tests.push(["renders an accessible password visibility control in the login form", () => {
+  const authSource = readFileSync(new URL("../src/pages/AuthPages.jsx", import.meta.url), "utf8");
+
+  assert.match(authSource, /const \[passwordVisible, setPasswordVisible\] = useState\(false\);/);
+  assert.match(authSource, /type=\{passwordVisible \? "text" : "password"\}/);
+  assert.match(authSource, /aria-label=\{passwordVisible \? "Ocultar contrase\\u00f1a" : "Mostrar contrase\\u00f1a"\}/);
+  assert.match(authSource, /aria-pressed=\{passwordVisible\}/);
+  assert.match(authSource, /passwordVisible \? <EyeOffIcon \/> : <EyeIcon \/>/);
+
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+  assert.match(editorialStyles, /\.auth-password-field\s*\{[^}]*position:\s*relative;/s);
+  assert.match(editorialStyles, /\.auth-password-field input\s*\{[^}]*padding-right:\s*48px;/s);
+  assert.match(editorialStyles, /\.auth-password-toggle\s*\{[^}]*min-width:\s*44px;[^}]*min-height:\s*44px;/s);
+}]);
+tests.push(["renders a multicolor Google mark in the OAuth button", async () => {
+  const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
+  try {
+    const { GoogleIcon } = await vite.ssrLoadModule("/src/components/Icons.jsx");
+    const markup = renderToStaticMarkup(createElement(GoogleIcon));
+    const authSource = readFileSync(new URL("../src/pages/AuthPages.jsx", import.meta.url), "utf8");
+
+    assert.match(markup, /fill="#4285F4"/);
+    assert.match(markup, /fill="#34A853"/);
+    assert.match(markup, /fill="#FBBC05"/);
+    assert.match(markup, /fill="#EA4335"/);
+    assert.match(authSource, /<GoogleIcon \/>/);
+  } finally {
+    await vite.close();
+  }
+}]);
 tests.push(["renders checkout without collecting or displaying payer email", async () => {
   const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
   try {
