@@ -316,7 +316,7 @@ tests.push(["renders an accessible password visibility control in registration f
     await vite.close();
   }
 }]);
-tests.push(["renders editable pending payer email and read-only active payer", async () => {
+tests.push(["renders checkout without collecting or displaying payer email", async () => {
   const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
   try {
     const { BillingSubscriptionPanel } = await vite.ssrLoadModule("/src/components/BillingSubscriptionPanel.jsx");
@@ -328,11 +328,11 @@ tests.push(["renders editable pending payer email and read-only active payer", a
     const pendingMarkup = renderToStaticMarkup(createElement(BillingSubscriptionPanel, { initialBilling: { ...baseBilling, status: "payment_pending" } }));
     const activeMarkup = renderToStaticMarkup(createElement(BillingSubscriptionPanel, { initialBilling: { ...baseBilling, status: "active", payer_email_editable: false } }));
 
-    assert.match(pendingMarkup, /Correo de la cuenta de Mercado Pago/);
-    assert.match(pendingMarkup, /value="payments@example.com"/);
-    assert.match(pendingMarkup, /Confirmar en Mercado Pago/);
-    assert.match(activeMarkup, /Cuenta pagadora/);
-    assert.match(activeMarkup, /payments@example.com/);
+    assert.doesNotMatch(pendingMarkup, /Correo de la cuenta de Mercado Pago/);
+    assert.doesNotMatch(pendingMarkup, /value="payments@example.com"/);
+    assert.match(pendingMarkup, /Continuar en Mercado Pago/);
+    assert.doesNotMatch(activeMarkup, /Cuenta pagadora/);
+    assert.doesNotMatch(activeMarkup, /payments@example.com/);
     assert.doesNotMatch(activeMarkup, /type="email"/);
   } finally {
     await vite.close();
@@ -518,7 +518,7 @@ tests.push(["offers catalog add-ons after bookstore account credentials", () => 
   assert.match(registerSource, /type="radio"/);
   assert.match(registerSource, /Hoy: ARS 0/);
   assert.match(registerSource, /primer cobro se estima/);
-  assert.match(registerSource, /Crear cuenta y autorizar Mercado Pago/);
+  assert.match(registerSource, /Crear cuenta y continuar en Mercado Pago/);
   assert.match(editorialStyles, /\.register-catalog-options/);
 }]);
 
@@ -609,6 +609,8 @@ tests.push(["publishes a cookies policy for technical session cookies", () => {
   assert.match(cookiePolicySource, /Politica de Cookies/);
   assert.match(cookiePolicySource, /bookia_session/);
   assert.match(cookiePolicySource, /bookia_csrf/);
+  assert.match(cookiePolicySource, /bookia_google_oauth/);
+  assert.match(cookiePolicySource, /bookia_google_owner_link/);
   assert.match(cookiePolicySource, /No usamos cookies de analitica ni publicidad/);
 }]);
 tests.push(["publishes terms and conditions for Bookia's marketplace role", () => {
@@ -633,8 +635,11 @@ tests.push(["publishes terms and conditions for Bookia's marketplace role", () =
   assert.match(termsSource, /operacion comercial se acuerda directamente entre la persona interesada y la libreria/);
   assert.match(termsSource, /OpenAI/);
   assert.match(termsSource, /Mercado Pago/);
-  assert.match(termsSource, /correo distinto del correo de acceso a Bookia/);
+  assert.match(termsSource, /no solicita previamente el correo pagador/);
   assert.match(privacySource, /correo de la cuenta pagadora de Mercado Pago/);
+  assert.match(privacySource, /Google/);
+  assert.match(privacySource, /correo verificado/);
+  assert.match(privacySource, /no persiste tokens de Google/);
   assert.match(privacySource, /limitacion de frecuencia respaldada por la base de datos/);
   assert.match(privacySource, /HMAC/);
   assert.match(privacySource, /seudonimizado/);

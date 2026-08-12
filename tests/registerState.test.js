@@ -69,13 +69,13 @@ export function registerRegisterStateTests(test) {
     assert.equal(request.body.expected_total_amount_ars, 35000);
   });
 
-  test("sends a normalized Mercado Pago payer email for bookstore registration", () => {
+  test("keeps Mercado Pago payer details out of bookstore registration", () => {
     const request = buildRegistrationRequest({
       profileType: "bookstore", email: "owner@example.com", payerEmail: " Payments@Example.com ",
       password: "secreto123", whatsappPhone: "11 2222-3333", bookstoreName: "La Esquina", planCode: "base",
       catalogLimit: "50", privacyAccepted: true,
     });
 
-    assert.equal(request.body.payer_email, "payments@example.com");
+    assert.equal("payer_email" in request.body, false);
   });
 }

@@ -125,7 +125,7 @@ No uses comodines ni subdominios Railway como origen CORS en produccion. Antes d
 
 ## Retorno de suscripciones
 
-El frontend expone `/billing/return` para recibir a la libreria despues de autorizar la suscripcion en Mercado Pago. Configura en el backend `MERCADO_PAGO_BACK_URL=https://mybookia.app/billing/return`. La pagina confirma el estado contra la API y dirige al panel `Suscripcion`, donde se puede consultar el proximo cobro, programar cambios o cancelar la renovacion.
+El frontend expone `/billing/return` para recibir a la libreria despues de autorizar la suscripcion en Mercado Pago. Configura en el backend `MERCADO_PAGO_BACK_URL=https://mybookia.app/billing/return`. Bookia no solicita un correo pagador antes del checkout: Mercado Pago utiliza la cuenta activa. La pagina intenta confirmar el estado cada 2 segundos, hasta cinco veces, y luego dirige al panel `Suscripcion`, donde se puede consultar el proximo cobro, programar cambios o cancelar la renovacion.
 
 
 - Si una tapa falla al cargar, el buscador la oculta para evitar imagenes rotas visibles.

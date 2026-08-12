@@ -39,12 +39,29 @@ export function buildBillingChangeRequest(planCode, catalogLimit) {
   return { plan_code: planCode, catalog_limit: normalizedLimit };
 }
 
-export function buildBillingCheckoutRequest(payerEmail) {
-  const normalized = String(payerEmail || "").trim().toLowerCase();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) {
-    throw new Error("Ingresá un correo válido para autorizar la suscripción en Mercado Pago.");
+export function buildBillingCheckoutRequest() {
+  return {};
+}
+
+export async function pollBillingSubscriptionSync(
+  sync,
+  { attempts = 5, delayMs = 2000, wait = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)) } = {},
+) {
+  let lastResult = null;
+  let lastError = null;
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try {
+      lastResult = await sync();
+      lastError = null;
+      if (lastResult?.status !== "payment_pending") return lastResult;
+    } catch (error) {
+      lastError = error;
+      if (error?.status !== 409) throw error;
+    }
+    if (attempt < attempts - 1) await wait(delayMs);
   }
-  return { payer_email: normalized };
+  if (lastResult) return lastResult;
+  throw lastError;
 }
 
 export function getTrustedMercadoPagoCheckoutUrl(value) {

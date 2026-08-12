@@ -41,7 +41,6 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
   const [billing, setBilling] = useState(initialBilling);
   const [planCode, setPlanCode] = useState(initialBilling?.plan_code || "base");
   const [catalogLimit, setCatalogLimit] = useState(String(initialBilling?.catalog_limit || 50));
-  const [payerEmail, setPayerEmail] = useState(initialBilling?.payer_email || "");
   const [error, setError] = useState("");
   const [loadError, setLoadError] = useState("");
   const [message, setMessage] = useState("");
@@ -62,7 +61,6 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
     setBilling(nextBilling);
     setPlanCode(nextBilling.plan_code);
     setCatalogLimit(String(nextBilling.catalog_limit));
-    setPayerEmail(nextBilling.payer_email || "");
     onBillingChange?.(nextBilling);
     return nextBilling;
   }
@@ -93,7 +91,7 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
     setError("");
     let body;
     try {
-      body = buildBillingCheckoutRequest(payerEmail);
+      body = buildBillingCheckoutRequest();
     } catch (validationError) {
       setError(validationError.message);
       return;
@@ -109,7 +107,7 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
     setCheckoutFallbackUrl("");
     let body;
     try {
-      body = buildBillingCheckoutRequest(payerEmail);
+      body = buildBillingCheckoutRequest();
     } catch (validationError) {
       setError(validationError.message);
       return;
@@ -137,7 +135,7 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
       let checkoutBody;
       try {
         body = buildBillingChangeRequest(planCode, catalogLimit);
-        checkoutBody = buildBillingCheckoutRequest(payerEmail);
+        checkoutBody = buildBillingCheckoutRequest();
       } catch (validationError) {
         setError(validationError.message);
         return Promise.resolve();
@@ -195,7 +193,6 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
   const canChange = ["trialing", "active", "grace_period"].includes(billing.status);
   const changeIsNoop = planCode === billing.plan_code && Number(catalogLimit) === billing.catalog_limit;
   const isReactivationPending = billing.status === "payment_pending" && !billing.trial_ends_at;
-  const payerEmailChanged = payerEmail.trim().toLowerCase() !== String(billing.payer_email || "").trim().toLowerCase();
   const billingDate = getBillingDateDetails(billing, isReactivationPending);
 
   return (
@@ -206,15 +203,11 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
         <div><span>Catálogo</span><strong>Hasta {billing.catalog_limit} libros</strong></div>
         <div><span>Total mensual</span><strong>{formatBillingAmount(billing.total_amount_ars, billing.currency)}</strong></div>
         <div><span>{billingDate.label}</span><strong>{billingDate.value}</strong></div>
-        {billing.status !== "payment_pending" && billing.payer_email ? <div><span>Cuenta pagadora</span><strong>{billing.payer_email}</strong></div> : null}
       </div>
 
       {billing.status === "payment_pending" ? <form className="billing-payer-form" onSubmit={authorizePayment}>
-        <label>Correo de la cuenta de Mercado Pago
-          <input type="email" value={payerEmail} onChange={(event) => setPayerEmail(event.target.value)} autoComplete="email" required disabled={busy || !billing.payer_email_editable} />
-          <small>Debe coincidir con la cuenta que usarás para autorizar la suscripción.</small>
-        </label>
-        <button className="primary-button" type="submit" disabled={busy}>{payerEmailChanged ? "Actualizar correo y continuar" : "Confirmar en Mercado Pago"}</button>
+        <p className="billing-notice">Mercado Pago usará la cuenta que tengas activa al continuar. Debe ser distinta de la cuenta cobradora de Bookia.</p>
+        <button className="primary-button" type="submit" disabled={busy}>Continuar en Mercado Pago</button>
         <button className="secondary-button" type="button" onClick={copyCheckoutLink} disabled={busy}>Copiar enlace de Mercado Pago</button>
         {checkoutFallbackUrl ? <label>Enlace de Mercado Pago
           <input type="text" value={checkoutFallbackUrl} readOnly onFocus={(event) => event.currentTarget.select()} aria-label="Enlace de Mercado Pago para copiar manualmente" />
@@ -239,12 +232,11 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
         <p className="billing-notice">Elegí el plan y la capacidad. La reactivación es paga, sin una nueva prueba gratis, y tu librería volverá a publicarse cuando Mercado Pago confirme la autorización.</p>
         <label>Plan<select value={planCode} onChange={(event) => setPlanCode(event.target.value)}><option value="base">Base</option><option value="plus_ai">Plus AI</option></select></label>
         <label>Capacidad<select value={catalogLimit} onChange={(event) => setCatalogLimit(event.target.value)}><option value="50">50 libros</option><option value="100">100 libros</option><option value="200">200 libros</option></select></label>
-        <label>Correo de la cuenta de Mercado Pago<input type="email" value={payerEmail} onChange={(event) => setPayerEmail(event.target.value)} autoComplete="email" required /></label>
-        <button className="primary-button" type="submit" disabled={busy}>Reactivar librería</button>
+        <button className="primary-button" type="submit" disabled={busy}>Reactivar y continuar en Mercado Pago</button>
       </form> : null}
-      {message ? <p className="feedback success">{message}</p> : null}
-      {loadError ? <><p className="feedback error">{loadError}</p><button className="secondary-button" type="button" onClick={() => loadBilling()}>Reintentar</button></> : null}
-      {error ? <p className="feedback error">{error}</p> : null}
+      {message ? <p className="feedback success" role="status">{message}</p> : null}
+      {loadError ? <><p className="feedback error" role="alert">{loadError}</p><button className="secondary-button" type="button" onClick={() => loadBilling()}>Reintentar</button></> : null}
+      {error ? <p className="feedback error" role="alert">{error}</p> : null}
     </div>
   );
 }

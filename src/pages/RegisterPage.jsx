@@ -30,8 +30,6 @@ function RegistrationChoice({ type, title, description, image, onChoose }) {
 export function RegisterPage({ onRegister, onAuthenticated, pendingAction, me, locationSearch }) {
   const [bookstoreStep, setBookstoreStep] = useState("account");
   const [email, setEmail] = useState("");
-  const [payerEmail, setPayerEmail] = useState("");
-  const [payerEmailTouched, setPayerEmailTouched] = useState(false);
   const [password, setPassword] = useState("");
   const [whatsappPhone, setWhatsAppPhone] = useState("");
   const [bookstoreType, setBookstoreType] = useState("");
@@ -129,12 +127,12 @@ export function RegisterPage({ onRegister, onAuthenticated, pendingAction, me, l
 
     let checkoutBody = null;
     try {
-      if (!isReader) checkoutBody = buildBillingCheckoutRequest(payerEmail);
+      if (!isReader) checkoutBody = buildBillingCheckoutRequest();
     } catch (validationError) {
       setError(validationError.message);
       return;
     }
-    const { path, body } = buildRegistrationRequest({ profileType, email, payerEmail, password, whatsappPhone, bookstoreType, displayName, bookstoreName, planCode, catalogLimit, expectedMonthlyTotal: monthlyTotal, privacyAccepted });
+    const { path, body } = buildRegistrationRequest({ profileType, email, password, whatsappPhone, bookstoreType, displayName, bookstoreName, planCode, catalogLimit, expectedMonthlyTotal: monthlyTotal, privacyAccepted });
     if (isReader && pendingAction) trackReaderFunnelEvent({ eventType: "reader_auth_started", actionType: pendingAction.type, bookstoreId: pendingAction.bookstore_id, attemptId: pendingAction.attempt_id });
     setBusy(true);
     apiFetch(path, { method: "POST", body: JSON.stringify(body) })
@@ -186,11 +184,7 @@ export function RegisterPage({ onRegister, onAuthenticated, pendingAction, me, l
           <p>{isReader ? (pendingAction ? actionCopy.description : "Guardá los libros que te interesan y volvé a encontrarlos cuando quieras.") : isBookstoreSummary ? "Revisá el importe y la renovación antes de autorizar Mercado Pago." : isBookstoreDetails ? "Elegí si querés ampliar el catálogo incluido en tu plan." : "Primero, definí los datos para ingresar a Bookia."}</p>
           <form className="register-form" onSubmit={submit}>
             {isReader ? <label>¿Cómo querés que te llamemos? (opcional)<input value={displayName} onChange={(event) => setDisplayName(event.target.value)} autoComplete="name" /><small>Podés cambiarlo más adelante.</small></label> : null}
-            {(isReader || bookstoreStep === "account") ? <><label>Correo electrónico<input type="email" value={email} onChange={(event) => {
-              const nextEmail = event.target.value;
-              setEmail(nextEmail);
-              if (!payerEmailTouched) setPayerEmail(nextEmail);
-            }} autoComplete="email" required /></label><div className="register-password-group">
+            {(isReader || bookstoreStep === "account") ? <><label>Correo electrónico<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" required /></label><div className="register-password-group">
                 <label htmlFor="register-password">Contraseña</label>
                 <div className="register-password-field">
                   <input id="register-password" type={passwordVisible ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" minLength="8" required />
@@ -214,14 +208,11 @@ export function RegisterPage({ onRegister, onAuthenticated, pendingAction, me, l
               <div className="register-subscription-total"><span>Total mensual</span><strong>{formatCommercialPrice(monthlyTotal || 0)}</strong></div>
               <p><strong>Hoy: ARS 0.</strong> Tenes 30 dias de prueba gratis. El primer cobro se estima para el {firstChargeEstimate}, luego se renueva automaticamente cada mes.</p>
               <p>Podes cancelar la renovacion desde Bookia y conservar el acceso hasta el final del periodo vigente.</p>
-              <label className="register-payer-email">Correo de la cuenta de Mercado Pago
-                <input type="email" value={payerEmail} onChange={(event) => { setPayerEmailTouched(true); setPayerEmail(event.target.value); }} autoComplete="email" required />
-                <small>Ingresá el correo de la cuenta que autorizará la suscripción. Puede ser distinto de tu correo de acceso a Bookia.</small>
-              </label>
+              <p>Mercado Pago usara la cuenta que tengas activa al continuar. Debe ser distinta de la cuenta cobradora de Bookia.</p>
             </div>}
             {(isReader || isBookstoreDetails) ? <label className="register-legal"><input type="checkbox" checked={privacyAccepted} onChange={(event) => setPrivacyAccepted(event.target.checked)} required /><span className="register-legal-copy">Acepto los <AppLink href="/terms">Términos y Condiciones</AppLink> y la <AppLink href="/privacy">Política de Privacidad</AppLink>.</span></label> : null}
             {error ? <p className="feedback error">{error}</p> : null}
-            <button className={`register-submit${isReader ? " reader-auth-email" : ""}`} type="submit" disabled={busy}>{busy ? "Creando cuenta..." : isBookstoreSummary ? "Crear cuenta y autorizar Mercado Pago" : profileType === "bookstore" ? "Continuar" : "Crear cuenta con correo"} <ArrowIcon /></button>
+            <button className={`register-submit${isReader ? " reader-auth-email" : ""}`} type="submit" disabled={busy}>{busy ? "Creando cuenta..." : isBookstoreSummary ? "Crear cuenta y continuar en Mercado Pago" : profileType === "bookstore" ? "Continuar" : "Crear cuenta con correo"} <ArrowIcon /></button>
             {isReader ? <GoogleButton intent="register" privacyAccepted={privacyAccepted} pendingAction={pendingAction} onError={setError} /> : null}
             {isReader ? <p className="register-form-login">¿Ya tenés una cuenta? <AppLink href="/login">Ingresá</AppLink></p> : null}
           </form>
