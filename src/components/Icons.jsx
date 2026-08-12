@@ -106,6 +106,17 @@ export function EyeOffIcon({ size = 20 }) {
   );
 }
 
+export function GoogleIcon({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+      <path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.55-.2-2.27H12v4.51h6.45a5.52 5.52 0 0 1-2.39 3.62v3h3.87c2.27-2.09 3.56-5.17 3.56-8.86Z" />
+      <path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.95-2.91l-3.87-3a7.17 7.17 0 0 1-10.68-3.77H1.41v3.09A12 12 0 0 0 12 24Z" />
+      <path fill="#FBBC05" d="M5.4 14.32A7.2 7.2 0 0 1 5.02 12c0-.81.14-1.59.38-2.32V6.59H1.41A12 12 0 0 0 0 12c0 1.94.47 3.78 1.41 5.41l3.99-3.09Z" />
+      <path fill="#EA4335" d="M12 4.77c1.77 0 3.35.61 4.6 1.8l3.44-3.44A11.55 11.55 0 0 0 12 0 12 12 0 0 0 1.41 6.59L5.4 9.68A7.17 7.17 0 0 1 12 4.77Z" />
+    </svg>
+  );
+}
+
 export function HeartIcon({ size = 20, filled = false }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} aria-hidden="true">
