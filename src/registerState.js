@@ -44,7 +44,6 @@ export function getRegisterStep({ profileType, email, password, whatsappPhone, b
 export function buildRegistrationRequest({
   profileType,
   email,
-  payerEmail,
   password,
   whatsappPhone,
   bookstoreType,
@@ -72,7 +71,6 @@ export function buildRegistrationRequest({
     body: {
       name: bookstoreName,
       email,
-      ...(payerEmail ? { payer_email: payerEmail.trim().toLowerCase() } : {}),
       password,
       whatsapp_phone: whatsappPhone.trim(),
       bookstore_type: bookstoreType,

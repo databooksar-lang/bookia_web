@@ -4615,6 +4615,11 @@ textarea:focus {
   font-size: .86rem;
 }
 
+.billing-payer-form .billing-notice,
+.billing-payer-form label {
+  grid-column: 1 / -1;
+}
+
 .billing-payer-form small {
   font-size: .75rem;
   line-height: 1.4;

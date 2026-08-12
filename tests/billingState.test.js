@@ -32,9 +32,20 @@ export function registerBillingStateTests(test) {
     assert.throws(() => buildBillingChangeRequest("trial", "50"), /plan/i);
   });
 
-  test("builds and validates the Mercado Pago payer request", () => {
-    assert.deepEqual(buildBillingCheckoutRequest(" Payments@Example.com "), { payer_email: "payments@example.com" });
-    assert.throws(() => buildBillingCheckoutRequest("not-an-email"), /correo válido/i);
+  test("builds checkout without payer details", () => {
+    assert.deepEqual(buildBillingCheckoutRequest(), {});
+    assert.deepEqual(buildBillingCheckoutRequest("ignored@example.com"), {});
+  });
+
+  test("retries Mercado Pago return sync five times while authorization is pending", async () => {
+    const statuses = ["payment_pending", "payment_pending", "payment_pending", "payment_pending", "trialing"];
+    const waits = [];
+    const result = await billingState.pollBillingSubscriptionSync(
+      async () => ({ status: statuses.shift() }),
+      { wait: async (milliseconds) => waits.push(milliseconds) },
+    );
+    assert.equal(result.status, "trialing");
+    assert.deepEqual(waits, [2000, 2000, 2000, 2000]);
   });
 
   test("recognizes Mercado Pago return outcomes", () => {
