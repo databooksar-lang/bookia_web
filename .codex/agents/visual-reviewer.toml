@@ -1,6 +1,6 @@
 name = "visual_reviewer"
 description = "Reviews and corrects the rendered appearance of Bookia frontend changes while preserving existing behavior and design language."
-model = "gpt-5.6-sol"
+model = "gpt-5.6-terra"
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 
