@@ -19,30 +19,8 @@ import { FavoriteBookButton } from "../components/FavoriteBookButton";
 import { BookstoreDescription } from "../components/BookstoreDescription";
 import { SectionIndex } from "../components/SectionIndex";
 import { ReaderMonogram, ReaderPassport, ReaderWantedBooksPublic } from "../components/ReaderPublicProfile";
+import { BookCover } from "../components/BookCover";
 import { ArrowIcon, BookIcon, LocationIcon, SearchIcon, StoreIcon, WhatsAppIcon } from "../components/Icons";
-
-function BookCover({ item, className = "book-cover", interactive = false, onOpen }) {
-  const [broken, setBroken] = useState(false);
-  const coverUrl = item.cover_image_url ? resolveApiUrl(item.cover_image_url) : null;
-  const image = coverUrl && !broken ? (
-    <img className={className} src={coverUrl} alt={`Tapa de ${item.title}`} onError={() => setBroken(true)} />
-  ) : (
-    <span className={`${className} book-cover-placeholder`} aria-label={`Sin tapa disponible para ${item.title}`}>
-      <BookIcon size={24} />
-      <small>Sin tapa</small>
-    </span>
-  );
-
-  if (!interactive || !coverUrl || broken) {
-    return image;
-  }
-
-  return (
-    <button type="button" className="book-cover-button" aria-label={`Ampliar tapa de ${item.title}`} onClick={() => onOpen({ title: item.title, url: coverUrl })}>
-      {image}
-    </button>
-  );
-}
 
 function trackBookDetailOpened(item, source) {
   const bookstoreId = item?.bookstore?.id;
