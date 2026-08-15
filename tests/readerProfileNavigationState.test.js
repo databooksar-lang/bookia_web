@@ -48,4 +48,19 @@ export function registerReaderProfileNavigationStateTests(test) {
     assert.match(profileSource, /hidden=\{section !== "favorites"\}/);
     assert.match(editorialSource, /\.reader-profile-tab-panel\[hidden\]/);
   });
+
+  test("groups reader profile editing, saved items, and wanted books into editorial blocks", () => {
+    const profileSource = readFileSync(new URL("../src/pages/ReaderProfilePage.jsx", import.meta.url), "utf8");
+    const editorialSource = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+    assert.match(profileSource, /reader-profile-content-block reader-profile-information-block/);
+    assert.match(profileSource, /reader-profile-content-block reader-profile-genres-block/);
+    assert.match(profileSource, /reader-profile-content-block reader-profile-passport-block/);
+    assert.match(profileSource, /reader-profile-content-block reader-profile-favorites-block/);
+    assert.match(profileSource, /reader-profile-content-block reader-profile-followed-block/);
+    assert.match(profileSource, /reader-profile-content-block reader-profile-wanted-editor/);
+    assert.match(profileSource, /reader-profile-content-block reader-profile-wanted-list/);
+    assert.match(editorialSource, /\.reader-profile-content-block\s*\{/);
+    assert.match(editorialSource, /\.reader-profile-passport-block\s+\.reader-passport-editor-group\s*\{/);
+  });
 }
