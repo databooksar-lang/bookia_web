@@ -4333,6 +4333,11 @@ textarea:focus {
   box-shadow: none;
 }
 
+.reader-profile-save-button {
+  width: auto;
+  justify-self: start;
+}
+
 .reader-profile-content-block {
   min-width: 0;
   position: relative;
