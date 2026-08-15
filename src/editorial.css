@@ -4324,6 +4324,128 @@ textarea:focus {
   display: none !important;
 }
 
+.reader-page .bookstore-profile-section.reader-profile-tab-panel {
+  padding: 0;
+  display: grid;
+  gap: 18px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.reader-profile-content-block {
+  min-width: 0;
+  position: relative;
+  padding: clamp(20px, 3vw, 30px);
+  background: rgba(255, 250, 240, 0.8);
+  border: 1px solid rgba(18, 63, 50, 0.14);
+  border-radius: 16px;
+  box-shadow: 0 10px 24px rgba(22, 38, 30, 0.045);
+}
+
+.reader-profile-content-block::before {
+  width: 4px;
+  position: absolute;
+  inset: 18px auto 18px 0;
+  content: "";
+  background: var(--forest);
+  border-radius: 0 999px 999px 0;
+}
+
+.reader-profile-information-block,
+.reader-profile-genres-block,
+.reader-profile-passport-block {
+  margin: 0;
+}
+
+.reader-profile-information-block {
+  padding-top: clamp(24px, 3vw, 34px);
+  border: 1px solid rgba(18, 63, 50, 0.16);
+}
+
+.reader-profile-information-block > legend,
+.reader-profile-genres-block > legend,
+.reader-profile-passport-block > legend {
+  padding: 0 12px 0 4px;
+  color: var(--forest-deep);
+  background: rgba(255, 250, 240, 0.96);
+  font-family: "Fraunces", serif;
+  font-size: clamp(1.2rem, 2vw, 1.45rem);
+  font-weight: 600;
+}
+
+.reader-profile-information-block .bookstore-profile-fields {
+  gap: 22px;
+}
+
+.reader-profile-genres-block {
+  padding-top: 24px;
+  background: rgba(240, 246, 239, 0.7);
+}
+
+.reader-profile-genres-block .reader-favorite-genres {
+  margin-top: 6px;
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.reader-profile-genres-block .reader-favorite-genres summary {
+  min-height: 52px;
+}
+
+.reader-profile-passport-block {
+  padding-top: 24px;
+  border-top: 1px solid rgba(18, 63, 50, 0.14);
+}
+
+.reader-profile-passport-block > p {
+  max-width: 680px;
+  margin: 4px 0 22px;
+}
+
+.reader-profile-passport-block .reader-passport-editor-group {
+  min-width: 0;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.52);
+  border: 1px solid rgba(18, 63, 50, 0.11);
+  border-radius: 12px;
+}
+
+.reader-profile-favorites-block {
+  margin-top: 8px;
+}
+
+.reader-profile-favorites-block .section-heading {
+  margin-bottom: 18px;
+}
+
+.reader-profile-followed-block {
+  margin: 30px 0 14px;
+  padding: 18px 20px 18px 24px;
+  box-shadow: none;
+}
+
+.reader-profile-followed-block::before {
+  inset-block: 12px;
+}
+
+.reader-profile-followed-block + .reader-followed-bookstores {
+  padding: 4px;
+}
+
+.reader-profile-wanted-editor,
+.reader-profile-wanted-list {
+  margin: 0;
+}
+
+.reader-profile-wanted-list {
+  padding: 14px;
+  background: rgba(240, 246, 239, 0.56);
+}
+
+.reader-profile-wanted-list::before {
+  inset-block: 14px;
+}
+
 .reader-profile-panel {
   grid-template-columns: minmax(0, 1fr);
   border-radius: 20px;
@@ -4427,6 +4549,13 @@ textarea:focus {
   padding: 22px 0 0;
   border: 0;
   border-top: 1px solid var(--line);
+}
+
+.reader-profile-passport-block.reader-passport-editor {
+  margin: 0;
+  padding: clamp(20px, 3vw, 30px);
+  border: 1px solid rgba(18, 63, 50, 0.14);
+  border-radius: 16px;
 }
 
 .reader-passport-editor > legend {
@@ -4558,6 +4687,25 @@ textarea:focus {
 }
 
 @media (max-width: 760px) {
+  .reader-profile-content-block {
+    padding: 20px 18px;
+    border-radius: 14px;
+  }
+
+  .reader-profile-content-block::before {
+    width: 3px;
+    inset-block: 14px;
+  }
+
+  .reader-profile-followed-block {
+    margin-top: 24px;
+    padding-left: 22px;
+  }
+
+  .reader-profile-passport-block .reader-passport-editor-group {
+    padding: 14px;
+  }
+
   .reader-passport-groups,
   .reader-passport-editor-groups,
   .reader-wanted-form-fields {

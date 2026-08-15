@@ -55,7 +55,7 @@ export function registerReaderProfileStateTests(test) {
     assert.match(profilePage, /apiFetch\("\/genres"\)/);
     assert.doesNotMatch(profilePage, /apiFetch\("\/auth\/logout"/);
     assert.doesNotMatch(profilePage, /Cerrar sesion/);
-assert.match(profilePage, /<fieldset className="bookstore-profile-field-wide reader-favorite-genres-field">/);
+    assert.match(profilePage, /<fieldset className="bookstore-profile-field-wide reader-favorite-genres-field(?: reader-profile-content-block reader-profile-genres-block)?">/);
     assert.match(profilePage, /<legend>.*te gustan<\/legend>/);
     assert.match(profilePage, /<details className="reader-favorite-genres"/);
     assert.match(profilePage, /className={`reader-favorite-genre-chip/);
