@@ -42,4 +42,26 @@ export function registerReaderPublicProfileRenderTests(test) {
       await vite.close();
     }
   });
+
+  test("hides empty reader clubs and renders accented club copy when clubs exist", async () => {
+    const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
+    try {
+      const { ReaderReadingClubs } = await vite.ssrLoadModule("/src/pages/PublicPages.jsx");
+      const reader = { display_name: "Gabriel" };
+      const emptyMarkup = renderToStaticMarkup(createElement(ReaderReadingClubs, { reader, readingClubs: [], onBack: () => {} }));
+      const clubMarkup = renderToStaticMarkup(createElement(ReaderReadingClubs, {
+        reader,
+        readingClubs: [{ id: 7, title: "Lecturas del mes", description: "Una charla", genre: null, meeting_date: "2026-08-20", location: "Sala 1" }],
+        onBack: () => {},
+      }));
+
+      assert.equal(emptyMarkup, "");
+      assert.match(clubMarkup, /Encuentros de Gabriel/);
+      assert.match(clubMarkup, /Género del club/);
+      assert.match(clubMarkup, /Sin género/);
+      assert.doesNotMatch(clubMarkup, /\\u00/);
+    } finally {
+      await vite.close();
+    }
+  });
 }
