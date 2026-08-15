@@ -39,6 +39,10 @@ export function registerReaderProfileNavigationStateTests(test) {
     assert.match(profileSource, /parseReaderProfileNavigation\(locationSearch\)/);
     assert.match(profileSource, /Mi info/);
     assert.match(profileSource, /Mis favoritos/);
+    assert.match(profileSource, /📝 Mi info/);
+    assert.match(profileSource, /❤️ Mis favoritos/);
+    assert.match(profileSource, /🔎 Libros buscados/);
+    assert.match(profileSource, /reader-public-profile-button/);
     assert.match(profileSource, /aria-label="Secciones de mi perfil"/);
     assert.match(profileSource, /hidden=\{section !== "info"\}/);
     assert.match(profileSource, /hidden=\{section !== "favorites"\}/);

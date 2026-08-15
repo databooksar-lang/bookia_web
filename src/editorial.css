@@ -390,6 +390,25 @@ select:focus {
   border-color: var(--forest);
 }
 
+.reader-public-profile-button {
+  color: var(--cream);
+  background: var(--forest);
+  border-color: var(--forest);
+  box-shadow: 0 8px 20px rgba(18, 63, 50, 0.16);
+}
+
+.reader-public-profile-button:hover {
+  color: var(--cream);
+  background: var(--forest-deep);
+  border-color: var(--forest-deep);
+  transform: translateY(-1px);
+}
+
+.reader-public-profile-button:focus-visible {
+  outline: 3px solid rgba(18, 63, 50, 0.28);
+  outline-offset: 3px;
+}
+
 .light-button {
   color: var(--forest-deep);
   background: var(--cream);
