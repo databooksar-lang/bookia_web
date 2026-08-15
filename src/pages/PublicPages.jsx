@@ -266,7 +266,7 @@ function SearchResults({ filters, stores, me, onClearFilters }) {
                 <span>Libreria</span>
                 <AppLink href={`/bookstores/${item.bookstore.slug}`} onClick={() => trackBookstoreOpened(item.bookstore, "search_results")}>{item.bookstore.name} <ArrowIcon size={15} /></AppLink>
               </div>
-              <WhatsAppButton className="primary-button search-result-whatsapp" whatsappPhone={item.bookstore.whatsapp_phone} onClick={() => trackWhatsAppClicked(item.bookstore, "search_results", item.id)}>
+              <WhatsAppButton className="primary-button search-result-whatsapp" whatsappPhone={item.bookstore.whatsapp_phone} message={`Hola, quisiera consultarte por el libro ${item.title} que vi publicado en Bookia.`} onClick={() => trackWhatsAppClicked(item.bookstore, "search_results", item.id)}>
                 <WhatsAppIcon size={19} /> Contactar
               </WhatsAppButton>
               <FavoriteBookButton itemId={item.id} bookstoreId={item.bookstore?.id} isFavorite={favorites.favoriteIds.has(item.id)} isPending={favorites.pendingIds.has(item.id)} isSessionLoading={me === undefined} onToggle={favorites.toggleFavorite} />
@@ -715,7 +715,7 @@ function BookDetailModal({ selectedBook, selectedBookImageUrl, onImageChange, on
               <div><dt>Libreria</dt><dd>{bookstore ? <AppLink className="book-detail-store-link" href={`/bookstores/${bookstore.slug}`} onClick={() => trackBookstoreOpened(bookstore, "book_detail_modal")}>{bookstore.name} <ArrowIcon size={14} /></AppLink> : "Libreria no visible"}</dd></div>
             </dl>
             {hasBookstoreContact ? (
-              <WhatsAppButton className="primary-button book-detail-whatsapp" whatsappPhone={bookstore.whatsapp_phone} onClick={() => trackWhatsAppClicked(bookstore, "book_detail_modal", selectedBook.id)}>
+              <WhatsAppButton className="primary-button book-detail-whatsapp" whatsappPhone={bookstore.whatsapp_phone} message={`Hola, quisiera consultarte por el libro ${selectedBook.title} que vi publicado en Bookia.`} onClick={() => trackWhatsAppClicked(bookstore, "book_detail_modal", selectedBook.id)}>
                 <WhatsAppIcon size={19} /> Contactar por WhatsApp
               </WhatsAppButton>
             ) : null}

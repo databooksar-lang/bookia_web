@@ -1,7 +1,7 @@
 import { buildWhatsAppHref } from "../formatters";
 
-export function WhatsAppButton({ className = "primary-button", whatsappPhone, children, onClick }) {
-  const href = buildWhatsAppHref(whatsappPhone);
+export function WhatsAppButton({ className = "primary-button", whatsappPhone, message, children, onClick }) {
+  const href = buildWhatsAppHref(whatsappPhone, message);
 
   if (!href) {
     return null;
