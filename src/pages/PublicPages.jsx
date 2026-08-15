@@ -816,7 +816,10 @@ export function BookstorePage({ slug, me }) {
                   }
                 }}
               >
-                <BookCover item={item} />
+                <div className="book-card-cover-actions">
+                  <BookCover item={item} />
+                  {hasWhatsApp ? <WhatsAppButton className="book-card-whatsapp" whatsappPhone={store.whatsapp_phone} message={`Hola, quisiera consultarte por el libro ${item.title} que vi publicado en Bookia.`} ariaLabel={`Contactar por WhatsApp por ${item.title}`} onClick={(event) => { event.stopPropagation(); trackWhatsAppClicked(store, "bookstore_catalog_card", item.id); }} onKeyDown={(event) => event.stopPropagation()}><WhatsAppIcon size={20} /></WhatsAppButton> : null}
+                </div>
                 <div>
                   <div className="book-card-meta-row">
                     <div className="book-card-statuses">
