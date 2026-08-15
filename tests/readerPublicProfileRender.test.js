@@ -64,4 +64,26 @@ export function registerReaderPublicProfileRenderTests(test) {
       await vite.close();
     }
   });
+
+  test("renders public followed bookstores and hides the empty section", async () => {
+    const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
+    try {
+      const { ReaderFollowedBookstores } = await vite.ssrLoadModule("/src/pages/PublicPages.jsx");
+      const reader = { display_name: "Gabriel" };
+      const emptyMarkup = renderToStaticMarkup(createElement(ReaderFollowedBookstores, { reader, bookstores: [] }));
+      const markup = renderToStaticMarkup(createElement(ReaderFollowedBookstores, {
+        reader,
+        bookstores: [{ id: 8, name: "Naranja de Papel", slug: "naranja-de-papel", logo_url: "https://example.com/logo.png", address: "Corrientes 1234" }],
+      }));
+
+      assert.equal(emptyMarkup, "");
+      assert.match(markup, /Librerías que sigue Gabriel/);
+      assert.match(markup, /href="\/bookstores\/naranja-de-papel"/);
+      assert.match(markup, /Naranja de Papel/);
+      assert.match(markup, /Corrientes 1234/);
+      assert.match(markup, /https:\/\/example.com\/logo.png/);
+    } finally {
+      await vite.close();
+    }
+  });
 }
