@@ -26,6 +26,7 @@ import { registerReaderProfileNavigationStateTests } from "./readerProfileNaviga
 import { registerReaderIdentityStateTests } from "./readerIdentityState.test.js";
 import { registerReaderWantedBooksStateTests } from "./readerWantedBooksState.test.js";
 import { registerReaderPublicProfileRenderTests } from "./readerPublicProfileRender.test.js";
+import { registerReaderFavoriteBookRowTests } from "./readerFavoriteBookRow.test.js";
 import { registerFavoritesStateTests } from "./favoritesState.test.js";
 import { registerAccountDestinationTests } from "./accountDestination.test.js";
 import { registerBookSharingStateTests } from "./bookSharingState.test.js";
@@ -173,6 +174,7 @@ registerReaderProfileNavigationStateTests((name, fn) => tests.push([name, fn]));
 registerReaderIdentityStateTests((name, fn) => tests.push([name, fn]));
 registerReaderWantedBooksStateTests((name, fn) => tests.push([name, fn]));
 registerReaderPublicProfileRenderTests((name, fn) => tests.push([name, fn]));
+registerReaderFavoriteBookRowTests((name, fn) => tests.push([name, fn]));
 registerFavoritesStateTests((name, fn) => tests.push([name, fn]));
 registerAccountDestinationTests((name, fn) => tests.push([name, fn]));
 registerBookSharingStateTests((name, fn) => tests.push([name, fn]));
