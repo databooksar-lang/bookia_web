@@ -872,16 +872,23 @@ export function ReaderReadingClubs({ reader, readingClubs, onBack }) {
   </section>;
 }
 
+export function ReaderFollowedBookstores({ reader, bookstores }) {
+  if (!bookstores.length) return null;
+
+  return <section className="reader-public-followed-bookstores"><div className="section-heading"><div><p className="section-label">Librerías seguidas</p><h2>Librerías que sigue {reader.display_name}</h2></div></div><div className="reader-followed-bookstores">{bookstores.map((bookstore) => <AppLink key={bookstore.id} className="dashboard-card reader-followed-bookstore reader-public-followed-bookstore" href={`/bookstores/${bookstore.slug}`}>{bookstore.logo_url ? <img className="store-logo" src={resolveApiUrl(bookstore.logo_url)} alt="" /> : null}<div><strong>{bookstore.name}</strong>{bookstore.address ? <span>{bookstore.address}</span> : null}</div></AppLink>)}</div></section>;
+}
+
 export function ReaderPage({ slug }) {
   const [reader, setReader] = useState(null);
   const [readingClubs, setReadingClubs] = useState([]);
   const [wantedBooks, setWantedBooks] = useState([]);
+  const [followedBookstores, setFollowedBookstores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     setLoading(true);
-    apiFetch(`/readers/${slug}`).then((data) => { setReader(data.reader); setReadingClubs(data.reading_clubs || []); setWantedBooks(data.wanted_books || []); setError(""); }).catch((fetchError) => setError(fetchError.message)).finally(() => setLoading(false));
+    apiFetch(`/readers/${slug}`).then((data) => { setReader(data.reader); setReadingClubs(data.reading_clubs || []); setWantedBooks(data.wanted_books || []); setFollowedBookstores(data.followed_bookstores || []); setError(""); }).catch((fetchError) => setError(fetchError.message)).finally(() => setLoading(false));
   }, [slug]);
 
   if (loading) return <div className="page-state"><div className="loading-mark" /><p>Cargando lector...</p></div>;
@@ -891,6 +898,7 @@ export function ReaderPage({ slug }) {
     <div className="store-profile-panel reader-profile-panel"><div className="reader-profile-identity"><ReaderMonogram displayName={reader.display_name} className="is-profile-hero" /><div className="store-identity"><p className="section-label">Lector en Bookia</p><h1>{reader.display_name}</h1><BookstoreDescription value={reader.description || "Comparte clubes de lectura con la comunidad Bookia."} />{reader.favorite_genres?.length ? <div className="store-tags" aria-label="Generos favoritos">{reader.favorite_genres.map((genre) => <span key={genre.id} className="store-tag">{genre.name}</span>)}</div> : null}</div></div></div>
     <ReaderPassport reader={reader} />
     <ReaderWantedBooksPublic items={wantedBooks} />
+    <ReaderFollowedBookstores reader={reader} bookstores={followedBookstores} />
     <ReaderReadingClubs reader={reader} readingClubs={readingClubs} onBack={() => navigate("/")} />
   </section>;
 }
