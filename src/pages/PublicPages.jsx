@@ -864,6 +864,14 @@ export function BookstorePage({ slug, me }) {
   );
 }
 
+export function ReaderReadingClubs({ reader, readingClubs, onBack }) {
+  if (!readingClubs.length) return null;
+
+  return <section className="store-reading-clubs"><div className="section-heading results-heading"><div><p className="section-label">Clubes de lectura</p><h2>Encuentros de {reader.display_name}</h2><p>{readingClubs.length} {readingClubs.length === 1 ? "club publicado" : "clubes publicados"}</p></div><button className="secondary-button" onClick={onBack}>Volver a buscar</button></div>
+    <div className="reading-club-public-list">{readingClubs.map((club) => <article key={club.id} className="reading-club-public-card"><div className="store-tags" aria-label="Género del club"><span className="store-tag">{club.genre?.name || "Sin género"}</span></div><h3>{club.title}</h3><p>{club.description}</p><dl><div><dt>Fecha</dt><dd>{displayReadingClubDate(club.meeting_date)}</dd></div><div><dt>Lugar</dt><dd>{club.location || "Lugar a confirmar"}</dd></div></dl>{club.external_url ? <a className="reading-club-external-link" href={club.external_url} target="_blank" rel="noopener noreferrer">{club.external_url}</a> : null}</article>)}</div>
+  </section>;
+}
+
 export function ReaderPage({ slug }) {
   const [reader, setReader] = useState(null);
   const [readingClubs, setReadingClubs] = useState([]);
@@ -883,8 +891,6 @@ export function ReaderPage({ slug }) {
     <div className="store-profile-panel reader-profile-panel"><div className="reader-profile-identity"><ReaderMonogram displayName={reader.display_name} className="is-profile-hero" /><div className="store-identity"><p className="section-label">Lector en Bookia</p><h1>{reader.display_name}</h1><BookstoreDescription value={reader.description || "Comparte clubes de lectura con la comunidad Bookia."} />{reader.favorite_genres?.length ? <div className="store-tags" aria-label="Generos favoritos">{reader.favorite_genres.map((genre) => <span key={genre.id} className="store-tag">{genre.name}</span>)}</div> : null}</div></div></div>
     <ReaderPassport reader={reader} />
     <ReaderWantedBooksPublic items={wantedBooks} />
-    <section className="store-reading-clubs"><div className="section-heading results-heading"><div><p className="section-label">Clubes de lectura</p><h2>Encuentros de {reader.display_name}</h2><p>{readingClubs.length} {readingClubs.length === 1 ? "club publicado" : "clubes publicados"}</p></div><button className="secondary-button" onClick={() => navigate("/")}>Volver a buscar</button></div>
-      {readingClubs.length === 0 ? <EmptyState title="Todav\u00EDa no public\u00F3 clubes">Volv\u00E9 pronto para conocer sus pr\u00F3ximos encuentros.</EmptyState> : <div className="reading-club-public-list">{readingClubs.map((club) => <article key={club.id} className="reading-club-public-card"><div className="store-tags" aria-label="G\u00E9nero del club"><span className="store-tag">{club.genre?.name || "Sin g\u00E9nero"}</span></div><h3>{club.title}</h3><p>{club.description}</p><dl><div><dt>Fecha</dt><dd>{displayReadingClubDate(club.meeting_date)}</dd></div><div><dt>Lugar</dt><dd>{club.location || "Lugar a confirmar"}</dd></div></dl>{club.external_url ? <a className="reading-club-external-link" href={club.external_url} target="_blank" rel="noopener noreferrer">{club.external_url}</a> : null}</article>)}</div>}
-    </section>
+    <ReaderReadingClubs reader={reader} readingClubs={readingClubs} onBack={() => navigate("/")} />
   </section>;
 }
