@@ -214,6 +214,15 @@ tests.push(["offers direct WhatsApp contact from each bookstore catalog cover", 
   assert.match(editorialStyles, /\.book-card-whatsapp\s*\{[^}]*position:\s*absolute;/s);
 }]);
 
+tests.push(["records general WhatsApp consultations from a bookstore profile", () => {
+  const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+
+  assert.match(
+    publicPagesSource,
+    /<WhatsAppButton whatsappPhone=\{store\.whatsapp_phone\} onClick=\{\(\) => trackWhatsAppClicked\(store, "bookstore_profile_contact"\)\}>[\s\S]*?Hablar por WhatsApp[\s\S]*?<\/WhatsAppButton>/,
+  );
+}]);
+
 tests.push(["resolves API calls against an external runtime base", async () => {
   const previousConfig = globalThis.__BOOKIA_CONFIG__;
   globalThis.__BOOKIA_CONFIG__ = { apiBaseUrl: "https://api.bookia.example/" };
