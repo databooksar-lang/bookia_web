@@ -60,7 +60,9 @@ export function registerReaderProfileNavigationStateTests(test) {
     assert.match(profileSource, /reader-profile-content-block reader-profile-followed-block/);
     assert.match(profileSource, /reader-profile-content-block reader-profile-wanted-editor/);
     assert.match(profileSource, /reader-profile-content-block reader-profile-wanted-list/);
+    assert.match(profileSource, /primary-button reader-profile-save-button/);
     assert.match(editorialSource, /\.reader-profile-content-block\s*\{/);
     assert.match(editorialSource, /\.reader-profile-passport-block\s+\.reader-passport-editor-group\s*\{/);
+    assert.match(editorialSource, /\.reader-profile-save-button\s*\{[^}]*justify-self:\s*start;/s);
   });
 }
