@@ -297,7 +297,7 @@ export function registerProfileEditorStateTests(test) {
     const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
     const commerceSource = readFileSync(new URL("../src/components/Commerce.jsx", import.meta.url), "utf8");
 
-    assert.equal((publicPagesSource.match(/whatsappPhone=\{/g) || []).length, 3);
+    assert.equal((publicPagesSource.match(/whatsappPhone=\{/g) || []).length, 4);
     assert.match(publicPagesSource, /mailto:\$\{store\.correo\}/);
     assert.match(commerceSource, /buildWhatsAppHref\(whatsappPhone, message\)/);
   });

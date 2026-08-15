@@ -199,6 +199,21 @@ tests.push(["offers a reusable favorite control throughout public book discovery
   assert.doesNotMatch(editorialStyles, /\.book-card\s*>\s*\.favorite-book-button\s*\{[^}]*position:\s*absolute;/s);
 }]);
 
+tests.push(["offers direct WhatsApp contact from each bookstore catalog cover", () => {
+  const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+  const commerceSource = readFileSync(new URL("../src/components/Commerce.jsx", import.meta.url), "utf8");
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+  assert.match(publicPagesSource, /className="book-card-cover-actions"/);
+  assert.match(publicPagesSource, /className="book-card-whatsapp"/);
+  assert.match(publicPagesSource, /message=\{`Hola, quisiera consultarte por el libro \$\{item\.title\} que vi publicado en Bookia\.`\}/);
+  assert.match(publicPagesSource, /trackWhatsAppClicked\(store, "bookstore_catalog_card", item\.id\)/);
+  assert.match(publicPagesSource, /event\.stopPropagation\(\)/);
+  assert.match(commerceSource, /onKeyDown/);
+  assert.match(editorialStyles, /\.book-card-cover-actions\s*\{[^}]*position:\s*relative;/s);
+  assert.match(editorialStyles, /\.book-card-whatsapp\s*\{[^}]*position:\s*absolute;/s);
+}]);
+
 tests.push(["resolves API calls against an external runtime base", async () => {
   const previousConfig = globalThis.__BOOKIA_CONFIG__;
   globalThis.__BOOKIA_CONFIG__ = { apiBaseUrl: "https://api.bookia.example/" };

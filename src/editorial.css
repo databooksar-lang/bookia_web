@@ -1355,6 +1355,35 @@ button:disabled {
   height: 150px;
 }
 
+.book-card-cover-actions {
+  position: relative;
+  width: fit-content;
+}
+
+.book-card-whatsapp {
+  position: absolute;
+  right: -10px;
+  bottom: -10px;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  color: var(--cream);
+  background: #25d366;
+  border: 2px solid var(--cream);
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(11, 45, 36, 0.22);
+}
+
+.book-card-whatsapp:hover,
+.book-card-whatsapp:focus-visible {
+  background: #1fb557;
+  color: var(--cream);
+  outline: 3px solid rgba(37, 211, 102, 0.32);
+  outline-offset: 2px;
+}
+
 .book-card h3 {
   margin: 18px 0 6px;
   color: var(--forest-deep);
