@@ -113,6 +113,13 @@ export function registerProfileEditorStateTests(test) {
     assert.equal(buildWhatsAppHref(""), null);
   });
 
+  test("encodes a prefilled WhatsApp message for a book inquiry", () => {
+    assert.equal(
+      buildWhatsAppHref("5491112345678", "Hola, quisiera consultarte por el libro El Aleph: edición \"especial\" & otros que vi publicado en Bookia."),
+      "https://wa.me/5491112345678?text=Hola%2C%20quisiera%20consultarte%20por%20el%20libro%20El%20Aleph%3A%20edici%C3%B3n%20%22especial%22%20%26%20otros%20que%20vi%20publicado%20en%20Bookia.",
+    );
+  });
+
   test("removing an image clears its selected file immutably", () => {
     const logo = new Blob(["logo"], { type: "image/png" });
     const draft = { ...createProfileDraft({}), logoFile: logo };
@@ -292,7 +299,7 @@ export function registerProfileEditorStateTests(test) {
 
     assert.equal((publicPagesSource.match(/whatsappPhone=\{/g) || []).length, 3);
     assert.match(publicPagesSource, /mailto:\$\{store\.correo\}/);
-    assert.match(commerceSource, /buildWhatsAppHref\(whatsappPhone\)/);
+    assert.match(commerceSource, /buildWhatsAppHref\(whatsappPhone, message\)/);
   });
   test("links a public bookstore address to Google Maps in a new secure tab", () => {
     const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");

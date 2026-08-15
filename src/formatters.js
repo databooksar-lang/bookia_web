@@ -21,9 +21,14 @@ function normalizeSocialHandle(value, domainPattern) {
     .replace(/\/+$/, "");
 }
 
-export function buildWhatsAppHref(whatsappPhone) {
+export function buildWhatsAppHref(whatsappPhone, message) {
   const canonical = normalizePhonePart(whatsappPhone);
-  return /^549\d{10}$/.test(canonical) ? `https://wa.me/${canonical}` : null;
+  if (!/^549\d{10}$/.test(canonical)) {
+    return null;
+  }
+
+  const text = normalizeTextPart(message);
+  return text ? `https://wa.me/${canonical}?text=${encodeURIComponent(text)}` : `https://wa.me/${canonical}`;
 }
 
 export function formatDisplayWhatsApp(whatsappPhone) {
