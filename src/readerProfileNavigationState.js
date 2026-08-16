@@ -1,4 +1,4 @@
-const READER_PROFILE_SECTIONS = new Set(["info", "favorites", "wanted"]);
+const READER_PROFILE_SECTIONS = new Set(["info", "favorites", "wanted", "author"]);
 
 function normalizeReaderProfileSection(value) {
   return READER_PROFILE_SECTIONS.has(value) ? value : "info";
