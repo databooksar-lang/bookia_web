@@ -26,11 +26,7 @@ html {
 body {
   min-width: 320px;
   margin: 0;
-  background:
-    linear-gradient(rgba(18, 63, 50, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(18, 63, 50, 0.025) 1px, transparent 1px),
-    var(--paper);
-  background-size: 32px 32px;
+  background: var(--paper);
   color: var(--ink);
   font-family: "Manrope", sans-serif;
   line-height: 1.6;

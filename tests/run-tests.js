@@ -866,6 +866,13 @@ tests.push(["centers bookstore and reading-club illustrations at the mobile brea
 
   assert.match(editorialStyles, /@media \(max-width: 820px\)\s*\{[\s\S]*?\.bookstores-section-illustration,\s*\.reading-clubs-section-illustration\s*\{[^}]*align-self:\s*center;/);
 }]);
+tests.push(["keeps the global page background free of grid lines", () => {
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+  const bodyRule = editorialStyles.match(/body\s*\{([\s\S]*?)\n\}/)?.[1] ?? "";
+
+  assert.match(bodyRule, /background:\s*var\(--paper\);/);
+  assert.doesNotMatch(bodyRule, /linear-gradient\(/);
+}]);
 for (const [name, fn] of tests) {
   try {
     await fn();
