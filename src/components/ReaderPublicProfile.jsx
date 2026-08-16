@@ -7,6 +7,10 @@ export function ReaderMonogram({ displayName, className = "" }) {
   return <span className={`reader-monogram${className ? ` ${className}` : ""}`} aria-label={`Iniciales de ${displayName || "lector"}`}>{deriveReaderMonogram(displayName)}</span>;
 }
 
+export function ReaderAuthorBadge({ isAuthor }) {
+  return isAuthor ? <span className="reader-author-badge">Autor/a en Bookia</span> : null;
+}
+
 export function ReaderPassport({ reader }) {
   if (!hasReaderTraits(reader?.traits)) return null;
   return (

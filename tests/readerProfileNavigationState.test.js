@@ -20,6 +20,10 @@ export function registerReaderProfileNavigationStateTests(test) {
     assert.equal(parseReaderProfileNavigation("?section=wanted").section, "wanted");
   });
 
+  test("accepts the author reader profile section", () => {
+    assert.equal(parseReaderProfileNavigation("?section=author").section, "author");
+  });
+
   test("normalizes invalid reader profile sections to info", () => {
     assert.equal(parseReaderProfileNavigation("?section=clubs").section, "info");
   });
@@ -28,6 +32,7 @@ export function registerReaderProfileNavigationStateTests(test) {
     assert.equal(buildReaderProfileUrl("info"), "/profile?section=info");
     assert.equal(buildReaderProfileUrl("favorites"), "/profile?section=favorites");
     assert.equal(buildReaderProfileUrl("wanted"), "/profile?section=wanted");
+    assert.equal(buildReaderProfileUrl("author"), "/profile?section=author");
   });
 
   test("connects reader profile URL navigation to accessible tab panels", () => {

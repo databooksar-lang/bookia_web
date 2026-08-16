@@ -9,6 +9,8 @@ import { AppLink, navigate } from "../navigation";
 import { EmptyState } from "../components/Commerce";
 import { RichDescriptionEditor } from "../components/RichDescriptionEditor";
 import { ReaderFavoriteBookRow } from "../components/ReaderFavoriteBookRow";
+import { AuthorProfileSection } from "../components/AuthorProfileSection";
+import { activateAuthorProfile, deactivateAuthorProfile, isActiveAuthor } from "../authorProfileState";
 
 const READER_PROFILE_TABS = [
   { section: "info", label: "📝 Mi info" },
@@ -16,8 +18,9 @@ const READER_PROFILE_TABS = [
   { section: "wanted", label: "🔎 Libros buscados" },
 ];
 
-function ReaderProfileTabs({ section }) {
-  return <nav className="dashboard-tabs" aria-label="Secciones de mi perfil">{READER_PROFILE_TABS.map((tab) => <AppLink key={tab.section} href={buildReaderProfileUrl(tab.section)} className={`dashboard-tab${section === tab.section ? " is-active" : ""}`} aria-current={section === tab.section ? "page" : undefined}>{tab.label}</AppLink>)}</nav>;
+function ReaderProfileTabs({ section, showAuthor }) {
+  const tabs = showAuthor ? [...READER_PROFILE_TABS, { section: "author", label: "✍️ Autor/a" }] : READER_PROFILE_TABS;
+  return <nav className="dashboard-tabs" aria-label="Secciones de mi perfil">{tabs.map((tab) => <AppLink key={tab.section} href={buildReaderProfileUrl(tab.section)} className={`dashboard-tab${section === tab.section ? " is-active" : ""}`} aria-current={section === tab.section ? "page" : undefined}>{tab.label}</AppLink>)}</nav>;
 }
 
 function ReaderTraitEditor({ traits, onToggle }) {
@@ -48,6 +51,11 @@ export function ReaderProfilePage({ me, refreshMe, locationSearch = "" }) {
   const [wantedLoading, setWantedLoading] = useState(Boolean(profile));
   const [wantedSaving, setWantedSaving] = useState(false);
   const [wantedStatus, setWantedStatus] = useState("");
+  const [authorAccepted, setAuthorAccepted] = useState(false);
+  const [authorPending, setAuthorPending] = useState(false);
+  const [authorFeedback, setAuthorFeedback] = useState("");
+  const authorProfile = me?.author_profile;
+  const authorIsActive = isActiveAuthor(authorProfile);
 
   useEffect(() => { setDraft(createReaderProfileDraft(profile)); }, [profile?.display_name, profile?.slug, profile?.description, profile?.is_public, favoriteGenreIdsKey, profileTraitsKey]);
 
@@ -114,11 +122,33 @@ export function ReaderProfilePage({ me, refreshMe, locationSearch = "" }) {
       .then(() => setFollowedBookstores((bookstores) => bookstores.filter((bookstore) => bookstore.id !== bookstoreId)))
       .catch((error) => setProfileStatus(error.message));
   }
+  function activateAuthor(event) {
+    event.preventDefault();
+    setAuthorPending(true);
+    setAuthorFeedback("");
+    activateAuthorProfile(apiFetch)
+      .then(() => refreshMe({ preserveOnError: true }))
+      .then(() => { setAuthorAccepted(false); setAuthorFeedback("Perfil de autor/a activado."); })
+      .catch((error) => setAuthorFeedback(error.message))
+      .finally(() => setAuthorPending(false));
+  }
+  function deactivateAuthor() {
+    if (!window.confirm("¿Querés desactivar tu perfil de autor/a? La insignia dejará de mostrarse en tu perfil público.")) return;
+    setAuthorPending(true);
+    setAuthorFeedback("");
+    deactivateAuthorProfile(apiFetch)
+      .then(() => refreshMe({ preserveOnError: true }))
+      .then(() => setAuthorFeedback("Perfil de autor/a desactivado."))
+      .catch((error) => setAuthorFeedback(error.message))
+      .finally(() => setAuthorPending(false));
+  }
 
   return <section className="store-page reader-page"><div className="section-heading"><div><p className="section-label">MI PERFIL</p><h1>{draft.display_name || "Tu perfil lector"}</h1><p>Contale a la comunidad quién sos, qué leés y qué te inspira.</p></div><div className="dashboard-actions">{draft.is_public && draft.slug ? <AppLink className="secondary-button reader-public-profile-button" href={`/readers/${draft.slug}`}>🌐 Ver perfil público</AppLink> : null}</div></div>
-    <ReaderProfileTabs section={section} />
+    <ReaderProfileTabs section={section} showAuthor={authorIsActive} />
     <form className="bookstore-profile-section dashboard-card reader-profile-tab-panel" onSubmit={saveProfile} hidden={section !== "info"}><fieldset className="bookstore-profile-group reader-profile-content-block reader-profile-information-block"><legend>Información pública</legend><div className="bookstore-profile-fields"><label><span>Nombre visible</span><input value={draft.display_name} onChange={(event) => update("display_name", event.target.value)} required /></label><label><span>Alias público</span><input value={draft.slug} onChange={(event) => update("slug", event.target.value)} required={draft.is_public} /></label><label className="bookstore-profile-field-wide"><span>Biografía</span><RichDescriptionEditor value={draft.description} onChange={(value) => update("description", value)} maxLength={5000} placeholder="Tu perfil personal, profesional, gustos y lecturas favoritas." /></label><fieldset className="bookstore-profile-field-wide reader-favorite-genres-field reader-profile-content-block reader-profile-genres-block"><legend>Géneros que te gustan</legend>{favoriteGenresState.kind === "ready" ? <details className="reader-favorite-genres"><summary><span>Elegí tus géneros</span><span>{favoriteGenreSelectionLabel(draft.favorite_genre_ids)}</span></summary><div className="reader-favorite-genres-options">{genres.map((genre) => <label key={genre.id} className={`reader-favorite-genre-chip${draft.favorite_genre_ids.includes(genre.id) ? " is-selected" : ""}`}><input className="reader-favorite-genre-checkbox" type="checkbox" checked={draft.favorite_genre_ids.includes(genre.id)} onChange={() => toggleFavoriteGenre(genre.id)} /><span>{genre.name}</span></label>)}</div></details> : <small className={`reader-favorite-genres-status is-${favoriteGenresState.kind}`} role={favoriteGenresState.kind === "error" ? "alert" : undefined}>{favoriteGenresState.message}</small>}</fieldset><ReaderTraitEditor traits={draft.traits} onToggle={toggleTrait} /><label className="bookstore-profile-checkbox"><input type="checkbox" checked={draft.is_public} onChange={(event) => update("is_public", event.target.checked)} />Perfil público</label></div></fieldset><button className="primary-button reader-profile-save-button" type="submit">Guardar perfil</button>{profileStatus ? <p className="feedback" role="status">{profileStatus}</p> : null}</form>
     <section className="results-section reader-profile-tab-panel reader-profile-content-block reader-profile-favorites-block" hidden={section !== "favorites"}><div className="section-heading"><div><p className="section-label">❤️ LIBROS FAVORITOS</p><h2>Tus lecturas guardadas</h2></div></div>{favoritesLoading ? <div className="loading-mark" /> : null}{!favoritesLoading && favorites.length === 0 ? <EmptyState compact title="Todavía no guardaste libros">Explorá el catálogo y usá el corazón para volver a encontrarlos acá.</EmptyState> : <div className="search-results-list">{favorites.map((item) => <ReaderFavoriteBookRow key={item.id} item={item} onRemove={removeFavorite} />)}</div>}<div className="section-heading reader-followed-heading reader-profile-content-block reader-profile-followed-block"><div><p className="section-label">🏬 LIBRERÍAS SEGUIDAS</p><h2>Librerías seguidas</h2></div></div>{!favoritesLoading && followedBookstores.length === 0 ? <EmptyState compact title="Todavía no seguís librerías">Visitá sus perfiles y elegí Seguir para encontrarlas acá.</EmptyState> : <div className="reader-followed-bookstores">{followedBookstores.map((bookstore) => <article key={bookstore.id} className="dashboard-card reader-followed-bookstore">{bookstore.logo_url ? <img className="store-logo" src={resolveApiUrl(bookstore.logo_url)} alt="" /> : null}<div>{bookstore.is_active === false ? <strong>{bookstore.name}</strong> : <AppLink href={`/bookstores/${bookstore.slug}`}><strong>{bookstore.name}</strong></AppLink>}{bookstore.is_active === false ? <span>Esta librería ya no está disponible.</span> : bookstore.address ? <span>{bookstore.address}</span> : null}</div><button className="secondary-button" type="button" onClick={() => unfollowBookstore(bookstore.id)}>Dejar de seguir</button></article>)}</div>}{profileStatus ? <p className="feedback" role="status">{profileStatus}</p> : null}</section>
     <section className="reader-profile-tab-panel reader-wanted-dashboard" hidden={section !== "wanted"}><div className="section-heading"><div><p className="section-label">🔎 MI LISTA DE DESEOS</p><h2>Libros que estoy buscando</h2><p>Agregá hasta 20 títulos que te gustaría encontrar. Se mostrarán en tu perfil cuando sea público.</p></div></div>{wantedLoading ? <div className="loading-mark" /> : null}{!wantedLoading && (!atWantedLimit || wantedDraft.id) ? <form className="dashboard-card reader-wanted-form reader-profile-content-block reader-profile-wanted-editor" onSubmit={saveWanted}><div className="reader-wanted-form-fields"><label><span>Título</span><input value={wantedDraft.title} onChange={(event) => changeWanted("title", event.target.value)} maxLength={255} required /></label><label><span>Autor o autora <small>(opcional)</small></span><input value={wantedDraft.author} onChange={(event) => changeWanted("author", event.target.value)} maxLength={255} /></label><label className="reader-wanted-detail-field"><span>Detalle <small>(opcional)</small></span><textarea value={wantedDraft.details} onChange={(event) => changeWanted("details", event.target.value)} maxLength={500} rows={3} placeholder="Ej.: edición, idioma o estado que buscás." /></label></div><div className="card-actions"><div className="card-actions-main">{wantedDraft.id ? <button type="button" className="secondary-button" onClick={cancelWantedEdit} disabled={wantedSaving}>Cancelar</button> : null}<button type="submit" className="primary-button" disabled={wantedSaving}>{wantedSaving ? "Guardando..." : wantedDraft.id ? "Guardar cambios" : "Agregar libro"}</button></div></div></form> : null}{!wantedLoading && atWantedLimit && !wantedDraft.id ? <p className="feedback">Llegaste al máximo de 20 libros. Podés editar o quitar uno para agregar otro.</p> : null}{!wantedLoading && wantedBooks.length === 0 ? <EmptyState compact title="Tu lista todavía está vacía">Sumá esos libros que esperás cruzarte en una librería.</EmptyState> : <div className="reader-wanted-dashboard-list reader-profile-content-block reader-profile-wanted-list">{wantedBooks.map((item) => <article key={item.id} className="dashboard-card reader-wanted-dashboard-item"><div><h3>{item.title}</h3>{item.author ? <p>{item.author}</p> : null}{item.details ? <p className="reader-wanted-details">{item.details}</p> : null}</div><div className="card-actions"><button type="button" className="secondary-button" onClick={() => setWantedDraft(createWantedBookDraft(item))} disabled={wantedSaving}>Editar</button><button type="button" className="secondary-button" onClick={() => removeWanted(item.id)} disabled={wantedSaving}>Quitar</button></div></article>)}</div>}{wantedStatus ? <p className="feedback" role="status">{wantedStatus}</p> : null}</section>
+    <aside className="dashboard-card author-profile-invitation" hidden={section !== "info" || authorIsActive}><div><p className="section-label">¿ESCRIBÍS LIBROS?</p><h2>Publicá tus libros en Bookia</h2><p>Activá gratis tu perfil de autor/a y preparate para compartir tus obras.</p></div><AppLink className="secondary-button" href={buildReaderProfileUrl("author")}>Conocer más</AppLink></aside>
+    {section === "author" ? <AuthorProfileSection authorProfile={authorProfile} readerProfile={profile} accepted={authorAccepted} onAcceptedChange={setAuthorAccepted} onActivate={activateAuthor} onDeactivate={deactivateAuthor} pending={authorPending} feedback={authorFeedback} /> : null}
   </section>;
 }
