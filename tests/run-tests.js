@@ -27,6 +27,8 @@ import { registerReaderIdentityStateTests } from "./readerIdentityState.test.js"
 import { registerReaderWantedBooksStateTests } from "./readerWantedBooksState.test.js";
 import { registerReaderPublicProfileRenderTests } from "./readerPublicProfileRender.test.js";
 import { registerAuthorProfileStateTests } from "./authorProfileState.test.js";
+import { registerAuthorBooksStateTests } from "./authorBooksState.test.js";
+import { registerAuthorBooksRenderTests } from "./authorBooksRender.test.js";
 import { registerReaderFavoriteBookRowTests } from "./readerFavoriteBookRow.test.js";
 import { registerFavoritesStateTests } from "./favoritesState.test.js";
 import { registerAccountDestinationTests } from "./accountDestination.test.js";
@@ -173,6 +175,8 @@ registerDashboardNavigationStateTests((name, fn) => tests.push([name, fn]));
 registerReaderProfileStateTests((name, fn) => tests.push([name, fn]));
 registerReaderProfileNavigationStateTests((name, fn) => tests.push([name, fn]));
 registerAuthorProfileStateTests((name, fn) => tests.push([name, fn]));
+registerAuthorBooksStateTests((name, fn) => tests.push([name, fn]));
+registerAuthorBooksRenderTests((name, fn) => tests.push([name, fn]));
 registerReaderIdentityStateTests((name, fn) => tests.push([name, fn]));
 registerReaderWantedBooksStateTests((name, fn) => tests.push([name, fn]));
 registerReaderPublicProfileRenderTests((name, fn) => tests.push([name, fn]));
@@ -686,7 +690,7 @@ tests.push(["publishes terms and conditions for Bookia's marketplace role", () =
   assert.match(registerSource, /href="\/privacy"/);
   assert.match(privacySource, /href="\/terms"/);
   assert.match(termsSource, /Terminos y Condiciones/);
-  assert.match(termsSource, /Vigente desde el 15 de agosto de 2026/);
+  assert.match(termsSource, /Vigente desde el 16 de agosto de 2026/);
   assert.match(termsSource, /Marcelo Gabriel Gonzalez/);
   assert.match(termsSource, /bookia.app.admin@gmail.com/);
   assert.match(termsSource, /Bookia no vende libros directamente/);
@@ -704,6 +708,10 @@ tests.push(["publishes terms and conditions for Bookia's marketplace role", () =
   assert.match(termsSource, /autorizacion suficiente para publicar las obras/);
   assert.match(privacySource, /version de la declaracion de derechos aceptada/);
   assert.match(privacySource, /La desactivacion oculta la insignia/);
+  assert.match(termsSource, /hasta cinco obras propias/);
+  assert.match(termsSource, /no se publican fuera de su panel/);
+  assert.match(privacySource, /titulos, sinopsis, genero, editorial, ano y portadas/);
+  assert.match(privacySource, /los libros propios y sus portadas se conservan/);
   assert.match(privacySource, /limitacion de frecuencia respaldada por la base de datos/);
   assert.match(privacySource, /HMAC/);
   assert.match(privacySource, /seudonimizado/);
