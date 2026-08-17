@@ -1,4 +1,4 @@
-const BOOKSTORE_PLAN_CODES = new Set(["base", "plus_ai"]);
+const BOOKSTORE_PLAN_CODES = new Set(["initial", "base", "plus_ai"]);
 const BOOKSTORE_TYPES = new Set(["physical", "virtual", "hybrid"]);
 
 export function isSupportedBookstorePlan(planCode) {
