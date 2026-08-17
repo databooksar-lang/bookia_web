@@ -873,6 +873,16 @@ tests.push(["keeps the global page background free of grid lines", () => {
   assert.match(bodyRule, /background:\s*var\(--paper\);/);
   assert.doesNotMatch(bodyRule, /linear-gradient\(/);
 }]);
+tests.push(["names the Base plan as Base + IA across customer billing screens", () => {
+  const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+  const registerPageSource = readFileSync(new URL("../src/pages/RegisterPage.jsx", import.meta.url), "utf8");
+  const billingPanelSource = readFileSync(new URL("../src/components/BillingSubscriptionPanel.jsx", import.meta.url), "utf8");
+
+  assert.match(publicPagesSource, /name: "Base \+ IA"/);
+  assert.match(registerPageSource, /"Base \+ IA"/);
+  assert.match(billingPanelSource, /"Base \+ IA"/);
+}]);
+
 for (const [name, fn] of tests) {
   try {
     await fn();
