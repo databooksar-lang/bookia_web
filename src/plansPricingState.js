@@ -1,4 +1,4 @@
-const REQUIRED_COMMERCIAL_OFFERS = ["trial", "base", "plus_ai", "catalog_100", "catalog_200"];
+const REQUIRED_COMMERCIAL_OFFERS = ["trial", "initial", "base", "plus_ai", "catalog_100", "catalog_200"];
 
 export function getCommercialPrices(items) {
   const prices = Object.create(null);

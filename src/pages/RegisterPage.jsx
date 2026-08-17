@@ -63,10 +63,12 @@ export function RegisterPage({ onRegister, onAuthenticated, pendingAction, me, l
 
   const profileType = queryState.profileType;
   const planCode = queryState.planCode;
+  const selectedCatalogLimit = planCode === "initial" ? "25" : catalogLimit;
+  const catalogOptions = planCode === "initial" ? [{ limit: "25", title: "Incluido", description: "Hasta 25 libros", offeringCode: null }] : CATALOG_OPTIONS;
   const isReader = profileType === "reader";
   const isBookstoreDetails = profileType === "bookstore" && bookstoreStep === "details";
   const isBookstoreSummary = profileType === "bookstore" && bookstoreStep === "summary";
-  const addonCode = catalogLimit === "100" ? "catalog_100" : catalogLimit === "200" ? "catalog_200" : null;
+  const addonCode = selectedCatalogLimit === "100" ? "catalog_100" : selectedCatalogLimit === "200" ? "catalog_200" : null;
   const monthlyTotal = pricingState.prices ? pricingState.prices[planCode] + (addonCode ? pricingState.prices[addonCode] : 0) : null;
   const firstChargeEstimate = new Intl.DateTimeFormat("es-AR", { day: "2-digit", month: "long", year: "numeric" }).format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
 
@@ -132,7 +134,7 @@ export function RegisterPage({ onRegister, onAuthenticated, pendingAction, me, l
       setError(validationError.message);
       return;
     }
-    const { path, body } = buildRegistrationRequest({ profileType, email, password, whatsappPhone, bookstoreType, displayName, bookstoreName, planCode, catalogLimit, expectedMonthlyTotal: monthlyTotal, privacyAccepted });
+    const { path, body } = buildRegistrationRequest({ profileType, email, password, whatsappPhone, bookstoreType, displayName, bookstoreName, planCode, catalogLimit: selectedCatalogLimit, expectedMonthlyTotal: monthlyTotal, privacyAccepted });
     if (isReader && pendingAction) trackReaderFunnelEvent({ eventType: "reader_auth_started", actionType: pendingAction.type, bookstoreId: pendingAction.bookstore_id, attemptId: pendingAction.attempt_id });
     setBusy(true);
     apiFetch(path, { method: "POST", body: JSON.stringify(body) })
@@ -196,15 +198,15 @@ export function RegisterPage({ onRegister, onAuthenticated, pendingAction, me, l
               </div>{!isReader ? <><label>Celular con WhatsApp<input type="tel" value={whatsappPhone} onChange={(event) => setWhatsAppPhone(event.target.value)} autoComplete="tel" required placeholder="11 2222-3333" /><small>Podes escribirlo en formato local; lo usaremos para que los lectores te contacten por WhatsApp.</small></label><label>Tipo de libreria<select value={bookstoreType} onChange={(event) => setBookstoreType(event.target.value)} required><option value="">Selecciona una opcion</option><option value="physical">Libreria fisica</option><option value="virtual">Libreria virtual</option><option value="hybrid">Libreria fisica y virtual</option></select></label></> : null}</> : isBookstoreDetails ? <>
               <label>Nombre de la libreria<input value={bookstoreName} onChange={(event) => setBookstoreName(event.target.value)} autoComplete="organization" required /></label>
               <fieldset className="register-catalog-options"><legend>Queres ampliar tu catalogo?</legend>
-                {CATALOG_OPTIONS.map((option) => <label className={`register-catalog-option${catalogLimit === option.limit ? " is-selected" : ""}`} key={option.limit}>
-                  <input type="radio" name="catalog_limit" value={option.limit} checked={catalogLimit === option.limit} onChange={(event) => setCatalogLimit(event.target.value)} />
+                {catalogOptions.map((option) => <label className={`register-catalog-option${selectedCatalogLimit === option.limit ? " is-selected" : ""}`} key={option.limit}>
+                  <input type="radio" name="catalog_limit" value={option.limit} checked={selectedCatalogLimit === option.limit} onChange={(event) => setCatalogLimit(event.target.value)} />
                   <span><strong>{option.title}</strong><small>{option.description}</small></span>
                   <em>{catalogOptionPrice(option.offeringCode)}</em>
                 </label>)}
               </fieldset>
             </> : <div className="register-subscription-summary">
               <div><span>Plan {planCode === "plus_ai" ? "Plus AI" : "Base + IA"}</span><strong>{formatCommercialPrice(pricingState.prices?.[planCode] || 0)}/mes</strong></div>
-              <div><span>Catalogo de hasta {catalogLimit} libros</span><strong>{addonCode ? `+ ${formatCommercialPrice(pricingState.prices?.[addonCode] || 0)}/mes` : "Incluido"}</strong></div>
+              <div><span>Catalogo de hasta {selectedCatalogLimit} libros</span><strong>{addonCode ? `+ ${formatCommercialPrice(pricingState.prices?.[addonCode] || 0)}/mes` : "Incluido"}</strong></div>
               <div className="register-subscription-total"><span>Total mensual</span><strong>{formatCommercialPrice(monthlyTotal || 0)}</strong></div>
               <p><strong>Hoy: ARS 0.</strong> Tenes 30 dias de prueba gratis. El primer cobro se estima para el {firstChargeEstimate}, luego se renueva automaticamente cada mes.</p>
               <p>Podes cancelar la renovacion desde Bookia y conservar el acceso hasta el final del periodo vigente.</p>
