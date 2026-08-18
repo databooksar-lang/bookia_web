@@ -1,3 +1,11 @@
+export function buildGoogleOAuthStartPayload({ intent, privacyAccepted = false, isAuthor = false, authorRightsDeclarationAccepted = false }) {
+  return { intent, privacy_accepted: privacyAccepted, is_author: isAuthor, author_rights_declaration_accepted: authorRightsDeclarationAccepted };
+}
+
+export function canStartGoogleOAuth({ intent, privacyAccepted = false, isAuthor = false, authorRightsDeclarationAccepted = false }) {
+  return intent !== "register" || (privacyAccepted && (!isAuthor || authorRightsDeclarationAccepted));
+}
+
 export function getGoogleOAuthError(code) {
   const messages = {
     existing: "Ya existe una cuenta con ese correo. Ingresa con tu correo y contrasena.",

@@ -44,10 +44,17 @@ export function registerRegisterStateTests(test) {
     assert.equal(getRegisterStep({ profileType: "bookstore", email: "libreria@example.com", password: "secreto123", whatsappPhone: "11 2222-3333", bookstoreType: "physical" }), "details");
   });
 
-  test("builds the existing reader registration payload", () => {
+  test("builds reader registration payloads with author activation disabled by default", () => {
     assert.deepEqual(
       buildRegistrationRequest({ profileType: "reader", email: "lector@example.com", password: "secreto123", displayName: "Ana", privacyAccepted: true }),
-      { path: "/auth/register/reader", body: { email: "lector@example.com", password: "secreto123", display_name: "Ana", privacy_accepted: true } },
+      { path: "/auth/register/reader", body: { email: "lector@example.com", password: "secreto123", display_name: "Ana", is_author: false, author_rights_declaration_accepted: false, privacy_accepted: true } },
+    );
+  });
+
+  test("builds reader registration payloads that activate an author profile", () => {
+    assert.deepEqual(
+      buildRegistrationRequest({ profileType: "reader", email: "autora@example.com", password: "secreto123", displayName: "Ana", isAuthor: true, authorRightsDeclarationAccepted: true, privacyAccepted: true }),
+      { path: "/auth/register/reader", body: { email: "autora@example.com", password: "secreto123", display_name: "Ana", is_author: true, author_rights_declaration_accepted: true, privacy_accepted: true } },
     );
   });
 

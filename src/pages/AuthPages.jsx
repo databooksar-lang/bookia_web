@@ -4,12 +4,12 @@ import { apiFetch } from "../api";
 import { getAccountDestination } from "../accountDestination";
 import { AppLink, navigate } from "../navigation";
 import { ArrowIcon, BookIcon, EyeIcon, EyeOffIcon, GoogleIcon } from "../components/Icons";
-import { getGoogleOAuthCallback, getGoogleOAuthError, getGoogleOAuthLinkMessage } from "../googleOAuthState";
+import { buildGoogleOAuthStartPayload, canStartGoogleOAuth, getGoogleOAuthCallback, getGoogleOAuthError, getGoogleOAuthLinkMessage } from "../googleOAuthState";
 import { trackReaderFunnelEvent } from "../analyticsState";
 import { getPendingReaderActionCopy } from "../pendingReaderAction";
 import { buildRegisterPath } from "../registerState";
 
-export function GoogleButton({ intent, privacyAccepted = false, pendingAction, onError }) {
+export function GoogleButton({ intent, privacyAccepted = false, isAuthor = false, authorRightsDeclarationAccepted = false, pendingAction, onError }) {
   const [enabled, setEnabled] = useState(false);
   const [busy, setBusy] = useState(false);
   useEffect(() => { apiFetch("/auth/providers").then((data) => setEnabled(Boolean(data.google))).catch(() => setEnabled(false)); }, []);
@@ -17,11 +17,11 @@ export function GoogleButton({ intent, privacyAccepted = false, pendingAction, o
   function start() {
     setBusy(true);
     if (pendingAction) trackReaderFunnelEvent({ eventType: "reader_auth_started", actionType: pendingAction.type, bookstoreId: pendingAction.bookstore_id, attemptId: pendingAction.attempt_id });
-    apiFetch("/auth/google/start", { method: "POST", body: JSON.stringify({ intent, privacy_accepted: privacyAccepted }) })
+    apiFetch("/auth/google/start", { method: "POST", body: JSON.stringify(buildGoogleOAuthStartPayload({ intent, privacyAccepted, isAuthor, authorRightsDeclarationAccepted })) })
       .then((data) => window.location.assign(data.authorization_url))
       .catch((error) => { setBusy(false); onError(error.message); });
   }
-  return <button type="button" className="primary-button auth-submit reader-auth-google" onClick={start} disabled={busy}><span className="reader-auth-google-icon"><GoogleIcon /></span>{busy ? "Conectando..." : "Continuar con Google"}</button>;
+  return <button type="button" className="primary-button auth-submit reader-auth-google" onClick={start} disabled={busy || !canStartGoogleOAuth({ intent, privacyAccepted, isAuthor, authorRightsDeclarationAccepted })}><span className="reader-auth-google-icon"><GoogleIcon /></span>{busy ? "Conectando..." : "Continuar con Google"}</button>;
 }
 
 function AuthLayout({ label, title, description, children }) {

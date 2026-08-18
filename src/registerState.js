@@ -53,6 +53,8 @@ export function buildRegistrationRequest({
   catalogLimit,
   expectedMonthlyTotal,
   privacyAccepted,
+  isAuthor = false,
+  authorRightsDeclarationAccepted = false,
 }) {
   if (profileType === "reader") {
     return {
@@ -61,6 +63,8 @@ export function buildRegistrationRequest({
         email,
         password,
         display_name: displayName.trim() || undefined,
+        is_author: isAuthor,
+        author_rights_declaration_accepted: authorRightsDeclarationAccepted,
         privacy_accepted: privacyAccepted,
       },
     };

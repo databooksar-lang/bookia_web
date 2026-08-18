@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { getGoogleOAuthCallback, getGoogleOAuthError, getGoogleOAuthLinkMessage } from "../src/googleOAuthState.js";
+import { buildGoogleOAuthStartPayload, canStartGoogleOAuth, getGoogleOAuthCallback, getGoogleOAuthError, getGoogleOAuthLinkMessage } from "../src/googleOAuthState.js";
 
 export function registerGoogleOAuthStateTests(addTest) {
   addTest("explains when a password account already owns the Google email", () => {
@@ -14,5 +14,20 @@ export function registerGoogleOAuthStateTests(addTest) {
     assert.deepEqual(getGoogleOAuthCallback("?google=registered"), { succeeded: true, registered: true });
     assert.deepEqual(getGoogleOAuthCallback("?google=success"), { succeeded: true, registered: false });
     assert.deepEqual(getGoogleOAuthCallback("?google=unknown"), { succeeded: false, registered: false });
+  });
+
+  addTest("sends the author selection and rights declaration when registering with Google", () => {
+    assert.deepEqual(
+      buildGoogleOAuthStartPayload({ intent: "register", privacyAccepted: true, isAuthor: true, authorRightsDeclarationAccepted: true }),
+      { intent: "register", privacy_accepted: true, is_author: true, author_rights_declaration_accepted: true },
+    );
+  });
+
+  addTest("requires registration consents before starting Google OAuth", () => {
+    assert.equal(canStartGoogleOAuth({ intent: "login" }), true);
+    assert.equal(canStartGoogleOAuth({ intent: "register" }), false);
+    assert.equal(canStartGoogleOAuth({ intent: "register", privacyAccepted: true }), true);
+    assert.equal(canStartGoogleOAuth({ intent: "register", privacyAccepted: true, isAuthor: true }), false);
+    assert.equal(canStartGoogleOAuth({ intent: "register", privacyAccepted: true, isAuthor: true, authorRightsDeclarationAccepted: true }), true);
   });
 }
