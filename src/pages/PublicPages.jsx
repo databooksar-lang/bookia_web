@@ -573,7 +573,6 @@ export function PlansPage({ isRegistrationFlow = false }) {
     return pricingState.prices ? formatCommercialPrice(pricingState.prices[offeringCode]) : "Precio no disponible";
   };
   const plans = [
-    { code: "base", name: "Prueba gratis", price: priceLabel("trial"), detail: "por 30 dias", limit: "Hasta 10 libros", benefits: ["Todas las funcionalidades web", "Funcionalidades de IA incluidas (aplican limites)", "Acceso al bot de Telegram"], tone: "trial" },
     { code: "initial", name: "Inicial", price: priceLabel("initial"), detail: "/mes", limit: "Hasta 25 libros", benefits: ["Carga manual desde web y Telegram", "Sin funcionalidades de IA"], tone: "base" },
     { code: "base", name: "Base + IA", price: priceLabel("base"), detail: "/mes", limit: "Hasta 50 libros", benefits: ["Todas las funcionalidades web manuales", "Perfil publico de libreria"], tone: "base" },
     { code: "plus_ai", name: "IA", price: priceLabel("plus_ai"), detail: "/mes", limit: "Hasta 50 libros", benefits: ["Todas las funcionalidades web", "Funcionalidades de IA incluidas", "Acceso al bot de Telegram"], tone: "featured", featured: true },
@@ -584,6 +583,10 @@ export function PlansPage({ isRegistrationFlow = false }) {
       <section className="plans-hero">
         <div className="plans-hero-copy"><p className="section-label">Planes para librerias</p><h1>Una vidriera que crece con tu catalogo<span>.</span></h1><p>{isRegistrationFlow ? "Elegi el plan que mejor acompana a tu libreria. La prueba de 30 dias se activa automaticamente." : "Empeza sin costo, mostra tus libros y elegi la forma de carga que mejor funciona para vos."}</p></div>
         <div className="plans-hero-art" aria-hidden="true"><img src="/images/plans-books.png" alt="" /></div>
+      </section>
+      <section className="plans-trial-banner" aria-label="Prueba gratuita de Bookia">
+        <div className="plans-trial-copy"><span className="plans-trial-days" aria-hidden="true">30</span><div><p>30 dias gratis para empezar</p><span>Hasta 10 libros · sin costo</span></div></div>
+        <AppLink className="plans-trial-link" href="/register" onClick={() => trackAcquisitionEvent("bookstore_trial_started")}>Empezar sin costo <ArrowIcon size={16} /></AppLink>
       </section>
       <section className="plans-pricing" aria-label="Planes de Bookia">
         {pricingState.error ? <p className="plans-pricing-status" role="status">{pricingState.error}</p> : null}

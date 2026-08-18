@@ -300,7 +300,13 @@ tests.push(["keeps plan selection inside the bookstore registration flow", () =>
   assert.match(registerSource, /window\.location\.assign\(getTrustedMercadoPagoCheckoutUrl\(checkout\.checkout_url\)\)/);
   assert.doesNotMatch(registerSource, /Plan inicial<select/);
   assert.match(plansSource, /isRegistrationFlow/);
-  assert.match(plansSource, /\{ code: "base", name: "Prueba gratis"/);
+  assert.doesNotMatch(plansSource, /\{ code: "base", name: "Prueba gratis"/);
+  assert.match(plansSource, /plans-trial-banner/);
+  assert.match(plansSource, /30 dias gratis para empezar/);
+  assert.match(plansSource, /Hasta 10 libros.*sin costo/);
+  assert.match(plansSource, /className="plans-trial-link" href="\/register"/);
+  assert.match(plansSource, /\{ code: "initial"/);
+  assert.match(plansSource, /\{ code: "base", name: "Base \+ IA"/);
   assert.match(plansSource, /plus_ai/);
 }]);
 
