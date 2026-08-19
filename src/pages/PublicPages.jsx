@@ -586,7 +586,7 @@ export function PlansPage({ isRegistrationFlow = false }) {
       </section>
       <section className="plans-trial-banner" aria-label="Prueba gratuita de Bookia">
         <div className="plans-trial-copy"><span className="plans-trial-days" aria-hidden="true">30</span><div><p>30 dias gratis para empezar</p><span>Hasta 10 libros · sin costo</span></div></div>
-        <AppLink className="plans-trial-link" href="/register" onClick={() => trackAcquisitionEvent("bookstore_trial_started")}>Empezar sin costo <ArrowIcon size={16} /></AppLink>
+        <AppLink className="plans-trial-link" href={buildRegisterPath({ profileType: "bookstore", planCode: "trial" })} onClick={() => trackAcquisitionEvent("bookstore_trial_started")}>Empezar sin costo <ArrowIcon size={16} /></AppLink>
       </section>
       <section className="plans-pricing" aria-label="Planes de Bookia">
         {pricingState.error ? <p className="plans-pricing-status" role="status">{pricingState.error}</p> : null}

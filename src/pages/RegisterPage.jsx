@@ -7,7 +7,7 @@ import { AppLink, navigate } from "../navigation";
 import { Redirect } from "../components/Redirect";
 import { ArrowIcon, EyeIcon, EyeOffIcon } from "../components/Icons";
 import { GoogleButton } from "./AuthPages";
-import { buildRegisterPath, buildRegistrationRequest, getRegisterQueryState, getRegisterStep, isSupportedBookstorePlan } from "../registerState";
+import { buildRegisterPath, buildRegistrationRequest, getRegisterQueryState, getRegisterStep, isFreeTrialPlan, isSupportedBookstorePlan } from "../registerState";
 import { trackReaderFunnelEvent } from "../analyticsState";
 import { getPendingReaderActionCopy } from "../pendingReaderAction";
 
@@ -69,13 +69,14 @@ export function RegisterPage({ onRegister, onAuthenticated, pendingAction, me, l
 
   const profileType = queryState.profileType;
   const planCode = queryState.planCode;
-  const selectedCatalogLimit = planCode === "initial" ? "25" : planCode === "plus_ai" ? (catalogLimit === "200" ? "200" : "150") : catalogLimit;
+  const isTrial = isFreeTrialPlan(planCode);
+  const selectedCatalogLimit = isTrial ? "10" : planCode === "initial" ? "25" : planCode === "plus_ai" ? (catalogLimit === "200" ? "200" : "150") : catalogLimit;
   const catalogOptions = planCode === "initial" ? [{ limit: "25", title: "Incluido", description: "Hasta 25 libros", offeringCode: null }] : planCode === "plus_ai" ? PLUS_AI_CATALOG_OPTIONS : BASE_CATALOG_OPTIONS;
   const isReader = profileType === "reader";
   const isBookstoreDetails = profileType === "bookstore" && bookstoreStep === "details";
   const isBookstoreSummary = profileType === "bookstore" && bookstoreStep === "summary";
   const addonCode = selectedCatalogLimit === "100" ? "catalog_100" : selectedCatalogLimit === "200" ? "catalog_200" : null;
-  const monthlyTotal = pricingState.prices ? pricingState.prices[planCode] + (addonCode ? pricingState.prices[addonCode] : 0) : null;
+  const monthlyTotal = isTrial ? 0 : pricingState.prices ? pricingState.prices[planCode] + (addonCode ? pricingState.prices[addonCode] : 0) : null;
   const firstChargeEstimate = new Intl.DateTimeFormat("es-AR", { day: "2-digit", month: "long", year: "numeric" }).format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
 
   function catalogOptionPrice(offeringCode) {
@@ -124,7 +125,7 @@ export function RegisterPage({ onRegister, onAuthenticated, pendingAction, me, l
       setBookstoreStep("details");
       return;
     }
-    if (isBookstoreDetails) {
+    if (isBookstoreDetails && !isTrial) {
       if (monthlyTotal === null) {
         setError("No pudimos confirmar el precio vigente. Intentá nuevamente.");
         return;
@@ -135,7 +136,7 @@ export function RegisterPage({ onRegister, onAuthenticated, pendingAction, me, l
 
     let checkoutBody = null;
     try {
-      if (!isReader) checkoutBody = buildBillingCheckoutRequest();
+      if (!isReader && !isTrial) checkoutBody = buildBillingCheckoutRequest();
     } catch (validationError) {
       setError(validationError.message);
       return;
@@ -145,11 +146,11 @@ export function RegisterPage({ onRegister, onAuthenticated, pendingAction, me, l
     setBusy(true);
     apiFetch(path, { method: "POST", body: JSON.stringify(body) })
         .then(() => {
-          if (isReader) {
+          if (isReader || isTrial) {
             return onRegister().then((sessionData) => {
               if (!sessionData) throw new Error("El registro fue aceptado, pero no pudimos recuperar tu sesion.");
-              if (onAuthenticated) return onAuthenticated(sessionData, { registered: true });
-              navigate("/");
+              if (isReader && onAuthenticated) return onAuthenticated(sessionData, { registered: true });
+              navigate(isTrial ? "/dashboard" : "/");
             });
           }
           return apiFetch("/billing/subscription/checkout", { method: "POST", body: JSON.stringify(checkoutBody) })
@@ -203,13 +204,13 @@ export function RegisterPage({ onRegister, onAuthenticated, pendingAction, me, l
                 <small>Mínimo 8 caracteres.</small>
               </div>{!isReader ? <><label>Celular con WhatsApp<input type="tel" value={whatsappPhone} onChange={(event) => setWhatsAppPhone(event.target.value)} autoComplete="tel" required placeholder="11 2222-3333" /><small>Podes escribirlo en formato local; lo usaremos para que los lectores te contacten por WhatsApp.</small></label><label>Tipo de libreria<select value={bookstoreType} onChange={(event) => setBookstoreType(event.target.value)} required><option value="">Selecciona una opcion</option><option value="physical">Libreria fisica</option><option value="virtual">Libreria virtual</option><option value="hybrid">Libreria fisica y virtual</option></select></label></> : null}</> : isBookstoreDetails ? <>
               <label>Nombre de la libreria<input value={bookstoreName} onChange={(event) => setBookstoreName(event.target.value)} autoComplete="organization" required /></label>
-              <fieldset className="register-catalog-options"><legend>Queres ampliar tu catalogo?</legend>
+              {isTrial ? <p className="billing-notice">Tu prueba incluye hasta 10 libros durante 30 dias, sin costo ni renovación automática.</p> : <fieldset className="register-catalog-options"><legend>Queres ampliar tu catalogo?</legend>
                 {catalogOptions.map((option) => <label className={`register-catalog-option${selectedCatalogLimit === option.limit ? " is-selected" : ""}`} key={option.limit}>
                   <input type="radio" name="catalog_limit" value={option.limit} checked={selectedCatalogLimit === option.limit} onChange={(event) => setCatalogLimit(event.target.value)} />
                   <span><strong>{option.title}</strong><small>{option.description}</small></span>
                   <em>{catalogOptionPrice(option.offeringCode)}</em>
                 </label>)}
-              </fieldset>
+              </fieldset>}
             </> : <div className="register-subscription-summary">
               <div><span>Plan {planCode === "plus_ai" ? "Plus AI" : "Base + IA"}</span><strong>{formatCommercialPrice(pricingState.prices?.[planCode] || 0)}/mes</strong></div>
               <div><span>Catalogo de hasta {selectedCatalogLimit} libros</span><strong>{addonCode ? `+ ${formatCommercialPrice(pricingState.prices?.[addonCode] || 0)}/mes` : "Incluido"}</strong></div>
@@ -220,7 +221,7 @@ export function RegisterPage({ onRegister, onAuthenticated, pendingAction, me, l
             </div>}
             {(isReader || isBookstoreDetails) ? <label className="register-legal"><input type="checkbox" checked={privacyAccepted} onChange={(event) => setPrivacyAccepted(event.target.checked)} required /><span className="register-legal-copy">Acepto los <AppLink href="/terms">Términos y Condiciones</AppLink> y la <AppLink href="/privacy">Política de Privacidad</AppLink>.</span></label> : null}
             {error ? <p className="feedback error">{error}</p> : null}
-            <button className={`register-submit${isReader ? " reader-auth-email" : ""}`} type="submit" disabled={busy}>{busy ? "Creando cuenta..." : isBookstoreSummary ? "Crear cuenta y continuar en Mercado Pago" : profileType === "bookstore" ? "Continuar" : "Crear cuenta con correo"} <ArrowIcon /></button>
+            <button className={`register-submit${isReader ? " reader-auth-email" : ""}`} type="submit" disabled={busy}>{busy ? "Creando cuenta..." : isBookstoreSummary ? "Crear cuenta y continuar en Mercado Pago" : isTrial && isBookstoreDetails ? "Crear mi prueba gratis" : profileType === "bookstore" ? "Continuar" : "Crear cuenta con correo"} <ArrowIcon /></button>
             {isReader ? <GoogleButton intent="register" privacyAccepted={privacyAccepted} isAuthor={isAuthor} authorRightsDeclarationAccepted={authorRightsDeclarationAccepted} pendingAction={pendingAction} onError={setError} /> : null}
             {isReader ? <p className="register-form-login">¿Ya tenés una cuenta? <AppLink href="/login">Ingresá</AppLink></p> : null}
           </form>
