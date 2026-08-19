@@ -575,7 +575,7 @@ export function PlansPage({ isRegistrationFlow = false }) {
   const plans = [
     { code: "initial", name: "Inicial", price: priceLabel("initial"), detail: "/mes", limit: "Hasta 25 libros", benefits: ["Carga manual desde web y Telegram", "Sin funcionalidades de IA"], tone: "base" },
     { code: "base", name: "Base + IA", price: priceLabel("base"), detail: "/mes", limit: "Hasta 50 libros", benefits: ["Todas las funcionalidades web manuales", "Perfil publico de libreria"], tone: "base" },
-    { code: "plus_ai", name: "IA", price: priceLabel("plus_ai"), detail: "/mes", limit: "Hasta 50 libros", benefits: ["Todas las funcionalidades web", "Funcionalidades de IA incluidas", "Acceso al bot de Telegram"], tone: "featured", featured: true },
+    { code: "plus_ai", name: "IA", price: priceLabel("plus_ai"), detail: "/mes", limit: "Hasta 150 libros", benefits: ["Todas las funcionalidades web", "Funcionalidades de IA incluidas", "Acceso al bot de Telegram"], tone: "featured", featured: true },
   ];
 
   return (

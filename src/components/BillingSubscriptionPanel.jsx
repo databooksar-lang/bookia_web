@@ -37,10 +37,16 @@ function getBillingDateDetails(billing, isReactivationPending) {
   };
 }
 
+function catalogLimitForPlan(planCode, catalogLimit) {
+  if (planCode === "initial") return "25";
+  if (planCode === "plus_ai") return String(Number(catalogLimit) === 200 ? 200 : 150);
+  return String([50, 100, 200].includes(Number(catalogLimit)) ? catalogLimit : 50);
+}
+
 export function BillingSubscriptionPanel({ initialBilling = null, onBillingChange }) {
   const [billing, setBilling] = useState(initialBilling);
   const [planCode, setPlanCode] = useState(initialBilling?.plan_code || "base");
-  const [catalogLimit, setCatalogLimit] = useState(String(initialBilling?.catalog_limit || 50));
+  const [catalogLimit, setCatalogLimit] = useState(catalogLimitForPlan(initialBilling?.plan_code || "base", initialBilling?.catalog_limit));
   const [error, setError] = useState("");
   const [loadError, setLoadError] = useState("");
   const [message, setMessage] = useState("");
@@ -60,7 +66,7 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
   function acceptBilling(nextBilling) {
     setBilling(nextBilling);
     setPlanCode(nextBilling.plan_code);
-    setCatalogLimit(String(nextBilling.catalog_limit));
+    setCatalogLimit(catalogLimitForPlan(nextBilling.plan_code, nextBilling.catalog_limit));
     onBillingChange?.(nextBilling);
     return nextBilling;
   }
@@ -220,8 +226,8 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
 
       {canChange ? <form className="billing-change-form" onSubmit={scheduleChange}>
         <h3>Cambiar desde la próxima renovación</h3>
-        <label>Plan<select value={planCode} onChange={(event) => { const nextPlan = event.target.value; setPlanCode(nextPlan); if (nextPlan === "initial") setCatalogLimit("25"); }}><option value="initial">Inicial</option><option value="base">Base + IA</option><option value="plus_ai">Plus AI</option></select></label>
-        <label>Capacidad<select value={catalogLimit} onChange={(event) => setCatalogLimit(event.target.value)}>{planCode === "initial" ? <option value="25">25 libros</option> : <><option value="50">50 libros</option><option value="100">100 libros</option><option value="200">200 libros</option></>}</select></label>
+        <label>Plan<select value={planCode} onChange={(event) => { const nextPlan = event.target.value; setPlanCode(nextPlan); setCatalogLimit(catalogLimitForPlan(nextPlan)); }}><option value="initial">Inicial</option><option value="base">Base + IA</option><option value="plus_ai">Plus AI</option></select></label>
+        <label>Capacidad<select value={catalogLimit} onChange={(event) => setCatalogLimit(event.target.value)}>{planCode === "initial" ? <option value="25">25 libros</option> : planCode === "plus_ai" ? <><option value="150">150 libros</option><option value="200">200 libros</option></> : <><option value="50">50 libros</option><option value="100">100 libros</option><option value="200">200 libros</option></>}</select></label>
         <button className="secondary-button" type="submit" disabled={busy || changeIsNoop}>Programar cambio</button>
       </form> : null}
 
@@ -230,8 +236,8 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
       {billing.status === "canceled" ? <form className="billing-change-form" onSubmit={reactivateSubscription}>
         <h3>Reactivar librería</h3>
         <p className="billing-notice">Elegí el plan y la capacidad. La reactivación es paga, sin una nueva prueba gratis, y tu librería volverá a publicarse cuando Mercado Pago confirme la autorización.</p>
-        <label>Plan<select value={planCode} onChange={(event) => { const nextPlan = event.target.value; setPlanCode(nextPlan); if (nextPlan === "initial") setCatalogLimit("25"); }}><option value="initial">Inicial</option><option value="base">Base + IA</option><option value="plus_ai">Plus AI</option></select></label>
-        <label>Capacidad<select value={catalogLimit} onChange={(event) => setCatalogLimit(event.target.value)}>{planCode === "initial" ? <option value="25">25 libros</option> : <><option value="50">50 libros</option><option value="100">100 libros</option><option value="200">200 libros</option></>}</select></label>
+        <label>Plan<select value={planCode} onChange={(event) => { const nextPlan = event.target.value; setPlanCode(nextPlan); setCatalogLimit(catalogLimitForPlan(nextPlan)); }}><option value="initial">Inicial</option><option value="base">Base + IA</option><option value="plus_ai">Plus AI</option></select></label>
+        <label>Capacidad<select value={catalogLimit} onChange={(event) => setCatalogLimit(event.target.value)}>{planCode === "initial" ? <option value="25">25 libros</option> : planCode === "plus_ai" ? <><option value="150">150 libros</option><option value="200">200 libros</option></> : <><option value="50">50 libros</option><option value="100">100 libros</option><option value="200">200 libros</option></>}</select></label>
         <button className="primary-button" type="submit" disabled={busy}>Reactivar y continuar en Mercado Pago</button>
       </form> : null}
       {message ? <p className="feedback success" role="status">{message}</p> : null}
