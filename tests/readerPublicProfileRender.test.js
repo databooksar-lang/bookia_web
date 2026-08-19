@@ -4,6 +4,25 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { createServer } from "vite";
 
 export function registerReaderPublicProfileRenderTests(test) {
+  test("renders public social links with platform labels and hardened external targets", async () => {
+    const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
+    try {
+      const { ReaderSocialLinks } = await vite.ssrLoadModule("/src/components/ReaderPublicProfile.jsx");
+      const markup = renderToStaticMarkup(createElement(ReaderSocialLinks, { links: [
+        { platform: "instagram", url: "https://www.instagram.com/ana.lee" },
+        { platform: "goodreads", url: "https://www.goodreads.com/ana-lee" },
+      ] }));
+
+      assert.match(markup, /href="https:\/\/www\.instagram\.com\/ana\.lee"/);
+      assert.match(markup, /aria-label="Instagram de este lector"/);
+      assert.match(markup, /Goodreads/);
+      assert.match(markup, /target="_blank"/);
+      assert.match(markup, /rel="noopener noreferrer"/);
+      assert.equal(renderToStaticMarkup(createElement(ReaderSocialLinks, { links: [] })), "");
+    } finally {
+      await vite.close();
+    }
+  });
   test("renders the public monogram independently from passport traits", async () => {
     const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
     try {

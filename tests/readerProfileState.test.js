@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-import { buildReaderProfilePayload, createReaderProfileDraft, favoriteGenreSelectionLabel, getReaderFavoriteGenresState, loadReaderFavorites, normalizeReaderFavoriteGenres, normalizeReaderFavorites, normalizeReaderFollowedBookstores, toggleReaderFavoriteGenre } from "../src/readerProfileState.js";
+import { buildReaderProfilePayload, createReaderProfileDraft, favoriteGenreSelectionLabel, getReaderFavoriteGenresState, loadReaderFavorites, normalizeReaderFavoriteGenres, normalizeReaderFavorites, normalizeReaderFollowedBookstores, normalizeReaderSocialLinks, toggleReaderFavoriteGenre } from "../src/readerProfileState.js";
 
 export function registerReaderProfileStateTests(test) {
   test("defaults a reader profile to public only when visibility is missing", () => {
@@ -12,7 +12,7 @@ export function registerReaderProfileStateTests(test) {
   test("creates a reader profile draft with selected favorite genre ids", () => {
     assert.deepEqual(
       createReaderProfileDraft({ favorite_genres: [{ id: 3, name: "Poesia" }, { id: 9, name: "Fantasia" }] }),
-      { display_name: "", slug: "", description: "", is_public: true, favorite_genre_ids: [3, 9], traits: { how_i_read: [], what_i_seek: [], book_relationship: [] } },
+      { display_name: "", slug: "", description: "", is_public: true, favorite_genre_ids: [3, 9], traits: { how_i_read: [], what_i_seek: [], book_relationship: [] }, social_links: [] },
     );
   });
 
@@ -20,8 +20,20 @@ export function registerReaderProfileStateTests(test) {
     const baseDraft = { display_name: "Ana", slug: "ana-lee", description: "Leo", is_public: true };
 
     const traits = { how_i_read: ["daily_ritual"], what_i_seek: ["make_me_think"], book_relationship: [] };
-    assert.deepEqual(buildReaderProfilePayload({ ...baseDraft, favorite_genre_ids: [], traits }), { ...baseDraft, favorite_genre_ids: [], traits });
-    assert.deepEqual(buildReaderProfilePayload({ ...baseDraft, favorite_genre_ids: [3, 9], traits }), { ...baseDraft, favorite_genre_ids: [3, 9], traits });
+    assert.deepEqual(buildReaderProfilePayload({ ...baseDraft, favorite_genre_ids: [], traits }), { ...baseDraft, favorite_genre_ids: [], traits, social_links: [] });
+    assert.deepEqual(buildReaderProfilePayload({ ...baseDraft, favorite_genre_ids: [3, 9], traits }), { ...baseDraft, favorite_genre_ids: [3, 9], traits, social_links: [] });
+  });
+  test("keeps at most two complete social links in reader profile drafts and payloads", () => {
+    const socialLinks = [
+      { platform: "instagram", url: "https://www.instagram.com/ana.lee" },
+      { platform: "goodreads", url: "https://www.goodreads.com/ana-lee" },
+      { platform: "tiktok", url: "https://www.tiktok.com/@ana.lee" },
+    ];
+
+    assert.deepEqual(normalizeReaderSocialLinks(socialLinks), socialLinks.slice(0, 2));
+    assert.deepEqual(createReaderProfileDraft({ social_links: socialLinks }).social_links, socialLinks.slice(0, 2));
+    assert.deepEqual(buildReaderProfilePayload({ social_links: socialLinks }).social_links, socialLinks.slice(0, 2));
+    assert.deepEqual(normalizeReaderSocialLinks([{ platform: "instagram", url: "" }]), []);
   });
   test("labels zero and multiple favorite genre selections", () => {
     assert.equal(favoriteGenreSelectionLabel([]), "0 generos seleccionados");

@@ -1,5 +1,16 @@
 import { normalizeReaderTraits } from "./readerIdentityState.js";
 
+const READER_SOCIAL_PLATFORMS = new Set(["instagram", "tiktok", "youtube", "goodreads", "website"]);
+
+export function normalizeReaderSocialLinks(links) {
+  if (!Array.isArray(links)) return [];
+  return links.flatMap((link) => {
+    const platform = String(link?.platform || "").trim().toLowerCase();
+    const url = String(link?.url || "").trim();
+    return READER_SOCIAL_PLATFORMS.has(platform) && url ? [{ platform, url }] : [];
+  }).slice(0, 2);
+}
+
 export function buildReaderProfilePayload(draft = {}) {
   return {
     display_name: draft.display_name || "",
@@ -8,6 +19,7 @@ export function buildReaderProfilePayload(draft = {}) {
     is_public: draft.is_public ?? true,
     favorite_genre_ids: Array.isArray(draft.favorite_genre_ids) ? draft.favorite_genre_ids : [],
     traits: normalizeReaderTraits(draft.traits),
+    social_links: normalizeReaderSocialLinks(draft.social_links),
   };
 }
 export function createReaderProfileDraft(profile = {}) {
@@ -18,6 +30,7 @@ export function createReaderProfileDraft(profile = {}) {
     is_public: profile?.is_public ?? true,
     favorite_genre_ids: (profile?.favorite_genres || []).map((genre) => genre?.id).filter(Number.isInteger),
     traits: normalizeReaderTraits(profile?.traits),
+    social_links: normalizeReaderSocialLinks(profile?.social_links),
   };
 }
 

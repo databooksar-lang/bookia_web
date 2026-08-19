@@ -18,7 +18,7 @@ import { ReadingClubShareMenu } from "../components/ReadingClubShareMenu";
 import { FavoriteBookButton } from "../components/FavoriteBookButton";
 import { BookstoreDescription } from "../components/BookstoreDescription";
 import { SectionIndex } from "../components/SectionIndex";
-import { ReaderAuthorBadge, ReaderAuthorBooks, ReaderMonogram, ReaderPassport, ReaderWantedBooksPublic } from "../components/ReaderPublicProfile";
+import { ReaderAuthorBadge, ReaderAuthorBooks, ReaderMonogram, ReaderPassport, ReaderSocialLinks, ReaderWantedBooksPublic } from "../components/ReaderPublicProfile";
 import { BookCover } from "../components/BookCover";
 import { ArrowIcon, BookIcon, LocationIcon, SearchIcon, StoreIcon, WhatsAppIcon } from "../components/Icons";
 
@@ -879,6 +879,7 @@ export function ReaderPage({ slug }) {
 
   return <section className="store-page reader-page">
     <div className="store-profile-panel reader-profile-panel"><div className="reader-profile-identity"><ReaderMonogram displayName={reader.display_name} className="is-profile-hero" /><div className="store-identity"><div className="reader-profile-labels"><p className="section-label">Lector en Bookia</p><ReaderAuthorBadge isAuthor={reader.is_author} /></div><h1>{reader.display_name}</h1><BookstoreDescription value={reader.description || "Comparte clubes de lectura con la comunidad Bookia."} />{reader.favorite_genres?.length ? <div className="store-tags" aria-label="Generos favoritos">{reader.favorite_genres.map((genre) => <span key={genre.id} className="store-tag">{genre.name}</span>)}</div> : null}</div></div></div>
+    <ReaderSocialLinks links={reader.social_links || []} />
     <ReaderPassport reader={reader} />
     <ReaderAuthorBooks reader={reader} books={authorBooks} />
     <ReaderWantedBooksPublic items={wantedBooks} />

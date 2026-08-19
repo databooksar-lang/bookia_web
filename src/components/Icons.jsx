@@ -52,6 +52,22 @@ export function InstagramIcon({ size = 22 }) {
   );
 }
 
+export function TikTokIcon({ size = 22 }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14 4v9.1a3.7 3.7 0 1 1-3-3.6M14 4c.7 2.2 2.2 3.7 4.5 4.1" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+}
+
+export function YouTubeIcon({ size = 22 }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="6.5" width="18" height="11" rx="3.5" stroke="currentColor" strokeWidth="1.7" /><path d="m10.2 9.5 4.5 2.5-4.5 2.5V9.5Z" fill="currentColor" /></svg>;
+}
+
+export function GoodreadsIcon({ size = 22 }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 4.5h11.5A2.5 2.5 0 0 1 19 7v12.5H7.5A2.5 2.5 0 0 0 5 22V4.5ZM5 19.5h2.5A2.5 2.5 0 0 1 10 22" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" /><path d="M9 9h6M9 13h6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg>;
+}
+
+export function LinkIcon({ size = 22 }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M10.4 13.6a4 4 0 0 0 5.7.1l2.1-2.1a4 4 0 0 0-5.7-5.7l-1.2 1.2M13.6 10.4a4 4 0 0 0-5.7-.1l-2.1 2.1a4 4 0 0 0 5.7 5.7l1.2-1.2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg>;
+}
+
 export function TelegramIcon({ size = 22 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">

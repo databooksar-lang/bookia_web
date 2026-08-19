@@ -4,7 +4,7 @@ export function PrivacyPage() {
   return <article className="editorial-page about-page legal-page">
     <p className="section-label">Politica de Privacidad</p>
     <h1>Tu informacion, tratada con claridad.</h1>
-    <p>Vigente desde el 16 de agosto de 2026.</p>
+    <p>Vigente desde el 19 de agosto de 2026.</p>
     <h2>Responsable</h2>
     <p>Marcelo Gabriel Gonzalez, en el partido de Gral San Martin, Provincia de Buenos Aires. Consultas: <a href="mailto:bookia.app.admin@gmail.com">bookia.app.admin@gmail.com</a>.</p>
     <h2>Datos y finalidades</h2>
@@ -16,7 +16,7 @@ export function PrivacyPage() {
     <h2>Seguimientos y estadisticas</h2>
     <p>Cuando una persona lectora sigue o deja de seguir una libreria, Bookia conserva la relacion activa y el historial de esas acciones mientras exista su cuenta. Usamos ese historial para calcular cantidades y variaciones por periodo. Las librerias reciben exclusivamente estadisticas agregadas: no acceden por esta funcion al nombre, perfil, correo ni otros datos personales de quienes las siguen. Los eventos del embudo de registro y seguimiento son datos agregados y no constituyen prueba de una operacion comercial entre una persona y una libreria.</p>
     <h2>Informacion publica</h2>
-    <p>Las librerias publican su celular con WhatsApp para permitir el contacto directo de lectores. Los perfiles lectores nuevos son privados por defecto. La persona puede hacer publico su perfil desde Mi Perfil; si lo hace, se muestran el nombre, alias, biografia, los generos de lectura seleccionados, los rasgos del Pasaporte lector, la lista de libros que declara estar buscando y, si corresponde, su condicion activa de autor. Puede editar o eliminar esos datos en cualquier momento. El correo, credenciales, sesiones, libros guardados como favoritos, librerias seguidas y datos de facturacion nunca se publican.</p>
+    <p>Las librerias publican su celular con WhatsApp para permitir el contacto directo de lectores. Los perfiles lectores nuevos son privados por defecto. La persona puede hacer publico su perfil desde Mi Perfil; si lo hace, se muestran el nombre, alias, biografia, los generos de lectura seleccionados, los rasgos del Pasaporte lector, hasta dos enlaces externos que agregue voluntariamente, la lista de libros que declara estar buscando y, si corresponde, su condicion activa de autor. Puede editar o eliminar esos datos en cualquier momento. El correo, credenciales, sesiones, libros guardados como favoritos, librerias seguidas y datos de facturacion nunca se publican.</p>
     <h2>Proveedores</h2>
     <p>Usamos Google para acceso y registro opcional, Railway y PostgreSQL para infraestructura, Railway Buckets/Tigris para imagenes, Resend para correos transaccionales y recuperacion de cuentas, Mercado Pago para autorizar y cobrar suscripciones, OpenAI para funciones de autocompletado de catalogo y Telegram para el bot. Estos proveedores pueden procesar datos fuera de Argentina cuando sea necesario para prestar el servicio.</p>
     <h2>Cookies y pagos</h2>
