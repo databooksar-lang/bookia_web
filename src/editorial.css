@@ -2546,6 +2546,10 @@ button:disabled {
   margin-top: 24px;
 }
 
+.reading-club-manager > .feedback {
+  margin-top: 12px;
+}
+
 .reading-club-item {
   display: grid;
   gap: 18px;
