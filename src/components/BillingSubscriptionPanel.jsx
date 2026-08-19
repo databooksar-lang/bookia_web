@@ -196,7 +196,7 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
     <p className="feedback error">{loadError || "No pudimos cargar la suscripción."}</p>
     <button className="secondary-button" type="button" onClick={() => loadBilling()}>Reintentar</button>
   </div>;
-  const canChange = ["trialing", "active", "grace_period"].includes(billing.status);
+  const canChange = ["active", "grace_period"].includes(billing.status);
   const changeIsNoop = planCode === billing.plan_code && Number(catalogLimit) === billing.catalog_limit;
   const isReactivationPending = billing.status === "payment_pending" && !billing.trial_ends_at;
   const billingDate = getBillingDateDetails(billing, isReactivationPending);
@@ -205,7 +205,7 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
     <div className="billing-panel">
       <div className="billing-summary">
         <div><span>Estado</span><strong>{getBillingStatusLabel(billing.status)}</strong></div>
-        <div><span>Plan</span><strong>{billing.plan_code === "plus_ai" ? "Plus AI" : "Base + IA"}</strong></div>
+        <div><span>Plan</span><strong>{billing.plan_code === "trial" ? "Prueba gratis" : billing.plan_code === "initial" ? "Inicial" : billing.plan_code === "plus_ai" ? "Plus AI" : "Base + IA"}</strong></div>
         <div><span>Catálogo</span><strong>Hasta {billing.catalog_limit} libros</strong></div>
         <div><span>Total mensual</span><strong>{formatBillingAmount(billing.total_amount_ars, billing.currency)}</strong></div>
         <div><span>{billingDate.label}</span><strong>{billingDate.value}</strong></div>
@@ -233,9 +233,9 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
 
       {canChange ? <button className="text-button billing-cancel" type="button" onClick={cancelRenewal} disabled={busy}>Cancelar renovación</button> : null}
 
-      {billing.status === "canceled" ? <form className="billing-change-form" onSubmit={reactivateSubscription}>
-        <h3>Reactivar librería</h3>
-        <p className="billing-notice">Elegí el plan y la capacidad. La reactivación es paga, sin una nueva prueba gratis, y tu librería volverá a publicarse cuando Mercado Pago confirme la autorización.</p>
+      {["canceled", "restricted"].includes(billing.status) ? <form className="billing-change-form" onSubmit={reactivateSubscription}>
+        <h3>{billing.plan_code === "trial" ? "Elegí un plan para continuar" : "Reactivar librería"}</h3>
+        <p className="billing-notice">{billing.plan_code === "trial" ? "Tu prueba gratuita terminó. Elegí un plan y autorizalo en Mercado Pago para volver a administrar el catálogo." : "Elegí el plan y la capacidad. La reactivación es paga, sin una nueva prueba gratis, y tu librería volverá a publicarse cuando Mercado Pago confirme la autorización."}</p>
         <label>Plan<select value={planCode} onChange={(event) => { const nextPlan = event.target.value; setPlanCode(nextPlan); setCatalogLimit(catalogLimitForPlan(nextPlan)); }}><option value="initial">Inicial</option><option value="base">Base + IA</option><option value="plus_ai">Plus AI</option></select></label>
         <label>Capacidad<select value={catalogLimit} onChange={(event) => setCatalogLimit(event.target.value)}>{planCode === "initial" ? <option value="25">25 libros</option> : planCode === "plus_ai" ? <><option value="150">150 libros</option><option value="200">200 libros</option></> : <><option value="50">50 libros</option><option value="100">100 libros</option><option value="200">200 libros</option></>}</select></label>
         <button className="primary-button" type="submit" disabled={busy}>Reactivar y continuar en Mercado Pago</button>

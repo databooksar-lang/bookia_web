@@ -304,7 +304,7 @@ tests.push(["keeps plan selection inside the bookstore registration flow", () =>
   assert.match(plansSource, /plans-trial-banner/);
   assert.match(plansSource, /30 dias gratis para empezar/);
   assert.match(plansSource, /Hasta 10 libros.*sin costo/);
-  assert.match(plansSource, /className="plans-trial-link" href="\/register"/);
+  assert.match(plansSource, /className="plans-trial-link" href=\{buildRegisterPath\(\{ profileType: "bookstore", planCode: "trial" \}\)\}/);
   assert.match(plansSource, /\{ code: "initial"/);
   assert.match(plansSource, /\{ code: "base", name: "Base \+ IA"/);
   assert.match(plansSource, /plus_ai/);
@@ -601,6 +601,8 @@ tests.push(["offers catalog add-ons after bookstore account credentials", () => 
   assert.match(registerSource, /Hoy: ARS 0/);
   assert.match(registerSource, /primer cobro se estima/);
   assert.match(registerSource, /Crear cuenta y continuar en Mercado Pago/);
+  assert.match(registerSource, /isFreeTrialPlan\(planCode\)/);
+  assert.match(registerSource, /if \(!isReader && !isTrial\) checkoutBody = buildBillingCheckoutRequest\(\);/);
   assert.match(editorialStyles, /\.register-catalog-options/);
 }]);
 tests.push(["advertises 150 included books for Plus AI", () => {

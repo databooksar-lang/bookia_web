@@ -1,8 +1,12 @@
-const BOOKSTORE_PLAN_CODES = new Set(["initial", "base", "plus_ai"]);
+const BOOKSTORE_PLAN_CODES = new Set(["trial", "initial", "base", "plus_ai"]);
 const BOOKSTORE_TYPES = new Set(["physical", "virtual", "hybrid"]);
 
 export function isSupportedBookstorePlan(planCode) {
   return BOOKSTORE_PLAN_CODES.has(planCode);
+}
+
+export function isFreeTrialPlan(planCode) {
+  return planCode === "trial";
 }
 
 export function isSupportedBookstoreType(bookstoreType) {

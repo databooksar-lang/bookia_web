@@ -13,6 +13,10 @@ export function registerRegisterStateTests(test) {
       registerState.getRegisterQueryState("?profile=bookstore&plan=plus_ai"),
       { kind: "bookstore", profileType: "bookstore", planCode: "plus_ai" },
     );
+    assert.deepEqual(
+      registerState.getRegisterQueryState("?profile=bookstore&plan=trial"),
+      { kind: "bookstore", profileType: "bookstore", planCode: "trial" },
+    );
   });
 
   test("keeps reader registration free of plans", () => {
@@ -26,7 +30,7 @@ export function registerRegisterStateTests(test) {
   test("rejects malformed registration query combinations", () => {
     assert.deepEqual(registerState.getRegisterQueryState("?profile=bookstore"), { kind: "invalid" });
     assert.deepEqual(registerState.getRegisterQueryState("?profile=reader&plan=base"), { kind: "invalid" });
-    assert.deepEqual(registerState.getRegisterQueryState("?profile=bookstore&plan=trial"), { kind: "invalid" });
+    assert.deepEqual(registerState.getRegisterQueryState("?profile=bookstore&plan=unknown"), { kind: "invalid" });
     assert.deepEqual(registerState.getRegisterQueryState("?plan=base"), { kind: "invalid" });
     assert.equal(registerState.buildRegisterPath({ profileType: "bookstore", planCode: "base" }), "/register?profile=bookstore&plan=base");
   });
@@ -65,6 +69,13 @@ export function registerRegisterStateTests(test) {
         { path: "/auth/register/bookstore", body: { name: "La Esquina", email: "libreria@example.com", password: "secreto123", whatsapp_phone: "11 2222-3333", bookstore_type: "hybrid", plan_code: "plus_ai", catalog_limit: Number(catalogLimit), privacy_accepted: true } },
       );
     }
+  });
+
+  test("builds the fixed free-trial registration payload", () => {
+    assert.deepEqual(
+      buildRegistrationRequest({ profileType: "bookstore", email: "libreria@example.com", password: "secreto123", whatsappPhone: "11 2222-3333", bookstoreType: "physical", bookstoreName: "La Esquina", planCode: "trial", catalogLimit: "10", privacyAccepted: true }),
+      { path: "/auth/register/bookstore", body: { name: "La Esquina", email: "libreria@example.com", password: "secreto123", whatsapp_phone: "11 2222-3333", bookstore_type: "physical", plan_code: "trial", catalog_limit: 10, privacy_accepted: true } },
+    );
   });
 
   test("sends the displayed monthly total so the backend can reject stale pricing", () => {
