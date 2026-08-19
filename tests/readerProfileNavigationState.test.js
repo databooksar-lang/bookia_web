@@ -20,18 +20,23 @@ export function registerReaderProfileNavigationStateTests(test) {
     assert.equal(parseReaderProfileNavigation("?section=wanted").section, "wanted");
   });
 
+  test("accepts the reading-clubs reader profile section", () => {
+    assert.equal(parseReaderProfileNavigation("?section=clubs").section, "clubs");
+  });
+
   test("accepts the author reader profile section", () => {
     assert.equal(parseReaderProfileNavigation("?section=author").section, "author");
   });
 
   test("normalizes invalid reader profile sections to info", () => {
-    assert.equal(parseReaderProfileNavigation("?section=clubs").section, "info");
+    assert.equal(parseReaderProfileNavigation("?section=unknown").section, "info");
   });
 
   test("builds canonical reader profile URLs", () => {
     assert.equal(buildReaderProfileUrl("info"), "/profile?section=info");
     assert.equal(buildReaderProfileUrl("favorites"), "/profile?section=favorites");
     assert.equal(buildReaderProfileUrl("wanted"), "/profile?section=wanted");
+    assert.equal(buildReaderProfileUrl("clubs"), "/profile?section=clubs");
     assert.equal(buildReaderProfileUrl("author"), "/profile?section=author");
   });
 
@@ -47,10 +52,12 @@ export function registerReaderProfileNavigationStateTests(test) {
     assert.match(profileSource, /📝 Mi info/);
     assert.match(profileSource, /❤️ Mis favoritos/);
     assert.match(profileSource, /🔎 Libros buscados/);
+    assert.match(profileSource, /📖 Club de lectura/);
     assert.match(profileSource, /reader-public-profile-button/);
     assert.match(profileSource, /aria-label="Secciones de mi perfil"/);
     assert.match(profileSource, /hidden=\{section !== "info"\}/);
     assert.match(profileSource, /hidden=\{section !== "favorites"\}/);
+    assert.match(profileSource, /hidden=\{section !== "clubs"\}/);
     assert.match(editorialSource, /\.reader-profile-tab-panel\[hidden\]/);
   });
 

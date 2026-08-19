@@ -94,6 +94,7 @@ export function registerReaderPublicProfileRenderTests(test) {
       const emptyMarkup = renderToStaticMarkup(createElement(ReaderReadingClubs, { reader, readingClubs: [], onBack: () => {} }));
       const clubMarkup = renderToStaticMarkup(createElement(ReaderReadingClubs, {
         reader,
+        sharedClubId: 7,
         readingClubs: [{ id: 7, title: "Lecturas del mes", description: "Una charla", genre: null, meeting_date: "2026-08-20", location: "Sala 1" }],
         onBack: () => {},
       }));
@@ -102,6 +103,8 @@ export function registerReaderPublicProfileRenderTests(test) {
       assert.match(clubMarkup, /Encuentros de Gabriel/);
       assert.match(clubMarkup, /Género del club/);
       assert.match(clubMarkup, /Sin género/);
+      assert.match(clubMarkup, /id="club-7"/);
+      assert.match(clubMarkup, /reading-club-public-card is-shared-club/);
       assert.doesNotMatch(clubMarkup, /\\u00/);
     } finally {
       await vite.close();

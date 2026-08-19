@@ -77,13 +77,18 @@ export function registerReadingClubStateTests(test) {
 
   test("integrates reading clubs in dashboard and public storefront", () => {
     const dashboardSource = readFileSync(new URL("../src/pages/DashboardPage.jsx", import.meta.url), "utf8");
+    const managerSource = readFileSync(new URL("../src/components/ReadingClubManager.jsx", import.meta.url), "utf8");
+    const readerProfileSource = readFileSync(new URL("../src/pages/ReaderProfilePage.jsx", import.meta.url), "utf8");
     const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
     const routesSource = readFileSync(new URL("../src/apiRoutes.js", import.meta.url), "utf8");
 
     assert.match(dashboardSource, /Club de lectura/);
-    assert.match(dashboardSource, /\/dashboard\/reading-clubs/);
-    assert.match(dashboardSource, /createReadingClubDraft/);
-    assert.match(dashboardSource, /external_url/);
+    assert.match(dashboardSource, /ReadingClubManager/);
+    assert.match(managerSource, /\/dashboard\/reading-clubs/);
+    assert.match(managerSource, /createReadingClubDraft/);
+    assert.match(managerSource, /external_url/);
+    assert.match(readerProfileSource, /ReadingClubManager/);
+    assert.match(readerProfileSource, /type: "reader"/);
     assert.match(publicPagesSource, /reading_clubs/);
     assert.match(publicPagesSource, /Club de lectura/);
     assert.match(publicPagesSource, /reading-club-external-link/);

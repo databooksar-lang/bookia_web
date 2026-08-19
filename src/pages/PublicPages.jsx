@@ -846,11 +846,11 @@ export function BookstorePage({ slug, me }) {
   );
 }
 
-export function ReaderReadingClubs({ reader, readingClubs, onBack }) {
+export function ReaderReadingClubs({ reader, readingClubs, onBack, sharedClubId = null }) {
   if (!readingClubs.length) return null;
 
   return <section className="store-reading-clubs"><div className="section-heading results-heading"><div><p className="section-label">Clubes de lectura</p><h2>Encuentros de {reader.display_name}</h2><p>{readingClubs.length} {readingClubs.length === 1 ? "club publicado" : "clubes publicados"}</p></div><button className="secondary-button" onClick={onBack}>Volver a buscar</button></div>
-    <div className="reading-club-public-list">{readingClubs.map((club) => <article key={club.id} className="reading-club-public-card"><div className="store-tags" aria-label="Género del club"><span className="store-tag">{club.genre?.name || "Sin género"}</span></div><h3>{club.title}</h3><p>{club.description}</p><dl><div><dt>Fecha</dt><dd>{displayReadingClubDate(club.meeting_date)}</dd></div><div><dt>Lugar</dt><dd>{club.location || "Lugar a confirmar"}</dd></div></dl>{club.external_url ? <a className="reading-club-external-link" href={club.external_url} target="_blank" rel="noopener noreferrer">{club.external_url}</a> : null}</article>)}</div>
+    <div className="reading-club-public-list">{readingClubs.map((club) => <article key={club.id} id={`club-${club.id}`} className={`reading-club-public-card${sharedClubId === club.id ? " is-shared-club" : ""}`}><div className="store-tags" aria-label="Género del club"><span className="store-tag">{club.genre?.name || "Sin género"}</span></div><h3>{club.title}</h3><p>{club.description}</p><dl><div><dt>Fecha</dt><dd>{displayReadingClubDate(club.meeting_date)}</dd></div><div><dt>Lugar</dt><dd>{club.location || "Lugar a confirmar"}</dd></div></dl>{club.external_url ? <a className="reading-club-external-link" href={club.external_url} target="_blank" rel="noopener noreferrer">{club.external_url}</a> : null}</article>)}</div>
   </section>;
 }
 
@@ -884,6 +884,6 @@ export function ReaderPage({ slug }) {
     <ReaderAuthorBooks reader={reader} books={authorBooks} />
     <ReaderWantedBooksPublic items={wantedBooks} />
     <ReaderFollowedBookstores reader={reader} bookstores={followedBookstores} />
-    <ReaderReadingClubs reader={reader} readingClubs={readingClubs} onBack={() => navigate("/")} />
+    <ReaderReadingClubs reader={reader} readingClubs={readingClubs} onBack={() => navigate("/")} sharedClubId={typeof window === "undefined" ? null : getSharedReadingClubId(window.location.search)} />
   </section>;
 }
