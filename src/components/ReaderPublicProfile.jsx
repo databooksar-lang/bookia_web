@@ -3,6 +3,25 @@ import { useState } from "react";
 import { resolveApiUrl } from "../api";
 import { deriveReaderMonogram, hasReaderTraits, READER_TRAIT_GROUPS, readerTraitLabel } from "../readerIdentityState";
 import { getPublicWantedBooksView, normalizePublicWantedBooks } from "../readerWantedBooksState";
+import { GoodreadsIcon, InstagramIcon, LinkIcon, TikTokIcon, YouTubeIcon } from "./Icons";
+
+const SOCIAL_LINK_DETAILS = {
+  instagram: { label: "Instagram", Icon: InstagramIcon },
+  tiktok: { label: "TikTok", Icon: TikTokIcon },
+  youtube: { label: "YouTube", Icon: YouTubeIcon },
+  goodreads: { label: "Goodreads", Icon: GoodreadsIcon },
+  website: { label: "Sitio web", Icon: LinkIcon },
+};
+
+export function ReaderSocialLinks({ links = [] }) {
+  if (!links.length) return null;
+  return <nav className="reader-social-links" aria-label="Enlaces sociales"><span className="reader-social-links-label">Encontrame en</span>{links.map((link) => {
+    const details = SOCIAL_LINK_DETAILS[link.platform];
+    if (!details || !link.url) return null;
+    const { Icon, label } = details;
+    return <a key={`${link.platform}:${link.url}`} href={link.url} target="_blank" rel="noopener noreferrer" aria-label={`${label} de este lector`} title={label}><Icon size={19} /><span>{label}</span></a>;
+  })}</nav>;
+}
 
 export function ReaderMonogram({ displayName, className = "" }) {
   return <span className={`reader-monogram${className ? ` ${className}` : ""}`} aria-label={`Iniciales de ${displayName || "lector"}`}>{deriveReaderMonogram(displayName)}</span>;
