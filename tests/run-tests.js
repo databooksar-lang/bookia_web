@@ -406,6 +406,22 @@ tests.push(["renders checkout without collecting or displaying payer email", asy
     await vite.close();
   }
 }]);
+tests.push(["renders Plus AI changes with its included 150-book capacity", async () => {
+  const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
+  try {
+    const { BillingSubscriptionPanel } = await vite.ssrLoadModule("/src/components/BillingSubscriptionPanel.jsx");
+    const markup = renderToStaticMarkup(createElement(BillingSubscriptionPanel, { initialBilling: {
+      plan_code: "plus_ai", catalog_limit: 150, total_amount_ars: 30000, currency: "ARS", status: "active",
+      trial_ends_at: null, current_period_end: "2026-09-01T00:00:00Z", scheduled_change: null,
+    } }));
+    assert.match(markup, /value="150"[^>]*>150 libros/);
+    assert.match(markup, /value="200"[^>]*>200 libros/);
+    assert.doesNotMatch(markup, /value="50"[^>]*>50 libros/);
+    assert.doesNotMatch(markup, /value="100"[^>]*>100 libros/);
+  } finally {
+    await vite.close();
+  }
+}]);
 let failures = 0;
 tests.push(["renders one decorative image in the public search hero illustration", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
@@ -578,16 +594,19 @@ tests.push(["offers catalog add-ons after bookstore account credentials", () => 
 
   assert.match(registerSource, /apiFetch\("\/commercial-prices"\)/);
   assert.match(registerSource, /Sin adicional/);
-  assert.match(registerSource, /Hasta 50 libros/);
-  assert.match(registerSource, /Hasta 100 libros/);
+  assert.match(registerSource, /Hasta 150 libros/);
   assert.match(registerSource, /Hasta 200 libros/);
-  assert.match(registerSource, /catalog_100/);
   assert.match(registerSource, /catalog_200/);
   assert.match(registerSource, /type="radio"/);
   assert.match(registerSource, /Hoy: ARS 0/);
   assert.match(registerSource, /primer cobro se estima/);
   assert.match(registerSource, /Crear cuenta y continuar en Mercado Pago/);
   assert.match(editorialStyles, /\.register-catalog-options/);
+}]);
+tests.push(["advertises 150 included books for Plus AI", () => {
+  const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+
+  assert.match(publicPagesSource, /code: "plus_ai"[\s\S]*?limit: "Hasta 150 libros"/);
 }]);
 
 tests.push(["keeps the horizontal book share menu inside the mobile viewport", () => {

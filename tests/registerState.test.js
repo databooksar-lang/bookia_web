@@ -58,8 +58,8 @@ export function registerRegisterStateTests(test) {
     );
   });
 
-  test("builds bookstore registration payloads for every catalog capacity", () => {
-    for (const catalogLimit of ["50", "100", "200"]) {
+  test("builds Plus AI registration payloads only for its 150 and 200 book capacities", () => {
+    for (const catalogLimit of ["150", "200"]) {
       assert.deepEqual(
         buildRegistrationRequest({ profileType: "bookstore", email: "libreria@example.com", password: "secreto123", whatsappPhone: "11 2222-3333", bookstoreType: "hybrid", bookstoreName: "La Esquina", planCode: "plus_ai", catalogLimit, privacyAccepted: true }),
         { path: "/auth/register/bookstore", body: { name: "La Esquina", email: "libreria@example.com", password: "secreto123", whatsapp_phone: "11 2222-3333", bookstore_type: "hybrid", plan_code: "plus_ai", catalog_limit: Number(catalogLimit), privacy_accepted: true } },
@@ -70,10 +70,10 @@ export function registerRegisterStateTests(test) {
   test("sends the displayed monthly total so the backend can reject stale pricing", () => {
     const request = buildRegistrationRequest({
       profileType: "bookstore", email: "libreria@example.com", password: "secreto123", whatsappPhone: "11 2222-3333",
-      bookstoreName: "La Esquina", planCode: "plus_ai", catalogLimit: "100",
-      expectedMonthlyTotal: 35000, privacyAccepted: true,
+      bookstoreName: "La Esquina", planCode: "plus_ai", catalogLimit: "150",
+      expectedMonthlyTotal: 30000, privacyAccepted: true,
     });
-    assert.equal(request.body.expected_total_amount_ars, 35000);
+    assert.equal(request.body.expected_total_amount_ars, 30000);
   });
 
   test("keeps Mercado Pago payer details out of bookstore registration", () => {

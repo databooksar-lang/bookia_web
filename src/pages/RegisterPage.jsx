@@ -11,9 +11,13 @@ import { buildRegisterPath, buildRegistrationRequest, getRegisterQueryState, get
 import { trackReaderFunnelEvent } from "../analyticsState";
 import { getPendingReaderActionCopy } from "../pendingReaderAction";
 
-const CATALOG_OPTIONS = [
+const BASE_CATALOG_OPTIONS = [
   { limit: "50", title: "Sin adicional", description: "Hasta 50 libros", offeringCode: null },
   { limit: "100", title: "Hasta 100 libros", description: "Amplia tu catalogo", offeringCode: "catalog_100" },
+  { limit: "200", title: "Hasta 200 libros", description: "Amplia tu catalogo", offeringCode: "catalog_200" },
+];
+const PLUS_AI_CATALOG_OPTIONS = [
+  { limit: "150", title: "Incluido", description: "Hasta 150 libros", offeringCode: null },
   { limit: "200", title: "Hasta 200 libros", description: "Amplia tu catalogo", offeringCode: "catalog_200" },
 ];
 function RegistrationChoice({ type, title, description, image, onChoose }) {
@@ -65,8 +69,8 @@ export function RegisterPage({ onRegister, onAuthenticated, pendingAction, me, l
 
   const profileType = queryState.profileType;
   const planCode = queryState.planCode;
-  const selectedCatalogLimit = planCode === "initial" ? "25" : catalogLimit;
-  const catalogOptions = planCode === "initial" ? [{ limit: "25", title: "Incluido", description: "Hasta 25 libros", offeringCode: null }] : CATALOG_OPTIONS;
+  const selectedCatalogLimit = planCode === "initial" ? "25" : planCode === "plus_ai" ? (catalogLimit === "200" ? "200" : "150") : catalogLimit;
+  const catalogOptions = planCode === "initial" ? [{ limit: "25", title: "Incluido", description: "Hasta 25 libros", offeringCode: null }] : planCode === "plus_ai" ? PLUS_AI_CATALOG_OPTIONS : BASE_CATALOG_OPTIONS;
   const isReader = profileType === "reader";
   const isBookstoreDetails = profileType === "bookstore" && bookstoreStep === "details";
   const isBookstoreSummary = profileType === "bookstore" && bookstoreStep === "summary";
