@@ -6,6 +6,7 @@ import {
   buildReadingClubPayload,
   displayReadingClubDate,
 } from "../src/readingClubState.js";
+import * as readingClubState from "../src/readingClubState.js";
 
 export function registerReadingClubStateTests(test) {
   test("creates a reading club draft with editable defaults", () => {
@@ -19,6 +20,12 @@ export function registerReadingClubStateTests(test) {
       external_url: "",
       is_visible: true,
     });
+  });
+
+  test("starts a private reader's new club as a hidden draft", () => {
+    assert.equal(typeof readingClubState.createNewReadingClubDraft, "function");
+    assert.equal(readingClubState.createNewReadingClubDraft({ canPublish: false }).is_visible, false);
+    assert.equal(readingClubState.createNewReadingClubDraft({ canPublish: true }).is_visible, true);
   });
 
   test("creates a reading club draft from an existing club", () => {

@@ -11,6 +11,10 @@ export function createReadingClubDraft(club = null) {
   };
 }
 
+export function createNewReadingClubDraft({ canPublish = true } = {}) {
+  return { ...createReadingClubDraft(), is_visible: Boolean(canPublish) };
+}
+
 export function buildReadingClubPayload(draft) {
   return {
     title: String(draft.title || "").trim(),
