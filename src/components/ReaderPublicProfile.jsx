@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { resolveApiUrl } from "../api";
 import { deriveReaderMonogram, hasReaderTraits, READER_TRAIT_GROUPS, readerTraitLabel } from "../readerIdentityState";
 import { getPublicWantedBooksView, normalizePublicWantedBooks } from "../readerWantedBooksState";
 
@@ -44,4 +45,15 @@ export function ReaderWantedBooksPublic({ items = [] }) {
       {wantedBooks.length > 3 ? <button type="button" className="secondary-button reader-wanted-expand" aria-expanded={expanded} onClick={() => setExpanded((current) => !current)}>{expanded ? "Mostrar menos" : "Ver lista completa"}</button> : null}
     </section>
   );
+}
+
+export function ReaderAuthorBooks({ reader, books = [] }) {
+  if (!books.length) return null;
+  return <section className="reader-public-author-books" aria-labelledby="reader-author-books-title">
+    <div className="section-heading results-heading"><div><p className="section-label">OBRAS PROPIAS</p><h2 id="reader-author-books-title">Libros de {reader.display_name}</h2></div></div>
+    <div className="reader-public-author-books-grid">{books.map((book) => <article key={book.cover_url} className="reader-public-author-book-card">
+      <img src={resolveApiUrl(book.cover_url)} alt={`Portada de ${book.title}`} />
+      <div><p className="reader-public-author-book-genre">{book.genre?.name || "Sin género"}</p><h3>{book.title}</h3>{book.publisher || book.publication_year ? <p className="reader-public-author-book-meta">{[book.publisher, book.publication_year].filter(Boolean).join(" · ")}</p> : null}<p>{book.synopsis}</p></div>
+    </article>)}</div>
+  </section>;
 }

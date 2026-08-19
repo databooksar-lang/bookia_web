@@ -43,6 +43,30 @@ export function registerReaderPublicProfileRenderTests(test) {
     }
   });
 
+  test("renders complete public author book cards and hides the empty section", async () => {
+    const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
+    try {
+      const { ReaderAuthorBooks } = await vite.ssrLoadModule("/src/components/ReaderPublicProfile.jsx");
+      const reader = { display_name: "Ana Borges" };
+      const emptyMarkup = renderToStaticMarkup(createElement(ReaderAuthorBooks, { reader, books: [] }));
+      const markup = renderToStaticMarkup(createElement(ReaderAuthorBooks, {
+        reader,
+        books: [{ title: "La casa del viento", synopsis: "Una novela sobre memoria.", genre: { id: 3, name: "Novela" }, publisher: "Ediciones Sur", publication_year: 2026, cover_url: "/readers/ana/author-books/7/cover" }],
+      }));
+
+      assert.equal(emptyMarkup, "");
+      assert.match(markup, /Libros de Ana Borges/);
+      assert.match(markup, /La casa del viento/);
+      assert.match(markup, /Una novela sobre memoria/);
+      assert.match(markup, /Novela/);
+      assert.match(markup, /Ediciones Sur/);
+      assert.match(markup, /2026/);
+      assert.match(markup, /\/readers\/ana\/author-books\/7\/cover/);
+    } finally {
+      await vite.close();
+    }
+  });
+
   test("hides empty reader clubs and renders accented club copy when clubs exist", async () => {
     const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
     try {
