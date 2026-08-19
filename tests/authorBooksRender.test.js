@@ -47,7 +47,7 @@ export function registerAuthorBooksRenderTests(test) {
 
       assert.match(createMarkup, /Mis libros/);
       assert.match(createMarkup, /1 de 5 libros/);
-      assert.match(createMarkup, /todavía no se publica fuera de este panel/i);
+      assert.match(createMarkup, /se publica en tu perfil público/i);
       assert.match(createMarkup, /Agregar libro/);
       assert.match(createMarkup, /Portada/);
       assert.match(createMarkup, /La casa del viento/);

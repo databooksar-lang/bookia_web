@@ -25,7 +25,7 @@ export function AuthorBooksPanel({ books, draft, genres, loading, saving, feedba
   const currentCover = previewUrl || (editingBook ? authorBookCoverSrc(editingBook) : "");
 
   return <section className="author-books" aria-labelledby="author-books-title">
-    <div className="author-books-heading"><div><p className="section-label">OBRAS PROPIAS</p><h2 id="author-books-title">Mis libros</h2><p>Gestioná hasta cinco obras. El estado Visible u Oculto queda preparado para una publicación futura; todavía no se publica fuera de este panel.</p></div><strong className="author-books-capacity">{capacity.count} de 5 libros</strong></div>
+    <div className="author-books-heading"><div><p className="section-label">OBRAS PROPIAS</p><h2 id="author-books-title">Mis libros</h2><p>Gestioná hasta cinco obras. Cada libro visible se publica en tu perfil público mientras tu perfil de autor/a esté activo.</p></div><strong className="author-books-capacity">{capacity.count} de 5 libros</strong></div>
     {canCreate ? <form className="dashboard-card author-book-form" onSubmit={onSubmit}>
       <div className="author-book-form-heading"><div><p className="section-label">{draft.id ? "EDICIÓN" : "NUEVA OBRA"}</p><h3>{draft.id ? "Editar libro" : "Agregar libro"}</h3></div>{draft.id ? <button className="secondary-button" type="button" onClick={onCancelEdit} disabled={saving}>Cancelar</button> : null}</div>
       <div className="author-book-form-grid">
