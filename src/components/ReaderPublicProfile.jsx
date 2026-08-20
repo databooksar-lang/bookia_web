@@ -34,7 +34,7 @@ export function ReaderAuthorBadge({ isAuthor }) {
 export function ReaderPassport({ reader }) {
   if (!hasReaderTraits(reader?.traits)) return null;
   return (
-    <section className="reader-passport" aria-labelledby="reader-passport-title">
+    <section className="reader-passport reader-passport-book" aria-labelledby="reader-passport-title">
       <div className="reader-passport-heading">
         <div><p className="section-label">MI IDENTIDAD</p><h2 id="reader-passport-title">Pasaporte lector</h2></div>
       </div>
