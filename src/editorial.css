@@ -1309,6 +1309,16 @@ button:disabled {
   gap: 14px;
 }
 
+.reading-club-detail-trigger {
+  width: 100%;
+  padding: 0;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
 .reading-club-public-card-content:has(.reading-club-public-cover:not([hidden])) {
   grid-template-columns: 88px minmax(0, 1fr);
 }
@@ -1441,6 +1451,129 @@ button:disabled {
 .reading-club-public-actions .book-share-trigger {
   min-height: 38px;
   padding: 7px 12px;
+}
+
+.reading-club-detail-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  padding: 24px;
+  display: grid;
+  place-items: center;
+  background: rgba(7, 24, 19, 0.78);
+  backdrop-filter: blur(7px);
+}
+
+.reading-club-detail-modal-card {
+  width: min(920px, 100%);
+  max-height: calc(100vh - 48px);
+  padding: clamp(22px, 4vw, 34px);
+  overflow: auto;
+  background: rgba(255, 250, 240, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  border-radius: 16px;
+  box-shadow: var(--shadow-soft);
+}
+
+.reading-club-detail-modal-close {
+  min-height: 42px;
+  margin-left: auto;
+  padding: 8px 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--forest-deep);
+  background: transparent;
+  border: 1px solid rgba(18, 63, 50, 0.25);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.reading-club-detail-modal-layout {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(24px, 5vw, 46px);
+  align-items: start;
+}
+
+.reading-club-detail-modal-layout.has-cover {
+  grid-template-columns: minmax(180px, 280px) 1fr;
+}
+
+/* The cover is optional at runtime: collapse its grid track when loading it fails. */
+.reading-club-detail-modal-layout.has-cover:not(:has(.reading-club-detail-cover:not([hidden]))) {
+  grid-template-columns: 1fr;
+}
+
+.reading-club-detail-cover {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 8px 18px 18px 8px;
+  box-shadow: var(--shadow-soft);
+}
+
+.reading-club-detail-copy h2 {
+  margin: 18px 0 8px;
+  color: var(--forest-deep);
+  font-size: clamp(2rem, 4vw, 3.6rem);
+  line-height: 1;
+}
+
+.reading-club-detail-section {
+  margin-top: 22px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+
+.reading-club-detail-section > span {
+  color: var(--forest-deep);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.reading-club-detail-section p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.reading-club-detail-meta {
+  margin: 24px 0 0;
+  display: grid;
+  gap: 12px;
+}
+
+.reading-club-detail-meta div {
+  padding-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.reading-club-detail-meta dt {
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+
+.reading-club-detail-meta dd {
+  margin: 0;
+  color: var(--forest-deep);
+  text-align: right;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.reading-club-detail-actions {
+  margin-top: 22px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 .book-grid {
   display: grid;
@@ -3533,6 +3666,34 @@ textarea:focus {
   }
 
   .book-detail-meta dd {
+    text-align: left;
+  }
+
+  .reading-club-detail-modal {
+    padding: 10px;
+  }
+
+  .reading-club-detail-modal-card {
+    max-height: calc(100vh - 20px);
+    border-radius: 14px;
+  }
+
+  .reading-club-detail-modal-layout.has-cover {
+    grid-template-columns: 1fr;
+  }
+
+  .reading-club-detail-cover {
+    width: min(220px, 100%);
+    justify-self: center;
+  }
+
+  .reading-club-detail-meta div {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .reading-club-detail-meta dd {
     text-align: left;
   }
 
