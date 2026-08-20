@@ -115,7 +115,7 @@ export function registerReaderPublicProfileRenderTests(test) {
   test("renders an optional cover and compact action area for a public reading club", async () => {
     const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
     try {
-      const { ReadingClubPublicCard } = await vite.ssrLoadModule("/src/pages/PublicPages.jsx");
+      const { ReadingClubPublicCard, hideBrokenReadingClubCover } = await vite.ssrLoadModule("/src/pages/PublicPages.jsx");
       const club = {
         id: 7,
         title: "Lecturas del mes",
@@ -131,11 +131,17 @@ export function registerReaderPublicProfileRenderTests(test) {
 
       assert.match(withCover, /reading-club-public-card-content/);
       assert.match(withCover, /reading-club-public-cover/);
+      assert.match(withCover, /reading-club-public-genre/);
+      assert.match(withCover, /reading-club-public-title/);
       assert.match(withCover, /reading-club-public-description/);
       assert.match(withCover, /reading-club-public-actions/);
       assert.match(withCover, /Ver más sobre este encuentro/);
       assert.match(withCover, /\/reading-clubs\/7\/cover/);
       assert.doesNotMatch(withoutCover, /reading-club-public-cover/);
+
+      const brokenCover = { hidden: false };
+      hideBrokenReadingClubCover({ currentTarget: brokenCover });
+      assert.equal(brokenCover.hidden, true);
     } finally {
       await vite.close();
     }
