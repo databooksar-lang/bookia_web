@@ -6,16 +6,20 @@ const PNG_HEADER = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13,
 
 function createStoryDocument({ image = null } = {}) {
   const drawCalls = [];
+  const rectangles = [];
   const text = [];
+  const textCalls = [];
   const context = {
-    beginPath() {}, fillRect() {}, fillText(value) { text.push(value); }, lineTo() {}, moveTo() {}, restore() {}, save() {}, stroke() {}, strokeRect() {},
+    beginPath() {}, fillRect(...args) { rectangles.push(args); }, fillText(value, x, y) { text.push(value); textCalls.push({ value, x, y }); }, lineTo() {}, moveTo() {}, restore() {}, save() {}, stroke() {}, strokeRect() {},
     drawImage(...args) { drawCalls.push(args); },
     measureText(value) { return { width: String(value).length * 20 }; },
   };
   const canvas = { getContext: () => context, toBlob: (callback) => callback(new Blob(["story"], { type: "image/png" })) };
   return {
     drawCalls,
+    rectangles,
     text,
+    textCalls,
     createElement(kind) {
       if (kind === "canvas") return canvas;
       return image || {};
@@ -134,6 +138,22 @@ export function registerReadingClubSharingStateTests(register) {
     assert.equal(documentLike.drawCalls.length, 0);
     assert.ok(documentLike.text.includes("CLUB DE LECTURA"));
     assert.equal(file.type, "image/png");
+  });
+
+  register("omits the cover frame and gives the description more space when a Story has no cover", async () => {
+    const documentLike = createStoryDocument();
+    const description = "Una invitación extensa para conversar sobre una lectura, intercambiar ideas, descubrir autores y llegar al encuentro con nuevas preguntas para compartir entre todas las personas del club.";
+
+    await createReadingClubInstagramStoryFile({
+      club: { id: 7, title: "Club sin portada", description },
+      hostName: "Bookia",
+      documentLike,
+      FileCtor: FakeFile,
+    });
+
+    assert.ok(!documentLike.rectangles.some(([x, y, width, height]) => x === 180 && y === 242 && width === 720 && height === 700));
+    assert.ok(documentLike.textCalls.some(({ value, y }) => value === "Club sin portada" && y < 500));
+    assert.ok(documentLike.textCalls.filter(({ y }) => y >= 520 && y < 1260).length >= 4);
   });
 
   register("keeps a long reading-club Story genre inside its badge", async () => {
