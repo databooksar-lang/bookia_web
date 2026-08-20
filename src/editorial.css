@@ -1371,6 +1371,13 @@ button:disabled {
   height: 150px;
 }
 
+.reading-club-public-cover {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
 .book-card-cover-actions {
   position: relative;
   width: fit-content;
@@ -2562,6 +2569,13 @@ button:disabled {
 
 .reading-club-summary .status-pill {
   justify-self: start;
+}
+
+.reading-club-cover {
+  width: 72px;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 6px;
 }
 
 .status-hidden {

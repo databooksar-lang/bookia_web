@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { apiFetch } from "../api";
+import { apiFetch, resolveApiUrl } from "../api";
 import { getGenreSelectorState } from "../genreSelectorState";
 import { buildReadingClubPayload, createNewReadingClubDraft, createReadingClubDraft, displayReadingClubDate } from "../readingClubState";
 import { EmptyState } from "./Commerce";
@@ -24,6 +24,7 @@ export function ReadingClubManager({ host, hostName, source, onClubCountChange, 
   const [editingClubId, setEditingClubId] = useState(null);
   const [draftClub, setDraftClub] = useState(createReadingClubDraft());
   const [isSaving, setIsSaving] = useState(false);
+  const [coverBusyId, setCoverBusyId] = useState(null);
 
   function loadClubs() {
     setClubsLoading(true);
@@ -68,6 +69,10 @@ export function ReadingClubManager({ host, hostName, source, onClubCountChange, 
       .finally(() => setIsSaving(false));
   }
 
+  function updateClub(updatedClub) { setClubs((current) => current.map((club) => club.id === updatedClub.id ? updatedClub : club)); }
+  function uploadCover(club, file) { if (!file || coverBusyId !== null) return; const form = new FormData(); form.append("cover", file); setCoverBusyId(club.id); apiFetch(`/dashboard/reading-clubs/${club.id}/cover`, { method: "POST", body: form }).then((data) => { updateClub(data.item); setError(""); }).catch((fetchError) => setError(fetchError.message)).finally(() => setCoverBusyId(null)); }
+  function removeCover(club) { if (coverBusyId !== null) return; setCoverBusyId(club.id); apiFetch(`/dashboard/reading-clubs/${club.id}/cover`, { method: "DELETE" }).then((data) => { updateClub(data.item); setError(""); }).catch((fetchError) => setError(fetchError.message)).finally(() => setCoverBusyId(null)); }
+
   return <div className="reading-club-manager">
     <form className={formClassName} onSubmit={createClub}>
       <div className="dashboard-card-head dashboard-card-head-inline"><p>Título, descripción y género son obligatorios. Fecha y lugar pueden quedar a confirmar.</p><button className="primary-button" type="submit" disabled={isSaving}>{isSaving ? "Guardando..." : "Crear club"}</button></div>
@@ -96,8 +101,8 @@ export function ReadingClubManager({ host, hostName, source, onClubCountChange, 
           <label>Página externa<input value={draftClub.external_url} onChange={(event) => setDraftClub((current) => ({ ...current, external_url: event.target.value }))} placeholder="Ej.: sitio.com/club" /></label>
           <label className="dashboard-field-wide">Descripción *<textarea value={draftClub.description} onChange={(event) => setDraftClub((current) => ({ ...current, description: event.target.value }))} rows={4} required /></label>
           <label className="dashboard-checkbox-field"><input type="checkbox" checked={draftClub.is_visible} onChange={(event) => setDraftClub((current) => ({ ...current, is_visible: event.target.checked }))} /> Publicar en perfil público</label>
-        </div> : <><div className="catalog-item-summary reading-club-summary"><span className={`status-pill${club.is_visible ? "" : " status-hidden"}`}>{club.is_visible ? "Publicado" : "Oculto"}</span><div><span className="catalog-id">{club.genre?.name || "Sin género"}</span><h3>{club.title}</h3><p>{displayReadingClubDate(club.meeting_date)}{club.location ? ` / ${club.location}` : ""}</p></div></div><p className="catalog-item-description">{club.description}</p></>}
-        <div className="card-actions"><div className="card-actions-main">{isEditing ? <button type="button" className="secondary-button" onClick={cancelEditing} disabled={isSaving}>Cancelar</button> : <><button type="button" className="secondary-button" onClick={() => startEditing(club)} disabled={isSaving}>Editar</button>{club.is_visible ? <ReadingClubShareMenu club={club} host={host} hostName={hostName} bookstoreId={host?.type === "bookstore" ? host.id : null} source={source} /> : null}</>}{isEditing ? <button type="button" className="primary-button" onClick={() => saveClub(club.id)} disabled={isSaving}>{isSaving ? "Guardando..." : "Guardar"}</button> : null}</div></div>
+        </div> : <><div className="catalog-item-summary reading-club-summary">{club.cover_url ? <img className="reading-club-cover" src={resolveApiUrl(club.cover_url)} alt={`Portada de ${club.title}`} /> : null}<span className={`status-pill${club.is_visible ? "" : " status-hidden"}`}>{club.is_visible ? "Publicado" : "Oculto"}</span><div><span className="catalog-id">{club.genre?.name || "Sin género"}</span><h3>{club.title}</h3><p>{displayReadingClubDate(club.meeting_date)}{club.location ? ` / ${club.location}` : ""}</p></div></div><p className="catalog-item-description">{club.description}</p></>}
+        <div className="card-actions"><div className="card-actions-main">{isEditing ? <button type="button" className="secondary-button" onClick={cancelEditing} disabled={isSaving}>Cancelar</button> : <><button type="button" className="secondary-button" onClick={() => startEditing(club)} disabled={isSaving}>Editar</button><label className="secondary-button">{coverBusyId === club.id ? "Subiendo..." : "Subir portada"}<input className="visually-hidden" type="file" accept="image/png,image/jpeg,image/webp" disabled={coverBusyId !== null} onChange={(event) => { uploadCover(club, event.target.files?.[0]); event.target.value = ""; }} /></label>{club.cover_url ? <button type="button" className="secondary-button" onClick={() => removeCover(club)} disabled={coverBusyId !== null}>Quitar portada</button> : null}{club.is_visible ? <ReadingClubShareMenu club={club} host={host} hostName={hostName} bookstoreId={host?.type === "bookstore" ? host.id : null} source={source} /> : null}</>}{isEditing ? <button type="button" className="primary-button" onClick={() => saveClub(club.id)} disabled={isSaving}>{isSaving ? "Guardando..." : "Guardar"}</button> : null}</div></div>
       </article>;
     })}</div> : null}
   </div>;
