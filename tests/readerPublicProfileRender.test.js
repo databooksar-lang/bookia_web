@@ -33,6 +33,7 @@ export function registerReaderPublicProfileRenderTests(test) {
       } }));
 
       assert.match(renderToStaticMarkup(createElement(ReaderMonogram, { displayName: "Ana Borges", className: "is-profile-hero" })), />AB</);
+      assert.match(markup, /class="reader-passport reader-passport-book"/);
       assert.match(markup, /Pasaporte lector/);
       assert.match(markup, /Siempre tengo varios abiertos/);
       assert.match(markup, /Una historia que acompañe/);
