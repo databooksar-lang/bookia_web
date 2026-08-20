@@ -169,31 +169,33 @@ export async function createReadingClubInstagramStoryFile({ club, hostName, cove
   context.fillText("CLUB DE LECTURA", 88, 180);
 
   const cover = await loadInstagramStoryCover({ coverUrl, fetchLike, imageFactory: () => documentLike.createElement("img") }).catch(() => null);
-  drawReadingClubStoryCover(context, cover, 180, 242, 720, 700);
+  const hasCover = Boolean(cover?.width && cover?.height);
+  if (hasCover) drawReadingClubStoryCover(context, cover, 180, 242, 720, 700);
 
   context.fillStyle = "#e4e6db";
-  context.fillRect(88, 1002, 320, 58);
+  context.fillRect(88, hasCover ? 1002 : 246, 320, 58);
   context.fillStyle = "#0b2d24";
   context.font = "800 23px system-ui, sans-serif";
   context.textAlign = "center";
-  context.fillText(fitStoryText(context, metadata.genre.toLocaleUpperCase("es-AR"), 284), 248, 1040);
+  context.fillText(fitStoryText(context, metadata.genre.toLocaleUpperCase("es-AR"), 284), 248, hasCover ? 1040 : 284);
   context.textAlign = "left";
-  context.font = "700 70px Georgia, serif";
-  drawStoryText(context, metadata.title, 88, 1160, 904, 80, 2);
+  context.font = hasCover ? "700 70px Georgia, serif" : "700 82px Georgia, serif";
+  drawStoryText(context, metadata.title, 88, hasCover ? 1160 : 410, 904, hasCover ? 80 : 92, 2);
   context.fillStyle = "#536259";
-  context.font = "400 34px system-ui, sans-serif";
-  drawStoryText(context, metadata.description, 88, 1336, 904, 46, 3);
+  context.font = hasCover ? "400 34px system-ui, sans-serif" : "400 38px system-ui, sans-serif";
+  drawStoryText(context, metadata.description, 88, hasCover ? 1336 : 624, 904, hasCover ? 46 : 54, hasCover ? 3 : 7);
   context.strokeStyle = "#c9c6b9";
   context.lineWidth = 2;
   context.beginPath();
-  context.moveTo(88, 1510);
-  context.lineTo(992, 1510);
+  const detailsTop = hasCover ? 1510 : 1080;
+  context.moveTo(88, detailsTop);
+  context.lineTo(992, detailsTop);
   context.stroke();
   [["FECHA", metadata.date], ["LUGAR", metadata.location], ["ORGANIZA", metadata.hostName]].forEach(([label, value], index) => {
     const column = index % 2;
     const row = Math.floor(index / 2);
     const x = 88 + (column * 452);
-    const y = 1564 + (row * 98);
+    const y = detailsTop + 54 + (row * 98);
     context.fillStyle = "#68736b";
     context.font = "700 18px system-ui, sans-serif";
     context.fillText(label, x, y);
@@ -203,11 +205,12 @@ export async function createReadingClubInstagramStoryFile({ club, hostName, cove
   });
   context.strokeStyle = "#0b2d24";
   context.lineWidth = 3;
-  context.strokeRect(88, 1832, 904, 62);
+  const ctaTop = hasCover ? 1832 : 1500;
+  context.strokeRect(88, ctaTop, 904, 62);
   context.fillStyle = "#0b2d24";
   context.font = "800 22px system-ui, sans-serif";
   context.textAlign = "center";
-  context.fillText(metadata.callToAction, 540, 1872);
+  context.fillText(metadata.callToAction, 540, ctaTop + 40);
 
   const png = await canvasToPng(canvas);
   const safeTitle = metadata.title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase() || "lectura";
