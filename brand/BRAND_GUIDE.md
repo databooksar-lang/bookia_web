@@ -46,23 +46,24 @@ La interfaz prioriza títulos expresivos de alto contraste, cuerpos sobrios y co
 
 ## 3. Tipografía y jerarquía
 
-Las familias se cargan desde Google Fonts en `index.html`:
+**Estado:** sistema tipográfico aprobado para la próxima actualización visual. La aplicación conserva temporalmente las fuentes anteriores hasta que se implemente este cambio en `index.html` y los estilos.
 
-- **Fraunces**, pesos 600 y 700: títulos `h1–h3`, nombre de marca y citas. En CSS base se usa 600 y `letter-spacing: -0.025em` (`src/editorial.css:98`).
-- **Manrope**, pesos 400, 500, 600 y 700: interfaz, párrafos, navegación, etiquetas y botones. El cuerpo usa `line-height: 1.6` (`src/editorial.css:34–35`).
+La familia se cargará desde Google Fonts en `index.html`:
+
+- **Plus Jakarta Sans**, pesos 400, 500, 600, 700 y 800: única familia para títulos, nombre de marca, citas, interfaz, párrafos, navegación, etiquetas y botones. Su carácter es contemporáneo, claro y cercano, sin rasgos serif ni una estética clásica.
 
 | Nivel | Familia / peso | Tamaño detectado | Uso |
 | --- | --- | --- | --- |
-| Hero principal | Fraunces 600 | `clamp(3.3rem, 6vw, 6rem)` | Titular de portada (`.hero h1`). |
-| H1 de secciones especiales | Fraunces 600 | hasta `clamp(3.5rem, 6.5vw, 6.5rem)` | Planes, librerías y Acerca de. |
-| H2 de sección | Fraunces 600 | `clamp(2.3rem, 4vw, 4rem)` | Bloques editoriales. |
-| H3 de cards | Fraunces 600 | 1.17–1.8rem, según componente | Títulos de libro, tarjeta o bloque. |
-| Bajada | Manrope 400 | 1–1.16rem; algunas páginas 1.05–1.16rem | Texto de apoyo. |
-| Etiqueta / kicker | Manrope 800 | 0.65–0.78rem, mayúsculas, `letter-spacing` 0.12–0.15em | Categorías y contexto. |
-| Botón | Manrope 800 | 0.76–0.86rem | Acción breve y directa. |
-| Texto auxiliar | Manrope 400–700 | 0.68–0.85rem | Metadatos y descripciones. |
+| Hero principal | Plus Jakarta Sans 700 | `clamp(3.3rem, 6vw, 6rem)` | Titular de portada (`.hero h1`). |
+| H1 de secciones especiales | Plus Jakarta Sans 700 | hasta `clamp(3.5rem, 6.5vw, 6.5rem)` | Planes, librerías y Acerca de. |
+| H2 de sección | Plus Jakarta Sans 700 | `clamp(2.3rem, 4vw, 4rem)` | Bloques editoriales. |
+| H3 de cards | Plus Jakarta Sans 600 | 1.17–1.8rem, según componente | Títulos de libro, tarjeta o bloque. |
+| Bajada | Plus Jakarta Sans 400 | 1–1.16rem; algunas páginas 1.05–1.16rem | Texto de apoyo. |
+| Etiqueta / kicker | Plus Jakarta Sans 800 | 0.65–0.78rem, mayúsculas, `letter-spacing` 0.12–0.15em | Categorías y contexto. |
+| Botón | Plus Jakarta Sans 800 | 0.76–0.86rem | Acción breve y directa. |
+| Texto auxiliar | Plus Jakarta Sans 400–700 | 0.68–0.85rem | Metadatos y descripciones. |
 
-No introducir una tercera familia tipográfica. Para piezas sociales, mantener Fraunces para un único mensaje protagonista y Manrope para contexto, CTA y datos.
+No introducir una segunda familia tipográfica. Para piezas sociales, usar Plus Jakarta Sans 700 para un único mensaje protagonista y Plus Jakarta Sans 400–800 para contexto, CTA y datos.
 
 ## 4. Logo y activos de marca
 
@@ -85,7 +86,7 @@ Los logos `logo-sin-fondo.png` y las variantes circulares presentan azul marino 
 
 ### Botones
 
-Todos los botones base comparten 48 px de alto mínimo, padding `12px 19px`, radio píldora (`999px`), Manrope 800, 0.86rem y un icono separado 9 px (`src/editorial.css:354–370`).
+Todos los botones base comparten 48 px de alto mínimo, padding `12px 19px`, radio píldora (`999px`), Plus Jakarta Sans 800, 0.86rem y un icono separado 9 px (`src/editorial.css:354–370`).
 
 - **Primario:** fondo `--coral`, texto blanco; hover `--coral-dark` y desplazamiento vertical de −2 px.
 - **Secundario:** transparente, texto `--forest`, borde `rgba(18, 63, 50, 0.28)`; hover verde translúcido.
@@ -198,8 +199,7 @@ colors
   coral-dark: #BD432B
 
 typography
-  display: Fraunces, serif; 600/700
-  body: Manrope, sans-serif; 400/500/600/700
+  primary: Plus Jakarta Sans, sans-serif; 400/500/600/700/800
 
 spacing
   repeated values: 8, 10, 12, 14, 16, 18, 20, 22, 24, 28, 32, 40, 48px
