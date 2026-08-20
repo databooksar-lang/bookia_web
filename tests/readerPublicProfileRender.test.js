@@ -112,6 +112,35 @@ export function registerReaderPublicProfileRenderTests(test) {
     }
   });
 
+  test("renders an optional cover and compact action area for a public reading club", async () => {
+    const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
+    try {
+      const { ReadingClubPublicCard } = await vite.ssrLoadModule("/src/pages/PublicPages.jsx");
+      const club = {
+        id: 7,
+        title: "Lecturas del mes",
+        description: "Una conversación extensa para probar la composición pública del club.",
+        cover_url: "/reading-clubs/7/cover",
+        genre: { name: "Narrativa" },
+        meeting_date: "2026-08-20",
+        location: "Sala 1",
+        external_url: "https://example.com/club",
+      };
+      const withCover = renderToStaticMarkup(createElement(ReadingClubPublicCard, { club, showShare: false }));
+      const withoutCover = renderToStaticMarkup(createElement(ReadingClubPublicCard, { club: { ...club, cover_url: null }, showShare: false }));
+
+      assert.match(withCover, /reading-club-public-card-content/);
+      assert.match(withCover, /reading-club-public-cover/);
+      assert.match(withCover, /reading-club-public-description/);
+      assert.match(withCover, /reading-club-public-actions/);
+      assert.match(withCover, /Ver más sobre este encuentro/);
+      assert.match(withCover, /\/reading-clubs\/7\/cover/);
+      assert.doesNotMatch(withoutCover, /reading-club-public-cover/);
+    } finally {
+      await vite.close();
+    }
+  });
+
   test("renders public followed bookstores and hides the empty section", async () => {
     const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
     try {

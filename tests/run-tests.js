@@ -893,6 +893,18 @@ tests.push(["centers bookstore and reading-club illustrations at the mobile brea
 
   assert.match(editorialStyles, /@media \(max-width: 820px\)\s*\{[\s\S]*?\.bookstores-section-illustration,\s*\.reading-clubs-section-illustration\s*\{[^}]*align-self:\s*center;/);
 }]);
+tests.push(["keeps public reading-club cards compact with optional covers and bounded descriptions", () => {
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+  assert.match(editorialStyles, /\.reading-club-public-card-content\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*1fr;/s);
+  assert.match(editorialStyles, /\.reading-club-public-card-content:has\(\.reading-club-public-cover\)\s*\{[^}]*grid-template-columns:\s*88px\s+minmax\(0,\s*1fr\);/s);
+  assert.match(editorialStyles, /\.reading-club-public-cover\s*\{[^}]*width:\s*88px;[^}]*aspect-ratio:\s*2\s*\/\s*3;/s);
+  assert.match(editorialStyles, /\.reading-club-public-description\s*\{[^}]*display:\s*-webkit-box;[^}]*-webkit-line-clamp:\s*4;[^}]*overflow:\s*hidden;/s);
+  assert.match(editorialStyles, /\.reading-club-public-actions\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;/s);
+  assert.match(editorialStyles, /\.reading-club-public-card\s*\{[^}]*grid-template-rows:\s*minmax\(0,\s*1fr\)\s+auto;/s);
+  assert.match(editorialStyles, /@media \(max-width: 820px\)\s*\{[\s\S]*?\.reading-club-public-list\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/);
+  assert.match(editorialStyles, /@media \(max-width: 620px\)\s*\{[\s\S]*?\.reading-club-public-card-content\s*\{[^}]*grid-template-columns:\s*1fr;/);
+}]);
 tests.push(["keeps the global page background free of grid lines", () => {
   const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
   const bodyRule = editorialStyles.match(/body\s*\{([\s\S]*?)\n\}/)?.[1] ?? "";

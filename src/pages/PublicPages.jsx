@@ -278,6 +278,41 @@ const READING_CLUB_BENEFITS = [
 function BenefitsStrip({ benefits, ariaLabel, className = "" }) {
   return <section className={`benefits-strip ${className}`.trim()} aria-label={ariaLabel}>{benefits.map(([icon, title, text]) => <div key={title}>{icon}<span><strong>{title}</strong><small>{text}</small></span></div>)}</section>;
 }
+export function ReadingClubPublicCard({
+  club,
+  host = null,
+  hostPath = "",
+  bookstoreId = null,
+  source = "",
+  showOrganizer = false,
+  showShare = false,
+  shared = false,
+}) {
+  const hostName = host?.type === "bookstore" ? host.name : host?.display_name;
+  const details = <>
+    <div className="store-tags" aria-label="Género del club"><span className="store-tag">{club.genre?.name || "Sin género"}</span></div>
+    <h3>{club.title}</h3>
+    <p className="reading-club-public-description">{club.description}</p>
+    <dl>
+      <div><dt>Fecha</dt><dd>{displayReadingClubDate(club.meeting_date)}</dd></div>
+      <div><dt>Lugar</dt><dd>{club.location || "Lugar a confirmar"}</dd></div>
+      {showOrganizer ? <div><dt>Organiza</dt><dd>{hostName || "Anfitrión de Bookia"}</dd></div> : null}
+    </dl>
+  </>;
+  const content = <>
+    {club.cover_url ? <img className="reading-club-public-cover" src={resolveApiUrl(club.cover_url)} alt={`Portada de ${club.title}`} /> : null}
+    <div className="reading-club-public-card-details">{details}</div>
+  </>;
+
+  return <article id={`club-${club.id}`} className={`reading-club-public-card${shared ? " is-shared-club" : ""}`}>
+    {hostPath ? <AppLink className="reading-club-public-card-content reading-club-link" href={hostPath}>{content}</AppLink> : <div className="reading-club-public-card-content">{content}</div>}
+    {showShare || club.external_url ? <div className="reading-club-public-actions">
+      {showShare ? <ReadingClubShareMenu club={club} host={host} hostName={hostName} bookstoreId={bookstoreId} source={source} /> : null}
+      {club.external_url ? <a className="reading-club-external-link" href={club.external_url} target="_blank" rel="noopener noreferrer">Ver más sobre este encuentro <ArrowIcon size={15} /></a> : null}
+    </div> : null}
+  </article>;
+}
+
 function BookstoresSection({ stores, loading }) {
   const [query, setQuery] = useState("");
   const [tag, setTag] = useState("");
@@ -382,18 +417,8 @@ function ReadingClubsSection() {
         <div id="reading-clubs-results" className="reading-club-public-list">
           {visibleClubs.map((club) => {
             const host = club.host;
-            const hostName = host?.type === "bookstore" ? host.name : host?.display_name;
-            const hostPath = host?.type === "bookstore" ? `/bookstores/${host.slug}` : `/readers/${host?.slug}`;
-            return <article key={club.id} className="reading-club-public-card">
-              <AppLink className="reading-club-link" href={hostPath}>
-              <div className="store-tags" aria-label="G\u00E9nero del club"><span className="store-tag">{club.genre?.name || "Sin g\u00E9nero"}</span></div>
-              <h3>{club.title}</h3>
-              <p>{club.description}</p>
-              <dl><div><dt>Fecha</dt><dd>{displayReadingClubDate(club.meeting_date)}</dd></div><div><dt>Lugar</dt><dd>{club.location || "Lugar a confirmar"}</dd></div><div><dt>Organiza</dt><dd>{hostName || "Anfitri\u00F3n de Bookia"}</dd></div></dl>
-              </AppLink>
-              <ReadingClubShareMenu club={club} host={host} hostName={hostName} bookstoreId={host?.type === "bookstore" ? club.bookstore_id : null} source="public_reading_clubs" />
-              {club.external_url ? <a className="reading-club-external-link" href={club.external_url} target="_blank" rel="noopener noreferrer">Ver más sobre este encuentro <ArrowIcon size={15} /></a> : null}
-            </article>;
+            const hostPath = host?.slug ? (host.type === "bookstore" ? `/bookstores/${host.slug}` : `/readers/${host.slug}`) : "";
+            return <ReadingClubPublicCard key={club.id} club={club} host={host} hostPath={hostPath} bookstoreId={host?.type === "bookstore" ? club.bookstore_id : null} source="public_reading_clubs" showOrganizer showShare />;
           })}
         </div>
       ) : null}
@@ -825,19 +850,7 @@ export function BookstorePage({ slug, me }) {
         <section className="store-reading-clubs">
           <div className="section-heading results-heading"><div><p className="section-label">Club de lectura</p><h2>Encuentros de {store.name}</h2><p>{readingClubs.length} {readingClubs.length === 1 ? "club publicado" : "clubes publicados"}</p></div></div>
           <div className="reading-club-public-list">
-            {readingClubs.map((club) => (
-              <article key={club.id} id={`club-${club.id}`} className={`reading-club-public-card${getSharedReadingClubId(window.location.search) === club.id ? " is-shared-club" : ""}`}>
-                <div className="store-tags" aria-label="Genero del club"><span className="store-tag">{club.genre?.name || "Sin genero"}</span></div>
-                <h3>{club.title}</h3>
-                <p>{club.description}</p>
-                <dl>
-                  <div><dt>Fecha</dt><dd>{displayReadingClubDate(club.meeting_date)}</dd></div>
-                  {club.location ? <div><dt>Lugar</dt><dd>{club.location}</dd></div> : null}
-                </dl>
-                <ReadingClubShareMenu club={club} host={{ type: "bookstore", slug: store.slug }} hostName={store.name} bookstoreId={store.id} source="bookstore_reading_clubs" />
-                {club.external_url ? <a className="reading-club-external-link" href={club.external_url} target="_blank" rel="noopener noreferrer">{club.external_url}</a> : null}
-              </article>
-            ))}
+            {readingClubs.map((club) => <ReadingClubPublicCard key={club.id} club={club} host={{ type: "bookstore", slug: store.slug, name: store.name }} bookstoreId={store.id} source="bookstore_reading_clubs" showShare shared={getSharedReadingClubId(window.location.search) === club.id} />)}
           </div>
         </section>
       ) : null}
@@ -850,7 +863,7 @@ export function ReaderReadingClubs({ reader, readingClubs, onBack, sharedClubId 
   if (!readingClubs.length) return null;
 
   return <section className="store-reading-clubs"><div className="section-heading results-heading"><div><p className="section-label">Clubes de lectura</p><h2>Encuentros de {reader.display_name}</h2><p>{readingClubs.length} {readingClubs.length === 1 ? "club publicado" : "clubes publicados"}</p></div><button className="secondary-button" onClick={onBack}>Volver a buscar</button></div>
-    <div className="reading-club-public-list">{readingClubs.map((club) => <article key={club.id} id={`club-${club.id}`} className={`reading-club-public-card${sharedClubId === club.id ? " is-shared-club" : ""}`}>{club.cover_url ? <img className="reading-club-public-cover" src={resolveApiUrl(club.cover_url)} alt={`Portada de ${club.title}`} /> : null}<div className="store-tags" aria-label="Género del club"><span className="store-tag">{club.genre?.name || "Sin género"}</span></div><h3>{club.title}</h3><p>{club.description}</p><dl><div><dt>Fecha</dt><dd>{displayReadingClubDate(club.meeting_date)}</dd></div><div><dt>Lugar</dt><dd>{club.location || "Lugar a confirmar"}</dd></div></dl>{club.external_url ? <a className="reading-club-external-link" href={club.external_url} target="_blank" rel="noopener noreferrer">{club.external_url}</a> : null}</article>)}</div>
+    <div className="reading-club-public-list">{readingClubs.map((club) => <ReadingClubPublicCard key={club.id} club={club} shared={sharedClubId === club.id} />)}</div>
   </section>;
 }
 
