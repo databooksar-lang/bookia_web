@@ -2578,6 +2578,21 @@ button:disabled {
   border-radius: 6px;
 }
 
+.reading-club-item .secondary-button {
+  white-space: nowrap;
+}
+
+.visually-hidden {
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  position: absolute;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .status-hidden {
   color: var(--muted);
   background: rgba(30, 36, 31, 0.09);
@@ -4373,6 +4388,10 @@ textarea:focus {
   border: 1px solid rgba(18, 63, 50, 0.14);
   border-radius: 16px;
   box-shadow: 0 10px 24px rgba(22, 38, 30, 0.045);
+}
+
+.reader-profile-tab-panel {
+  margin-top: 28px;
 }
 
 .reader-profile-content-block::before {
