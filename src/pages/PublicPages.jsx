@@ -292,6 +292,8 @@ export function ReadingClubPublicCard({
   showOrganizer = false,
   showShare = false,
   shared = false,
+  onOpenDetails = null,
+  hideExternalLink = false,
 }) {
   const hostName = host?.type === "bookstore" ? host.name : host?.display_name;
   const details = <>
@@ -308,12 +310,13 @@ export function ReadingClubPublicCard({
     {club.cover_url ? <img className="reading-club-public-cover" src={resolveApiUrl(club.cover_url)} alt={`Portada de ${club.title}`} loading="lazy" decoding="async" onError={hideBrokenReadingClubCover} /> : null}
     <div className="reading-club-public-card-details">{details}</div>
   </>;
+  const hasExternalLink = Boolean(club.external_url && !hideExternalLink);
 
   return <article id={`club-${club.id}`} className={`reading-club-public-card${shared ? " is-shared-club" : ""}`}>
-    {hostPath ? <AppLink className="reading-club-public-card-content reading-club-link" href={hostPath}>{content}</AppLink> : <div className="reading-club-public-card-content">{content}</div>}
-    {showShare || club.external_url ? <div className="reading-club-public-actions">
+    {onOpenDetails ? <button type="button" className="reading-club-public-card-content reading-club-link reading-club-detail-trigger" aria-label={`Ver detalles de ${club.title}`} onClick={onOpenDetails}>{content}</button> : hostPath ? <AppLink className="reading-club-public-card-content reading-club-link" href={hostPath}>{content}</AppLink> : <div className="reading-club-public-card-content">{content}</div>}
+    {showShare || hasExternalLink ? <div className="reading-club-public-actions">
       {showShare ? <ReadingClubShareMenu club={club} host={host} hostName={hostName} bookstoreId={bookstoreId} source={source} /> : null}
-      {club.external_url ? <a className="reading-club-external-link" href={club.external_url} target="_blank" rel="noopener noreferrer">Ver más sobre este encuentro <ArrowIcon size={15} /></a> : null}
+      {hasExternalLink ? <a className="reading-club-external-link" href={club.external_url} target="_blank" rel="noopener noreferrer">Ver más sobre este encuentro <ArrowIcon size={15} /></a> : null}
     </div> : null}
   </article>;
 }
@@ -378,6 +381,9 @@ function ReadingClubsSection() {
   const [showAll, setShowAll] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedClub, setSelectedClub] = useState(null);
+  const [selectedClubHost, setSelectedClubHost] = useState(null);
+  const [selectedClubHostPath, setSelectedClubHostPath] = useState("");
 
   useEffect(() => {
     const params = buildReadingClubSearchParams(genreSlug);
@@ -399,6 +405,25 @@ function ReadingClubsSection() {
   const hasActiveFilters = Boolean(query.trim() || genreSlug);
   const visibleClubs = getVisibleReadingClubs(clubs, genreSlug, query, showAll);
   const canExpand = !hasActiveFilters && clubs.length > 6;
+
+  function closeClubDetails() {
+    setSelectedClub(null);
+    setSelectedClubHost(null);
+    setSelectedClubHostPath("");
+  }
+
+  function openClubDetails(club, host, hostPath) {
+    setSelectedClub(club);
+    setSelectedClubHost(host);
+    setSelectedClubHostPath(hostPath);
+  }
+
+  useEffect(() => {
+    if (!selectedClub) return undefined;
+    const onKeyDown = (event) => event.key === "Escape" && closeClubDetails();
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [selectedClub]);
 
   function clearFilters() {
     setGenreSlug("");
@@ -423,13 +448,44 @@ function ReadingClubsSection() {
           {visibleClubs.map((club) => {
             const host = club.host;
             const hostPath = host?.slug ? (host.type === "bookstore" ? `/bookstores/${host.slug}` : `/readers/${host.slug}`) : "";
-            return <ReadingClubPublicCard key={club.id} club={club} host={host} hostPath={hostPath} bookstoreId={host?.type === "bookstore" ? club.bookstore_id : null} source="public_reading_clubs" showOrganizer showShare />;
+            return <ReadingClubPublicCard key={club.id} club={club} host={host} hostPath={hostPath} bookstoreId={host?.type === "bookstore" ? club.bookstore_id : null} source="public_reading_clubs" showOrganizer showShare onOpenDetails={() => openClubDetails(club, host, hostPath)} hideExternalLink />;
           })}
         </div>
       ) : null}
       {canExpand ? <button type="button" className="secondary-button discovery-expand-button" aria-controls="reading-clubs-results" aria-expanded={showAll} onClick={() => setShowAll((current) => !current)}>{showAll ? "Mostrar menos" : "Ver todos los clubes"}</button> : null}
       <BenefitsStrip className="reading-clubs-benefits-strip" benefits={READING_CLUB_BENEFITS} ariaLabel="Beneficios de los clubes de lectura" />
+      <ReadingClubDetailModal selectedClub={selectedClub} host={selectedClubHost} hostPath={selectedClubHostPath} onClose={closeClubDetails} />
     </section>
+  );
+}
+
+export function ReadingClubDetailModal({ selectedClub, host = null, hostPath = "", onClose }) {
+  if (!selectedClub) return null;
+  const hostName = host?.type === "bookstore" ? host.name : host?.display_name;
+
+  return (
+    <div className="reading-club-detail-modal" role="dialog" aria-modal="true" aria-labelledby="reading-club-detail-title" onClick={onClose}>
+      <div className="reading-club-detail-modal-card" onClick={(event) => event.stopPropagation()}>
+        <button type="button" className="reading-club-detail-modal-close" onClick={onClose}>Cerrar</button>
+        <div className={`reading-club-detail-modal-layout${selectedClub.cover_url ? " has-cover" : ""}`}>
+          {selectedClub.cover_url ? <img className="reading-club-detail-cover" src={resolveApiUrl(selectedClub.cover_url)} alt={`Portada de ${selectedClub.title}`} onError={hideBrokenReadingClubCover} /> : null}
+          <div className="reading-club-detail-copy">
+            <span className="reading-club-public-genre">{selectedClub.genre?.name || "Sin género"}</span>
+            <h2 id="reading-club-detail-title">{selectedClub.title}</h2>
+            <div className="reading-club-detail-section"><span>Descripción</span><p>{selectedClub.description || "Sin descripción visible."}</p></div>
+            <dl className="reading-club-detail-meta">
+              <div><dt>Fecha</dt><dd>{displayReadingClubDate(selectedClub.meeting_date)}</dd></div>
+              <div><dt>Lugar</dt><dd>{selectedClub.location || "Lugar a confirmar"}</dd></div>
+              <div><dt>Organiza</dt><dd>{hostName || "Anfitrión de Bookia"}</dd></div>
+            </dl>
+            <div className="reading-club-detail-actions">
+              {hostPath && hostName ? <AppLink className="secondary-button" href={hostPath}>Ver perfil de {hostName} <ArrowIcon size={15} /></AppLink> : null}
+              {selectedClub.external_url ? <a className="primary-button" href={selectedClub.external_url} target="_blank" rel="noopener noreferrer">Ver más sobre este encuentro <ArrowIcon size={15} /></a> : null}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 

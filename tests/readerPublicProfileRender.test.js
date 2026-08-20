@@ -147,6 +147,41 @@ export function registerReaderPublicProfileRenderTests(test) {
     }
   });
 
+  test("opens reading-club details from a search card without navigating to the host profile", async () => {
+    const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
+    try {
+      const { ReadingClubDetailModal, ReadingClubPublicCard } = await vite.ssrLoadModule("/src/pages/PublicPages.jsx");
+      const club = {
+        id: 7,
+        title: "Lecturas del mes",
+        description: "Una descripción completa que debe leerse sin el truncado de la tarjeta pública.",
+        cover_url: "/reading-clubs/7/cover",
+        genre: { name: "Narrativa" },
+        meeting_date: "2026-08-20",
+        location: "Sala 1",
+        external_url: "https://example.com/club",
+      };
+      const host = { type: "reader", slug: "gabriel", display_name: "Gabriel" };
+      const cardMarkup = renderToStaticMarkup(createElement(ReadingClubPublicCard, { club, host, hostPath: "/readers/gabriel", onOpenDetails: () => {}, hideExternalLink: true }));
+      const modalMarkup = renderToStaticMarkup(createElement(ReadingClubDetailModal, { selectedClub: club, host, hostPath: "/readers/gabriel", onClose: () => {} }));
+
+      assert.match(cardMarkup, /type="button"/);
+      assert.match(cardMarkup, /aria-label="Ver detalles de Lecturas del mes"/);
+      assert.doesNotMatch(cardMarkup, /href="\/readers\/gabriel"/);
+      assert.doesNotMatch(cardMarkup, /Ver más sobre este encuentro/);
+      assert.match(modalMarkup, /role="dialog"/);
+      assert.match(modalMarkup, /Una descripción completa que debe leerse sin el truncado de la tarjeta pública\./);
+      assert.match(modalMarkup, /href="https:\/\/example\.com\/club"/);
+      assert.match(modalMarkup, /target="_blank"/);
+      assert.match(modalMarkup, /rel="noopener noreferrer"/);
+      assert.match(modalMarkup, /href="\/readers\/gabriel"/);
+      assert.match(modalMarkup, /Ver perfil de Gabriel/);
+      assert.equal(renderToStaticMarkup(createElement(ReadingClubDetailModal, { selectedClub: null, onClose: () => {} })), "");
+    } finally {
+      await vite.close();
+    }
+  });
+
   test("renders public followed bookstores and hides the empty section", async () => {
     const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
     try {
