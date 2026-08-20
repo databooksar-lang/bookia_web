@@ -1,4 +1,4 @@
-import { copyBookShareUrl, loadInstagramStoryCover, shareBookToInstagram, shareInstagramStoryFile } from "./bookSharingState.js";
+import { copyBookShareUrl, loadInstagramStoryCover, loadInstagramStoryLogo, shareBookToInstagram, shareInstagramStoryFile } from "./bookSharingState.js";
 import { displayReadingClubDate } from "./readingClubState.js";
 
 const STORY_WIDTH = 1080;
@@ -168,7 +168,10 @@ export async function createReadingClubInstagramStoryFile({ club, hostName, cove
   context.font = "700 24px system-ui, sans-serif";
   context.fillText("CLUB DE LECTURA", 88, 180);
 
-  const cover = await loadInstagramStoryCover({ coverUrl, fetchLike, imageFactory: () => documentLike.createElement("img") }).catch(() => null);
+  const coverPromise = loadInstagramStoryCover({ coverUrl, fetchLike, imageFactory: () => documentLike.createElement("img") }).catch(() => null);
+  const logoPromise = loadInstagramStoryLogo({ imageFactory: () => documentLike.createElement("img") });
+  const [cover, logo] = await Promise.all([coverPromise, logoPromise]);
+  if (logo) context.drawImage(logo, 860, 44, 112, 112);
   const hasCover = Boolean(cover?.width && cover?.height);
   if (hasCover) drawReadingClubStoryCover(context, cover, 180, 242, 720, 700);
 

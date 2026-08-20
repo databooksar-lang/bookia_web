@@ -4,7 +4,7 @@ import { buildReadingClubInstagramStoryCoverPath, buildReadingClubInstagramStory
 
 const PNG_HEADER = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 2, 88, 0, 0, 3, 132]);
 
-function createStoryDocument({ image = null } = {}) {
+function createStoryDocument({ image = null, logo = null } = {}) {
   const drawCalls = [];
   const rectangles = [];
   const text = [];
@@ -15,6 +15,7 @@ function createStoryDocument({ image = null } = {}) {
     measureText(value) { return { width: String(value).length * 20 }; },
   };
   const canvas = { getContext: () => context, toBlob: (callback) => callback(new Blob(["story"], { type: "image/png" })) };
+  const images = [image, logo].filter(Boolean);
   return {
     drawCalls,
     rectangles,
@@ -22,7 +23,10 @@ function createStoryDocument({ image = null } = {}) {
     textCalls,
     createElement(kind) {
       if (kind === "canvas") return canvas;
-      return image || {};
+      if (images.length) return images.shift();
+      const brokenImage = {};
+      Object.defineProperty(brokenImage, "src", { set() { queueMicrotask(() => brokenImage.onerror()); } });
+      return brokenImage;
     },
   };
 }
@@ -99,7 +103,9 @@ export function registerReadingClubSharingStateTests(register) {
   register("creates a reading-club Story with its cover and every public metadata field", async () => {
     const cover = { width: 600, height: 900 };
     Object.defineProperty(cover, "src", { set() { queueMicrotask(() => cover.onload()); } });
-    const documentLike = createStoryDocument({ image: cover });
+    const logo = { width: 112, height: 112 };
+    Object.defineProperty(logo, "src", { set() { queueMicrotask(() => logo.onload()); } });
+    const documentLike = createStoryDocument({ image: logo, logo: cover });
     const requests = [];
 
     const file = await createReadingClubInstagramStoryFile({
@@ -189,5 +195,20 @@ export function registerReadingClubSharingStateTests(register) {
 
     assert.ok(documentLike.text.includes("CLUB DE LECTURA"));
     assert.equal(file.type, "image/png");
+  });
+
+  register("places the square Bookia logo beside the reading-club Story header", async () => {
+    const logo = { width: 112, height: 112 };
+    Object.defineProperty(logo, "src", { set() { queueMicrotask(() => logo.onload()); } });
+    const documentLike = createStoryDocument({ image: logo });
+
+    await createReadingClubInstagramStoryFile({
+      club: { id: 7, title: "Club con logo" },
+      hostName: "Bookia",
+      documentLike,
+      FileCtor: FakeFile,
+    });
+
+    assert.ok(documentLike.drawCalls.some((args) => args[0] === logo && args.length === 5 && args.slice(1).every((value, index) => value === [860, 44, 112, 112][index])));
   });
 }
