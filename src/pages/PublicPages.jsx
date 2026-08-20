@@ -278,6 +278,11 @@ const READING_CLUB_BENEFITS = [
 function BenefitsStrip({ benefits, ariaLabel, className = "" }) {
   return <section className={`benefits-strip ${className}`.trim()} aria-label={ariaLabel}>{benefits.map(([icon, title, text]) => <div key={title}>{icon}<span><strong>{title}</strong><small>{text}</small></span></div>)}</section>;
 }
+
+export function hideBrokenReadingClubCover(event) {
+  event.currentTarget.hidden = true;
+}
+
 export function ReadingClubPublicCard({
   club,
   host = null,
@@ -290,8 +295,8 @@ export function ReadingClubPublicCard({
 }) {
   const hostName = host?.type === "bookstore" ? host.name : host?.display_name;
   const details = <>
-    <div className="store-tags" aria-label="Género del club"><span className="store-tag">{club.genre?.name || "Sin género"}</span></div>
-    <h3>{club.title}</h3>
+    <div className="reading-club-public-genre-row" aria-label="Género del club"><span className="reading-club-public-genre">{club.genre?.name || "Sin género"}</span></div>
+    <h3 className="reading-club-public-title">{club.title}</h3>
     <p className="reading-club-public-description">{club.description}</p>
     <dl>
       <div><dt>Fecha</dt><dd>{displayReadingClubDate(club.meeting_date)}</dd></div>
@@ -300,7 +305,7 @@ export function ReadingClubPublicCard({
     </dl>
   </>;
   const content = <>
-    {club.cover_url ? <img className="reading-club-public-cover" src={resolveApiUrl(club.cover_url)} alt={`Portada de ${club.title}`} /> : null}
+    {club.cover_url ? <img className="reading-club-public-cover" src={resolveApiUrl(club.cover_url)} alt={`Portada de ${club.title}`} loading="lazy" decoding="async" onError={hideBrokenReadingClubCover} /> : null}
     <div className="reading-club-public-card-details">{details}</div>
   </>;
 
