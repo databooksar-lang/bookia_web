@@ -4375,6 +4375,10 @@ textarea:focus {
   box-shadow: 0 10px 24px rgba(22, 38, 30, 0.045);
 }
 
+.reader-profile-tab-panel {
+  margin-top: 28px;
+}
+
 .reader-profile-content-block::before {
   width: 4px;
   position: absolute;
