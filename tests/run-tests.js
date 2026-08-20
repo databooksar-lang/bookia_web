@@ -615,11 +615,20 @@ tests.push(["keeps the horizontal book share menu inside the mobile viewport", (
   const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
 
   assert.match(editorialStyles, /\.book-share-options\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*flex-wrap:\s*wrap;/);
-  assert.match(editorialStyles, /\.book-share-options \.book-share-story-button\s*\{[^}]*display:\s*inline-flex;[^}]*white-space:\s*nowrap;/);
+  assert.match(editorialStyles, /\.book-share-options \.book-share-story-button\s*\{[^}]*width:\s*38px;[^}]*height:\s*38px;[^}]*display:\s*inline-flex;/);
   assert.match(editorialStyles, /@media \(max-width: 620px\)[\s\S]*?\.book-share-options\s*\{[^}]*max-width:\s*calc\(100vw\s*-\s*32px\);/);
   assert.doesNotMatch(editorialStyles, /\.dashboard-list-active \.card-actions button(?:\s*\{|:has)/);
   assert.match(editorialStyles, /\.dashboard-list-active \.card-actions-main > button,\s*\.dashboard-list-active \.card-actions-main > \.book-share-menu > \.book-share-trigger,\s*\.dashboard-list-active \.card-actions > \.danger-button\s*\{/);
   assert.match(editorialStyles, /\.dashboard-list-active \.card-actions-main > button:has\(svg\)\s*\{/);
+}]);
+tests.push(["keeps the Instagram share action icon-only while preserving accessible labeling", () => {
+  const readingClubShareMenuSource = readFileSync(new URL("../src/components/ReadingClubShareMenu.jsx", import.meta.url), "utf8");
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+  assert.match(readingClubShareMenuSource, /aria-label="Compartir Historia de Instagram"/);
+  assert.match(readingClubShareMenuSource, /title="Compartir Historia de Instagram"/);
+  assert.doesNotMatch(readingClubShareMenuSource, /<span>\{storyBusy \? "Creando\.\.\." : "Story"\}<\/span>/);
+  assert.match(editorialStyles, /\.book-share-options \.book-share-story-button\s*\{[^}]*width:\s*38px;[^}]*height:\s*38px;[^}]*padding:\s*0;/);
 }]);
 
 tests.push(["emits one session-expiry event for repeated unauthorized API responses", async () => {
