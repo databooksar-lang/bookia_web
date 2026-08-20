@@ -102,4 +102,13 @@ export function registerReadingClubStateTests(test) {
     assert.match(publicPagesSource, /noopener noreferrer/);
     assert.match(routesSource, /dashboard/);
   });
+
+  test("places the reading-club visibility label on its own line", () => {
+    const managerSource = readFileSync(new URL("../src/components/ReadingClubManager.jsx", import.meta.url), "utf8");
+    const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+    assert.match(managerSource, /reading-club-summary[\s\S]*?status-pill/);
+    assert.match(editorialStyles, /\.reading-club-summary\s*\{[^}]*grid-template-columns:\s*1fr;/s);
+    assert.match(editorialStyles, /\.reading-club-summary\s+\.status-pill\s*\{[^}]*justify-self:\s*start;/s);
+  });
 }
