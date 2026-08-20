@@ -1,10 +1,21 @@
 import { useId, useState } from "react";
 
 import { trackWebInteractionEvent } from "../analyticsState";
+import { resolveApiUrl } from "../api";
 import { basePath } from "../routing";
 import { buildTelegramShareHref, buildWhatsAppShareHref } from "../bookSharingState";
-import { buildReadingClubShareMessage, buildReadingClubShareUrl, copyReadingClubShareUrl, createReadingClubInstagramStoryFile, shareInstagramStoryFile } from "../readingClubSharingState";
+import { buildReadingClubShareMessage, buildReadingClubShareUrl, copyReadingClubShareUrl, createReadingClubInstagramStoryFile, resolveReadingClubInstagramStoryCoverUrl, shareInstagramStoryFile } from "../readingClubSharingState";
 import { InstagramIcon, TelegramIcon, WhatsAppIcon } from "./Icons";
+
+function getTrustedApiOrigins() {
+  const origins = [window.location.origin];
+  try {
+    origins.push(new URL(resolveApiUrl("/"), window.location.origin).origin);
+  } catch {
+    // The current origin remains the only trusted source when the API base is invalid.
+  }
+  return [...new Set(origins)];
+}
 
 export function ReadingClubShareMenu({ club, host, hostName, bookstoreId, source }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -30,7 +41,11 @@ export function ReadingClubShareMenu({ club, host, hostName, bookstoreId, source
   async function story() {
     setStoryBusy(true);
     try {
-      const file = await createReadingClubInstagramStoryFile({ club, hostName });
+      const coverUrl = resolveReadingClubInstagramStoryCoverUrl(club, {
+        trustedOrigins: getTrustedApiOrigins(),
+        resolveUrl: resolveApiUrl,
+      });
+      const file = await createReadingClubInstagramStoryFile({ club, hostName, coverUrl });
       const result = await shareInstagramStoryFile({ file, title: club.title });
       if (result === "cancelled") {
         setMessage("Se cancel\u00f3 el compartir de la Story.");
