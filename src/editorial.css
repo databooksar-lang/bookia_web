@@ -2556,7 +2556,12 @@ button:disabled {
 }
 
 .reading-club-summary {
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.reading-club-summary .status-pill {
+  justify-self: start;
 }
 
 .status-hidden {
