@@ -296,6 +296,7 @@ export function ReadingClubPublicCard({
   hideExternalLink = false,
 }) {
   const hostName = host?.type === "bookstore" ? host.name : host?.display_name;
+  const profileLabel = host?.type === "bookstore" ? "Ver perfil de librería" : "Ver perfil de lectora";
   const details = <>
     <div className="reading-club-public-genre-row" aria-label="Género del club"><span className="reading-club-public-genre">{club.genre?.name || "Sin género"}</span></div>
     <h3 className="reading-club-public-title">{club.title}</h3>
@@ -314,7 +315,9 @@ export function ReadingClubPublicCard({
 
   return <article id={`club-${club.id}`} className={`reading-club-public-card${shared ? " is-shared-club" : ""}`}>
     {onOpenDetails ? <button type="button" className="reading-club-public-card-content reading-club-link reading-club-detail-trigger" aria-label={`Ver detalles de ${club.title}`} onClick={onOpenDetails}>{content}</button> : hostPath ? <AppLink className="reading-club-public-card-content reading-club-link" href={hostPath}>{content}</AppLink> : <div className="reading-club-public-card-content">{content}</div>}
-    {showShare || hasExternalLink ? <div className="reading-club-public-actions">
+    {onOpenDetails || hostPath || showShare || hasExternalLink ? <div className="reading-club-public-actions">
+      {onOpenDetails ? <button type="button" className="secondary-button reading-club-card-action" onClick={onOpenDetails}>Ver más info</button> : null}
+      {hostPath && hostName ? <AppLink className="secondary-button reading-club-card-action" href={hostPath}>{profileLabel}</AppLink> : null}
       {showShare ? <ReadingClubShareMenu club={club} host={host} hostName={hostName} bookstoreId={bookstoreId} source={source} /> : null}
       {hasExternalLink ? <a className="reading-club-external-link" href={club.external_url} target="_blank" rel="noopener noreferrer">Ver más sobre este encuentro <ArrowIcon size={15} /></a> : null}
     </div> : null}
@@ -460,8 +463,35 @@ function ReadingClubsSection() {
 }
 
 export function ReadingClubDetailModal({ selectedClub, host = null, hostPath = "", onClose }) {
+  const [interestOpen, setInterestOpen] = useState(false);
+  const [interestDraft, setInterestDraft] = useState({ name: "", email: "", phone: "", privacy_accepted: false });
+  const [interestStatus, setInterestStatus] = useState("");
+  const [interestError, setInterestError] = useState("");
+  const [interestSaving, setInterestSaving] = useState(false);
+  useEffect(() => {
+    setInterestOpen(false);
+    setInterestStatus("");
+    setInterestError("");
+    setInterestDraft({ name: "", email: "", phone: "", privacy_accepted: false });
+  }, [selectedClub?.id]);
   if (!selectedClub) return null;
   const hostName = host?.type === "bookstore" ? host.name : host?.display_name;
+  const profileLabel = host?.type === "bookstore" ? "Ver perfil de librería" : "Ver perfil de lectora";
+
+  function submitInterest(event) {
+    event.preventDefault();
+    if (interestSaving) return;
+    setInterestSaving(true);
+    setInterestError("");
+    apiFetch(`/reading-clubs/${selectedClub.id}/interests`, { method: "POST", body: JSON.stringify(interestDraft), suppressSessionExpiry: true })
+      .then((result) => {
+        setInterestStatus(result.detail);
+        setInterestDraft({ name: "", email: "", phone: "", privacy_accepted: false });
+        setInterestOpen(false);
+      })
+      .catch((error) => setInterestError(error.message || "No pudimos registrar tu interés."))
+      .finally(() => setInterestSaving(false));
+  }
 
   return (
     <div className="reading-club-detail-modal" role="dialog" aria-modal="true" aria-labelledby="reading-club-detail-title" onClick={onClose}>
@@ -479,9 +509,20 @@ export function ReadingClubDetailModal({ selectedClub, host = null, hostPath = "
               <div><dt>Organiza</dt><dd>{hostName || "Anfitrión de Bookia"}</dd></div>
             </dl>
             <div className="reading-club-detail-actions">
-              {hostPath && hostName ? <AppLink className="secondary-button" href={hostPath}>Ver perfil de {hostName} <ArrowIcon size={15} /></AppLink> : null}
+              {hostPath && hostName ? <AppLink className="secondary-button" href={hostPath}>{profileLabel}</AppLink> : null}
+              <button type="button" className="primary-button" onClick={() => { setInterestOpen(true); setInterestStatus(""); setInterestError(""); }}>Estoy interesado/a en anotarme</button>
               {selectedClub.external_url ? <a className="primary-button" href={selectedClub.external_url} target="_blank" rel="noopener noreferrer">Ver más sobre este encuentro <ArrowIcon size={15} /></a> : null}
             </div>
+            {interestStatus ? <p className="feedback reading-club-interest-status" role="status">{interestStatus}</p> : null}
+            {interestOpen ? <form className="reading-club-interest-form" onSubmit={submitInterest}>
+              <p>Esto no confirma una vacante. Compartiremos tus datos únicamente con el anfitrión para que pueda contactarte.</p>
+              <label>Nombre<input name="name" value={interestDraft.name} onChange={(event) => setInterestDraft((current) => ({ ...current, name: event.target.value }))} maxLength="120" required /></label>
+              <label>Correo electrónico<input name="email" type="email" value={interestDraft.email} onChange={(event) => setInterestDraft((current) => ({ ...current, email: event.target.value }))} required /></label>
+              <label>Teléfono<input name="phone" type="tel" value={interestDraft.phone} onChange={(event) => setInterestDraft((current) => ({ ...current, phone: event.target.value }))} placeholder="11 2222-3333" required /></label>
+              <label className="reading-club-interest-consent"><input name="privacy_accepted" type="checkbox" checked={interestDraft.privacy_accepted} onChange={(event) => setInterestDraft((current) => ({ ...current, privacy_accepted: event.target.checked }))} required />Acepto la <AppLink href="/privacy">Política de privacidad</AppLink>.</label>
+              {interestError ? <p className="feedback error" role="alert">{interestError}</p> : null}
+              <div className="reading-club-interest-form-actions"><button type="submit" className="primary-button" disabled={interestSaving}>{interestSaving ? "Enviando..." : "Enviar interés"}</button><button type="button" className="secondary-button" onClick={() => setInterestOpen(false)} disabled={interestSaving}>Cancelar</button></div>
+            </form> : null}
           </div>
         </div>
       </div>

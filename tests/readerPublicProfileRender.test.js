@@ -167,7 +167,7 @@ export function registerReaderPublicProfileRenderTests(test) {
 
       assert.match(cardMarkup, /type="button"/);
       assert.match(cardMarkup, /aria-label="Ver detalles de Lecturas del mes"/);
-      assert.doesNotMatch(cardMarkup, /href="\/readers\/gabriel"/);
+      assert.match(cardMarkup, /href="\/readers\/gabriel"/);
       assert.doesNotMatch(cardMarkup, /Ver más sobre este encuentro/);
       assert.match(modalMarkup, /role="dialog"/);
       assert.match(modalMarkup, /Una descripción completa que debe leerse sin el truncado de la tarjeta pública\./);
@@ -175,8 +175,26 @@ export function registerReaderPublicProfileRenderTests(test) {
       assert.match(modalMarkup, /target="_blank"/);
       assert.match(modalMarkup, /rel="noopener noreferrer"/);
       assert.match(modalMarkup, /href="\/readers\/gabriel"/);
-      assert.match(modalMarkup, /Ver perfil de Gabriel/);
+      assert.match(modalMarkup, /Ver perfil de lectora/);
       assert.equal(renderToStaticMarkup(createElement(ReadingClubDetailModal, { selectedClub: null, onClose: () => {} })), "");
+    } finally {
+      await vite.close();
+    }
+  });
+
+  test("keeps reading-club details and host profile actions visible in search", async () => {
+    const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
+    try {
+      const { ReadingClubDetailModal, ReadingClubPublicCard } = await vite.ssrLoadModule("/src/pages/PublicPages.jsx");
+      const club = { id: 8, title: "Club visible", description: "Una descripción completa.", genre: { name: "Clásicos" }, meeting_date: "2026-09-01", location: "Online" };
+      const host = { type: "reader", display_name: "Belén" };
+      const cardMarkup = renderToStaticMarkup(createElement(ReadingClubPublicCard, { club, host, hostPath: "/readers/belen", onOpenDetails: () => {}, showShare: true, hideExternalLink: true }));
+      const modalMarkup = renderToStaticMarkup(createElement(ReadingClubDetailModal, { selectedClub: club, host, hostPath: "/readers/belen", onClose: () => {} }));
+
+      assert.match(cardMarkup, /Ver más info/);
+      assert.match(cardMarkup, /Ver perfil de lectora/);
+      assert.match(cardMarkup, /href="\/readers\/belen"/);
+      assert.match(modalMarkup, /Estoy interesado\/a en anotarme/);
     } finally {
       await vite.close();
     }
