@@ -1436,16 +1436,28 @@ button:disabled {
 .reading-club-public-actions {
   min-width: 0;
   padding-top: 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 10px 14px;
+  border-top: 1px solid rgba(30, 36, 31, 0.1);
+}
+
+.reading-club-public-actions-main {
+  min-width: 0;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 10px 14px;
-  border-top: 1px solid rgba(30, 36, 31, 0.1);
 }
 
 .reading-club-public-actions .book-share-menu {
   width: fit-content;
   flex: 0 0 auto;
+}
+
+.reading-club-public-actions .reading-club-external-link {
+  grid-column: 1 / -1;
 }
 
 .reading-club-public-actions .book-share-trigger {

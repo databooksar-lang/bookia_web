@@ -318,9 +318,11 @@ export function ReadingClubPublicCard({
   return <article id={`club-${club.id}`} className={`reading-club-public-card${shared ? " is-shared-club" : ""}`}>
     {onOpenDetails ? <button type="button" className="reading-club-public-card-content reading-club-link reading-club-detail-trigger" aria-label={`Ver detalles de ${club.title}`} onClick={onOpenDetails}>{content}</button> : hostPath ? <AppLink className="reading-club-public-card-content reading-club-link" href={hostPath}>{content}</AppLink> : <div className="reading-club-public-card-content">{content}</div>}
     {onOpenDetails || hostPath || showShare || hasExternalLink ? <div className="reading-club-public-actions">
-      {onOpenDetails ? club.external_url ? <a className="secondary-button reading-club-card-action" href={club.external_url} target="_blank" rel="noopener noreferrer">+ info</a> : <button type="button" className="secondary-button reading-club-card-action" onClick={onOpenDetails}>+ info</button> : null}
-      {showInterest && onOpenInterest ? <button type="button" className="primary-button reading-club-card-action" onClick={onOpenInterest}>Estoy interesado@</button> : null}
-      {hostPath && hostName ? <AppLink className="secondary-button reading-club-card-action" href={hostPath}>{profileLabel}</AppLink> : null}
+      <div className="reading-club-public-actions-main">
+        {hostPath && hostName ? <AppLink className="secondary-button reading-club-card-action" href={hostPath}>{profileLabel}</AppLink> : null}
+        {onOpenDetails ? club.external_url ? <a className="secondary-button reading-club-card-action" href={club.external_url} target="_blank" rel="noopener noreferrer">+ info</a> : <button type="button" className="secondary-button reading-club-card-action" onClick={onOpenDetails}>+ info</button> : null}
+        {showInterest && onOpenInterest ? <button type="button" className="primary-button reading-club-card-action" onClick={onOpenInterest}>Estoy interesado@</button> : null}
+      </div>
       {showShare ? <ReadingClubShareMenu club={club} host={host} hostName={hostName} bookstoreId={bookstoreId} source={source} /> : null}
       {hasExternalLink ? <a className="reading-club-external-link" href={club.external_url} target="_blank" rel="noopener noreferrer">Ver más sobre este encuentro <ArrowIcon size={15} /></a> : null}
     </div> : null}
