@@ -172,12 +172,12 @@ export function registerReaderPublicProfileRenderTests(test) {
       assert.doesNotMatch(cardMarkup, /Ver más sobre este encuentro/);
       assert.match(modalMarkup, /role="dialog"/);
       assert.match(modalMarkup, /Una descripción completa que debe leerse sin el truncado de la tarjeta pública\./);
-      assert.match(modalMarkup, /href="https:\/\/example\.com\/club"/);
-      assert.match(modalMarkup, /target="_blank"/);
-      assert.match(modalMarkup, /rel="noopener noreferrer"/);
       assert.match(modalMarkup, /href="\/readers\/gabriel"/);
       assert.match(modalMarkup, /Ver perfil/);
       assert.doesNotMatch(modalMarkup, /Ver perfil de lectora/);
+      assert.doesNotMatch(modalMarkup, /Ver más sobre este encuentro/);
+      assert.match(modalMarkup, /Estoy interesado@/);
+      assert.doesNotMatch(modalMarkup, /Estoy interesado\/a en anotarme/);
       assert.equal(renderToStaticMarkup(createElement(ReadingClubDetailModal, { selectedClub: null, onClose: () => {} })), "");
     } finally {
       await vite.close();
@@ -198,7 +198,8 @@ export function registerReaderPublicProfileRenderTests(test) {
       assert.match(cardMarkup, /Ver perfil/);
       assert.doesNotMatch(cardMarkup, /Ver perfil de lectora/);
       assert.match(cardMarkup, /href="\/readers\/belen"/);
-      assert.match(modalMarkup, /Estoy interesado\/a en anotarme/);
+      assert.match(modalMarkup, /Estoy interesado@/);
+      assert.doesNotMatch(modalMarkup, /Estoy interesado\/a en anotarme/);
     } finally {
       await vite.close();
     }
