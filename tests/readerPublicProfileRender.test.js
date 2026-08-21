@@ -189,8 +189,8 @@ export function registerReaderPublicProfileRenderTests(test) {
     try {
       const { ReadingClubDetailModal, ReadingClubPublicCard } = await vite.ssrLoadModule("/src/pages/PublicPages.jsx");
       const club = { id: 8, title: "Club visible", description: "Una descripción completa.", genre: { name: "Clásicos" }, meeting_date: "2026-09-01", location: "Online", external_url: "https://example.com/club-visible" };
-      const host = { type: "reader", display_name: "Belén" };
-      const cardMarkup = renderToStaticMarkup(createElement(ReadingClubPublicCard, { club, host, hostPath: "/readers/belen", onOpenDetails: () => {}, onOpenInterest: () => {}, showInterest: true, showShare: true, hideExternalLink: true }));
+      const host = { type: "reader", slug: "belen", display_name: "Belén" };
+      const cardMarkup = renderToStaticMarkup(createElement(ReadingClubPublicCard, { club, host, hostPath: "/readers/belen", onOpenDetails: () => {}, onOpenInterest: () => {}, showInterest: true, hideExternalLink: true }));
       const modalMarkup = renderToStaticMarkup(createElement(ReadingClubDetailModal, { selectedClub: club, host, hostPath: "/readers/belen", onClose: () => {} }));
 
       assert.match(cardMarkup, /class="secondary-button reading-club-card-action" href="https:\/\/example\.com\/club-visible" target="_blank" rel="noopener noreferrer">\+ info<\/a>/);
@@ -199,6 +199,8 @@ export function registerReaderPublicProfileRenderTests(test) {
       assert.doesNotMatch(cardMarkup, /Ver perfil de lectora/);
       assert.match(cardMarkup, /href="\/readers\/belen"/);
       assert.match(cardMarkup, /Estoy interesado@/);
+      assert.ok(cardMarkup.indexOf(">Ver perfil</a>") < cardMarkup.indexOf(">+ info</a>"));
+      assert.ok(cardMarkup.indexOf(">+ info</a>") < cardMarkup.indexOf(">Estoy interesado@</button>"));
       assert.doesNotMatch(modalMarkup, /href="\/readers\/belen"/);
       assert.doesNotMatch(modalMarkup, /Ver perfil/);
       assert.doesNotMatch(modalMarkup, /Estoy interesado@/);

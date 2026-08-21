@@ -920,7 +920,8 @@ tests.push(["keeps public reading-club cards compact with optional covers and bo
   assert.match(editorialStyles, /\.reading-club-public-genre\s*\{[^}]*color:\s*var\(--forest-deep\);[^}]*background:/s);
   assert.match(editorialStyles, /\.reading-club-public-title\s*\{[^}]*display:\s*-webkit-box;[^}]*-webkit-line-clamp:\s*2;[^}]*overflow:\s*hidden;/s);
   assert.match(editorialStyles, /\.reading-club-public-description\s*\{[^}]*display:\s*-webkit-box;[^}]*-webkit-line-clamp:\s*4;[^}]*overflow:\s*hidden;/s);
-  assert.match(editorialStyles, /\.reading-club-public-actions\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;/s);
+  assert.match(editorialStyles, /\.reading-club-public-actions\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+auto;/s);
+  assert.match(editorialStyles, /\.reading-club-public-actions-main\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;/s);
   assert.match(editorialStyles, /\.reading-club-public-card\s*\{[^}]*grid-template-rows:\s*minmax\(0,\s*1fr\)\s+auto;/s);
   assert.match(editorialStyles, /@media \(max-width: 820px\)\s*\{[\s\S]*?\.reading-club-public-list\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/);
   assert.match(editorialStyles, /@media \(max-width: 620px\)\s*\{[\s\S]*?\.reading-club-public-card-content\s*\{[^}]*grid-template-columns:\s*1fr;/);
