@@ -92,6 +92,7 @@ export function registerReadingClubStateTests(test) {
     assert.match(dashboardSource, /Club de lectura/);
     assert.match(dashboardSource, /ReadingClubManager/);
     assert.match(managerSource, /\/dashboard\/reading-clubs/);
+    assert.match(managerSource, /Medida recomendada: 900 × 1200 px \(formato vertical\)\./);
     assert.match(managerSource, /createReadingClubDraft/);
     assert.match(managerSource, /external_url/);
     assert.match(readerProfileSource, /ReadingClubManager/);
