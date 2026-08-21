@@ -209,6 +209,14 @@ tests.push(["offers a reusable favorite control throughout public book discovery
   assert.doesNotMatch(editorialStyles, /\.book-card\s*>\s*\.favorite-book-button\s*\{[^}]*position:\s*absolute;/s);
 }]);
 
+tests.push(["keeps favorite controls disabled while reader favorites hydrate", () => {
+  const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+
+  assert.match(publicPagesSource, /const \[favoritesLoading, setFavoritesLoading\] = useState/);
+  assert.match(publicPagesSource, /favoritesLoading:\s*isReaderAccount\(me\)\s*&&\s*\(favoritesLoading \|\| loadedReaderKey !== readerKey\)/);
+  assert.match(publicPagesSource, /isSessionLoading=\{me === undefined \|\| favorites\.favoritesLoading\}/);
+}]);
+
 tests.push(["offers direct WhatsApp contact from each bookstore catalog cover", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
   const commerceSource = readFileSync(new URL("../src/components/Commerce.jsx", import.meta.url), "utf8");
@@ -433,6 +441,48 @@ tests.push(["renders one decorative image in the public search hero illustration
   assert.doesNotMatch(publicPagesSource, /hero-book hero-book-|hero-open-book|hero-catalog-card|hero-leaf/);
   assert.match(editorialStyles, /\.hero-illustration\s*\{/);
   assert.doesNotMatch(editorialStyles, /\.hero-book(?:\s|\.|\{)|\.hero-open-book|\.hero-catalog-card|\.hero-leaf/);
+}]);
+tests.push(["renders an accessible initial book discovery carousel", async () => {
+  const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
+  try {
+    const publicPages = await vite.ssrLoadModule("/src/pages/PublicPages.jsx");
+    const DiscoveryCarousel = publicPages.DiscoveryCarousel || (() => null);
+    const markup = renderToStaticMarkup(createElement(DiscoveryCarousel, {
+      items: [
+        { id: 1, title: "Rayuela", author: "Julio Cortázar", cover_image_url: "/catalog/1/cover", bookstore: { id: 10, name: "Librería Sur" } },
+        { id: 2, title: "Ficciones", author: "Jorge Luis Borges", cover_image_url: null, bookstore: { id: 20, name: "El Aleph" } },
+      ],
+      loading: false,
+      onOpenBook: () => {},
+    }));
+
+    assert.match(markup, /Algunos libros en Bookia/);
+    assert.match(markup, /aria-label="Libros para explorar"/);
+    assert.match(markup, /aria-label="Ver detalles de Rayuela"/);
+    assert.match(markup, /loading="lazy"/);
+    assert.match(markup, /Julio Cortázar/);
+    assert.match(markup, /Librería Sur/);
+    assert.match(markup, /aria-label="Ver libros anteriores"/);
+    assert.match(markup, /aria-label="Ver más libros"/);
+    assert.match(markup, /aria-label="Ver libros anteriores" disabled=""/);
+    assert.doesNotMatch(markup, /aria-label="Ver más libros" disabled=""/);
+  } finally {
+    await vite.close();
+  }
+}]);
+tests.push(["keeps initial book discovery unobtrusive while loading or empty", async () => {
+  const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
+  try {
+    const publicPages = await vite.ssrLoadModule("/src/pages/PublicPages.jsx");
+    const DiscoveryCarousel = publicPages.DiscoveryCarousel || (() => null);
+    const loadingMarkup = renderToStaticMarkup(createElement(DiscoveryCarousel, { items: [], loading: true, onOpenBook: () => {} }));
+    const emptyMarkup = renderToStaticMarkup(createElement(DiscoveryCarousel, { items: [], loading: false, onOpenBook: () => {} }));
+
+    assert.match(loadingMarkup, /aria-label="Cargando libros para explorar"/);
+    assert.equal(emptyMarkup, "");
+  } finally {
+    await vite.close();
+  }
 }]);
 tests.push(["uses a responsive decorative bookstore facade in the Bookia bookstores heading", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");

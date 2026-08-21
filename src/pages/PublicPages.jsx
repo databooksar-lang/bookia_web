@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { apiFetch, resolveApiUrl } from "../api";
 import { trackAcquisitionEvent, trackReaderFunnelEvent, trackWebInteractionEvent } from "../analyticsState";
@@ -12,7 +12,7 @@ import { buildRegisterPath } from "../registerState";
 import { savePendingReaderAction } from "../pendingReaderAction";
 import { displayBookstoreDescription } from "../profileEditorState";
 import { displayReadingClubDate } from "../readingClubState";
-import { buildGoogleMapsAddressUrl, buildPublicSearchParams, buildReadingClubSearchParams, filterBookstores, getAvailableReadingClubGenres, getBookstoreTags, getVisibleReadingClubs } from "../publicSearchState";
+import { buildGoogleMapsAddressUrl, buildPublicSearchParams, buildReadingClubSearchParams, filterBookstores, getAvailableReadingClubGenres, getBookstoreTags, getDiscoveryCarouselNavigation, getDiscoveryCarouselScrollOptions, getVisibleReadingClubs, selectDiscoveryCarouselItems } from "../publicSearchState";
 import { EmptyState, WhatsAppButton } from "../components/Commerce";
 import { ReadingClubShareMenu } from "../components/ReadingClubShareMenu";
 import { FavoriteBookButton } from "../components/FavoriteBookButton";
@@ -48,22 +48,29 @@ function bookImageGallery(item) {
   return item?.cover_image_url ? [{ id: "cover", url: item.cover_image_url, isPrimary: true }] : [];
 }
 function useFavoriteBooks(me) {
+  const readerKey = me?.reader_profile ? String(me.reader_profile.id ?? me.reader_profile.slug ?? me.id ?? "reader") : null;
   const [favoriteIds, setFavoriteIds] = useState(() => new Set());
   const [pendingIds, setPendingIds] = useState(() => new Set());
   const [followedBookstoreIds, setFollowedBookstoreIds] = useState(() => new Set());
   const [pendingBookstoreIds, setPendingBookstoreIds] = useState(() => new Set());
   const [favoriteError, setFavoriteError] = useState("");
+  const [favoritesLoading, setFavoritesLoading] = useState(() => isReaderAccount(me));
+  const [loadedReaderKey, setLoadedReaderKey] = useState(null);
 
   useEffect(() => {
-    if (!isReaderAccount(me)) { setFavoriteIds(new Set()); setFollowedBookstoreIds(new Set()); setFavoriteError(""); return undefined; }
+    if (!isReaderAccount(me)) { setFavoriteIds(new Set()); setFollowedBookstoreIds(new Set()); setFavoriteError(""); setFavoritesLoading(false); setLoadedReaderKey(null); return undefined; }
     let active = true;
+    setFavoritesLoading(true);
+    setLoadedReaderKey(null);
     apiFetch("/dashboard/favorites").then((data) => {
       if (!active) return;
       setFavoriteIds(createFavoriteBookIds(data));
       setFollowedBookstoreIds(createFollowedBookstoreIds(data));
-    }).catch((error) => { if (active) setFavoriteError(error.message); });
+      setLoadedReaderKey(readerKey);
+      setFavoritesLoading(false);
+    }).catch((error) => { if (active) { setFavoriteError(error.message); setFavoritesLoading(false); } });
     return () => { active = false; };
-  }, [me?.reader_profile]);
+  }, [readerKey]);
 
   function startReaderIntent(type, targetId, bookstoreId) {
     const action = savePendingReaderAction({
@@ -101,7 +108,7 @@ function useFavoriteBooks(me) {
       .finally(() => setPendingBookstoreIds((ids) => toggleFavoriteBookId(ids, bookstore.id, false)));
   }
 
-  return { favoriteIds, pendingIds, followedBookstoreIds, pendingBookstoreIds, favoriteError, toggleFavorite, toggleFollowBookstore };
+  return { favoriteIds, pendingIds, followedBookstoreIds, pendingBookstoreIds, favoriteError, favoritesLoading: isReaderAccount(me) && (favoritesLoading || loadedReaderKey !== readerKey), toggleFavorite, toggleFollowBookstore };
 }
 const EMPTY_SEARCH_FILTERS = { query: "", bookStatus: "", language: "", genreSlug: "" };
 
@@ -109,7 +116,7 @@ function createSearchFilters(filters = {}) {
   return { query: filters.query || "", bookStatus: filters.bookStatus || "", language: filters.language || "", genreSlug: filters.genreSlug || "" };
 }
 
-function HeroSearch({ initialFilters, genres, genresLoading, onSearch }) {
+function HeroSearch({ initialFilters, genres, genresLoading, onSearch, children }) {
   const [filters, setFilters] = useState(() => createSearchFilters(initialFilters));
   useEffect(() => setFilters(createSearchFilters(initialFilters)), [initialFilters]);
   function submit(event) { event.preventDefault(); onSearch(filters); }
@@ -131,8 +138,108 @@ function HeroSearch({ initialFilters, genres, genresLoading, onSearch }) {
         </details>
         <button className="primary-button search-submit" type="submit">Buscar <ArrowIcon /></button>
       </form>
+      {children}
     </section>
   );
+}
+
+export function DiscoveryCarousel({ items = [], loading, onOpenBook }) {
+  const trackRef = useRef(null);
+  const [navigation, setNavigation] = useState(() => ({ canPrevious: false, canNext: items.length > 1 }));
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track || loading || !items.length) return undefined;
+    function updateNavigation() {
+      const nextNavigation = getDiscoveryCarouselNavigation(track);
+      setNavigation((current) => current.canPrevious === nextNavigation.canPrevious && current.canNext === nextNavigation.canNext ? current : nextNavigation);
+    }
+    updateNavigation();
+    track.addEventListener("scroll", updateNavigation, { passive: true });
+    globalThis.addEventListener?.("resize", updateNavigation);
+    return () => {
+      track.removeEventListener("scroll", updateNavigation);
+      globalThis.removeEventListener?.("resize", updateNavigation);
+    };
+  }, [items.length, loading]);
+
+  function scrollTrack(direction) {
+    const track = trackRef.current;
+    if (!track) return;
+    const reduceMotion = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    track.scrollBy(getDiscoveryCarouselScrollOptions({ direction, clientWidth: track.clientWidth, reduceMotion }));
+  }
+
+  function handleTrackKeyDown(event) {
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+    event.preventDefault();
+    scrollTrack(event.key === "ArrowLeft" ? -1 : 1);
+  }
+
+  if (loading) {
+    return (
+      <section className="discovery-carousel discovery-carousel-loading" aria-label="Cargando libros para explorar">
+        <div className="discovery-carousel-heading"><span /><span /></div>
+        <div className="discovery-carousel-skeletons" aria-hidden="true"><span /><span /><span /><span /></div>
+      </section>
+    );
+  }
+  if (!items.length) return null;
+
+  return (
+    <section className="discovery-carousel" aria-labelledby="discovery-carousel-title">
+      <div className="discovery-carousel-heading">
+        <div><p className="section-label">PARA EMPEZAR A EXPLORAR</p><h2 id="discovery-carousel-title">Algunos libros en Bookia</h2></div>
+        <div className="discovery-carousel-controls">
+          <button type="button" aria-label="Ver libros anteriores" disabled={!navigation.canPrevious} onClick={() => scrollTrack(-1)}><ArrowIcon /></button>
+          <button type="button" aria-label="Ver más libros" disabled={!navigation.canNext} onClick={() => scrollTrack(1)}><ArrowIcon /></button>
+        </div>
+      </div>
+      <div ref={trackRef} className="discovery-carousel-track" aria-label="Libros para explorar" tabIndex={0} onKeyDown={handleTrackKeyDown}>
+        {items.map((item) => (
+          <button key={item.id} type="button" className="discovery-book-card" aria-label={`Ver detalles de ${item.title}`} onClick={() => onOpenBook(item)}>
+            <BookCover item={item} className="discovery-book-cover" loading="lazy" />
+            <span className="discovery-book-copy">
+              <strong>{item.title}</strong>
+              <span>{item.author || "Autor no visible"}</span>
+              <small>{item.bookstore?.name || "Librería en Bookia"}</small>
+            </span>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function InitialBookDiscovery({ items, loading, me }) {
+  const [selectedBook, setSelectedBook] = useState(null);
+  const [selectedBookImageUrl, setSelectedBookImageUrl] = useState(null);
+
+  function openBookDetail(item) {
+    trackBookDetailOpened(item, "discovery_carousel");
+    const gallery = bookImageGallery(item);
+    setSelectedBook(item);
+    setSelectedBookImageUrl(gallery[0]?.url ? resolveApiUrl(gallery[0].url) : null);
+  }
+
+  function closeBookDetail() {
+    setSelectedBook(null);
+    setSelectedBookImageUrl(null);
+  }
+
+  useEffect(() => {
+    if (!selectedBook) return undefined;
+    const onKeyDown = (event) => event.key === "Escape" && closeBookDetail();
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [selectedBook]);
+
+  return <><DiscoveryCarousel items={items} loading={loading} onOpenBook={openBookDetail} />{selectedBook ? <DiscoveryBookDetailModal selectedBook={selectedBook} selectedBookImageUrl={selectedBookImageUrl} onImageChange={setSelectedBookImageUrl} onClose={closeBookDetail} me={me} /> : null}</>;
+}
+
+function DiscoveryBookDetailModal({ me, ...modalProps }) {
+  const favorites = useFavoriteBooks(me);
+  return <BookDetailModal {...modalProps} favorites={favorites} isSessionLoading={me === undefined || favorites.favoritesLoading} />;
 }
 
 function SearchResults({ filters, stores, me, onClearFilters }) {
@@ -247,13 +354,13 @@ function SearchResults({ filters, stores, me, onClearFilters }) {
               <WhatsAppButton className="primary-button search-result-whatsapp" whatsappPhone={item.bookstore.whatsapp_phone} message={`Hola, quisiera consultarte por el libro ${item.title} que vi publicado en Bookia.`} onClick={() => trackWhatsAppClicked(item.bookstore, "search_results", item.id)}>
                 <WhatsAppIcon size={19} /> Contactar
               </WhatsAppButton>
-              <FavoriteBookButton itemId={item.id} bookstoreId={item.bookstore?.id} isFavorite={favorites.favoriteIds.has(item.id)} isPending={favorites.pendingIds.has(item.id)} isSessionLoading={me === undefined} onToggle={favorites.toggleFavorite} />
+              <FavoriteBookButton itemId={item.id} bookstoreId={item.bookstore?.id} isFavorite={favorites.favoriteIds.has(item.id)} isPending={favorites.pendingIds.has(item.id)} isSessionLoading={me === undefined || favorites.favoritesLoading} onToggle={favorites.toggleFavorite} />
 
             </article>
           ))}
         </div>
       ) : null}
-      <BookDetailModal selectedBook={selectedBook} selectedBookImageUrl={selectedBookImageUrl} onImageChange={setSelectedBookImageUrl} onClose={closeBookDetail} favorites={favorites} isSessionLoading={me === undefined} />
+      <BookDetailModal selectedBook={selectedBook} selectedBookImageUrl={selectedBookImageUrl} onImageChange={setSelectedBookImageUrl} onClose={closeBookDetail} favorites={favorites} isSessionLoading={me === undefined || favorites.favoritesLoading} />
     </section>
   );
 }
@@ -588,18 +695,23 @@ export function HomePage({ me }) {
   const [storesLoading, setStoresLoading] = useState(true);
   const [draftFilters, setDraftFilters] = useState(EMPTY_SEARCH_FILTERS);
   const [searchFilters, setSearchFilters] = useState(null);
+  const [discoveryItems, setDiscoveryItems] = useState([]);
+  const [discoveryLoading, setDiscoveryLoading] = useState(true);
 
   useEffect(() => {
     apiFetch("/bookstores").then((data) => setStores(data.items)).catch(() => setStores([])).finally(() => setStoresLoading(false));
     apiFetch("/genres").then((data) => setGenres(data.items || [])).catch(() => setGenres([])).finally(() => setGenresLoading(false));
+    apiFetch("/search").then((data) => setDiscoveryItems(selectDiscoveryCarouselItems(data.items || []))).catch(() => setDiscoveryItems([])).finally(() => setDiscoveryLoading(false));
   }, []);
 
   return (
     <>
       <SectionIndex />
-      <HeroSearch initialFilters={draftFilters} genres={genres} genresLoading={genresLoading} onSearch={(nextFilters) => { setDraftFilters(nextFilters); setSearchFilters(nextFilters); setTimeout(() => document.getElementById("resultados")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0); }} />
+      <HeroSearch initialFilters={draftFilters} genres={genres} genresLoading={genresLoading} onSearch={(nextFilters) => { setDraftFilters(nextFilters); setSearchFilters(nextFilters); setTimeout(() => document.getElementById("resultados")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0); }}>
+        {searchFilters === null ? <InitialBookDiscovery items={discoveryItems} loading={discoveryLoading} me={me} /> : null}
+      </HeroSearch>
       <BenefitsStrip benefits={SEARCH_BENEFITS} ariaLabel="Beneficios de la búsqueda de libros" />
-      <SearchResults filters={searchFilters} stores={stores} me={me} onClearFilters={() => { setDraftFilters(EMPTY_SEARCH_FILTERS); setSearchFilters(EMPTY_SEARCH_FILTERS); }} />
+      {searchFilters !== null ? <SearchResults filters={searchFilters} stores={stores} me={me} onClearFilters={() => { setDraftFilters(EMPTY_SEARCH_FILTERS); setSearchFilters(EMPTY_SEARCH_FILTERS); }} /> : null}
       <BookstoresSection stores={stores} loading={storesLoading} />
       <ReadingClubsSection />
       <NewsletterSignup />
@@ -786,6 +898,34 @@ function BookGenreTags({ item }) {
 }
 
 function BookDetailModal({ selectedBook, selectedBookImageUrl, onImageChange, onClose, favorites, isSessionLoading }) {
+  const modalCardRef = useRef(null);
+  const closeButtonRef = useRef(null);
+
+  useEffect(() => {
+    if (!selectedBook) return undefined;
+    const previousFocus = document.activeElement;
+    const focusFrame = globalThis.requestAnimationFrame?.(() => closeButtonRef.current?.focus());
+    return () => {
+      if (focusFrame !== undefined) globalThis.cancelAnimationFrame?.(focusFrame);
+      previousFocus?.focus?.();
+    };
+  }, [selectedBook]);
+
+  function trapDialogFocus(event) {
+    if (event.key !== "Tab") return;
+    const focusable = [...(modalCardRef.current?.querySelectorAll('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])') || [])];
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
   if (!selectedBook) return null;
 
   const selectedBookGallery = bookImageGallery(selectedBook);
@@ -794,8 +934,8 @@ function BookDetailModal({ selectedBook, selectedBookImageUrl, onImageChange, on
 
   return (
     <div className="book-detail-modal" role="dialog" aria-modal="true" aria-labelledby="book-detail-title" onClick={onClose}>
-      <div className="book-detail-modal-card" onClick={(event) => event.stopPropagation()}>
-        <button type="button" className="book-detail-modal-close" onClick={onClose}>Cerrar</button>
+      <div ref={modalCardRef} className="book-detail-modal-card" onClick={(event) => event.stopPropagation()} onKeyDown={trapDialogFocus}>
+        <button ref={closeButtonRef} type="button" className="book-detail-modal-close" onClick={onClose}>Cerrar</button>
         <div className="book-detail-modal-layout">
           <div className="book-detail-gallery">
             {selectedBookImageUrl ? <img className="book-detail-cover" src={selectedBookImageUrl} alt={`Foto de ${selectedBook.title}`} /> : <BookCover item={selectedBook} className="book-detail-cover" />}
@@ -912,7 +1052,7 @@ export function BookstorePage({ slug, me }) {
     <section className="store-page">
       <div className={`store-hero${heroImageUrl ? " has-hero" : ""}`} style={heroImageUrl ? { backgroundImage: `url(${heroImageUrl})` } : undefined} />
       <div className="store-profile-panel">
-        <div className="store-identity"><p className="section-label">Libreria en Bookia</p>{logoUrl ? <img className="store-logo" src={logoUrl} alt={`Logo de ${store.name}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : null}<h1>{store.name}</h1><BookstoreDescription value={displayBookstoreDescription(store.description)} />{!me?.bookstore ? <button type="button" className={`secondary-button bookstore-follow-button${isFollowing ? " is-following" : ""}`} aria-pressed={isFollowing} aria-busy={followPending} disabled={followPending || me === undefined} onClick={() => favorites.toggleFollowBookstore(store)}>{isFollowing ? "Dejar de seguir" : "Seguir"}</button> : null}{bookstoreTags.length > 0 ? <div className="store-tags" aria-label="Etiquetas de la libreria">{bookstoreTags.map((tag) => <span key={tag} className="store-tag">{tag}</span>)}</div> : null}{favorites.favoriteError ? <p className="feedback error bookstore-follow-feedback" role="alert">{favorites.favoriteError}</p> : null}</div>
+        <div className="store-identity"><p className="section-label">Libreria en Bookia</p>{logoUrl ? <img className="store-logo" src={logoUrl} alt={`Logo de ${store.name}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : null}<h1>{store.name}</h1><BookstoreDescription value={displayBookstoreDescription(store.description)} />{!me?.bookstore ? <button type="button" className={`secondary-button bookstore-follow-button${isFollowing ? " is-following" : ""}`} aria-pressed={isFollowing} aria-busy={followPending} disabled={followPending || me === undefined || favorites.favoritesLoading} onClick={() => favorites.toggleFollowBookstore(store)}>{isFollowing ? "Dejar de seguir" : "Seguir"}</button> : null}{bookstoreTags.length > 0 ? <div className="store-tags" aria-label="Etiquetas de la libreria">{bookstoreTags.map((tag) => <span key={tag} className="store-tag">{tag}</span>)}</div> : null}{favorites.favoriteError ? <p className="feedback error bookstore-follow-feedback" role="alert">{favorites.favoriteError}</p> : null}</div>
         {contactItems.length > 0 || hasWhatsApp ? <aside className="store-contact-card"><p className="contact-label">Datos de interes</p>{contactItems.length > 0 ? <dl>{contactItems.map((item) => <div key={item.label}><dt>{item.label}</dt><dd>{item.content}</dd></div>)}</dl> : null}{hasWhatsApp ? <WhatsAppButton whatsappPhone={store.whatsapp_phone} onClick={() => trackWhatsAppClicked(store, "bookstore_profile_contact")}><WhatsAppIcon size={19} /> Hablar por WhatsApp</WhatsAppButton> : null}</aside> : null}
       </div>
       <div className="store-catalog">
@@ -944,7 +1084,7 @@ export function BookstorePage({ slug, me }) {
                       <span className={`status-pill status-${item.availability_status}`}>{bookAvailabilityLabel(item.availability_status)}</span>
                       {item.is_featured ? <span className="status-pill status-featured">Destacado</span> : null}
                     </div>
-                    <FavoriteBookButton itemId={item.id} bookstoreId={store.id} isFavorite={favorites.favoriteIds.has(item.id)} isPending={favorites.pendingIds.has(item.id)} isSessionLoading={me === undefined} onToggle={(itemId, event, bookstoreId) => { event.stopPropagation(); favorites.toggleFavorite(itemId, event, bookstoreId); }} />
+                    <FavoriteBookButton itemId={item.id} bookstoreId={store.id} isFavorite={favorites.favoriteIds.has(item.id)} isPending={favorites.pendingIds.has(item.id)} isSessionLoading={me === undefined || favorites.favoritesLoading} onToggle={(itemId, event, bookstoreId) => { event.stopPropagation(); favorites.toggleFavorite(itemId, event, bookstoreId); }} />
                   </div>
                   <h3>{item.title}</h3>
                   <p>{item.author || "Autor no visible"}</p>
@@ -965,7 +1105,7 @@ export function BookstorePage({ slug, me }) {
           </div>
         </section>
       ) : null}
-      <BookDetailModal selectedBook={selectedBook} selectedBookImageUrl={selectedBookImageUrl} onImageChange={setSelectedBookImageUrl} onClose={closeBookDetail} favorites={favorites} isSessionLoading={me === undefined} />
+      <BookDetailModal selectedBook={selectedBook} selectedBookImageUrl={selectedBookImageUrl} onImageChange={setSelectedBookImageUrl} onClose={closeBookDetail} favorites={favorites} isSessionLoading={me === undefined || favorites.favoritesLoading} />
     </section>
   );
 }

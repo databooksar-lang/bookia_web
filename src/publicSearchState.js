@@ -17,6 +17,52 @@ export function buildPublicSearchParams(filters = {}) {
 
   return params;
 }
+
+export function selectDiscoveryCarouselItems(items = [], limit = 12) {
+  const requestedLimit = Number.isFinite(limit) ? Math.max(0, Math.floor(limit)) : 12;
+  if (requestedLimit === 0) return [];
+
+  const selected = [];
+  const selectedBookIds = new Set();
+  const selectedBookstores = new Set();
+
+  for (const item of items) {
+    const bookId = item?.id;
+    if (bookId === undefined || bookId === null || selectedBookIds.has(bookId)) continue;
+    const bookstoreKey = item?.bookstore?.id ?? item?.bookstore?.slug ?? `book-${bookId}`;
+    if (selectedBookstores.has(bookstoreKey)) continue;
+    selected.push(item);
+    selectedBookIds.add(bookId);
+    selectedBookstores.add(bookstoreKey);
+    if (selected.length === requestedLimit) return selected;
+  }
+
+  for (const item of items) {
+    const bookId = item?.id;
+    if (bookId === undefined || bookId === null || selectedBookIds.has(bookId)) continue;
+    selected.push(item);
+    selectedBookIds.add(bookId);
+    if (selected.length === requestedLimit) break;
+  }
+
+  return selected;
+}
+
+export function getDiscoveryCarouselScrollOptions({ direction, clientWidth, reduceMotion }) {
+  return {
+    left: direction * Math.min(clientWidth * 0.85, 720),
+    behavior: reduceMotion ? "auto" : "smooth",
+  };
+}
+
+export function getDiscoveryCarouselNavigation({ scrollLeft, scrollWidth, clientWidth }) {
+  const boundaryTolerance = 4;
+  const maximumScroll = Math.max(0, scrollWidth - clientWidth);
+  return {
+    canPrevious: scrollLeft > boundaryTolerance,
+    canNext: maximumScroll > boundaryTolerance && scrollLeft < maximumScroll - boundaryTolerance,
+  };
+}
 function normalizeBookstoreSearchValue(value) {
   return String(value || "")
     .normalize("NFD")
