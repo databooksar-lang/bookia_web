@@ -510,8 +510,7 @@ export function ReadingClubDetailModal({ selectedClub, host = null, hostPath = "
             </dl>
             <div className="reading-club-detail-actions">
               {hostPath && hostName ? <AppLink className="secondary-button" href={hostPath}>{profileLabel}</AppLink> : null}
-              <button type="button" className="primary-button" onClick={() => { setInterestOpen(true); setInterestStatus(""); setInterestError(""); }}>Estoy interesado/a en anotarme</button>
-              {selectedClub.external_url ? <a className="primary-button" href={selectedClub.external_url} target="_blank" rel="noopener noreferrer">Ver más sobre este encuentro <ArrowIcon size={15} /></a> : null}
+              <button type="button" className="primary-button" onClick={() => { setInterestOpen(true); setInterestStatus(""); setInterestError(""); }}>Estoy interesado@</button>
             </div>
             {interestStatus ? <p className="feedback reading-club-interest-status" role="status">{interestStatus}</p> : null}
             {interestOpen ? <form className="reading-club-interest-form" onSubmit={submitInterest}>
