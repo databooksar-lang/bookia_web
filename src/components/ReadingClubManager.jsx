@@ -25,6 +25,8 @@ export function ReadingClubManager({ host, hostName, source, onClubCountChange, 
   const [draftClub, setDraftClub] = useState(createReadingClubDraft());
   const [isSaving, setIsSaving] = useState(false);
   const [coverBusyId, setCoverBusyId] = useState(null);
+  const [interestsByClub, setInterestsByClub] = useState({});
+  const [interestsLoadingId, setInterestsLoadingId] = useState(null);
 
   function loadClubs() {
     setClubsLoading(true);
@@ -70,6 +72,17 @@ export function ReadingClubManager({ host, hostName, source, onClubCountChange, 
   }
 
   function updateClub(updatedClub) { setClubs((current) => current.map((club) => club.id === updatedClub.id ? updatedClub : club)); }
+  function toggleInterests(clubId) {
+    if (Object.hasOwn(interestsByClub, clubId)) {
+      setInterestsByClub((current) => { const next = { ...current }; delete next[clubId]; return next; });
+      return;
+    }
+    setInterestsLoadingId(clubId);
+    apiFetch(`/dashboard/reading-clubs/${clubId}/interests`)
+      .then((data) => setInterestsByClub((current) => ({ ...current, [clubId]: data.items || [] })))
+      .catch((fetchError) => setError(fetchError.message || "No pudimos cargar las personas interesadas."))
+      .finally(() => setInterestsLoadingId(null));
+  }
   function uploadCover(club, file) { if (!file || coverBusyId !== null) return; const form = new FormData(); form.append("cover", file); setCoverBusyId(club.id); apiFetch(`/dashboard/reading-clubs/${club.id}/cover`, { method: "POST", body: form }).then((data) => { updateClub(data.item); setError(""); }).catch((fetchError) => setError(fetchError.message)).finally(() => setCoverBusyId(null)); }
   function removeCover(club) { if (coverBusyId !== null) return; setCoverBusyId(club.id); apiFetch(`/dashboard/reading-clubs/${club.id}/cover`, { method: "DELETE" }).then((data) => { updateClub(data.item); setError(""); }).catch((fetchError) => setError(fetchError.message)).finally(() => setCoverBusyId(null)); }
 
@@ -102,7 +115,8 @@ export function ReadingClubManager({ host, hostName, source, onClubCountChange, 
           <label className="dashboard-field-wide">Descripción *<textarea value={draftClub.description} onChange={(event) => setDraftClub((current) => ({ ...current, description: event.target.value }))} rows={4} required /></label>
           <label className="dashboard-checkbox-field"><input type="checkbox" checked={draftClub.is_visible} onChange={(event) => setDraftClub((current) => ({ ...current, is_visible: event.target.checked }))} /> Publicar en perfil público</label>
         </div> : <><div className="catalog-item-summary reading-club-summary">{club.cover_url ? <img className="reading-club-cover" src={resolveApiUrl(club.cover_url)} alt={`Portada de ${club.title}`} /> : null}<span className={`status-pill${club.is_visible ? "" : " status-hidden"}`}>{club.is_visible ? "Publicado" : "Oculto"}</span><div><span className="catalog-id">{club.genre?.name || "Sin género"}</span><h3>{club.title}</h3><p>{displayReadingClubDate(club.meeting_date)}{club.location ? ` / ${club.location}` : ""}</p></div></div><p className="catalog-item-description">{club.description}</p></>}
-        <div className="card-actions"><div className="card-actions-main">{isEditing ? <button type="button" className="secondary-button" onClick={cancelEditing} disabled={isSaving}>Cancelar</button> : <><button type="button" className="secondary-button" onClick={() => startEditing(club)} disabled={isSaving}>Editar</button><label className="secondary-button">{coverBusyId === club.id ? "Subiendo..." : "Subir portada"}<input className="visually-hidden" type="file" accept="image/png,image/jpeg,image/webp" disabled={coverBusyId !== null} onChange={(event) => { uploadCover(club, event.target.files?.[0]); event.target.value = ""; }} /></label>{club.cover_url ? <button type="button" className="secondary-button" onClick={() => removeCover(club)} disabled={coverBusyId !== null}>Quitar portada</button> : null}{club.is_visible ? <ReadingClubShareMenu club={club} host={host} hostName={hostName} bookstoreId={host?.type === "bookstore" ? host.id : null} source={source} /> : null}</>}{isEditing ? <button type="button" className="primary-button" onClick={() => saveClub(club.id)} disabled={isSaving}>{isSaving ? "Guardando..." : "Guardar"}</button> : null}</div></div>
+        <div className="card-actions"><div className="card-actions-main">{isEditing ? <button type="button" className="secondary-button" onClick={cancelEditing} disabled={isSaving}>Cancelar</button> : <><button type="button" className="secondary-button" onClick={() => startEditing(club)} disabled={isSaving}>Editar</button><label className="secondary-button">{coverBusyId === club.id ? "Subiendo..." : "Subir portada"}<input className="visually-hidden" type="file" accept="image/png,image/jpeg,image/webp" disabled={coverBusyId !== null} onChange={(event) => { uploadCover(club, event.target.files?.[0]); event.target.value = ""; }} /></label>{club.cover_url ? <button type="button" className="secondary-button" onClick={() => removeCover(club)} disabled={coverBusyId !== null}>Quitar portada</button> : null}<button type="button" className="secondary-button" onClick={() => toggleInterests(club.id)} disabled={interestsLoadingId === club.id}>{interestsLoadingId === club.id ? "Cargando..." : interestsByClub[club.id] ? "Ocultar personas interesadas" : "Ver personas interesadas"}</button>{club.is_visible ? <ReadingClubShareMenu club={club} host={host} hostName={hostName} bookstoreId={host?.type === "bookstore" ? host.id : null} source={source} /> : null}</>}{isEditing ? <button type="button" className="primary-button" onClick={() => saveClub(club.id)} disabled={isSaving}>{isSaving ? "Guardando..." : "Guardar"}</button> : null}</div></div>
+        {interestsByClub[club.id] ? <section className="reading-club-interests" aria-label={`Personas interesadas en ${club.title}`}><h4>Personas interesadas</h4>{interestsByClub[club.id].length === 0 ? <p>Todavía no recibiste solicitudes.</p> : <ul>{interestsByClub[club.id].map((interest) => <li key={interest.id}><strong>{interest.name}</strong><a href={`mailto:${interest.email}`}>{interest.email}</a><a href={`https://wa.me/${interest.phone}`} target="_blank" rel="noopener noreferrer">{interest.phone}</a><time dateTime={interest.created_at}>{new Date(interest.created_at).toLocaleDateString("es-AR")}</time></li>)}</ul>}</section> : null}
       </article>;
     })}</div> : null}
   </div>;
