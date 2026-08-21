@@ -293,6 +293,8 @@ export function ReadingClubPublicCard({
   showShare = false,
   shared = false,
   onOpenDetails = null,
+  onOpenInterest = null,
+  showInterest = false,
   hideExternalLink = false,
 }) {
   const hostName = host?.type === "bookstore" ? host.name : host?.display_name;
@@ -317,6 +319,7 @@ export function ReadingClubPublicCard({
     {onOpenDetails ? <button type="button" className="reading-club-public-card-content reading-club-link reading-club-detail-trigger" aria-label={`Ver detalles de ${club.title}`} onClick={onOpenDetails}>{content}</button> : hostPath ? <AppLink className="reading-club-public-card-content reading-club-link" href={hostPath}>{content}</AppLink> : <div className="reading-club-public-card-content">{content}</div>}
     {onOpenDetails || hostPath || showShare || hasExternalLink ? <div className="reading-club-public-actions">
       {onOpenDetails ? club.external_url ? <a className="secondary-button reading-club-card-action" href={club.external_url} target="_blank" rel="noopener noreferrer">+ info</a> : <button type="button" className="secondary-button reading-club-card-action" onClick={onOpenDetails}>+ info</button> : null}
+      {showInterest && onOpenInterest ? <button type="button" className="primary-button reading-club-card-action" onClick={onOpenInterest}>Estoy interesado@</button> : null}
       {hostPath && hostName ? <AppLink className="secondary-button reading-club-card-action" href={hostPath}>{profileLabel}</AppLink> : null}
       {showShare ? <ReadingClubShareMenu club={club} host={host} hostName={hostName} bookstoreId={bookstoreId} source={source} /> : null}
       {hasExternalLink ? <a className="reading-club-external-link" href={club.external_url} target="_blank" rel="noopener noreferrer">Ver más sobre este encuentro <ArrowIcon size={15} /></a> : null}
@@ -387,6 +390,7 @@ function ReadingClubsSection() {
   const [selectedClub, setSelectedClub] = useState(null);
   const [selectedClubHost, setSelectedClubHost] = useState(null);
   const [selectedClubHostPath, setSelectedClubHostPath] = useState("");
+  const [interestOpen, setInterestOpen] = useState(false);
 
   useEffect(() => {
     const params = buildReadingClubSearchParams(genreSlug);
@@ -413,12 +417,21 @@ function ReadingClubsSection() {
     setSelectedClub(null);
     setSelectedClubHost(null);
     setSelectedClubHostPath("");
+    setInterestOpen(false);
   }
 
   function openClubDetails(club, host, hostPath) {
     setSelectedClub(club);
     setSelectedClubHost(host);
     setSelectedClubHostPath(hostPath);
+    setInterestOpen(false);
+  }
+
+  function openClubInterest(club, host, hostPath) {
+    setSelectedClub(club);
+    setSelectedClubHost(host);
+    setSelectedClubHostPath(hostPath);
+    setInterestOpen(true);
   }
 
   useEffect(() => {
@@ -451,32 +464,31 @@ function ReadingClubsSection() {
           {visibleClubs.map((club) => {
             const host = club.host;
             const hostPath = host?.slug ? (host.type === "bookstore" ? `/bookstores/${host.slug}` : `/readers/${host.slug}`) : "";
-            return <ReadingClubPublicCard key={club.id} club={club} host={host} hostPath={hostPath} bookstoreId={host?.type === "bookstore" ? club.bookstore_id : null} source="public_reading_clubs" showOrganizer showShare onOpenDetails={() => openClubDetails(club, host, hostPath)} hideExternalLink />;
+            return <ReadingClubPublicCard key={club.id} club={club} host={host} hostPath={hostPath} bookstoreId={host?.type === "bookstore" ? club.bookstore_id : null} source="public_reading_clubs" showOrganizer showInterest showShare onOpenDetails={() => openClubDetails(club, host, hostPath)} onOpenInterest={() => openClubInterest(club, host, hostPath)} hideExternalLink />;
           })}
         </div>
       ) : null}
       {canExpand ? <button type="button" className="secondary-button discovery-expand-button" aria-controls="reading-clubs-results" aria-expanded={showAll} onClick={() => setShowAll((current) => !current)}>{showAll ? "Mostrar menos" : "Ver todos los clubes"}</button> : null}
       <BenefitsStrip className="reading-clubs-benefits-strip" benefits={READING_CLUB_BENEFITS} ariaLabel="Beneficios de los clubes de lectura" />
-      <ReadingClubDetailModal selectedClub={selectedClub} host={selectedClubHost} hostPath={selectedClubHostPath} onClose={closeClubDetails} />
+      <ReadingClubDetailModal selectedClub={selectedClub} host={selectedClubHost} hostPath={selectedClubHostPath} initialInterestOpen={interestOpen} onClose={closeClubDetails} />
     </section>
   );
 }
 
-export function ReadingClubDetailModal({ selectedClub, host = null, hostPath = "", onClose }) {
+export function ReadingClubDetailModal({ selectedClub, host = null, hostPath = "", initialInterestOpen = false, onClose }) {
   const [interestOpen, setInterestOpen] = useState(false);
   const [interestDraft, setInterestDraft] = useState({ name: "", email: "", phone: "", privacy_accepted: false });
   const [interestStatus, setInterestStatus] = useState("");
   const [interestError, setInterestError] = useState("");
   const [interestSaving, setInterestSaving] = useState(false);
   useEffect(() => {
-    setInterestOpen(false);
+    setInterestOpen(initialInterestOpen);
     setInterestStatus("");
     setInterestError("");
     setInterestDraft({ name: "", email: "", phone: "", privacy_accepted: false });
-  }, [selectedClub?.id]);
+  }, [selectedClub?.id, initialInterestOpen]);
   if (!selectedClub) return null;
   const hostName = host?.type === "bookstore" ? host.name : host?.display_name;
-  const profileLabel = "Ver perfil";
 
   function submitInterest(event) {
     event.preventDefault();
@@ -508,10 +520,6 @@ export function ReadingClubDetailModal({ selectedClub, host = null, hostPath = "
               <div><dt>Lugar</dt><dd>{selectedClub.location || "Lugar a confirmar"}</dd></div>
               <div><dt>Organiza</dt><dd>{hostName || "Anfitrión de Bookia"}</dd></div>
             </dl>
-            <div className="reading-club-detail-actions">
-              {hostPath && hostName ? <AppLink className="secondary-button" href={hostPath}>{profileLabel}</AppLink> : null}
-              <button type="button" className="primary-button" onClick={() => { setInterestOpen(true); setInterestStatus(""); setInterestError(""); }}>Estoy interesado@</button>
-            </div>
             {interestStatus ? <p className="feedback reading-club-interest-status" role="status">{interestStatus}</p> : null}
             {interestOpen ? <form className="reading-club-interest-form" onSubmit={submitInterest}>
               <p>Esto no confirma una vacante. Compartiremos tus datos únicamente con el anfitrión para que pueda contactarte.</p>
