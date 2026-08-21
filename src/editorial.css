@@ -6154,3 +6154,225 @@ textarea:focus {
     width: 100%;
   }
 }
+
+/* Initial public book discovery */
+.discovery-carousel {
+  grid-column: 1 / -1;
+  min-width: 0;
+  width: min(100%, 1180px);
+  margin: -2px auto 0;
+}
+
+.discovery-carousel-heading {
+  min-height: 54px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.discovery-carousel-heading .section-label {
+  margin-bottom: 5px;
+}
+
+.discovery-carousel-heading h2 {
+  margin: 0;
+  color: var(--forest-deep);
+  font-family: "Fraunces", Georgia, serif;
+  font-size: clamp(1.45rem, 2.5vw, 2rem);
+  line-height: 1.05;
+}
+
+.discovery-carousel-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.discovery-carousel-controls button {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  color: var(--forest);
+  background: rgba(255, 250, 240, .82);
+  border: 1px solid rgba(18, 63, 50, .2);
+  border-radius: 999px;
+  transition: color 160ms ease, background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.discovery-carousel-controls button:first-child svg {
+  transform: rotate(180deg);
+}
+
+.discovery-carousel-controls button:hover {
+  color: var(--cream);
+  background: var(--forest);
+  border-color: var(--forest);
+  transform: translateY(-1px);
+}
+
+.discovery-carousel-controls button:focus-visible,
+.discovery-carousel-track:focus-visible,
+.discovery-book-card:focus-visible {
+  outline: 3px solid rgba(18, 63, 50, .3);
+  outline-offset: 3px;
+}
+
+.discovery-carousel-track {
+  padding: 3px 3px 12px;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: clamp(168px, 18vw, 208px);
+  gap: 14px;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: inline mandatory;
+  scrollbar-color: rgba(18, 63, 50, .3) transparent;
+  scrollbar-width: thin;
+}
+
+.discovery-book-card {
+  min-width: 0;
+  padding: 10px;
+  display: grid;
+  align-content: start;
+  gap: 11px;
+  color: var(--ink);
+  text-align: left;
+  background: rgba(255, 250, 240, .74);
+  border: 1px solid rgba(18, 63, 50, .13);
+  border-radius: 15px;
+  scroll-snap-align: start;
+  box-shadow: 0 9px 24px rgba(11, 45, 36, .08);
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.discovery-book-card:hover {
+  border-color: rgba(18, 63, 50, .3);
+  box-shadow: 0 13px 28px rgba(11, 45, 36, .13);
+  transform: translateY(-3px);
+}
+
+.discovery-book-cover {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  display: grid;
+  place-items: center;
+  object-fit: cover;
+  color: rgba(255, 250, 240, .76);
+  background: var(--forest);
+  border-radius: 5px 10px 10px 5px;
+  box-shadow: 5px 7px 14px rgba(11, 45, 36, .16);
+}
+
+.discovery-book-copy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.discovery-book-copy span,
+.discovery-book-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.discovery-book-copy strong {
+  min-height: 2.3em;
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--forest-deep);
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 1.06rem;
+  line-height: 1.15;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.discovery-book-copy span {
+  color: var(--muted);
+  font-size: .82rem;
+}
+
+.discovery-book-copy small {
+  margin-top: 3px;
+  color: var(--coral-dark);
+  font-size: .69rem;
+  font-weight: 800;
+}
+
+.discovery-carousel-loading {
+  min-height: 330px;
+}
+
+.discovery-carousel-loading .discovery-carousel-heading span,
+.discovery-carousel-skeletons span {
+  display: block;
+  background: linear-gradient(90deg, rgba(18, 63, 50, .07), rgba(255, 255, 255, .6), rgba(18, 63, 50, .07));
+  background-size: 200% 100%;
+  border-radius: 12px;
+  animation: discovery-skeleton 1.4s ease-in-out infinite;
+}
+
+.discovery-carousel-loading .discovery-carousel-heading span:first-child {
+  width: 220px;
+  height: 28px;
+}
+
+.discovery-carousel-loading .discovery-carousel-heading span:last-child {
+  width: 88px;
+  height: 40px;
+}
+
+.discovery-carousel-skeletons {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.discovery-carousel-skeletons span {
+  height: 250px;
+}
+
+@keyframes discovery-skeleton {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+
+@media (max-width: 620px) {
+  .discovery-carousel-heading {
+    align-items: center;
+  }
+
+  .discovery-carousel-track {
+    grid-auto-columns: minmax(154px, 46vw);
+    padding-right: 24px;
+  }
+
+  .discovery-carousel-controls button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .discovery-carousel-skeletons {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .discovery-carousel-skeletons span:nth-child(n + 3) {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .discovery-carousel-loading .discovery-carousel-heading span,
+  .discovery-carousel-skeletons span {
+    animation: none;
+  }
+
+  .discovery-book-card,
+  .discovery-carousel-controls button {
+    transition: none;
+  }
+}

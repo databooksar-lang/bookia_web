@@ -3,11 +3,11 @@ import { useState } from "react";
 import { resolveApiUrl } from "../api";
 import { BookIcon } from "./Icons";
 
-export function BookCover({ item, className = "book-cover", interactive = false, onOpen }) {
+export function BookCover({ item, className = "book-cover", interactive = false, onOpen, loading }) {
   const [broken, setBroken] = useState(false);
   const coverUrl = item.cover_image_url ? resolveApiUrl(item.cover_image_url) : null;
   const image = coverUrl && !broken ? (
-    <img className={className} src={coverUrl} alt={`Tapa de ${item.title}`} onError={() => setBroken(true)} />
+    <img className={className} src={coverUrl} alt={`Tapa de ${item.title}`} loading={loading} decoding="async" onError={() => setBroken(true)} />
   ) : (
     <span className={`${className} book-cover-placeholder`} aria-label={`Sin tapa disponible para ${item.title}`}>
       <BookIcon size={24} />

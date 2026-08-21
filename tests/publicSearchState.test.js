@@ -43,6 +43,66 @@ export function registerPublicSearchStateTests(register) {
   ];
   const getBookstoreTags = publicSearchState.getBookstoreTags || (() => null);
   const filterBookstores = publicSearchState.filterBookstores || (() => null);
+  const selectDiscoveryCarouselItems = publicSearchState.selectDiscoveryCarouselItems || (() => []);
+  const getDiscoveryCarouselScrollOptions = publicSearchState.getDiscoveryCarouselScrollOptions || (() => ({}));
+  const getDiscoveryCarouselNavigation = publicSearchState.getDiscoveryCarouselNavigation || (() => ({}));
+
+  register("selects recent carousel books from distinct bookstores before filling remaining slots", () => {
+    const items = [
+      { id: 1, bookstore: { id: 10 } },
+      { id: 2, bookstore: { id: 10 } },
+      { id: 3, bookstore: { id: 20 } },
+      { id: 4, bookstore: { id: 20 } },
+      { id: 5, bookstore: { id: 30 } },
+    ];
+
+    assert.deepEqual(
+      selectDiscoveryCarouselItems(items, 4).map((item) => item.id),
+      [1, 3, 5, 2],
+    );
+  });
+
+  register("deduplicates carousel books and never exceeds its requested limit", () => {
+    const items = [
+      { id: 1, bookstore: { id: 10 } },
+      { id: 1, bookstore: { id: 10 } },
+      { id: 2, bookstore: { id: 10 } },
+      { id: 3, bookstore: { id: 20 } },
+      { id: 4, bookstore: { id: 30 } },
+    ];
+
+    assert.deepEqual(
+      selectDiscoveryCarouselItems(items, 3).map((item) => item.id),
+      [1, 3, 4],
+    );
+    assert.deepEqual(selectDiscoveryCarouselItems(items, 0), []);
+  });
+
+  register("builds bounded carousel scrolling for direction and reduced-motion preferences", () => {
+    assert.deepEqual(
+      getDiscoveryCarouselScrollOptions({ direction: 1, clientWidth: 1000, reduceMotion: false }),
+      { left: 720, behavior: "smooth" },
+    );
+    assert.deepEqual(
+      getDiscoveryCarouselScrollOptions({ direction: -1, clientWidth: 400, reduceMotion: true }),
+      { left: -340, behavior: "auto" },
+    );
+  });
+
+  register("disables carousel controls at scroll boundaries with snap-padding tolerance", () => {
+    assert.deepEqual(
+      getDiscoveryCarouselNavigation({ scrollLeft: 3, scrollWidth: 2029, clientWidth: 371 }),
+      { canPrevious: false, canNext: true },
+    );
+    assert.deepEqual(
+      getDiscoveryCarouselNavigation({ scrollLeft: 1656, scrollWidth: 2029, clientWidth: 371 }),
+      { canPrevious: true, canNext: false },
+    );
+    assert.deepEqual(
+      getDiscoveryCarouselNavigation({ scrollLeft: 0, scrollWidth: 300, clientWidth: 300 }),
+      { canPrevious: false, canNext: false },
+    );
+  });
 
   register("derives each bookstore tag once for the filter", () => {
     assert.deepEqual(getBookstoreTags(bookstores), ["Generalista", "Infantil", "Poes\u00EDa", "Usados"]);
