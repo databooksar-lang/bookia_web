@@ -1,16 +1,19 @@
 import assert from "node:assert/strict";
 
-import { buildReadingClubInstagramStoryCoverPath, buildReadingClubInstagramStoryMetadata, buildReadingClubShareMessage, buildReadingClubShareUrl, createReadingClubInstagramStoryFile, getSharedReadingClubId, resolveReadingClubInstagramStoryCoverUrl } from "../src/readingClubSharingState.js";
+import * as readingClubSharingState from "../src/readingClubSharingState.js";
+
+const { buildReadingClubInstagramStoryCoverPath, buildReadingClubInstagramStoryMetadata, buildReadingClubShareMessage, buildReadingClubShareUrl, createReadingClubInstagramStoryFile, getSharedReadingClubId, resolveReadingClubInstagramStoryCoverUrl } = readingClubSharingState;
 
 const PNG_HEADER = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 2, 88, 0, 0, 3, 132]);
 
 function createStoryDocument({ image = null, logo = null } = {}) {
   const drawCalls = [];
   const rectangles = [];
+  const styledRectangles = [];
   const text = [];
   const textCalls = [];
   const context = {
-    beginPath() {}, fillRect(...args) { rectangles.push(args); }, fillText(value, x, y) { text.push(value); textCalls.push({ value, x, y }); }, lineTo() {}, moveTo() {}, restore() {}, save() {}, stroke() {}, strokeRect() {},
+    beginPath() {}, clip() {}, closePath() {}, fill() {}, fillRect(...args) { rectangles.push(args); styledRectangles.push({ args, fillStyle: this.fillStyle }); }, fillText(value, x, y) { text.push(value); textCalls.push({ value, x, y, fillStyle: this.fillStyle, font: this.font, textAlign: this.textAlign }); }, lineTo() {}, moveTo() {}, quadraticCurveTo() {}, restore() {}, save() {}, stroke() {}, strokeRect() {},
     drawImage(...args) { drawCalls.push(args); },
     measureText(value) { return { width: String(value).length * 20 }; },
   };
@@ -19,6 +22,7 @@ function createStoryDocument({ image = null, logo = null } = {}) {
   return {
     drawCalls,
     rectangles,
+    styledRectangles,
     text,
     textCalls,
     createElement(kind) {
@@ -70,7 +74,8 @@ export function registerReadingClubSharingStateTests(register) {
         date: "29/08/2026",
         location: "Online",
         hostName: "Belén",
-        callToAction: "MÁS DETALLES EN BOOKIA",
+        callToAction: "SUMATE AL CLUB EN BOOKIA",
+        linkHint: "AGREGÁ EL STICKER ENLACE",
       },
     );
   });
@@ -124,7 +129,10 @@ export function registerReadingClubSharingStateTests(register) {
     assert.ok(documentLike.drawCalls.some((args) => args[0] === cover && args.length === 9));
     assert.deepEqual(file.type, "image/png");
     assert.match(file.name, /^bookia-club-book-talk-to-reach-japan-alice-munro\.png$/);
-    ["NARRATIVA", "29/08/2026", "ONLINE", "BELÉN", "MÁS DETALLES EN BOOKIA"].forEach((value) => assert.ok(documentLike.text.includes(value)));
+    ["NARRATIVA", "29/08/2026", "ONLINE", "BELÉN", "SUMATE AL CLUB EN BOOKIA", "AGREGÁ EL STICKER ENLACE"].forEach((value) => assert.ok(documentLike.text.includes(value)));
+    const importantText = documentLike.textCalls.filter(({ value }) => String(value).trim());
+    assert.ok(importantText.every(({ y }) => y >= 220 && y <= 1640));
+    assert.ok(documentLike.styledRectangles.some(({ args: [x, y, width, height], fillStyle }) => x >= 140 && y >= 1480 && x + width <= 940 && y + height <= 1640 && fillStyle === "#e85d3f"));
   });
 
   register("creates the editorial fallback when a reading-club Story has no usable cover", async () => {
@@ -146,7 +154,7 @@ export function registerReadingClubSharingStateTests(register) {
     assert.equal(file.type, "image/png");
   });
 
-  register("omits the cover frame and gives the description more space when a Story has no cover", async () => {
+  register("keeps the editorial fallback and all its content inside the Instagram safe area", async () => {
     const documentLike = createStoryDocument();
     const description = "Una invitación extensa para conversar sobre una lectura, intercambiar ideas, descubrir autores y llegar al encuentro con nuevas preguntas para compartir entre todas las personas del club.";
 
@@ -157,9 +165,10 @@ export function registerReadingClubSharingStateTests(register) {
       FileCtor: FakeFile,
     });
 
-    assert.ok(!documentLike.rectangles.some(([x, y, width, height]) => x === 180 && y === 242 && width === 720 && height === 700));
-    assert.ok(documentLike.textCalls.some(({ value, y }) => value === "Club sin portada" && y < 500));
-    assert.ok(documentLike.textCalls.filter(({ y }) => y >= 520 && y < 1260).length >= 4);
+    assert.ok(documentLike.text.includes("CLUB DE LECTURA"));
+    assert.ok(documentLike.textCalls.some(({ value, y }) => value === "Club sin portada" && y >= 1000));
+    assert.ok(documentLike.textCalls.filter(({ value }) => String(value).trim()).every(({ y }) => y >= 220 && y <= 1640));
+    assert.ok(documentLike.styledRectangles.some(({ args: [x, y, width, height], fillStyle }) => x >= 140 && y >= 1480 && x + width <= 940 && y + height <= 1640 && fillStyle === "#e85d3f"));
   });
 
   register("keeps a long reading-club Story genre inside its badge", async () => {
@@ -209,6 +218,38 @@ export function registerReadingClubSharingStateTests(register) {
       FileCtor: FakeFile,
     });
 
-    assert.ok(documentLike.drawCalls.some((args) => args[0] === logo && args.length === 5 && args.slice(1).every((value, index) => value === [860, 44, 112, 112][index])));
+    assert.ok(documentLike.drawCalls.some((args) => args[0] === logo && args.length === 5 && args.slice(1).every((value, index) => value === [828, 220, 112, 112][index])));
+  });
+
+  register("copies the club URL before creating and sharing the Instagram Story", async () => {
+    const events = [];
+    const result = await readingClubSharingState.shareReadingClubInstagramStory({
+      url: "https://bookia.app/bookstores/pasaje?club=7",
+      title: "Novelas del sur",
+      copyUrl: async (url) => { events.push(["copy", url]); },
+      createFile: async () => { events.push(["create"]); return { name: "club.png" }; },
+      shareFile: async ({ file, title }) => { events.push(["share", file.name, title]); return "shared"; },
+    });
+
+    assert.deepEqual(events, [
+      ["copy", "https://bookia.app/bookstores/pasaje?club=7"],
+      ["create"],
+      ["share", "club.png", "Novelas del sur"],
+    ]);
+    assert.deepEqual(result, { result: "shared", linkCopied: true });
+  });
+
+  register("continues creating the Instagram Story when copying its link fails", async () => {
+    const events = [];
+    const result = await readingClubSharingState.shareReadingClubInstagramStory({
+      url: "https://bookia.app/readers/ana?club=8",
+      title: "Lecturas de agosto",
+      copyUrl: async () => { events.push("copy"); throw new Error("clipboard denied"); },
+      createFile: async () => { events.push("create"); return { name: "club.png" }; },
+      shareFile: async () => { events.push("share"); return "downloaded"; },
+    });
+
+    assert.deepEqual(events, ["copy", "create", "share"]);
+    assert.deepEqual(result, { result: "downloaded", linkCopied: false });
   });
 }

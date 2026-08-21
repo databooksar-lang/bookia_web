@@ -4,7 +4,7 @@ import { trackWebInteractionEvent } from "../analyticsState";
 import { resolveApiUrl } from "../api";
 import { basePath } from "../routing";
 import { buildTelegramShareHref, buildWhatsAppShareHref } from "../bookSharingState";
-import { buildReadingClubShareMessage, buildReadingClubShareUrl, copyReadingClubShareUrl, createReadingClubInstagramStoryFile, resolveReadingClubInstagramStoryCoverUrl, shareInstagramStoryFile } from "../readingClubSharingState";
+import { buildReadingClubShareMessage, buildReadingClubShareUrl, copyReadingClubShareUrl, createReadingClubInstagramStoryFile, resolveReadingClubInstagramStoryCoverUrl, shareReadingClubInstagramStory } from "../readingClubSharingState";
 import { InstagramIcon, ShareIcon, TelegramIcon, WhatsAppIcon } from "./Icons";
 
 function getTrustedApiOrigins() {
@@ -45,14 +45,21 @@ export function ReadingClubShareMenu({ club, host, hostName, bookstoreId, source
         trustedOrigins: getTrustedApiOrigins(),
         resolveUrl: resolveApiUrl,
       });
-      const file = await createReadingClubInstagramStoryFile({ club, hostName, coverUrl });
-      const result = await shareInstagramStoryFile({ file, title: club.title });
+      const { result, linkCopied } = await shareReadingClubInstagramStory({
+        url: data.url,
+        title: club.title,
+        createFile: () => createReadingClubInstagramStoryFile({ club, hostName, coverUrl }),
+      });
       if (result === "cancelled") {
-        setMessage("Se cancel\u00f3 el compartir de la Story.");
+        setMessage(linkCopied ? "Se cancel\u00f3 el compartir de la Story. La URL del club qued\u00f3 copiada." : "Se cancel\u00f3 el compartir de la Story.");
         return;
       }
       record("instagram");
-      close(result === "shared" ? "Eleg\u00ed Instagram y luego Historia para publicar la imagen." : "Imagen descargada: abr\u00ed Instagram y subila como Historia.");
+      if (linkCopied) {
+        close(result === "shared" ? "URL copiada. En Instagram, agreg\u00e1 el sticker Enlace y pegala." : "Imagen descargada y URL copiada. Subila a Instagram y agreg\u00e1 el sticker Enlace.");
+      } else {
+        close(result === "shared" ? "En Instagram, agreg\u00e1 el sticker Enlace. Si lo necesit\u00e1s, volv\u00e9 a abrir Compartir y eleg\u00ed Copiar enlace." : "Imagen descargada. Subila a Instagram y agreg\u00e1 el sticker Enlace; pod\u00e9s copiar la URL desde Compartir.");
+      }
     } catch {
       setMessage("No pudimos crear la imagen para la Story. Intent\u00e1 de nuevo.");
     } finally {

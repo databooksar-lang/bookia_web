@@ -154,6 +154,23 @@ export function registerBookSharingStateTests(register) {
     assert.equal(result, "cancelled");
   });
 
+  register("downloads the Story when native sharing loses user activation", async () => {
+    const file = new Blob(["story"], { type: "image/png" });
+    const downloads = [];
+    const result = await shareInstagramStoryFile({
+      file,
+      title: "Rayuela",
+      navigatorLike: {
+        canShare: () => true,
+        share: async () => { const error = new Error("user activation required"); error.name = "NotAllowedError"; throw error; },
+      },
+      download: (storyFile) => { downloads.push(storyFile); },
+    });
+
+    assert.equal(result, "downloaded");
+    assert.deepEqual(downloads, [file]);
+  });
+
   register("keeps the catalog source-cover route for a Story", () => {
     assert.equal(buildInstagramStoryCoverPath({ id: 42, cover_image_url: "/dashboard/catalog/42/cover" }), "/dashboard/catalog/42/cover");
   });

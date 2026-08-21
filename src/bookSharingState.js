@@ -353,6 +353,10 @@ export async function shareInstagramStoryFile({ file, title, navigatorLike = glo
       return "shared";
     } catch (error) {
       if (error?.name === "AbortError") return "cancelled";
+      if (error?.name === "NotAllowedError") {
+        download(file);
+        return "downloaded";
+      }
       throw error;
     }
   }
