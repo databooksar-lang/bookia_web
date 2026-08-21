@@ -2936,6 +2936,13 @@ button:disabled {
   border-radius: 6px;
 }
 
+.reading-club-cover-guidance {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
 .reading-club-item .secondary-button {
   white-space: nowrap;
 }
