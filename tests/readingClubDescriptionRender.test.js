@@ -6,6 +6,23 @@ import { createServer } from "vite";
 const FORMATTED_DESCRIPTION = "**Encuentro especial**\n\n- Conversamos\n- [Más información](https://bookia.example/club)";
 
 export function registerReadingClubDescriptionRenderTests(test) {
+  test("keeps reading-club cover guidance outside the upload control", async () => {
+    const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
+    try {
+      const { ReadingClubCoverUpload } = await vite.ssrLoadModule("/src/components/ReadingClubManager.jsx");
+      const markup = renderToStaticMarkup(createElement(ReadingClubCoverUpload, {
+        clubId: 1,
+        busy: false,
+        onUpload: () => {},
+      }));
+
+      assert.match(markup, /<label class="secondary-button">Subir portada<input/);
+      assert.match(markup, /<small class="reading-club-cover-guidance">Medida recomendada: 900 × 1200 px \(formato vertical\)\.<\/small>/);
+    } finally {
+      await vite.close();
+    }
+  });
+
   test("renders formatted reading-club descriptions in management and public cards", async () => {
     const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
     try {
