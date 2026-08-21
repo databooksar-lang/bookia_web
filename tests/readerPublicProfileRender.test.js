@@ -168,6 +168,7 @@ export function registerReaderPublicProfileRenderTests(test) {
       assert.match(cardMarkup, /type="button"/);
       assert.match(cardMarkup, /aria-label="Ver detalles de Lecturas del mes"/);
       assert.match(cardMarkup, /href="\/readers\/gabriel"/);
+      assert.match(cardMarkup, /class="secondary-button reading-club-card-action" href="https:\/\/example\.com\/club" target="_blank" rel="noopener noreferrer">\+ info<\/a>/);
       assert.doesNotMatch(cardMarkup, /Ver más sobre este encuentro/);
       assert.match(modalMarkup, /role="dialog"/);
       assert.match(modalMarkup, /Una descripción completa que debe leerse sin el truncado de la tarjeta pública\./);
@@ -187,12 +188,13 @@ export function registerReaderPublicProfileRenderTests(test) {
     const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
     try {
       const { ReadingClubDetailModal, ReadingClubPublicCard } = await vite.ssrLoadModule("/src/pages/PublicPages.jsx");
-      const club = { id: 8, title: "Club visible", description: "Una descripción completa.", genre: { name: "Clásicos" }, meeting_date: "2026-09-01", location: "Online" };
+      const club = { id: 8, title: "Club visible", description: "Una descripción completa.", genre: { name: "Clásicos" }, meeting_date: "2026-09-01", location: "Online", external_url: "https://example.com/club-visible" };
       const host = { type: "reader", display_name: "Belén" };
       const cardMarkup = renderToStaticMarkup(createElement(ReadingClubPublicCard, { club, host, hostPath: "/readers/belen", onOpenDetails: () => {}, showShare: true, hideExternalLink: true }));
       const modalMarkup = renderToStaticMarkup(createElement(ReadingClubDetailModal, { selectedClub: club, host, hostPath: "/readers/belen", onClose: () => {} }));
 
-      assert.match(cardMarkup, /Ver más info/);
+      assert.match(cardMarkup, /class="secondary-button reading-club-card-action" href="https:\/\/example\.com\/club-visible" target="_blank" rel="noopener noreferrer">\+ info<\/a>/);
+      assert.doesNotMatch(cardMarkup, /Ver más info/);
       assert.match(cardMarkup, /Ver perfil/);
       assert.doesNotMatch(cardMarkup, /Ver perfil de lectora/);
       assert.match(cardMarkup, /href="\/readers\/belen"/);
