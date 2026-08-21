@@ -12,6 +12,7 @@ export function registerRichDescriptionEditorTests(test) {
         value: "**Leo**\n\n- Narrativa",
         onChange: () => {},
         placeholder: "Contá tu historia lectora.",
+        required: true,
       }));
 
       assert.match(markup, /aria-label="Formato de la descripción"/);
@@ -22,6 +23,7 @@ export function registerRichDescriptionEditorTests(test) {
       assert.match(markup, /aria-label="Lista numerada"/);
       assert.match(markup, /rows="6"/);
       assert.match(markup, /maxLength="5000"/);
+      assert.match(markup, /required=""/);
       assert.match(markup, /Vista previa/);
       assert.match(markup, /<strong>Leo<\/strong>/);
       assert.match(markup, /<ul>/);

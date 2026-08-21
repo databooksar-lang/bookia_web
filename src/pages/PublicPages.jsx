@@ -302,7 +302,7 @@ export function ReadingClubPublicCard({
   const details = <>
     <div className="reading-club-public-genre-row" aria-label="Género del club"><span className="reading-club-public-genre">{club.genre?.name || "Sin género"}</span></div>
     <h3 className="reading-club-public-title">{club.title}</h3>
-    <p className="reading-club-public-description">{club.description}</p>
+    <BookstoreDescription className="reading-club-public-description" value={club.description} />
     <dl>
       <div><dt>Fecha</dt><dd>{displayReadingClubDate(club.meeting_date)}</dd></div>
       <div><dt>Lugar</dt><dd>{club.location || "Lugar a confirmar"}</dd></div>
@@ -516,7 +516,7 @@ export function ReadingClubDetailModal({ selectedClub, host = null, hostPath = "
           <div className="reading-club-detail-copy">
             <span className="reading-club-public-genre">{selectedClub.genre?.name || "Sin género"}</span>
             <h2 id="reading-club-detail-title">{selectedClub.title}</h2>
-            <div className="reading-club-detail-section"><span>Descripción</span><p>{selectedClub.description || "Sin descripción visible."}</p></div>
+            <div className="reading-club-detail-section"><span>Descripción</span><BookstoreDescription value={selectedClub.description || "Sin descripción visible."} /></div>
             <dl className="reading-club-detail-meta">
               <div><dt>Fecha</dt><dd>{displayReadingClubDate(selectedClub.meeting_date)}</dd></div>
               <div><dt>Lugar</dt><dd>{selectedClub.location || "Lugar a confirmar"}</dd></div>
