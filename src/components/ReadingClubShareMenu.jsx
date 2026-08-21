@@ -5,7 +5,7 @@ import { resolveApiUrl } from "../api";
 import { basePath } from "../routing";
 import { buildTelegramShareHref, buildWhatsAppShareHref } from "../bookSharingState";
 import { buildReadingClubShareMessage, buildReadingClubShareUrl, copyReadingClubShareUrl, createReadingClubInstagramStoryFile, resolveReadingClubInstagramStoryCoverUrl, shareInstagramStoryFile } from "../readingClubSharingState";
-import { InstagramIcon, TelegramIcon, WhatsAppIcon } from "./Icons";
+import { InstagramIcon, ShareIcon, TelegramIcon, WhatsAppIcon } from "./Icons";
 
 function getTrustedApiOrigins() {
   const origins = [window.location.origin];
@@ -71,7 +71,7 @@ export function ReadingClubShareMenu({ club, host, hostName, bookstoreId, source
   }
 
   return <div className="book-share-menu">
-    <button type="button" className="secondary-button book-share-trigger" aria-expanded={isOpen} aria-controls={menuId} onClick={() => { setIsOpen((open) => !open); setMessage(""); }}>Compartir</button>
+    <button type="button" className="secondary-button book-share-trigger book-share-trigger-icon" aria-label="Compartir" title="Compartir" aria-expanded={isOpen} aria-controls={menuId} onClick={() => { setIsOpen((open) => !open); setMessage(""); }}><ShareIcon size={20} /></button>
     {isOpen ? <div id={menuId} className="book-share-options" role="group" aria-label={`Compartir ${club.title}`}>
       <a className="book-share-icon-button" href={buildWhatsAppShareHref(data)} target="_blank" rel="noreferrer" aria-label="Compartir por WhatsApp" title="Compartir por WhatsApp" onClick={() => { record("whatsapp"); close("Abriendo WhatsApp..."); }}><WhatsAppIcon size={21} /></a>
       <button type="button" className="book-share-story-button" aria-label="Compartir Historia de Instagram" title="Compartir Historia de Instagram" onClick={story} disabled={storyBusy}><InstagramIcon size={18} /></button>

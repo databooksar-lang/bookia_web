@@ -296,7 +296,7 @@ export function ReadingClubPublicCard({
   hideExternalLink = false,
 }) {
   const hostName = host?.type === "bookstore" ? host.name : host?.display_name;
-  const profileLabel = host?.type === "bookstore" ? "Ver perfil de librería" : "Ver perfil de lectora";
+  const profileLabel = "Ver perfil";
   const details = <>
     <div className="reading-club-public-genre-row" aria-label="Género del club"><span className="reading-club-public-genre">{club.genre?.name || "Sin género"}</span></div>
     <h3 className="reading-club-public-title">{club.title}</h3>
@@ -476,7 +476,7 @@ export function ReadingClubDetailModal({ selectedClub, host = null, hostPath = "
   }, [selectedClub?.id]);
   if (!selectedClub) return null;
   const hostName = host?.type === "bookstore" ? host.name : host?.display_name;
-  const profileLabel = host?.type === "bookstore" ? "Ver perfil de librería" : "Ver perfil de lectora";
+  const profileLabel = "Ver perfil";
 
   function submitInterest(event) {
     event.preventDefault();
