@@ -555,7 +555,7 @@ tests.push(["presents About Bookia as a dual-audience discovery and contact plat
 
   assert.ok(aboutPageSource, "AboutPage should remain isolated before catalog helpers");
   const page = aboutPageSource[1];
-  assert.match(page, /Libros, librer.as y lectores, en un mismo lugar/);
+  assert.match(page, /Un lugar para conectar lectores, autores, librer.as y clubes de lectura\./);
   assert.match(page, /Busc. un libro/);
   assert.match(page, /Descubr. qui.n lo tiene/);
   assert.match(page, /Contact. directamente/);
