@@ -567,7 +567,7 @@ tests.push(["presents About Bookia as a dual-audience discovery and contact plat
   assert.doesNotMatch(page, /plataforma integral|automatizar y optimizar los procesos de gesti.n/i);
   assert.match(page, /href="\/"/);
   assert.match(page, /href="\/register"/);
-  assert.match(page, /<img className="about-hero-logo" src="\/images\/logo-sin-fondo\.png" alt="Logo circular de Bookia" \/>/);
+  assert.match(page, /<img className="about-hero-logo" src="\/images\/grafo_bookia\.png" alt="Grafo de conexiones de Bookia" \/>/);
   assert.doesNotMatch(page, /about-hero-panel/);
   assert.doesNotMatch(page, /compr. en Bookia|pag. en Bookia|procesamos pagos/i);
 }]);
@@ -943,6 +943,16 @@ tests.push(["names the Base plan as Base + IA across customer billing screens", 
   assert.match(publicPagesSource, /name: "Base \+ IA"/);
   assert.match(registerPageSource, /"Base \+ IA"/);
   assert.match(billingPanelSource, /"Base \+ IA"/);
+}]);
+
+tests.push(["uses the Bookia relationship graph in the About hero", () => {
+  const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+  assert.equal(existsSync(new URL("../public/images/grafo_bookia.png", import.meta.url)), true);
+  assert.match(publicPagesSource, /className="about-hero-logo" src="\/images\/grafo_bookia\.png" alt="Grafo de conexiones de Bookia"/);
+  assert.match(editorialStyles, /\.about-hero-logo\s*\{[^}]*width:\s*min\(100%,\s*520px\);/s);
+  assert.match(editorialStyles, /@media \(max-width: 760px\)\s*\{\s*\.about-hero-logo\s*\{[^}]*width:\s*min\(92vw,\s*460px\);/s);
 }]);
 
 for (const [name, fn] of tests) {
