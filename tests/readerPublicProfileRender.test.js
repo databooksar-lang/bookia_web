@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { createServer } from "vite";
@@ -145,6 +146,17 @@ export function registerReaderPublicProfileRenderTests(test) {
     } finally {
       await vite.close();
     }
+  });
+
+  test("places the reading-club share trigger before the card content for top-right positioning", async () => {
+    const source = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+    const shareTrigger = source.indexOf("{showShare ? <ReadingClubShareMenu");
+    const cardContent = source.indexOf("{onOpenDetails ? <button type=\"button\" className=\"reading-club-public-card-content");
+    const actionRow = source.indexOf("{onOpenDetails || hostPath || showShare || hasExternalLink ? <div className=\"reading-club-public-actions\"");
+
+    assert.ok(shareTrigger >= 0);
+    assert.ok(shareTrigger < cardContent);
+    assert.ok(shareTrigger < actionRow);
   });
 
   test("opens reading-club details from a search card without navigating to the host profile", async () => {

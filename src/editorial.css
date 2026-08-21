@@ -1279,6 +1279,7 @@ button:disabled {
 }
 
 .reading-club-public-card {
+  position: relative;
   padding: 20px;
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
@@ -1451,16 +1452,19 @@ button:disabled {
   gap: 10px 14px;
 }
 
-.reading-club-public-actions .book-share-menu {
+.reading-club-public-card > .book-share-menu {
+  position: absolute;
+  z-index: 2;
+  top: 14px;
+  right: 14px;
   width: fit-content;
-  flex: 0 0 auto;
 }
 
 .reading-club-public-actions .reading-club-external-link {
   grid-column: 1 / -1;
 }
 
-.reading-club-public-actions .book-share-trigger {
+.reading-club-public-card > .book-share-menu .book-share-trigger {
   min-height: 38px;
   padding: 7px 12px;
 }
