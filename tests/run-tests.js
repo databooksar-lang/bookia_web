@@ -630,6 +630,15 @@ tests.push(["keeps the Instagram share action icon-only while preserving accessi
   assert.doesNotMatch(readingClubShareMenuSource, /<span>\{storyBusy \? "Creando\.\.\." : "Story"\}<\/span>/);
   assert.match(editorialStyles, /\.book-share-options \.book-share-story-button\s*\{[^}]*width:\s*38px;[^}]*height:\s*38px;[^}]*padding:\s*0;/);
 }]);
+tests.push(["uses the universal share icon for reading-club share triggers", () => {
+  const iconsSource = readFileSync(new URL("../src/components/Icons.jsx", import.meta.url), "utf8");
+  const readingClubShareMenuSource = readFileSync(new URL("../src/components/ReadingClubShareMenu.jsx", import.meta.url), "utf8");
+
+  assert.match(iconsSource, /export function ShareIcon\(\{ size = 20 \}\)/);
+  assert.match(readingClubShareMenuSource, /ShareIcon size=\{20\}/);
+  assert.match(readingClubShareMenuSource, /aria-label="Compartir"/);
+  assert.match(readingClubShareMenuSource, /title="Compartir"/);
+}]);
 
 tests.push(["emits one session-expiry event for repeated unauthorized API responses", async () => {
   const previousFetch = globalThis.fetch;

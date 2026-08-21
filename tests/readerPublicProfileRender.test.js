@@ -175,7 +175,8 @@ export function registerReaderPublicProfileRenderTests(test) {
       assert.match(modalMarkup, /target="_blank"/);
       assert.match(modalMarkup, /rel="noopener noreferrer"/);
       assert.match(modalMarkup, /href="\/readers\/gabriel"/);
-      assert.match(modalMarkup, /Ver perfil de lectora/);
+      assert.match(modalMarkup, /Ver perfil/);
+      assert.doesNotMatch(modalMarkup, /Ver perfil de lectora/);
       assert.equal(renderToStaticMarkup(createElement(ReadingClubDetailModal, { selectedClub: null, onClose: () => {} })), "");
     } finally {
       await vite.close();
@@ -192,7 +193,8 @@ export function registerReaderPublicProfileRenderTests(test) {
       const modalMarkup = renderToStaticMarkup(createElement(ReadingClubDetailModal, { selectedClub: club, host, hostPath: "/readers/belen", onClose: () => {} }));
 
       assert.match(cardMarkup, /Ver más info/);
-      assert.match(cardMarkup, /Ver perfil de lectora/);
+      assert.match(cardMarkup, /Ver perfil/);
+      assert.doesNotMatch(cardMarkup, /Ver perfil de lectora/);
       assert.match(cardMarkup, /href="\/readers\/belen"/);
       assert.match(modalMarkup, /Estoy interesado\/a en anotarme/);
     } finally {
