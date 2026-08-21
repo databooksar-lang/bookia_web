@@ -3,7 +3,7 @@ import { useId, useRef, useState } from "react";
 import { formatDescriptionSelection } from "../descriptionEditorState";
 import { BookstoreDescription } from "./BookstoreDescription";
 
-export function RichDescriptionEditor({ value, onChange, disabled = false, placeholder, maxLength = 5000 }) {
+export function RichDescriptionEditor({ value, onChange, disabled = false, placeholder, maxLength = 5000, required = false }) {
   const textareaRef = useRef(null);
   const helpId = useId();
   const [formatError, setFormatError] = useState("");
@@ -34,7 +34,7 @@ export function RichDescriptionEditor({ value, onChange, disabled = false, place
       <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => applyFormat("unorderedList")} disabled={disabled} aria-label="Lista con viñetas">• Lista</button>
       <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => applyFormat("orderedList")} disabled={disabled} aria-label="Lista numerada">1. Lista</button>
     </div>
-    <textarea ref={textareaRef} value={value} onChange={(event) => onChange(event.target.value)} rows={6} maxLength={maxLength} disabled={disabled} placeholder={placeholder} aria-describedby={helpId} />
+    <textarea ref={textareaRef} value={value} onChange={(event) => onChange(event.target.value)} rows={6} maxLength={maxLength} disabled={disabled} placeholder={placeholder} required={required} aria-describedby={helpId} />
     <small id={helpId}>Usá los botones para resaltar texto, agregar enlaces o crear listas.</small>
     {formatError ? <small className="description-format-error" role="alert">{formatError}</small> : null}
     <div className="description-preview"><span>Vista previa</span><BookstoreDescription value={value || "Sin descripción"} /></div>

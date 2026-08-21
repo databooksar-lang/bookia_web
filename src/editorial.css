@@ -1378,10 +1378,23 @@ button:disabled {
   color: var(--muted);
   font-size: 0.92rem;
   line-height: 1.5;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
+  max-height: 6em;
   overflow: hidden;
+}
+
+.reading-club-public-description p,
+.reading-club-public-description ul,
+.reading-club-public-description ol {
+  margin: 0 0 0.6em;
+}
+
+.reading-club-public-description > :last-child {
+  margin-bottom: 0;
+}
+
+.reading-club-detail-section .bookstore-description {
+  color: var(--muted);
+  line-height: 1.6;
 }
 
 .reading-club-public-card dl {
