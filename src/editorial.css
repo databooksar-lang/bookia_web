@@ -4263,14 +4263,7 @@ textarea:focus {
 .plans-hero-copy > p:last-child { max-width: 570px; margin: 0; color: #263d35; font-size: 1.18rem; line-height: 1.55; }
 .plans-hero-art { align-self: stretch; position: relative; z-index: 2; display: flex; align-items: end; justify-content: flex-start; overflow: visible; pointer-events: none; }
 .plans-hero-art img { width: 156%; max-width: none; height: auto; object-fit: contain; transform: translate(-43%, -1%); }
-.plans-trial-banner { width: min(1280px, calc(100% - 48px)); margin: 0 auto 36px; padding: 26px 0; display: flex; align-items: center; justify-content: space-between; gap: 28px; border-block: 2px solid var(--forest-deep); }
-.plans-trial-copy { display: flex; align-items: center; gap: 24px; color: var(--forest-deep); }
-.plans-trial-days { display: grid; width: 68px; height: 68px; flex: 0 0 auto; place-items: center; border: 2px solid currentColor; border-radius: 50%; font-family: Georgia, serif; font-size: 2rem; line-height: 1; }
-.plans-trial-copy p { margin: 0 0 5px; font-family: Georgia, serif; font-size: clamp(1.75rem, 3vw, 2.35rem); line-height: 1; }
-.plans-trial-copy span { font-size: 1.05rem; }
-.plans-trial-link { display: inline-flex; align-items: center; gap: 8px; flex: 0 0 auto; color: var(--forest-deep); font-size: .95rem; font-weight: 800; }
-.plans-trial-link:hover { color: var(--coral-dark); }
-.plans-pricing { width: min(860px, calc(100% - 48px)); margin: 0 auto 28px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.plans-pricing { width: min(1280px, calc(100% - 48px)); margin: 0 auto 28px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
 .plans-pricing-status { grid-column: 1 / -1; margin: 0; padding: 13px 18px; color: var(--coral-dark); background: #f8ddd5; border: 1px solid rgba(189, 67, 43, .2); border-radius: 12px; font-weight: 700; }
 .plans-plan { min-height: 345px; padding: 32px; display: flex; flex-direction: column; border: 1px solid #d6c8b3; border-radius: 18px; background: #fffdf8; transition: transform .2s ease, box-shadow .2s ease; }
 .plans-plan:hover { transform: translateY(-5px); box-shadow: 0 18px 30px rgba(5, 54, 42, .12); }
@@ -4299,7 +4292,7 @@ textarea:focus {
 .plans-pricing > button.plans-plan { width: 100%; text-align: left; color: inherit; font: inherit; }
 .plans-select-action { margin-top: 24px; display: inline-flex; align-items: center; gap: 8px; color: var(--forest-deep); font-size: .86rem; font-weight: 800; }
 .plans-featured .plans-select-action { color: white; }
-@media (max-width: 760px) { .plans-hero { width: min(100% - 28px, 100%); min-height: 0; grid-template-columns: 1fr; } .plans-hero-copy { padding: 72px 0 30px; } .plans-hero-copy h1 { font-size: clamp(3.2rem, 15vw, 4.4rem); } .plans-hero-art { min-height: 250px; } .plans-hero-art img { width: 140%; transform: translate(-24%, 0%); } .plans-trial-banner, .plans-pricing, .plans-growth-band { width: min(100% - 28px, 100%); } .plans-trial-banner { align-items: flex-start; flex-direction: column; gap: 20px; padding: 22px 0; } .plans-trial-copy { align-items: flex-start; gap: 16px; } .plans-trial-days { width: 54px; height: 54px; font-size: 1.55rem; } .plans-trial-copy p { font-size: 1.65rem; } .plans-trial-link { padding-left: 70px; } .plans-pricing, .plans-growth-band { grid-template-columns: 1fr; } .plans-plan { min-height: 285px; padding: 27px 23px; } .plans-growth-band > div { min-height: 150px; padding: 27px 23px; border-left: 0; border-top: 1px solid rgba(246, 163, 143, .55); } .plans-growth-title { border-top: 0; } }
+@media (max-width: 760px) { .plans-hero { width: min(100% - 28px, 100%); min-height: 0; grid-template-columns: 1fr; } .plans-hero-copy { padding: 72px 0 30px; } .plans-hero-copy h1 { font-size: clamp(3.2rem, 15vw, 4.4rem); } .plans-hero-art { min-height: 250px; } .plans-hero-art img { width: 140%; transform: translate(-24%, 0%); } .plans-pricing, .plans-growth-band { width: min(100% - 28px, 100%); } .plans-pricing, .plans-growth-band { grid-template-columns: 1fr; } .plans-plan { min-height: 285px; padding: 27px 23px; } .plans-growth-band > div { min-height: 150px; padding: 27px 23px; border-left: 0; border-top: 1px solid rgba(246, 163, 143, .55); } .plans-growth-title { border-top: 0; } }
 
 .dashboard-analytics-filters {
   display: flex;

@@ -794,6 +794,7 @@ function PlansPlan({ plan, isRegistrationFlow, onSelect }) {
     <p className="plans-price">{plan.price}<small>{plan.detail}</small></p>
     <p className="plans-limit">{plan.limit}</p>
     <ul>{plan.benefits.map((benefit) => <li key={benefit}><b>{"\u2713"}</b>{benefit}</li>)}</ul>
+    {!isRegistrationFlow && plan.code === "trial" ? <AppLink className="plans-select-action" href={buildRegisterPath({ profileType: "bookstore", planCode: "trial" })} onClick={() => trackAcquisitionEvent("bookstore_trial_started")}>Empezar sin costo <ArrowIcon size={16} /></AppLink> : null}
     {isRegistrationFlow && plan.code ? <span className="plans-select-action">Elegir este plan <ArrowIcon size={16} /></span> : null}
   </>;
 
@@ -821,8 +822,9 @@ export function PlansPage({ isRegistrationFlow = false }) {
     return pricingState.prices ? formatCommercialPrice(pricingState.prices[offeringCode]) : "Precio no disponible";
   };
   const plans = [
+    { code: "trial", name: "Prueba gratis", price: "Sin costo", detail: "por 30 dias", limit: "Hasta 10 libros", benefits: ["Carga manual desde web y Telegram", "Sin funcionalidades de IA"], tone: "base" },
     { code: "initial", name: "Inicial", price: priceLabel("initial"), detail: "/mes", limit: "Hasta 25 libros", benefits: ["Carga manual desde web y Telegram", "Sin funcionalidades de IA"], tone: "base" },
-    { code: "base", name: "Base + IA", price: priceLabel("base"), detail: "/mes", limit: "Hasta 50 libros", benefits: ["Todas las funcionalidades web", "Funcionalidades de IA incluidas", "Acceso al bot de Telegram"], tone: "base" },
+    { code: "base", name: "Base + IA", price: priceLabel("base"), detail: "/mes", limit: "Hasta 50 libros", benefits: ["Todas las funcionalidades web", "Funcionalidades de IA incluidas", "Acceso al bot de Telegram"], tone: "featured" },
   ];
 
   return (
@@ -830,10 +832,6 @@ export function PlansPage({ isRegistrationFlow = false }) {
       <section className="plans-hero">
         <div className="plans-hero-copy"><p className="section-label">Planes para librerias</p><h1>Una vidriera que crece con tu catalogo<span>.</span></h1><p>{isRegistrationFlow ? "Elegi el plan que mejor acompana a tu libreria. La prueba de 30 dias se activa automaticamente." : "Empeza sin costo, mostra tus libros y elegi la forma de carga que mejor funciona para vos."}</p></div>
         <div className="plans-hero-art" aria-hidden="true"><img src="/images/plans-books.png" alt="" /></div>
-      </section>
-      <section className="plans-trial-banner" aria-label="Prueba gratuita de Bookia">
-        <div className="plans-trial-copy"><span className="plans-trial-days" aria-hidden="true">30</span><div><p>30 dias gratis para empezar</p><span>Hasta 10 libros · sin costo</span></div></div>
-        <AppLink className="plans-trial-link" href={buildRegisterPath({ profileType: "bookstore", planCode: "trial" })} onClick={() => trackAcquisitionEvent("bookstore_trial_started")}>Empezar sin costo <ArrowIcon size={16} /></AppLink>
       </section>
       <section className="plans-pricing" aria-label="Planes de Bookia">
         {pricingState.error ? <p className="plans-pricing-status" role="status">{pricingState.error}</p> : null}
