@@ -61,7 +61,7 @@ export function registerRegisterStateTests(test) {
   });
 
   test("builds active bookstore registration payloads with their supported capacities", () => {
-    for (const [planCode, catalogLimit] of [["initial", "25"], ["base", "50"], ["base", "100"], ["base", "200"]]) {
+    for (const [planCode, catalogLimit] of [["initial", "25"], ["base", "40"], ["base", "100"], ["base", "200"]]) {
       assert.deepEqual(
         buildRegistrationRequest({ profileType: "bookstore", email: "libreria@example.com", password: "secreto123", whatsappPhone: "11 2222-3333", bookstoreType: "hybrid", bookstoreName: "La Esquina", planCode, catalogLimit, privacyAccepted: true }),
         { path: "/auth/register/bookstore", body: { name: "La Esquina", email: "libreria@example.com", password: "secreto123", whatsapp_phone: "11 2222-3333", bookstore_type: "hybrid", plan_code: planCode, catalog_limit: Number(catalogLimit), privacy_accepted: true } },
@@ -70,6 +70,7 @@ export function registerRegisterStateTests(test) {
     const invalidBookstoreRegistration = { profileType: "bookstore", email: "libreria@example.com", password: "secreto123", whatsappPhone: "11 2222-3333", bookstoreType: "hybrid", bookstoreName: "La Esquina", privacyAccepted: true };
     assert.throws(() => buildRegistrationRequest({ ...invalidBookstoreRegistration, planCode: "plus_ai", catalogLimit: "150" }), /plan|catálogo/i);
     assert.throws(() => buildRegistrationRequest({ ...invalidBookstoreRegistration, planCode: "initial", catalogLimit: "50" }), /catálogo/i);
+    assert.throws(() => buildRegistrationRequest({ ...invalidBookstoreRegistration, planCode: "base", catalogLimit: "50" }), /catálogo/i);
   });
 
   test("builds the fixed free-trial registration payload", () => {
@@ -92,7 +93,7 @@ export function registerRegisterStateTests(test) {
     const request = buildRegistrationRequest({
       profileType: "bookstore", email: "owner@example.com", payerEmail: " Payments@Example.com ",
       password: "secreto123", whatsappPhone: "11 2222-3333", bookstoreName: "La Esquina", planCode: "base",
-      catalogLimit: "50", privacyAccepted: true,
+      catalogLimit: "40", privacyAccepted: true,
     });
 
     assert.equal("payer_email" in request.body, false);

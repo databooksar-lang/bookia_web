@@ -12,7 +12,7 @@ import { trackReaderFunnelEvent } from "../analyticsState";
 import { getPendingReaderActionCopy } from "../pendingReaderAction";
 
 const BASE_CATALOG_OPTIONS = [
-  { limit: "50", title: "Sin adicional", description: "Hasta 50 libros", offeringCode: null },
+  { limit: "40", title: "Sin adicional", description: "Hasta 40 libros", offeringCode: null },
   { limit: "100", title: "Hasta 100 libros", description: "Amplia tu catalogo", offeringCode: "catalog_100" },
   { limit: "200", title: "Hasta 200 libros", description: "Amplia tu catalogo", offeringCode: "catalog_200" },
 ];

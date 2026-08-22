@@ -2,7 +2,7 @@ const ACTIVE_MANAGEMENT_STATES = new Set(["trialing", "active", "grace_period", 
 const PAYMENT_ATTENTION_STATES = new Set(["payment_pending", "grace_period", "restricted"]);
 const CATALOG_LIMITS_BY_PLAN = {
   initial: new Set([25]),
-  base: new Set([50, 100, 200]),
+  base: new Set([40, 100, 200]),
 };
 const MERCADO_PAGO_HOSTS = ["mercadopago.com", "mercadopago.com.ar"];
 
