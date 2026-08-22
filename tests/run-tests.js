@@ -883,7 +883,7 @@ tests.push(["renders the visual pricing composition with catalog growth band", (
   assert.doesNotMatch(publicPagesSource, /\\u25A5/);
   assert.match(editorialStyles, /\.plans-pricing/);
   assert.match(editorialStyles, /\.plans-pricing\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/);
-  assert.match(editorialStyles, /\.plans-featured\s*\{[^}]*background:\s*var\(--forest-deep\);/);
+  assert.match(editorialStyles, /\.plans-plan-featured\s*\{[^}]*background:\s*var\(--forest-deep\);/);
   assert.match(editorialStyles, /\.plans-growth-band/);
   assert.doesNotMatch(publicPagesSource, /plans-cta/);
   assert.doesNotMatch(editorialStyles, /\.plans-cta/);
