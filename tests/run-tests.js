@@ -310,11 +310,10 @@ tests.push(["keeps plan selection inside the bookstore registration flow", () =>
   assert.match(registerSource, /window\.location\.assign\(getTrustedMercadoPagoCheckoutUrl\(checkout\.checkout_url\)\)/);
   assert.doesNotMatch(registerSource, /Plan inicial<select/);
   assert.match(plansSource, /isRegistrationFlow/);
-  assert.doesNotMatch(plansSource, /\{ code: "base", name: "Prueba gratis"/);
-  assert.match(plansSource, /plans-trial-banner/);
-  assert.match(plansSource, /30 dias gratis para empezar/);
-  assert.match(plansSource, /Hasta 10 libros.*sin costo/);
-  assert.match(plansSource, /className="plans-trial-link" href=\{buildRegisterPath\(\{ profileType: "bookstore", planCode: "trial" \}\)\}/);
+  assert.match(plansSource, /\{ code: "trial", name: "Prueba gratis"/);
+  assert.doesNotMatch(plansSource, /plans-trial-banner/);
+  assert.match(plansSource, /por 30 dias/);
+  assert.match(plansSource, /Hasta 10 libros/);
   assert.match(plansSource, /\{ code: "initial"/);
   assert.match(plansSource, /\{ code: "base", name: "Base \+ IA"/);
   assert.doesNotMatch(plansSource, /code: "plus_ai"/);
@@ -667,6 +666,25 @@ tests.push(["shows only Inicial and Base + IA as paid public plans", () => {
   assert.match(publicPagesSource, /code: "base", name: "Base \+ IA"[\s\S]*?limit: "Hasta 50 libros"[\s\S]*?Funcionalidades de IA incluidas/);
   assert.doesNotMatch(publicPagesSource, /code: "plus_ai"|Hasta 150 libros|Mas elegido/);
 }]);
+tests.push(["renders the free trial alongside both paid plans and emphasizes Base + IA", async () => {
+  const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
+  try {
+    const publicPages = await vite.ssrLoadModule("/src/pages/PublicPages.jsx");
+    const publicMarkup = renderToStaticMarkup(createElement(publicPages.PlansPage));
+    const registrationMarkup = renderToStaticMarkup(createElement(publicPages.PlansPage, { isRegistrationFlow: true }));
+
+    assert.match(publicMarkup, /Prueba gratis/);
+    assert.match(publicMarkup, /por 30 dias/);
+    assert.match(publicMarkup, /Hasta 10 libros/);
+    assert.match(publicMarkup, /Inicial/);
+    assert.match(publicMarkup, /Base \+ IA/);
+    assert.match(publicMarkup, /plans-plan-featured/);
+    assert.equal((publicMarkup.match(/plans-plan /g) || []).length, 3);
+    assert.equal((registrationMarkup.match(/Elegir este plan/g) || []).length, 3);
+  } finally {
+    await vite.close();
+  }
+}]);
 
 tests.push(["keeps the horizontal book share menu inside the mobile viewport", () => {
   const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
@@ -864,7 +882,8 @@ tests.push(["renders the visual pricing composition with catalog growth band", (
   assert.match(publicPagesSource, /<BookIcon size=\{54\} \/>/);
   assert.doesNotMatch(publicPagesSource, /\\u25A5/);
   assert.match(editorialStyles, /\.plans-pricing/);
-  assert.match(editorialStyles, /\.plans-pricing\s*\{[^}]*width:\s*min\(860px,\s*calc\(100%\s*-\s*48px\)\);[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/);
+  assert.match(editorialStyles, /\.plans-pricing\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/);
+  assert.match(editorialStyles, /\.plans-featured\s*\{[^}]*background:\s*var\(--forest-deep\);/);
   assert.match(editorialStyles, /\.plans-growth-band/);
   assert.doesNotMatch(publicPagesSource, /plans-cta/);
   assert.doesNotMatch(editorialStyles, /\.plans-cta/);
