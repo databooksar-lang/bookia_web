@@ -4,15 +4,13 @@ import { buildRegistrationRequest, getRegisterStep } from "../src/registerState.
 import * as registerState from "../src/registerState.js";
 
 export function registerRegisterStateTests(test) {
-  test("accepts only supported bookstore plans in registration query state", () => {
+  test("accepts only active bookstore plans in registration query state", () => {
     assert.deepEqual(
       registerState.getRegisterQueryState("?profile=bookstore&plan=base"),
       { kind: "bookstore", profileType: "bookstore", planCode: "base" },
     );
-    assert.deepEqual(
-      registerState.getRegisterQueryState("?profile=bookstore&plan=plus_ai"),
-      { kind: "bookstore", profileType: "bookstore", planCode: "plus_ai" },
-    );
+    assert.deepEqual(registerState.getRegisterQueryState("?profile=bookstore&plan=plus_ai"), { kind: "invalid" });
+    assert.equal(registerState.buildRegisterPath({ profileType: "bookstore", planCode: "plus_ai" }), "/register");
     assert.deepEqual(
       registerState.getRegisterQueryState("?profile=bookstore&plan=trial"),
       { kind: "bookstore", profileType: "bookstore", planCode: "trial" },
@@ -62,13 +60,16 @@ export function registerRegisterStateTests(test) {
     );
   });
 
-  test("builds Plus AI registration payloads only for its 150 and 200 book capacities", () => {
-    for (const catalogLimit of ["150", "200"]) {
+  test("builds active bookstore registration payloads with their supported capacities", () => {
+    for (const [planCode, catalogLimit] of [["initial", "25"], ["base", "50"], ["base", "100"], ["base", "200"]]) {
       assert.deepEqual(
-        buildRegistrationRequest({ profileType: "bookstore", email: "libreria@example.com", password: "secreto123", whatsappPhone: "11 2222-3333", bookstoreType: "hybrid", bookstoreName: "La Esquina", planCode: "plus_ai", catalogLimit, privacyAccepted: true }),
-        { path: "/auth/register/bookstore", body: { name: "La Esquina", email: "libreria@example.com", password: "secreto123", whatsapp_phone: "11 2222-3333", bookstore_type: "hybrid", plan_code: "plus_ai", catalog_limit: Number(catalogLimit), privacy_accepted: true } },
+        buildRegistrationRequest({ profileType: "bookstore", email: "libreria@example.com", password: "secreto123", whatsappPhone: "11 2222-3333", bookstoreType: "hybrid", bookstoreName: "La Esquina", planCode, catalogLimit, privacyAccepted: true }),
+        { path: "/auth/register/bookstore", body: { name: "La Esquina", email: "libreria@example.com", password: "secreto123", whatsapp_phone: "11 2222-3333", bookstore_type: "hybrid", plan_code: planCode, catalog_limit: Number(catalogLimit), privacy_accepted: true } },
       );
     }
+    const invalidBookstoreRegistration = { profileType: "bookstore", email: "libreria@example.com", password: "secreto123", whatsappPhone: "11 2222-3333", bookstoreType: "hybrid", bookstoreName: "La Esquina", privacyAccepted: true };
+    assert.throws(() => buildRegistrationRequest({ ...invalidBookstoreRegistration, planCode: "plus_ai", catalogLimit: "150" }), /plan|catálogo/i);
+    assert.throws(() => buildRegistrationRequest({ ...invalidBookstoreRegistration, planCode: "initial", catalogLimit: "50" }), /catálogo/i);
   });
 
   test("builds the fixed free-trial registration payload", () => {
@@ -81,10 +82,10 @@ export function registerRegisterStateTests(test) {
   test("sends the displayed monthly total so the backend can reject stale pricing", () => {
     const request = buildRegistrationRequest({
       profileType: "bookstore", email: "libreria@example.com", password: "secreto123", whatsappPhone: "11 2222-3333",
-      bookstoreName: "La Esquina", planCode: "plus_ai", catalogLimit: "150",
-      expectedMonthlyTotal: 30000, privacyAccepted: true,
+      bookstoreName: "La Esquina", planCode: "base", catalogLimit: "100",
+      expectedMonthlyTotal: 25000, privacyAccepted: true,
     });
-    assert.equal(request.body.expected_total_amount_ars, 30000);
+    assert.equal(request.body.expected_total_amount_ars, 25000);
   });
 
   test("keeps Mercado Pago payer details out of bookstore registration", () => {

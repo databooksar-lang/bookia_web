@@ -317,7 +317,8 @@ tests.push(["keeps plan selection inside the bookstore registration flow", () =>
   assert.match(plansSource, /className="plans-trial-link" href=\{buildRegisterPath\(\{ profileType: "bookstore", planCode: "trial" \}\)\}/);
   assert.match(plansSource, /\{ code: "initial"/);
   assert.match(plansSource, /\{ code: "base", name: "Base \+ IA"/);
-  assert.match(plansSource, /plus_ai/);
+  assert.doesNotMatch(plansSource, /code: "plus_ai"/);
+  assert.match(plansSource, /Funcionalidades de IA incluidas/);
 }]);
 
 tests.push(["removes public plans links in favor of registration", () => {
@@ -416,7 +417,7 @@ tests.push(["renders checkout without collecting or displaying payer email", asy
     await vite.close();
   }
 }]);
-tests.push(["renders Plus AI changes with its included 150-book capacity", async () => {
+tests.push(["renders legacy Plus AI subscriptions as read-only while offering only active plan changes", async () => {
   const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
   try {
     const { BillingSubscriptionPanel } = await vite.ssrLoadModule("/src/components/BillingSubscriptionPanel.jsx");
@@ -424,10 +425,12 @@ tests.push(["renders Plus AI changes with its included 150-book capacity", async
       plan_code: "plus_ai", catalog_limit: 150, total_amount_ars: 30000, currency: "ARS", status: "active",
       trial_ends_at: null, current_period_end: "2026-09-01T00:00:00Z", scheduled_change: null,
     } }));
-    assert.match(markup, /value="150"[^>]*>150 libros/);
+    assert.match(markup, /Plus AI \(en migración\)/);
+    assert.doesNotMatch(markup, /value="plus_ai"/);
+    assert.doesNotMatch(markup, /value="150"[^>]*>150 libros/);
     assert.match(markup, /value="200"[^>]*>200 libros/);
-    assert.doesNotMatch(markup, /value="50"[^>]*>50 libros/);
-    assert.doesNotMatch(markup, /value="100"[^>]*>100 libros/);
+    assert.match(markup, /value="50"[^>]*>50 libros/);
+    assert.match(markup, /value="100"[^>]*>100 libros/);
   } finally {
     await vite.close();
   }
@@ -646,7 +649,7 @@ tests.push(["offers catalog add-ons after bookstore account credentials", () => 
 
   assert.match(registerSource, /apiFetch\("\/commercial-prices"\)/);
   assert.match(registerSource, /Sin adicional/);
-  assert.match(registerSource, /Hasta 150 libros/);
+  assert.doesNotMatch(registerSource, /PLUS_AI_CATALOG_OPTIONS|Hasta 150 libros|plus_ai/);
   assert.match(registerSource, /Hasta 200 libros/);
   assert.match(registerSource, /catalog_200/);
   assert.match(registerSource, /type="radio"/);
@@ -657,10 +660,12 @@ tests.push(["offers catalog add-ons after bookstore account credentials", () => 
   assert.match(registerSource, /if \(!isReader && !isTrial\) checkoutBody = buildBillingCheckoutRequest\(\);/);
   assert.match(editorialStyles, /\.register-catalog-options/);
 }]);
-tests.push(["advertises 150 included books for Plus AI", () => {
+tests.push(["shows only Inicial and Base + IA as paid public plans", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
 
-  assert.match(publicPagesSource, /code: "plus_ai"[\s\S]*?limit: "Hasta 150 libros"/);
+  assert.match(publicPagesSource, /code: "initial"/);
+  assert.match(publicPagesSource, /code: "base", name: "Base \+ IA"[\s\S]*?limit: "Hasta 50 libros"[\s\S]*?Funcionalidades de IA incluidas/);
+  assert.doesNotMatch(publicPagesSource, /code: "plus_ai"|Hasta 150 libros|Mas elegido/);
 }]);
 
 tests.push(["keeps the horizontal book share menu inside the mobile viewport", () => {
@@ -853,7 +858,7 @@ tests.push(["renders the visual pricing composition with catalog growth band", (
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
   const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
   assert.match(publicPagesSource, /plans-hero-art/);
-  assert.match(publicPagesSource, /plans-featured/);
+  assert.match(publicPagesSource, /plans-plan-\$\{plan\.tone\}/);
   assert.match(publicPagesSource, /plans-growth-band/);
   assert.match(publicPagesSource, /Adicionales de catalogo/);
   assert.match(publicPagesSource, /<BookIcon size=\{54\} \/>/);

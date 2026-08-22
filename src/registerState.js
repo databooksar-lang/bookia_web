@@ -1,4 +1,9 @@
-const BOOKSTORE_PLAN_CODES = new Set(["trial", "initial", "base", "plus_ai"]);
+const BOOKSTORE_PLAN_CODES = new Set(["trial", "initial", "base"]);
+const CATALOG_LIMITS_BY_PLAN = {
+  trial: new Set([10]),
+  initial: new Set([25]),
+  base: new Set([50, 100, 200]),
+};
 const BOOKSTORE_TYPES = new Set(["physical", "virtual", "hybrid"]);
 
 export function isSupportedBookstorePlan(planCode) {
@@ -74,6 +79,10 @@ export function buildRegistrationRequest({
     };
   }
 
+  const normalizedCatalogLimit = Number(catalogLimit);
+  if (!isSupportedBookstorePlan(planCode)) throw new Error("El plan seleccionado no es válido.");
+  if (!CATALOG_LIMITS_BY_PLAN[planCode].has(normalizedCatalogLimit)) throw new Error("La capacidad de catálogo no es válida para el plan seleccionado.");
+
   return {
     path: "/auth/register/bookstore",
     body: {
@@ -83,7 +92,7 @@ export function buildRegistrationRequest({
       whatsapp_phone: whatsappPhone.trim(),
       bookstore_type: bookstoreType,
       plan_code: planCode,
-      catalog_limit: Number(catalogLimit),
+      catalog_limit: normalizedCatalogLimit,
       ...(Number.isInteger(expectedMonthlyTotal) ? { expected_total_amount_ars: expectedMonthlyTotal } : {}),
       privacy_accepted: privacyAccepted,
     },
