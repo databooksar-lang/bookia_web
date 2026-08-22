@@ -399,7 +399,7 @@ tests.push(["renders checkout without collecting or displaying payer email", asy
   try {
     const { BillingSubscriptionPanel } = await vite.ssrLoadModule("/src/components/BillingSubscriptionPanel.jsx");
     const baseBilling = {
-      plan_code: "base", catalog_limit: 50, total_amount_ars: 20000, currency: "ARS",
+      plan_code: "base", catalog_limit: 40, total_amount_ars: 20000, currency: "ARS",
       trial_ends_at: "2026-09-01T00:00:00Z", current_period_end: "2026-09-01T00:00:00Z",
       payer_email: "payments@example.com", payer_email_editable: true, scheduled_change: null,
     };
@@ -428,7 +428,7 @@ tests.push(["renders legacy Plus AI subscriptions as read-only while offering on
     assert.doesNotMatch(markup, /value="plus_ai"/);
     assert.doesNotMatch(markup, /value="150"[^>]*>150 libros/);
     assert.match(markup, /value="200"[^>]*>200 libros/);
-    assert.match(markup, /value="50"[^>]*>50 libros/);
+    assert.match(markup, /value="40"[^>]*>40 libros/);
     assert.match(markup, /value="100"[^>]*>100 libros/);
   } finally {
     await vite.close();
@@ -663,7 +663,7 @@ tests.push(["shows only Inicial and Base + IA as paid public plans", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
 
   assert.match(publicPagesSource, /code: "initial"/);
-  assert.match(publicPagesSource, /code: "base", name: "Base \+ IA"[\s\S]*?limit: "Hasta 50 libros"[\s\S]*?Funcionalidades de IA incluidas/);
+  assert.match(publicPagesSource, /code: "base", name: "Base \+ IA"[\s\S]*?limit: "Hasta 40 libros"[\s\S]*?Funcionalidades de IA incluidas/);
   assert.doesNotMatch(publicPagesSource, /code: "plus_ai"|Hasta 150 libros|Mas elegido/);
 }]);
 tests.push(["renders the free trial alongside both paid plans and emphasizes Base + IA", async () => {

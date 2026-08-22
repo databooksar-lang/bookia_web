@@ -39,7 +39,7 @@ function getBillingDateDetails(billing, isReactivationPending) {
 
 function catalogLimitForPlan(planCode, catalogLimit) {
   if (planCode === "initial") return "25";
-  return String([50, 100, 200].includes(Number(catalogLimit)) ? catalogLimit : 50);
+  return String([40, 100, 200].includes(Number(catalogLimit)) ? catalogLimit : 40);
 }
 
 function selectablePlanCode(planCode) {
@@ -238,7 +238,7 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
       {canChange ? <form className="billing-change-form" onSubmit={scheduleChange}>
         <h3>Cambiar desde la próxima renovación</h3>
         <label>Plan<select value={planCode} onChange={(event) => { const nextPlan = event.target.value; setPlanCode(nextPlan); setCatalogLimit(catalogLimitForPlan(nextPlan)); }}><option value="initial">Inicial</option><option value="base">Base + IA</option></select></label>
-        <label>Capacidad<select value={catalogLimit} onChange={(event) => setCatalogLimit(event.target.value)}>{planCode === "initial" ? <option value="25">25 libros</option> : <><option value="50">50 libros</option><option value="100">100 libros</option><option value="200">200 libros</option></>}</select></label>
+        <label>Capacidad<select value={catalogLimit} onChange={(event) => setCatalogLimit(event.target.value)}>{planCode === "initial" ? <option value="25">25 libros</option> : <><option value="40">40 libros</option><option value="100">100 libros</option><option value="200">200 libros</option></>}</select></label>
         <button className="secondary-button" type="submit" disabled={busy || changeIsNoop}>Programar cambio</button>
       </form> : null}
 
@@ -248,7 +248,7 @@ export function BillingSubscriptionPanel({ initialBilling = null, onBillingChang
         <h3>{billing.plan_code === "trial" ? "Elegí un plan para continuar" : "Reactivar librería"}</h3>
         <p className="billing-notice">{billing.plan_code === "trial" ? "Tu prueba gratuita terminó. Elegí un plan y autorizalo en Mercado Pago para volver a administrar el catálogo." : "Elegí el plan y la capacidad. La reactivación es paga, sin una nueva prueba gratis, y tu librería volverá a publicarse cuando Mercado Pago confirme la autorización."}</p>
         <label>Plan<select value={planCode} onChange={(event) => { const nextPlan = event.target.value; setPlanCode(nextPlan); setCatalogLimit(catalogLimitForPlan(nextPlan)); }}><option value="initial">Inicial</option><option value="base">Base + IA</option></select></label>
-        <label>Capacidad<select value={catalogLimit} onChange={(event) => setCatalogLimit(event.target.value)}>{planCode === "initial" ? <option value="25">25 libros</option> : <><option value="50">50 libros</option><option value="100">100 libros</option><option value="200">200 libros</option></>}</select></label>
+        <label>Capacidad<select value={catalogLimit} onChange={(event) => setCatalogLimit(event.target.value)}>{planCode === "initial" ? <option value="25">25 libros</option> : <><option value="40">40 libros</option><option value="100">100 libros</option><option value="200">200 libros</option></>}</select></label>
         <button className="primary-button" type="submit" disabled={busy}>Reactivar y continuar en Mercado Pago</button>
       </form> : null}
       {message ? <p className="feedback success" role="status">{message}</p> : null}

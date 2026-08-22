@@ -2,7 +2,7 @@ const BOOKSTORE_PLAN_CODES = new Set(["trial", "initial", "base"]);
 const CATALOG_LIMITS_BY_PLAN = {
   trial: new Set([10]),
   initial: new Set([25]),
-  base: new Set([50, 100, 200]),
+  base: new Set([40, 100, 200]),
 };
 const BOOKSTORE_TYPES = new Set(["physical", "virtual", "hybrid"]);
 
