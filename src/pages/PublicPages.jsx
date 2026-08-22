@@ -788,9 +788,9 @@ function LegacyBookstoresPage() {
   );
 }
 function PlansPlan({ plan, isRegistrationFlow, onSelect }) {
-  const className = `plans-plan plans-plan-${plan.tone}${plan.featured ? " plans-featured" : ""}`;
+  const className = `plans-plan plans-plan-${plan.tone}`;
   const content = <>
-    <div className="plans-plan-head"><span>{plan.name}</span>{plan.featured ? <strong>Mas elegido</strong> : null}</div>
+    <div className="plans-plan-head"><span>{plan.name}</span></div>
     <p className="plans-price">{plan.price}<small>{plan.detail}</small></p>
     <p className="plans-limit">{plan.limit}</p>
     <ul>{plan.benefits.map((benefit) => <li key={benefit}><b>{"\u2713"}</b>{benefit}</li>)}</ul>
@@ -822,8 +822,7 @@ export function PlansPage({ isRegistrationFlow = false }) {
   };
   const plans = [
     { code: "initial", name: "Inicial", price: priceLabel("initial"), detail: "/mes", limit: "Hasta 25 libros", benefits: ["Carga manual desde web y Telegram", "Sin funcionalidades de IA"], tone: "base" },
-    { code: "base", name: "Base + IA", price: priceLabel("base"), detail: "/mes", limit: "Hasta 50 libros", benefits: ["Todas las funcionalidades web manuales", "Perfil publico de libreria"], tone: "base" },
-    { code: "plus_ai", name: "IA", price: priceLabel("plus_ai"), detail: "/mes", limit: "Hasta 150 libros", benefits: ["Todas las funcionalidades web", "Funcionalidades de IA incluidas", "Acceso al bot de Telegram"], tone: "featured", featured: true },
+    { code: "base", name: "Base + IA", price: priceLabel("base"), detail: "/mes", limit: "Hasta 50 libros", benefits: ["Todas las funcionalidades web", "Funcionalidades de IA incluidas", "Acceso al bot de Telegram"], tone: "base" },
   ];
 
   return (

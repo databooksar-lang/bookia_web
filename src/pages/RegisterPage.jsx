@@ -16,10 +16,6 @@ const BASE_CATALOG_OPTIONS = [
   { limit: "100", title: "Hasta 100 libros", description: "Amplia tu catalogo", offeringCode: "catalog_100" },
   { limit: "200", title: "Hasta 200 libros", description: "Amplia tu catalogo", offeringCode: "catalog_200" },
 ];
-const PLUS_AI_CATALOG_OPTIONS = [
-  { limit: "150", title: "Incluido", description: "Hasta 150 libros", offeringCode: null },
-  { limit: "200", title: "Hasta 200 libros", description: "Amplia tu catalogo", offeringCode: "catalog_200" },
-];
 function RegistrationChoice({ type, title, description, image, onChoose }) {
   return (
     <button type="button" className={`register-choice register-choice-${type}`} onClick={onChoose}>
@@ -70,8 +66,8 @@ export function RegisterPage({ onRegister, onAuthenticated, pendingAction, me, l
   const profileType = queryState.profileType;
   const planCode = queryState.planCode;
   const isTrial = isFreeTrialPlan(planCode);
-  const selectedCatalogLimit = isTrial ? "10" : planCode === "initial" ? "25" : planCode === "plus_ai" ? (catalogLimit === "200" ? "200" : "150") : catalogLimit;
-  const catalogOptions = planCode === "initial" ? [{ limit: "25", title: "Incluido", description: "Hasta 25 libros", offeringCode: null }] : planCode === "plus_ai" ? PLUS_AI_CATALOG_OPTIONS : BASE_CATALOG_OPTIONS;
+  const selectedCatalogLimit = isTrial ? "10" : planCode === "initial" ? "25" : catalogLimit;
+  const catalogOptions = planCode === "initial" ? [{ limit: "25", title: "Incluido", description: "Hasta 25 libros", offeringCode: null }] : BASE_CATALOG_OPTIONS;
   const isReader = profileType === "reader";
   const isBookstoreDetails = profileType === "bookstore" && bookstoreStep === "details";
   const isBookstoreSummary = profileType === "bookstore" && bookstoreStep === "summary";
@@ -212,7 +208,7 @@ export function RegisterPage({ onRegister, onAuthenticated, pendingAction, me, l
                 </label>)}
               </fieldset>}
             </> : <div className="register-subscription-summary">
-              <div><span>Plan {planCode === "plus_ai" ? "Plus AI" : "Base + IA"}</span><strong>{formatCommercialPrice(pricingState.prices?.[planCode] || 0)}/mes</strong></div>
+              <div><span>Plan {planCode === "initial" ? "Inicial" : "Base + IA"}</span><strong>{formatCommercialPrice(pricingState.prices?.[planCode] || 0)}/mes</strong></div>
               <div><span>Catalogo de hasta {selectedCatalogLimit} libros</span><strong>{addonCode ? `+ ${formatCommercialPrice(pricingState.prices?.[addonCode] || 0)}/mes` : "Incluido"}</strong></div>
               <div className="register-subscription-total"><span>Total mensual</span><strong>{formatCommercialPrice(monthlyTotal || 0)}</strong></div>
               <p><strong>Hoy: ARS 0.</strong> Tenes 30 dias de prueba gratis. El primer cobro se estima para el {firstChargeEstimate}, luego se renueva automaticamente cada mes.</p>

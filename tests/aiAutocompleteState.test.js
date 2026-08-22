@@ -2,7 +2,8 @@ import { mergeAiAutocompleteSuggestion, getAiAutocompleteSourceState } from "../
 import { canUseAiAutocomplete } from "../src/aiAutocompleteAccess.js";
 
 export function registerAiAutocompleteStateTests(register) {
-  register("allows AI autocomplete only for plus_ai", () => {
+  register("allows AI autocomplete for Base and migrating Plus AI subscriptions", () => {
+    if (!canUseAiAutocomplete("base")) throw new Error("base should have access");
     if (!canUseAiAutocomplete("plus_ai")) throw new Error("plus_ai should have access");
     if (canUseAiAutocomplete("starter")) throw new Error("starter should not have access");
     if (canUseAiAutocomplete(null)) throw new Error("missing plan should not have access");

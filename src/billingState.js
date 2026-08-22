@@ -1,7 +1,9 @@
 const ACTIVE_MANAGEMENT_STATES = new Set(["trialing", "active", "grace_period", "cancel_at_period_end"]);
 const PAYMENT_ATTENTION_STATES = new Set(["payment_pending", "grace_period", "restricted"]);
-const PLAN_CODES = new Set(["initial", "base", "plus_ai"]);
-const CATALOG_LIMITS = new Set([25, 50, 100, 150, 200]);
+const CATALOG_LIMITS_BY_PLAN = {
+  initial: new Set([25]),
+  base: new Set([50, 100, 200]),
+};
 const MERCADO_PAGO_HOSTS = ["mercadopago.com", "mercadopago.com.ar"];
 
 const STATUS_LABELS = {
@@ -34,8 +36,8 @@ export function getBillingAccessState(billing) {
 
 export function buildBillingChangeRequest(planCode, catalogLimit) {
   const normalizedLimit = Number(catalogLimit);
-  if (!PLAN_CODES.has(planCode)) throw new Error("El plan seleccionado no es válido.");
-  if (!CATALOG_LIMITS.has(normalizedLimit)) throw new Error("La capacidad de catálogo no es válida.");
+  if (!Object.hasOwn(CATALOG_LIMITS_BY_PLAN, planCode)) throw new Error("El plan seleccionado no es válido.");
+  if (!CATALOG_LIMITS_BY_PLAN[planCode].has(normalizedLimit)) throw new Error("La capacidad de catálogo no es válida para el plan seleccionado.");
   return { plan_code: planCode, catalog_limit: normalizedLimit };
 }
 

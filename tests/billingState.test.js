@@ -28,7 +28,11 @@ export function registerBillingStateTests(test) {
   });
 
   test("builds a validated next-renewal change request", () => {
+    assert.deepEqual(buildBillingChangeRequest("initial", "25"), { plan_code: "initial", catalog_limit: 25 });
     assert.deepEqual(buildBillingChangeRequest("base", "200"), { plan_code: "base", catalog_limit: 200 });
+    assert.throws(() => buildBillingChangeRequest("initial", "50"), /capacidad/i);
+    assert.throws(() => buildBillingChangeRequest("base", "25"), /capacidad/i);
+    assert.throws(() => buildBillingChangeRequest("plus_ai", "150"), /plan/i);
     assert.throws(() => buildBillingChangeRequest("trial", "50"), /plan/i);
   });
 
