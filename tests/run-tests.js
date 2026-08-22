@@ -314,8 +314,8 @@ tests.push(["keeps plan selection inside the bookstore registration flow", () =>
   assert.doesNotMatch(plansSource, /plans-trial-banner/);
   assert.match(plansSource, /por 30 dias/);
   assert.match(plansSource, /Hasta 10 libros/);
-  assert.match(plansSource, /\{ code: "initial"/);
-  assert.match(plansSource, /\{ code: "base", name: "Base \+ IA"/);
+  assert.match(plansSource, /\{ code: "initial", name: "Manual"/);
+  assert.match(plansSource, /\{ code: "base", name: "Plus AI"/);
   assert.doesNotMatch(plansSource, /code: "plus_ai"/);
   assert.match(plansSource, /Funcionalidades de IA incluidas/);
 }]);
@@ -659,14 +659,15 @@ tests.push(["offers catalog add-ons after bookstore account credentials", () => 
   assert.match(registerSource, /if \(!isReader && !isTrial\) checkoutBody = buildBillingCheckoutRequest\(\);/);
   assert.match(editorialStyles, /\.register-catalog-options/);
 }]);
-tests.push(["shows only Inicial and Base + IA as paid public plans", () => {
+tests.push(["shows only Manual and Plus AI as paid public plans", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
 
   assert.match(publicPagesSource, /code: "initial"/);
-  assert.match(publicPagesSource, /code: "base", name: "Base \+ IA"[\s\S]*?limit: "Hasta 40 libros"[\s\S]*?Funcionalidades de IA incluidas/);
+  assert.match(publicPagesSource, /code: "initial", name: "Manual"/);
+  assert.match(publicPagesSource, /code: "base", name: "Plus AI"[\s\S]*?limit: "Hasta 40 libros"[\s\S]*?Funcionalidades de IA incluidas/);
   assert.doesNotMatch(publicPagesSource, /code: "plus_ai"|Hasta 150 libros|Mas elegido/);
 }]);
-tests.push(["renders the free trial alongside both paid plans and emphasizes Base + IA", async () => {
+tests.push(["renders the free trial alongside both paid plans and emphasizes Plus AI", async () => {
   const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
   try {
     const publicPages = await vite.ssrLoadModule("/src/pages/PublicPages.jsx");
@@ -676,8 +677,8 @@ tests.push(["renders the free trial alongside both paid plans and emphasizes Bas
     assert.match(publicMarkup, /Prueba gratis/);
     assert.match(publicMarkup, /por 30 dias/);
     assert.match(publicMarkup, /Hasta 10 libros/);
-    assert.match(publicMarkup, /Inicial/);
-    assert.match(publicMarkup, /Base \+ IA/);
+    assert.match(publicMarkup, /Manual/);
+    assert.match(publicMarkup, /Plus AI/);
     assert.match(publicMarkup, /plans-plan-featured/);
     assert.equal((publicMarkup.match(/plans-plan /g) || []).length, 3);
     assert.equal((registrationMarkup.match(/Elegir este plan/g) || []).length, 3);
@@ -1010,14 +1011,17 @@ tests.push(["keeps the global page background free of grid lines", () => {
   assert.match(bodyRule, /background:\s*var\(--paper\);/);
   assert.doesNotMatch(bodyRule, /linear-gradient\(/);
 }]);
-tests.push(["names the Base plan as Base + IA across customer billing screens", () => {
+tests.push(["names commercial plans as Manual and Plus AI across customer billing screens", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
   const registerPageSource = readFileSync(new URL("../src/pages/RegisterPage.jsx", import.meta.url), "utf8");
   const billingPanelSource = readFileSync(new URL("../src/components/BillingSubscriptionPanel.jsx", import.meta.url), "utf8");
 
-  assert.match(publicPagesSource, /name: "Base \+ IA"/);
-  assert.match(registerPageSource, /"Base \+ IA"/);
-  assert.match(billingPanelSource, /"Base \+ IA"/);
+  assert.match(publicPagesSource, /name: "Manual"/);
+  assert.match(publicPagesSource, /name: "Plus AI"/);
+  assert.match(registerPageSource, /"Manual"/);
+  assert.match(registerPageSource, /"Plus AI"/);
+  assert.match(billingPanelSource, /"Manual"/);
+  assert.match(billingPanelSource, /"Plus AI"/);
 }]);
 
 tests.push(["uses the Bookia relationship graph in the About hero", () => {

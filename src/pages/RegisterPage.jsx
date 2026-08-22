@@ -208,7 +208,7 @@ export function RegisterPage({ onRegister, onAuthenticated, pendingAction, me, l
                 </label>)}
               </fieldset>}
             </> : <div className="register-subscription-summary">
-              <div><span>Plan {planCode === "initial" ? "Inicial" : "Base + IA"}</span><strong>{formatCommercialPrice(pricingState.prices?.[planCode] || 0)}/mes</strong></div>
+              <div><span>Plan {planCode === "initial" ? "Manual" : "Plus AI"}</span><strong>{formatCommercialPrice(pricingState.prices?.[planCode] || 0)}/mes</strong></div>
               <div><span>Catalogo de hasta {selectedCatalogLimit} libros</span><strong>{addonCode ? `+ ${formatCommercialPrice(pricingState.prices?.[addonCode] || 0)}/mes` : "Incluido"}</strong></div>
               <div className="register-subscription-total"><span>Total mensual</span><strong>{formatCommercialPrice(monthlyTotal || 0)}</strong></div>
               <p><strong>Hoy: ARS 0.</strong> Tenes 30 dias de prueba gratis. El primer cobro se estima para el {firstChargeEstimate}, luego se renueva automaticamente cada mes.</p>
