@@ -864,6 +864,7 @@ tests.push(["renders the visual pricing composition with catalog growth band", (
   assert.match(publicPagesSource, /<BookIcon size=\{54\} \/>/);
   assert.doesNotMatch(publicPagesSource, /\\u25A5/);
   assert.match(editorialStyles, /\.plans-pricing/);
+  assert.match(editorialStyles, /\.plans-pricing\s*\{[^}]*width:\s*min\(860px,\s*calc\(100%\s*-\s*48px\)\);[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/);
   assert.match(editorialStyles, /\.plans-growth-band/);
   assert.doesNotMatch(publicPagesSource, /plans-cta/);
   assert.doesNotMatch(editorialStyles, /\.plans-cta/);
