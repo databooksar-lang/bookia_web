@@ -120,6 +120,15 @@ export function registerDashboardCatalogStateTests(register) {
     assert.match(editorialStyles, /\.dashboard-list-active \.card-actions-main > \.catalog-ai-autocomplete-button:hover:not\(:disabled\)[^{]*\{[^}]*background:\s*var\(--coral-dark\);/s);
   });
 
+  register("styles the catalog save button with the green action color", () => {
+    const source = readFileSync(new URL("../src/pages/DashboardPage.jsx", import.meta.url), "utf8");
+    const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+    assert.match(source, /className="primary-button catalog-save-button"/);
+    assert.match(editorialStyles, /\.dashboard-list-active \.card-actions-main > \.catalog-save-button\s*\{[^}]*color:\s*var\(--cream\);[^}]*background:\s*var\(--forest\);[^}]*border-color:\s*var\(--forest\);/s);
+    assert.match(editorialStyles, /\.dashboard-list-active \.card-actions-main > \.catalog-save-button:hover:not\(:disabled\)[^{]*\{[^}]*background:\s*var\(--forest-deep\);/s);
+  });
+
 
   register("saves description and genre produced by an AI-applied draft", () => {
     const original = {
