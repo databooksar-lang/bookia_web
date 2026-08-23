@@ -4,7 +4,7 @@ import { trackWebInteractionEvent } from "../analyticsState";
 import { resolveApiUrl } from "../api";
 import { buildBookShareMessage, buildBookShareUrl, buildInstagramStoryCoverPath, buildTelegramShareHref, buildWhatsAppShareHref, copyBookShareUrl, createInstagramStoryFile, shareInstagramStoryFile } from "../bookSharingState";
 import { basePath } from "../routing";
-import { InstagramIcon, TelegramIcon, WhatsAppIcon } from "./Icons";
+import { InstagramIcon, ShareIcon, TelegramIcon, WhatsAppIcon } from "./Icons";
 
 function getShareData(item, bookstore) {
   const url = buildBookShareUrl({ origin: window.location.origin, basePath, bookstoreSlug: bookstore.slug, itemId: item.id });
@@ -71,7 +71,7 @@ export function BookShareMenu({ item, bookstore }) {
   if (!canShare) return null;
   const data = getShareData(item, bookstore);
   return <div className="book-share-menu">
-    <button type="button" className="secondary-button book-share-trigger" aria-expanded={isOpen} aria-controls={menuId} onClick={() => { setIsOpen((open) => !open); setMessage(""); }}>Compartir</button>
+    <button type="button" className="secondary-button book-share-trigger book-share-trigger-icon" aria-label="Compartir" title="Compartir" aria-expanded={isOpen} aria-controls={menuId} onClick={() => { setIsOpen((open) => !open); setMessage(""); }}><ShareIcon size={20} /></button>
     {isOpen ? <div id={menuId} className="book-share-options" role="group" aria-label={`Compartir ${item.title}`}>
       <a className="book-share-icon-button" href={buildWhatsAppShareHref(data)} target="_blank" rel="noreferrer" aria-label="Compartir por WhatsApp" title="Compartir por WhatsApp" onClick={() => { recordShare("whatsapp"); setMessage("Abriendo WhatsApp..."); setIsOpen(false); }}><WhatsAppIcon size={21} /></a>
       <button type="button" className="book-share-story-button" aria-label="Compartir Historia de Instagram" title="Compartir Historia de Instagram" onClick={shareInstagramStory} disabled={isStoryBusy}><InstagramIcon size={18} /><span>{isStoryBusy ? "Creando..." : "Story"}</span></button>
