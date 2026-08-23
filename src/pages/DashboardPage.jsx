@@ -184,6 +184,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
   const [saveBusyItemId, setSaveBusyItemId] = useState(null);
   const [saveErrorsByItemId, setSaveErrorsByItemId] = useState({});
   const [catalogActionBusy, setCatalogActionBusy] = useState(false);
+  const [pendingHideItem, setPendingHideItem] = useState(null);
   const [imageBusyId, setImageBusyId] = useState(null);
   const [aiBusyId, setAiBusyId] = useState(null);
   const [aiSuggestionsByItemId, setAiSuggestionsByItemId] = useState({});
@@ -243,6 +244,14 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
   useEffect(() => { if (me?.bookstore) loadCatalog(); }, [me]);
   useEffect(() => { setAnalyticsDraft({ startDate: analyticsFilter.startDate || getArgentinaToday(), endDate: analyticsFilter.endDate || getArgentinaToday() }); }, [analyticsFilter.startDate, analyticsFilter.endDate, analyticsFilter.mode]);
   useEffect(() => { if (me?.bookstore && section === "metrics") loadAnalytics(); }, [me, section, analyticsFilter.mode, analyticsFilter.month, analyticsFilter.startDate, analyticsFilter.endDate]);
+  useEffect(() => {
+    if (!pendingHideItem) return undefined;
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape" && !catalogMutationBusy) setPendingHideItem(null);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [pendingHideItem, catalogMutationBusy]);
 
   if (me === undefined) {
     return <div className="page-state"><div className="loading-mark" /><p>Preparando tu panel...</p></div>;
@@ -268,17 +277,18 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
     updateItem(item.id, { is_featured: !Boolean(item.is_featured) });
   }
 
-  function updateAvailability(itemId, availabilityStatus) {
+  function updateAvailability(itemId, availabilityStatus, onSuccess = () => {}) {
     if (catalogMutationBusy) return;
     setCatalogActionBusy(true);
     apiFetch(`/dashboard/catalog/${itemId}/availability`, { method: "PATCH", body: JSON.stringify({ availability_status: availabilityStatus }) })
-      .then(() => loadCatalog())
+      .then(() => { onSuccess(); return loadCatalog(); })
       .catch((fetchError) => setError(fetchError.message))
       .finally(() => setCatalogActionBusy(false));
   }
 
-  function hideItem(itemId) {
-    updateAvailability(itemId, "hidden");
+  function confirmHideItem() {
+    if (!pendingHideItem) return;
+    updateAvailability(pendingHideItem.id, "hidden", () => setPendingHideItem(null));
   }
 
   function autocompleteItem(item) {
@@ -546,7 +556,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
                 </div>
               ) : null}
               {isEditing && saveError ? <p className="feedback error catalog-save-error" role="alert">{saveError}</p> : null}
-              <div className="card-actions"><div className="card-actions-main">{isEditing ? <button type="button" className="secondary-button" onClick={cancelEditing} disabled={catalogActionsBusy}>Cancelar</button> : <><button type="button" className="secondary-button" onClick={() => startEditing(item)} disabled={catalogActionsBusy}>Editar</button><button type="button" className="secondary-button" onClick={() => toggleFeatured(item)} disabled={catalogActionsBusy}>{item.is_featured ? "Quitar destacado" : "Destacar"}</button><BookShareMenu item={item} bookstore={me.bookstore} /></>}{canAutocompleteWithAi ? <button type="button" className="secondary-button catalog-ai-autocomplete-button" onClick={() => autocompleteItem(item)} disabled={catalogActionsBusy}>{isAiBusy ? <><SparkleIcon size={16} /> Autocompletando...</> : <><SparkleIcon size={16} /> Autocompletar con IA</>}</button> : null}{isEditing ? <button type="button" className="primary-button catalog-save-button" onClick={() => saveItem(item)} disabled={catalogActionsBusy}>{saveUiState.isCurrentItemSaving ? "Guardando..." : "Guardar"}</button> : null}</div><button type="button" className="danger-button" onClick={() => hideItem(item.id)} disabled={catalogActionsBusy}>Eliminar</button></div>
+              <div className="card-actions"><div className="card-actions-main">{isEditing ? <button type="button" className="secondary-button" onClick={cancelEditing} disabled={catalogActionsBusy}>Cancelar</button> : <><button type="button" className="secondary-button" onClick={() => startEditing(item)} disabled={catalogActionsBusy}>Editar</button><button type="button" className="secondary-button" onClick={() => toggleFeatured(item)} disabled={catalogActionsBusy}>{item.is_featured ? "Quitar destacado" : "Destacar"}</button><BookShareMenu item={item} bookstore={me.bookstore} /></>}{canAutocompleteWithAi ? <button type="button" className="secondary-button catalog-ai-autocomplete-button" onClick={() => autocompleteItem(item)} disabled={catalogActionsBusy}>{isAiBusy ? <><SparkleIcon size={16} /> Autocompletando...</> : <><SparkleIcon size={16} /> Autocompletar con IA</>}</button> : null}{isEditing ? <button type="button" className="primary-button catalog-save-button" onClick={() => saveItem(item)} disabled={catalogActionsBusy}>{saveUiState.isCurrentItemSaving ? "Guardando..." : "Guardar"}</button> : null}</div><button type="button" className="danger-button catalog-hide-trigger" onClick={() => setPendingHideItem(item)} disabled={catalogActionsBusy}>Eliminar</button></div>
             </article>
           );
         })}</div> : null}
@@ -674,6 +684,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
         <BillingSubscriptionPanel initialBilling={me.billing} onBillingChange={() => refreshMe({ preserveOnError: true })} />
       </DashboardPanel>
       </div>
+      {pendingHideItem ? <div className="catalog-hide-dialog-backdrop" onClick={(event) => { if (event.target === event.currentTarget && !catalogMutationBusy) setPendingHideItem(null); }}><section className="catalog-hide-dialog" role="dialog" aria-modal="true" aria-labelledby="catalog-hide-dialog-title" aria-describedby="catalog-hide-dialog-description"><p className="section-label">MOVER A AGOTADOS</p><h2 id="catalog-hide-dialog-title">¿Mover “{pendingHideItem.title}” a Agotados?</h2><p id="catalog-hide-dialog-description">Dejará de mostrarse en tu catálogo activo, pero podrás volver a publicarlo cuando quieras.</p><div className="catalog-hide-dialog-actions"><button type="button" className="secondary-button" onClick={() => setPendingHideItem(null)} disabled={catalogMutationBusy} autoFocus>Cancelar</button><button type="button" className="danger-button" onClick={confirmHideItem} disabled={catalogMutationBusy}>{catalogActionBusy ? "Moviendo..." : "Mover a agotados"}</button></div></section></div> : null}
     </section>
   );
 }

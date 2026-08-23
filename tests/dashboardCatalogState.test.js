@@ -129,6 +129,20 @@ export function registerDashboardCatalogStateTests(register) {
     assert.match(editorialStyles, /\.dashboard-list-active \.card-actions-main > \.catalog-save-button:hover:not\(:disabled\)[^{]*\{[^}]*background:\s*var\(--forest-deep\);/s);
   });
 
+  register("confirms moving a catalog book to sold-out before changing availability", () => {
+    const source = readFileSync(new URL("../src/pages/DashboardPage.jsx", import.meta.url), "utf8");
+    const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+    assert.match(source, /const \[pendingHideItem, setPendingHideItem\] = useState\(null\);/);
+    assert.match(source, /onClick=\{\(\) => setPendingHideItem\(item\)\}/);
+    assert.match(source, /className="danger-button catalog-hide-trigger"/);
+    assert.match(source, /role="dialog" aria-modal="true"/);
+    assert.match(source, /Mover a agotados/);
+    assert.match(source, /updateAvailability\(pendingHideItem\.id, "hidden"/);
+    assert.match(editorialStyles, /\.dashboard-list-active \.card-actions > \.catalog-hide-trigger\s*\{[^}]*flex:\s*0 1 auto;[^}]*min-width:\s*max-content;[^}]*white-space:\s*nowrap;/s);
+    assert.ok(editorialStyles.indexOf(".dashboard-list-active .card-actions > .catalog-hide-trigger") > editorialStyles.lastIndexOf(".dashboard-list-active .card-actions > .danger-button"));
+  });
+
 
   register("saves description and genre produced by an AI-applied draft", () => {
     const original = {
