@@ -74,7 +74,7 @@ export function BookShareMenu({ item, bookstore }) {
     <button type="button" className="secondary-button book-share-trigger book-share-trigger-icon" aria-label="Compartir" title="Compartir" aria-expanded={isOpen} aria-controls={menuId} onClick={() => { setIsOpen((open) => !open); setMessage(""); }}><ShareIcon size={20} /></button>
     {isOpen ? <div id={menuId} className="book-share-options" role="group" aria-label={`Compartir ${item.title}`}>
       <a className="book-share-icon-button" href={buildWhatsAppShareHref(data)} target="_blank" rel="noreferrer" aria-label="Compartir por WhatsApp" title="Compartir por WhatsApp" onClick={() => { recordShare("whatsapp"); setMessage("Abriendo WhatsApp..."); setIsOpen(false); }}><WhatsAppIcon size={21} /></a>
-      <button type="button" className="book-share-story-button" aria-label="Compartir Historia de Instagram" title="Compartir Historia de Instagram" onClick={shareInstagramStory} disabled={isStoryBusy}><InstagramIcon size={18} /><span>{isStoryBusy ? "Creando..." : "Story"}</span></button>
+      <button type="button" className="book-share-story-button" aria-label="Compartir Historia de Instagram" title="Compartir Historia de Instagram" onClick={shareInstagramStory} disabled={isStoryBusy}><InstagramIcon size={18} /></button>
       <a className="book-share-icon-button" href={buildTelegramShareHref(data)} target="_blank" rel="noreferrer" aria-label="Compartir por Telegram" title="Compartir por Telegram" onClick={() => { recordShare("telegram"); setMessage("Abriendo Telegram..."); setIsOpen(false); }}><TelegramIcon size={21} /></a>
       <button type="button" className="book-share-copy-button" onClick={copyLink}>Copiar enlace</button>
     </div> : null}
