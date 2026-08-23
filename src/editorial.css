@@ -3264,6 +3264,18 @@ textarea:focus {
   border-color: var(--coral-dark);
 }
 
+.dashboard-list-active .card-actions-main > .catalog-save-button {
+  color: var(--cream);
+  background: var(--forest);
+  border-color: var(--forest);
+}
+
+.dashboard-list-active .card-actions-main > .catalog-save-button:hover:not(:disabled),
+.dashboard-list-active .card-actions-main > .catalog-save-button:focus-visible {
+  background: var(--forest-deep);
+  border-color: var(--forest-deep);
+}
+
 .dashboard-list-active .card-actions button svg {
   width: clamp(10px, 3vw, 16px);
   height: clamp(10px, 3vw, 16px);
