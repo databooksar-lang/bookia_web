@@ -139,8 +139,8 @@ export function registerDashboardCatalogStateTests(register) {
     assert.match(source, /role="dialog" aria-modal="true"/);
     assert.match(source, /Mover a agotados/);
     assert.match(source, /updateAvailability\(pendingHideItem\.id, "hidden"/);
-    assert.match(editorialStyles, /\.dashboard-list-active \.card-actions > \.catalog-hide-trigger\s*\{[^}]*flex:\s*0 1 auto;[^}]*min-width:\s*max-content;[^}]*white-space:\s*nowrap;/s);
-    assert.ok(editorialStyles.indexOf(".dashboard-list-active .card-actions > .catalog-hide-trigger") > editorialStyles.lastIndexOf(".dashboard-list-active .card-actions > .danger-button"));
+    assert.match(editorialStyles, /\.dashboard-list-active \.catalog-secondary-actions > \.catalog-hide-trigger\s*\{[^}]*flex:\s*0 1 auto;[^}]*min-width:\s*max-content;[^}]*white-space:\s*nowrap;/s);
+    assert.ok(editorialStyles.indexOf(".dashboard-list-active .catalog-secondary-actions > .catalog-hide-trigger") > editorialStyles.lastIndexOf(".dashboard-list-active .card-actions > .danger-button"));
   });
 
   register("keeps catalog edit and featured actions compact and aligned with the hide action", () => {
@@ -151,6 +151,24 @@ export function registerDashboardCatalogStateTests(register) {
     assert.match(source, /startEditing\(item\)[\s\S]*?>Editar</);
     assert.match(source, /toggleFeatured\(item\)[\s\S]*?>\{item\.is_featured \? "Quitar destacado" : "Destacar"\}</);
     assert.match(editorialStyles, /\.dashboard-list-active \.card-actions-main > \.catalog-compact-action\s*\{[^}]*flex:\s*0 1 auto;[^}]*min-width:\s*max-content;[^}]*white-space:\s*nowrap;/s);
+  });
+
+  register("places catalog sharing and hiding after the primary catalog actions", () => {
+    const source = readFileSync(new URL("../src/pages/DashboardPage.jsx", import.meta.url), "utf8");
+    const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+    const activeCardMarkup = source.slice(source.indexOf('<div className="card-actions"><div className="card-actions-main">'));
+    const editIndex = activeCardMarkup.indexOf(">Editar</button>");
+    const featuredIndex = activeCardMarkup.indexOf("toggleFeatured(item)");
+    const autocompleteIndex = activeCardMarkup.indexOf("catalog-ai-autocomplete-button");
+    const secondaryActionsIndex = activeCardMarkup.indexOf('className="catalog-secondary-actions"');
+    const shareIndex = activeCardMarkup.indexOf("<BookShareMenu item={item} bookstore={me.bookstore} />");
+    const hideIndex = activeCardMarkup.indexOf("catalog-hide-trigger");
+
+    assert.ok(editIndex < featuredIndex && featuredIndex < autocompleteIndex);
+    assert.ok(autocompleteIndex < secondaryActionsIndex && secondaryActionsIndex < shareIndex && shareIndex < hideIndex);
+    assert.match(editorialStyles, /\.dashboard-list-active \.catalog-secondary-actions\s*\{[^}]*width:\s*100%;[^}]*display:\s*flex;[^}]*flex-wrap:\s*wrap;/s);
+    assert.match(editorialStyles, /\.dashboard-list-active \.catalog-secondary-actions > \.book-share-menu > \.book-share-trigger-icon\s*\{[^}]*width:\s*38px;[^}]*height:\s*38px;[^}]*flex:\s*0 0 38px;[^}]*min-width:\s*38px;/s);
   });
 
 

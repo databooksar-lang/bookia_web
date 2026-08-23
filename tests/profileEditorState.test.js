@@ -354,7 +354,7 @@ export function registerProfileEditorStateTests(test) {
     assert.match(activeActionsRule, /flex-wrap:\s*wrap;/);
     assert.doesNotMatch(activeActionsRule, /overflow-x:/);
     assert.match(activeActionsRule, /gap:\s*clamp\(/);
-    assert.match(editorialSource, /\.dashboard-list-active \.card-actions-main\s*\{[^}]*flex:\s*1 1 20rem;[^}]*flex-wrap:\s*wrap;/s);
+    assert.match(editorialSource, /\.dashboard-list-active \.card-actions-main\s*\{[^}]*width:\s*100%;[^}]*flex:\s*0 0 100%;[^}]*flex-wrap:\s*wrap;/s);
     assert.match(editorialSource, /\.dashboard-list-active \.card-actions > \.danger-button\s*\{[^}]*flex:\s*1 1 6rem;[^}]*min-width:\s*6rem;/s);
     assert.match(editorialSource, /\.dashboard-list-active \.card-actions-main > button,[\s\S]*?\.dashboard-list-active \.card-actions > \.danger-button\s*\{[^}]*flex:\s*1 1 6\.25rem;[^}]*min-width:\s*6\.25rem;[^}]*font-size:\s*clamp\(/s);
     assert.match(editorialSource, /\.dashboard-list-active \.card-actions-main > button:has\(svg\)\s*\{[^}]*flex:\s*2 1 16rem;[^}]*min-width:\s*16rem;/s);
