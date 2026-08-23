@@ -143,6 +143,16 @@ export function registerDashboardCatalogStateTests(register) {
     assert.ok(editorialStyles.indexOf(".dashboard-list-active .card-actions > .catalog-hide-trigger") > editorialStyles.lastIndexOf(".dashboard-list-active .card-actions > .danger-button"));
   });
 
+  register("keeps catalog edit and featured actions compact and aligned with the hide action", () => {
+    const source = readFileSync(new URL("../src/pages/DashboardPage.jsx", import.meta.url), "utf8");
+    const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+    assert.equal((source.match(/className="secondary-button catalog-compact-action"/g) || []).length, 2);
+    assert.match(source, /startEditing\(item\)[\s\S]*?>Editar</);
+    assert.match(source, /toggleFeatured\(item\)[\s\S]*?>\{item\.is_featured \? "Quitar destacado" : "Destacar"\}</);
+    assert.match(editorialStyles, /\.dashboard-list-active \.card-actions-main > \.catalog-compact-action\s*\{[^}]*flex:\s*0 1 auto;[^}]*min-width:\s*max-content;[^}]*white-space:\s*nowrap;/s);
+  });
+
 
   register("saves description and genre produced by an AI-applied draft", () => {
     const original = {
