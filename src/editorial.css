@@ -3250,6 +3250,12 @@ textarea:focus {
   white-space: nowrap;
 }
 
+.dashboard-list-active .card-actions-main > .catalog-compact-action {
+  flex: 0 1 auto;
+  min-width: max-content;
+  white-space: nowrap;
+}
+
 .dashboard-list-active .card-actions-main > button:has(svg) {
   flex: 2 1 16rem;
   min-width: 16rem;
