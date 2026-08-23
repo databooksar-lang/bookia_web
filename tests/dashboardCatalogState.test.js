@@ -115,7 +115,7 @@ export function registerDashboardCatalogStateTests(register) {
     assert.match(aiButtonRule, /flex:\s*0 1 auto;/);
     assert.match(aiButtonRule, /min-width:\s*max-content;/);
     assert.match(aiButtonRule, /white-space:\s*nowrap;/);
-    assert.match(aiButtonRule, /color:\s*var\(--forest-deep\);/);
+    assert.match(aiButtonRule, /color:\s*#fff;/);
     assert.match(aiButtonRule, /background:\s*var\(--coral\);/);
     assert.match(editorialStyles, /\.dashboard-list-active \.card-actions-main > \.catalog-ai-autocomplete-button:hover:not\(:disabled\)[^{]*\{[^}]*background:\s*var\(--coral-dark\);/s);
   });

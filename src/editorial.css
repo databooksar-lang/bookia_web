@@ -3252,7 +3252,7 @@ textarea:focus {
 .dashboard-list-active .card-actions-main > .catalog-ai-autocomplete-button {
   flex: 0 1 auto;
   min-width: max-content;
-  color: var(--forest-deep);
+  color: #fff;
   background: var(--coral);
   border-color: var(--coral);
   white-space: nowrap;
