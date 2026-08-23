@@ -3244,6 +3244,12 @@ textarea:focus {
   white-space: normal;
 }
 
+.dashboard-list-active .card-actions > .catalog-hide-trigger {
+  flex: 0 1 auto;
+  min-width: max-content;
+  white-space: nowrap;
+}
+
 .dashboard-list-active .card-actions-main > button:has(svg) {
   flex: 2 1 16rem;
   min-width: 16rem;
@@ -3281,6 +3287,32 @@ textarea:focus {
   height: clamp(10px, 3vw, 16px);
   flex: 0 0 auto;
 }
+
+.catalog-hide-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  padding: 24px;
+  display: grid;
+  place-items: center;
+  background: rgba(7, 24, 19, 0.78);
+  backdrop-filter: blur(7px);
+}
+
+.catalog-hide-dialog {
+  width: min(460px, 100%);
+  padding: clamp(24px, 5vw, 34px);
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  border-radius: 16px;
+  background: rgba(255, 250, 240, 0.98);
+  box-shadow: var(--shadow-soft);
+}
+
+.catalog-hide-dialog h2 { margin: 8px 0 12px; color: var(--forest-deep); font-size: clamp(1.45rem, 4vw, 2rem); line-height: 1.05; }
+.catalog-hide-dialog p:not(.section-label) { margin: 0; color: var(--muted); line-height: 1.55; }
+.catalog-hide-dialog-actions { margin-top: 24px; display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 10px; }
+.catalog-hide-dialog-actions .danger-button { color: #fff; background: #a13e2f; border-color: #a13e2f; }
+.catalog-hide-dialog-actions .danger-button:hover:not(:disabled), .catalog-hide-dialog-actions .danger-button:focus-visible { background: #7d2f25; border-color: #7d2f25; }
 
 .site-footer {
   color: var(--cream);
