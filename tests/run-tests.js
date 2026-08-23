@@ -715,6 +715,14 @@ tests.push(["uses the universal share icon for reading-club share triggers", () 
   assert.match(readingClubShareMenuSource, /aria-label="Compartir"/);
   assert.match(readingClubShareMenuSource, /title="Compartir"/);
 }]);
+tests.push(["uses the universal share icon for catalog share triggers", () => {
+  const bookShareMenuSource = readFileSync(new URL("../src/components/BookShareMenu.jsx", import.meta.url), "utf8");
+
+  assert.match(bookShareMenuSource, /ShareIcon size=\{20\}/);
+  assert.match(bookShareMenuSource, /book-share-trigger book-share-trigger-icon/);
+  assert.match(bookShareMenuSource, /aria-label="Compartir"/);
+  assert.match(bookShareMenuSource, /title="Compartir"/);
+}]);
 
 tests.push(["emits one session-expiry event for repeated unauthorized API responses", async () => {
   const previousFetch = globalThis.fetch;
