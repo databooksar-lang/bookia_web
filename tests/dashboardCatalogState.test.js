@@ -106,6 +106,20 @@ export function registerDashboardCatalogStateTests(register) {
     assert.doesNotMatch(source, /\\uD83E\\uDE84/);
   });
 
+  register("highlights and sizes the dashboard AI autocomplete button to its content", () => {
+    const source = readFileSync(new URL("../src/pages/DashboardPage.jsx", import.meta.url), "utf8");
+    const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+    assert.match(source, /className="secondary-button catalog-ai-autocomplete-button"/);
+    const aiButtonRule = editorialStyles.match(/\.dashboard-list-active \.card-actions-main > \.catalog-ai-autocomplete-button\s*\{([^}]*)\}/s)?.[1] || "";
+    assert.match(aiButtonRule, /flex:\s*0 1 auto;/);
+    assert.match(aiButtonRule, /min-width:\s*max-content;/);
+    assert.match(aiButtonRule, /white-space:\s*nowrap;/);
+    assert.match(aiButtonRule, /color:\s*var\(--forest-deep\);/);
+    assert.match(aiButtonRule, /background:\s*var\(--coral\);/);
+    assert.match(editorialStyles, /\.dashboard-list-active \.card-actions-main > \.catalog-ai-autocomplete-button:hover:not\(:disabled\)[^{]*\{[^}]*background:\s*var\(--coral-dark\);/s);
+  });
+
 
   register("saves description and genre produced by an AI-applied draft", () => {
     const original = {

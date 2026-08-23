@@ -3249,6 +3249,21 @@ textarea:focus {
   min-width: 16rem;
 }
 
+.dashboard-list-active .card-actions-main > .catalog-ai-autocomplete-button {
+  flex: 0 1 auto;
+  min-width: max-content;
+  color: var(--forest-deep);
+  background: var(--coral);
+  border-color: var(--coral);
+  white-space: nowrap;
+}
+
+.dashboard-list-active .card-actions-main > .catalog-ai-autocomplete-button:hover:not(:disabled),
+.dashboard-list-active .card-actions-main > .catalog-ai-autocomplete-button:focus-visible {
+  background: var(--coral-dark);
+  border-color: var(--coral-dark);
+}
+
 .dashboard-list-active .card-actions button svg {
   width: clamp(10px, 3vw, 16px);
   height: clamp(10px, 3vw, 16px);
