@@ -722,6 +722,7 @@ tests.push(["uses the universal share icon for catalog share triggers", () => {
   assert.match(bookShareMenuSource, /book-share-trigger book-share-trigger-icon/);
   assert.match(bookShareMenuSource, /aria-label="Compartir"/);
   assert.match(bookShareMenuSource, /title="Compartir"/);
+  assert.doesNotMatch(bookShareMenuSource, /<span>\{isStoryBusy \? "Creando\.\.\." : "Story"\}<\/span>/);
 }]);
 
 tests.push(["emits one session-expiry event for repeated unauthorized API responses", async () => {
