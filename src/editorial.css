@@ -3153,7 +3153,7 @@ textarea:focus {
 
 .catalog-item-summary {
   display: grid;
-  grid-template-columns: 60px 1fr minmax(175px, 0.3fr);
+  grid-template-columns: 60px minmax(0, 1fr) max-content;
   align-items: center;
   gap: 18px;
 }
@@ -3179,6 +3179,13 @@ textarea:focus {
 .catalog-item-summary p {
   margin: 0;
   color: var(--muted);
+}
+
+.catalog-item-summary > .status-pill {
+  justify-self: end;
+  align-self: start;
+  white-space: nowrap;
+  line-height: 1.1;
 }
 
 .status-select {
@@ -3913,7 +3920,8 @@ textarea:focus {
   }
 
   .catalog-item-summary {
-    grid-template-columns: 52px 1fr;
+    grid-template-columns: 52px minmax(0, 1fr) max-content;
+    gap: 12px;
   }
 
   .footer-inner {

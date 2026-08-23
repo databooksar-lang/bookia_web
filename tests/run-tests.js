@@ -1011,6 +1011,13 @@ tests.push(["keeps the global page background free of grid lines", () => {
   assert.match(bodyRule, /background:\s*var\(--paper\);/);
   assert.doesNotMatch(bodyRule, /linear-gradient\(/);
 }]);
+tests.push(["keeps dashboard availability pills aligned in a three-column catalog summary", () => {
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+
+  assert.match(editorialStyles, /\.catalog-item-summary\s*\{[^}]*grid-template-columns:\s*60px\s+minmax\(0,\s*1fr\)\s+max-content;/s);
+  assert.match(editorialStyles, /\.catalog-item-summary\s*>\s*\.status-pill\s*\{[^}]*justify-self:\s*end;[^}]*align-self:\s*start;[^}]*white-space:\s*nowrap;[^}]*line-height:\s*1\.1;/s);
+  assert.match(editorialStyles, /@media \(max-width: 820px\)\s*\{[\s\S]*?\.catalog-item-summary\s*\{[^}]*grid-template-columns:\s*52px\s+minmax\(0,\s*1fr\)\s+max-content;[^}]*gap:\s*12px;/);
+}]);
 tests.push(["names commercial plans as Manual and Plus AI across customer billing screens", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
   const registerPageSource = readFileSync(new URL("../src/pages/RegisterPage.jsx", import.meta.url), "utf8");
