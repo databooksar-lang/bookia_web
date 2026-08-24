@@ -1332,6 +1332,9 @@ button:disabled {
 }
 
 .auth-required-dialog-card {
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
   width: min(500px, 100%);
   max-height: calc(100vh - 48px);
   padding: clamp(28px, 5vw, 42px);

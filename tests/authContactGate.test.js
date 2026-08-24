@@ -35,6 +35,7 @@ export function registerAuthContactGateTests(test) {
 
     assert.match(styles, /\.auth-required-dialog\s*\{/);
     assert.match(styles, /\.auth-required-dialog-card\s*\{/);
+    assert.match(styles, /\.auth-required-dialog-card\s*\{[^}]*isolation:\s*isolate;/s);
     assert.match(styles, /\.auth-required-dialog-actions\s*\{/);
     assert.match(styles, /\.store-contact-lock\s*\{/);
     assert.match(styles, /@media \(max-width: 620px\)[\s\S]*\.auth-required-dialog-card/s);
