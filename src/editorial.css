@@ -1296,6 +1296,74 @@ button:disabled {
   width: 100%;
 }
 
+.store-contact-lock {
+  margin: 4px 0 20px;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: start;
+  color: var(--forest-deep);
+  background: rgba(231, 184, 75, 0.16);
+  border: 1px solid rgba(18, 63, 50, 0.14);
+  border-radius: 12px;
+}
+
+.store-contact-lock p {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.bookstore-contact-feedback {
+  width: min(1280px, calc(100% - 48px));
+  margin: 20px auto 0;
+}
+
+.auth-required-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  padding: 24px;
+  display: grid;
+  place-items: center;
+  background: rgba(7, 24, 19, 0.78);
+  backdrop-filter: blur(7px);
+}
+
+.auth-required-dialog-card {
+  width: min(500px, 100%);
+  max-height: calc(100vh - 48px);
+  padding: clamp(28px, 5vw, 42px);
+  overflow: auto;
+  color: var(--ink);
+  background: rgba(255, 250, 240, 0.99);
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  border-radius: 18px;
+  box-shadow: 0 28px 80px rgba(7, 24, 19, 0.32);
+}
+
+.auth-required-dialog-card h2 {
+  margin-bottom: 12px;
+  color: var(--forest-deep);
+  font-size: clamp(2rem, 6vw, 3rem);
+  line-height: 1.04;
+}
+
+.auth-required-dialog-card > p:not(.section-label) {
+  color: var(--muted);
+}
+
+.auth-required-dialog-actions {
+  margin-top: 26px;
+  display: grid;
+  gap: 10px;
+}
+
+.auth-required-dialog-actions .text-link {
+  min-height: 42px;
+}
+
 .store-catalog {
   padding: 90px 0 0;
 }
@@ -3880,6 +3948,16 @@ textarea:focus {
 
   .store-contact-card {
     padding: 22px;
+  }
+
+  .auth-required-dialog {
+    padding: 10px;
+  }
+
+  .auth-required-dialog-card {
+    max-height: calc(100vh - 20px);
+    padding: 26px 22px;
+    border-radius: 14px;
   }
 
   .book-card {

@@ -41,6 +41,7 @@ import { registerGoogleOAuthStateTests } from "./googleOAuthState.test.js";
 import { registerPendingReaderActionTests } from "./pendingReaderAction.test.js";
 import { registerProgressiveReaderAuthIntegrationTests } from "./progressiveReaderAuthIntegration.test.js";
 import { registerDashboardMetricsPresentationTests } from "./dashboardMetricsPresentation.test.js";
+import { registerAuthContactGateTests } from "./authContactGate.test.js";
 
 import { registerDashboardNavigationStateTests } from './dashboardNavigationState.test.js';
 
@@ -171,6 +172,7 @@ registerGoogleOAuthStateTests((name, fn) => tests.push([name, fn]));
 registerPendingReaderActionTests((name, fn) => tests.push([name, fn]));
 registerProgressiveReaderAuthIntegrationTests((name, fn) => tests.push([name, fn]));
 registerDashboardMetricsPresentationTests((name, fn) => tests.push([name, fn]));
+registerAuthContactGateTests((name, fn) => tests.push([name, fn]));
 registerPlansPricingStateTests((name, fn) => tests.push([name, fn]));
 registerAnalyticsStateTests((name, fn) => tests.push([name, fn]));
 registerRegisterStateTests((name, fn) => tests.push([name, fn]));
@@ -221,27 +223,27 @@ tests.push(["keeps favorite controls disabled while reader favorites hydrate", (
   assert.match(publicPagesSource, /isSessionLoading=\{me === undefined \|\| favorites\.favoritesLoading\}/);
 }]);
 
-tests.push(["offers direct WhatsApp contact from each bookstore catalog cover", () => {
+tests.push(["routes each bookstore catalog cover through the profile-only contact gate", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
   const commerceSource = readFileSync(new URL("../src/components/Commerce.jsx", import.meta.url), "utf8");
   const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
 
   assert.match(publicPagesSource, /className="book-card-cover-actions"/);
   assert.match(publicPagesSource, /className="book-card-whatsapp"/);
-  assert.match(publicPagesSource, /message=\{`Hola, quisiera consultarte por el libro \$\{item\.title\} que vi publicado en Bookia\.`\}/);
-  assert.match(publicPagesSource, /trackWhatsAppClicked\(store, "bookstore_catalog_card", item\.id\)/);
+  assert.match(publicPagesSource, /<BookstoreWhatsAppAction className="book-card-whatsapp"[\s\S]*?source="bookstore_catalog_card"/);
+  assert.match(publicPagesSource, /onRequireAuth=\{requireBookstoreAuth\}/);
   assert.match(publicPagesSource, /event\.stopPropagation\(\)/);
   assert.match(commerceSource, /onKeyDown/);
   assert.match(editorialStyles, /\.book-card-cover-actions\s*\{[^}]*position:\s*relative;/s);
   assert.match(editorialStyles, /\.book-card-whatsapp\s*\{[^}]*position:\s*absolute;/s);
 }]);
 
-tests.push(["records general WhatsApp consultations from a bookstore profile", () => {
+tests.push(["records authenticated general WhatsApp consultations from a bookstore profile", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
 
   assert.match(
     publicPagesSource,
-    /<WhatsAppButton whatsappPhone=\{store\.whatsapp_phone\} onClick=\{\(\) => trackWhatsAppClicked\(store, "bookstore_profile_contact"\)\}>[\s\S]*?Hablar por WhatsApp[\s\S]*?<\/WhatsAppButton>/,
+    /<BookstoreWhatsAppAction me=\{me\} store=\{store\} source="bookstore_profile_contact" onRequireAuth=\{onRequireAuth\}/,
   );
 }]);
 
@@ -561,7 +563,7 @@ tests.push(["places contextual benefit strips after the bookstore and reading-cl
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
   const homePageSource = publicPagesSource.match(/export function HomePage\([^)]*\) \{([\s\S]*?)\r?\n\}\r?\n\r?\n\r?\nexport function BookstoresPage/);
   const bookstoresSectionSource = publicPagesSource.match(/function BookstoresSection\(\{ stores, loading \}\) \{([\s\S]*?)\r?\n\}\r?\n\r?\n\r?\nfunction ReadingClubsSection/);
-  const readingClubsSectionSource = publicPagesSource.match(/function ReadingClubsSection\(\) \{([\s\S]*?)\r?\n\}\r?\n\r?\nfunction NewsletterSignup/);
+  const readingClubsSectionSource = publicPagesSource.match(/function ReadingClubsSection\(\{ me \}\) \{([\s\S]*?)\r?\n\}\r?\n\r?\nfunction NewsletterSignup/);
 
   assert.ok(homePageSource, "HomePage should remain isolated before BookstoresPage");
   assert.ok(bookstoresSectionSource, "BookstoresSection should remain isolated before ReadingClubsSection");

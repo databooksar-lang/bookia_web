@@ -4,7 +4,10 @@ import { trackReaderFunnelEvent } from "./analyticsState.js";
 export const PENDING_READER_ACTION_STORAGE_KEY = "bookia.pending_reader_action";
 const PENDING_READER_ACTION_VERSION = 2;
 const READER_AUTH_TTL_MS = 30 * 60 * 1000;
-const ACTION_TYPES = new Set(["favorite_book", "follow_bookstore"]);
+const AUTO_APPLIED_ACTION_TYPES = new Set(["favorite_book", "follow_bookstore"]);
+const RESUMABLE_ACTION_TYPES = new Set(["contact_bookstore", "reading_club_interest"]);
+const ACTION_TYPES = new Set([...AUTO_APPLIED_ACTION_TYPES, ...RESUMABLE_ACTION_TYPES]);
+const BOOKSTORE_CONTACT_SOURCES = new Set(["bookstore_profile_contact", "bookstore_catalog_card", "book_detail_modal"]);
 const pendingApplications = new WeakMap();
 
 function currentOrigin() {
@@ -50,17 +53,36 @@ export function normalizePendingReturnPath(value, origin = currentOrigin()) {
   }
 }
 
-export function createPendingReaderAction({ type, targetId, bookstoreId, returnPath, origin = currentOrigin(), attemptId, createdAt } = {}, { now = currentTime, randomUUID = createUuid } = {}) {
+export function isAutoAppliedPendingReaderAction(action) {
+  return AUTO_APPLIED_ACTION_TYPES.has(action?.type);
+}
+
+export function isResumablePendingReaderAction(action) {
+  return RESUMABLE_ACTION_TYPES.has(action?.type);
+}
+
+export function getPendingActionAuthenticationMode(action, sessionData) {
+  if (isResumablePendingReaderAction(action)) return sessionData ? "resume" : "wrong_account";
+  if (isAutoAppliedPendingReaderAction(action)) return sessionData?.reader_profile ? "auto_apply" : "wrong_account";
+  return "none";
+}
+
+export function createPendingReaderAction({ type, targetId, bookstoreId, catalogItemId, source, returnPath, origin = currentOrigin(), attemptId, createdAt } = {}, { now = currentTime, randomUUID = createUuid } = {}) {
   const safeReturnPath = normalizePendingReturnPath(returnPath, origin);
   const safeAttemptId = attemptId || randomUUID();
   const safeCreatedAt = createdAt || new Date(now()).toISOString();
   if (!ACTION_TYPES.has(type) || !positiveInteger(targetId) || !safeReturnPath || !validUuid(safeAttemptId) || !validTimestamp(safeCreatedAt)) return null;
   if (bookstoreId !== undefined && bookstoreId !== null && !positiveInteger(bookstoreId)) return null;
+  if (catalogItemId !== undefined && catalogItemId !== null && !positiveInteger(catalogItemId)) return null;
+  if (catalogItemId !== undefined && catalogItemId !== null && type !== "contact_bookstore") return null;
+  if (source !== undefined && (type !== "contact_bookstore" || !BOOKSTORE_CONTACT_SOURCES.has(source))) return null;
   return {
     version: PENDING_READER_ACTION_VERSION,
     type,
     target_id: targetId,
     ...(positiveInteger(bookstoreId) ? { bookstore_id: bookstoreId } : {}),
+    ...(positiveInteger(catalogItemId) ? { catalog_item_id: catalogItemId } : {}),
+    ...(source ? { source } : {}),
     return_path: safeReturnPath,
     attempt_id: safeAttemptId,
     created_at: safeCreatedAt,
@@ -73,6 +95,8 @@ function validateStoredAction(value, origin) {
     type: value.type,
     targetId: value.target_id,
     bookstoreId: value.bookstore_id,
+    catalogItemId: value.catalog_item_id,
+    source: value.source,
     returnPath: value.return_path,
     origin,
     attemptId: value.attempt_id,
@@ -133,7 +157,33 @@ export function getPendingReaderActionCopy(action) {
       confirmation: "Ahora seguís esta librería.",
     };
   }
+  if (action?.type === "contact_bookstore") {
+    const isBookInquiry = positiveInteger(action.catalog_item_id);
+    return {
+      title: isBookInquiry ? "Consultá por este libro" : "Contactá a esta librería",
+      description: "Creá una cuenta o ingresá para acceder al contacto digital de la librería.",
+      continuationTitle: isBookInquiry ? "Tu consulta está lista" : "El contacto está listo",
+      continuationDescription: "Revisá la consulta y elegí cuándo continuar a WhatsApp.",
+      confirmation: "Contacto iniciado por WhatsApp.",
+    };
+  }
+  if (action?.type === "reading_club_interest") {
+    return {
+      title: "Mostrá tu interés en este club de lectura",
+      description: "Creá una cuenta o ingresá para completar tus datos y avisarle al anfitrión.",
+      continuationTitle: "Continuá con tu interés",
+      continuationDescription: "Abrí el club y completá el formulario cuando quieras.",
+      confirmation: "Interés enviado al anfitrión.",
+    };
+  }
   return { title: "Continuá en Bookia", description: "Ingresá o creá tu cuenta para continuar.", confirmation: "Acción completada." };
+}
+
+export function cancelPendingReaderAction(action, { storage = currentStorage(), origin = currentOrigin(), now = currentTime } = {}) {
+  const current = readPendingReaderAction({ storage, origin, now });
+  if (!action?.attempt_id || current?.attempt_id !== action.attempt_id) return false;
+  clearPendingReaderAction({ storage });
+  return true;
 }
 
 export function applyPendingReaderAction({ storage = currentStorage(), origin = currentOrigin(), now = currentTime, send = apiFetch, track = trackReaderFunnelEvent } = {}) {
@@ -142,6 +192,7 @@ export function applyPendingReaderAction({ storage = currentStorage(), origin = 
   const application = (async () => {
     const action = readPendingReaderAction({ storage, origin, now });
     if (!action) return { status: "none" };
+    if (!isAutoAppliedPendingReaderAction(action)) return { status: "resumable", action, returnPath: action.return_path };
     const resource = action.type === "favorite_book" ? "books" : "bookstores";
     try {
       await send(`/dashboard/favorites/${resource}/${action.target_id}`, { method: "POST" });
@@ -172,4 +223,21 @@ export function applyPendingReaderAction({ storage = currentStorage(), origin = 
   return application.finally(() => {
     if (pendingApplications.get(storage) === application) pendingApplications.delete(storage);
   });
+}
+
+export async function completeResumablePendingReaderAction({ type, targetId, storage = currentStorage(), origin = currentOrigin(), now = currentTime, track = trackReaderFunnelEvent } = {}) {
+  const action = readPendingReaderAction({ storage, origin, now });
+  if (!isResumablePendingReaderAction(action) || action.type !== type || action.target_id !== targetId) return { status: "none" };
+  clearPendingReaderAction({ storage });
+  try {
+    await track({
+      eventType: "reader_action_applied",
+      actionType: action.type,
+      bookstoreId: action.bookstore_id,
+      attemptId: action.attempt_id,
+    });
+  } catch {
+    // Analytics must never undo a successfully completed reader action.
+  }
+  return { status: "completed", action, message: getPendingReaderActionCopy(action).confirmation };
 }

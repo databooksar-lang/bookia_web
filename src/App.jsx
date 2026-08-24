@@ -16,7 +16,7 @@ import { ReaderProfilePage } from "./pages/ReaderProfilePage";
 import { BillingReturnPage } from "./pages/BillingReturnPage";
 import { getAccountDestination } from "./accountDestination";
 import { trackReaderFunnelEvent } from "./analyticsState";
-import { applyPendingReaderAction, clearPendingReaderAction, readPendingReaderAction } from "./pendingReaderAction";
+import { applyPendingReaderAction, clearPendingReaderAction, getPendingActionAuthenticationMode, isAutoAppliedPendingReaderAction, readPendingReaderAction } from "./pendingReaderAction";
 
 export default function App() {
   const { pathname, search } = useLocationState();
@@ -44,7 +44,8 @@ export default function App() {
       navigate(getAccountDestination(sessionData));
       return { status: "none" };
     }
-    if (!sessionData?.reader_profile) {
+    const authenticationMode = getPendingActionAuthenticationMode(action, sessionData);
+    if (authenticationMode === "wrong_account") {
       clearPendingReaderAction();
       setReaderActionFeedback({ kind: "error", message: "Esta acción necesita un perfil lector y no se aplicó a esta cuenta." });
       navigate(getAccountDestination(sessionData));
@@ -52,6 +53,10 @@ export default function App() {
     }
     if (registered) {
       trackReaderFunnelEvent({ eventType: "reader_registration_completed", actionType: action.type, bookstoreId: action.bookstore_id, attemptId: action.attempt_id });
+    }
+    if (authenticationMode === "resume") {
+      navigate(action.return_path);
+      return { status: "pending", action, returnPath: action.return_path };
     }
     try {
       const result = await applyPendingReaderAction();
@@ -113,7 +118,7 @@ export default function App() {
     <div className="app-shell">
       <SiteHeader pathname={pathname} me={me} refreshMe={refreshMe} />
       <main>
-        {readerActionFeedback ? <div className={`reader-action-feedback feedback ${readerActionFeedback.kind === "error" ? "error" : "success"}`} role={readerActionFeedback.kind === "error" ? "alert" : "status"}><span>{readerActionFeedback.message}</span>{readerActionFeedback.kind === "error" && pendingReaderAction && me?.reader_profile ? <button type="button" className="text-link" onClick={retryPendingReaderAction}>Reintentar</button> : null}<button type="button" className="reader-action-feedback-close" aria-label="Cerrar mensaje" onClick={() => setReaderActionFeedback(null)}>×</button></div> : null}
+        {readerActionFeedback ? <div className={`reader-action-feedback feedback ${readerActionFeedback.kind === "error" ? "error" : "success"}`} role={readerActionFeedback.kind === "error" ? "alert" : "status"}><span>{readerActionFeedback.message}</span>{readerActionFeedback.kind === "error" && isAutoAppliedPendingReaderAction(pendingReaderAction) && me?.reader_profile ? <button type="button" className="text-link" onClick={retryPendingReaderAction}>Reintentar</button> : null}<button type="button" className="reader-action-feedback-close" aria-label="Cerrar mensaje" onClick={() => setReaderActionFeedback(null)}>×</button></div> : null}
         {page}
       </main>
       <SiteFooter />
