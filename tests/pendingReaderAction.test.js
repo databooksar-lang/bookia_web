@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 
+import * as pendingActions from "../src/pendingReaderAction.js";
 import {
   PENDING_READER_ACTION_STORAGE_KEY,
   applyPendingReaderAction,
@@ -170,6 +171,164 @@ export function registerPendingReaderActionTests(test) {
   test("provides contextual, action-specific auth copy", () => {
     assert.match(getPendingReaderActionCopy({ type: "favorite_book" }).description, /guardar este libro/i);
     assert.match(getPendingReaderActionCopy({ type: "follow_bookstore" }).description, /seguir esta librer/i);
+  });
+
+  test("stores only validated identifiers for resumable contact and club intents", () => {
+    const storage = createMemoryStorage();
+    const contact = savePendingReaderAction({
+      type: "contact_bookstore",
+      targetId: 9,
+      catalogItemId: 21,
+      source: "book_detail_modal",
+      returnPath: "/bookstores/eterna",
+      phone: "1112345678",
+      message: "private",
+      externalUrl: "https://wa.me/1112345678",
+    }, { storage, now: () => NOW, randomUUID: () => ATTEMPT_ID });
+
+    assert.deepEqual(contact, {
+      version: 2,
+      type: "contact_bookstore",
+      target_id: 9,
+      bookstore_id: 9,
+      catalog_item_id: 21,
+      source: "book_detail_modal",
+      return_path: "/bookstores/eterna",
+      attempt_id: ATTEMPT_ID,
+      created_at: "2026-08-11T12:00:00.000Z",
+    });
+    assert.doesNotMatch(storage.getItem(PENDING_READER_ACTION_STORAGE_KEY), /1112345678|private|wa\.me/);
+
+    const club = createPendingReaderAction({ type: "reading_club_interest", targetId: 33, bookstoreId: 9, returnPath: "/#clubes", attemptId: ATTEMPT_ID, createdAt: "2026-08-11T12:00:00.000Z" });
+    assert.equal(club.target_id, 33);
+    assert.equal(club.bookstore_id, 9);
+    assert.equal(createPendingReaderAction({ type: "contact_bookstore", targetId: 9, catalogItemId: 0, returnPath: "/" }), null);
+    assert.equal(createPendingReaderAction({ type: "contact_bookstore", targetId: 9, source: "search_result", returnPath: "/" }), null);
+    assert.equal(createPendingReaderAction({ type: "reading_club_interest", targetId: 33, catalogItemId: 21, returnPath: "/" }), null);
+  });
+
+  test("classifies legacy actions for auto-apply and new actions for explicit continuation", () => {
+    assert.equal(pendingActions.isAutoAppliedPendingReaderAction?.({ type: "favorite_book" }), true);
+    assert.equal(pendingActions.isAutoAppliedPendingReaderAction?.({ type: "follow_bookstore" }), true);
+    assert.equal(pendingActions.isAutoAppliedPendingReaderAction?.({ type: "contact_bookstore" }), false);
+    assert.equal(pendingActions.isResumablePendingReaderAction?.({ type: "contact_bookstore" }), true);
+    assert.equal(pendingActions.isResumablePendingReaderAction?.({ type: "reading_club_interest" }), true);
+    assert.equal(pendingActions.isResumablePendingReaderAction?.({ type: "favorite_book" }), false);
+  });
+
+  test("routes post-auth actions by action kind and supports both active account types for continuations", () => {
+    const reader = { account: { email: "reader@example.com" }, reader_profile: { id: 1 } };
+    const bookstore = { account: { email: "store@example.com" }, bookstore: { id: 9 } };
+
+    assert.equal(pendingActions.getPendingActionAuthenticationMode?.({ type: "favorite_book" }, reader), "auto_apply");
+    assert.equal(pendingActions.getPendingActionAuthenticationMode?.({ type: "favorite_book" }, bookstore), "wrong_account");
+    assert.equal(pendingActions.getPendingActionAuthenticationMode?.({ type: "contact_bookstore" }, reader), "resume");
+    assert.equal(pendingActions.getPendingActionAuthenticationMode?.({ type: "contact_bookstore" }, bookstore), "resume");
+    assert.equal(pendingActions.getPendingActionAuthenticationMode?.({ type: "reading_club_interest" }, bookstore), "resume");
+  });
+
+  test("provides contextual auth and continuation copy for resumable actions", () => {
+    const contact = getPendingReaderActionCopy({ type: "contact_bookstore", catalog_item_id: 21 });
+    const club = getPendingReaderActionCopy({ type: "reading_club_interest" });
+
+    assert.match(contact.title, /consult. por este libro/i);
+    assert.match(contact.description, /cuenta/i);
+    assert.match(contact.continuationDescription, /WhatsApp/i);
+    assert.match(club.title, /club de lectura/i);
+    assert.match(club.continuationTitle, /inter.s/i);
+  });
+
+  test("clears and tracks a matching resumable action once after explicit success", async () => {
+    const storage = createMemoryStorage();
+    savePendingReaderAction({ type: "reading_club_interest", targetId: 33, bookstoreId: 9, returnPath: "/#clubes" }, { storage, now: () => NOW, randomUUID: () => ATTEMPT_ID });
+    const tracked = [];
+
+    const first = await pendingActions.completeResumablePendingReaderAction?.({
+      type: "reading_club_interest",
+      targetId: 33,
+      storage,
+      now: () => NOW,
+      track: async (event) => tracked.push(event),
+    });
+    const second = await pendingActions.completeResumablePendingReaderAction?.({ type: "reading_club_interest", targetId: 33, storage, now: () => NOW, track: async () => assert.fail("must not track twice") });
+
+    assert.equal(first?.status, "completed");
+    assert.equal(second?.status, "none");
+    assert.deepEqual(tracked, [{ eventType: "reader_action_applied", actionType: "reading_club_interest", bookstoreId: 9, readingClubId: 33, attemptId: ATTEMPT_ID }]);
+    assert.equal(storage.getItem(PENDING_READER_ACTION_STORAGE_KEY), null);
+  });
+
+  test("attributes every contact completion event to its target bookstore", async () => {
+    const storage = createMemoryStorage();
+    const action = savePendingReaderAction({ type: "contact_bookstore", targetId: 9, returnPath: "/bookstores/eterna" }, { storage, now: () => NOW, randomUUID: () => ATTEMPT_ID });
+    const tracked = [];
+
+    await pendingActions.completeResumablePendingReaderAction({ type: "contact_bookstore", targetId: 9, storage, now: () => NOW, track: async (event) => tracked.push(event) });
+
+    assert.equal(action.bookstore_id, 9);
+    assert.deepEqual(tracked, [{ eventType: "reader_action_applied", actionType: "contact_bookstore", bookstoreId: 9, attemptId: ATTEMPT_ID }]);
+  });
+
+  test("builds bookstore-attributed analytics for every contact funnel stage", () => {
+    const action = createPendingReaderAction({ type: "contact_bookstore", targetId: 9, returnPath: "/bookstores/eterna", attemptId: ATTEMPT_ID, createdAt: "2026-08-11T12:00:00.000Z" });
+    for (const eventType of ["reader_intent_started", "reader_auth_started", "reader_registration_completed", "reader_action_applied"]) {
+      assert.deepEqual(pendingActions.buildPendingReaderActionEvent?.(action, eventType), { eventType, actionType: "contact_bookstore", bookstoreId: 9, attemptId: ATTEMPT_ID });
+    }
+  });
+
+  test("builds club-targeted analytics for every reader-hosted and bookstore-hosted funnel stage", () => {
+    const readerHosted = createPendingReaderAction({ type: "reading_club_interest", targetId: 33, returnPath: "/#clubes", attemptId: ATTEMPT_ID, createdAt: "2026-08-11T12:00:00.000Z" });
+    const bookstoreHosted = createPendingReaderAction({ type: "reading_club_interest", targetId: 34, bookstoreId: 9, returnPath: "/#clubes", attemptId: ATTEMPT_ID, createdAt: "2026-08-11T12:00:00.000Z" });
+    for (const eventType of ["reader_intent_started", "reader_auth_started", "reader_registration_completed", "reader_action_applied"]) {
+      assert.deepEqual(pendingActions.buildPendingReaderActionEvent?.(readerHosted, eventType), {
+        eventType,
+        actionType: "reading_club_interest",
+        readingClubId: 33,
+        attemptId: ATTEMPT_ID,
+      });
+      assert.deepEqual(pendingActions.buildPendingReaderActionEvent?.(bookstoreHosted, eventType), {
+        eventType,
+        actionType: "reading_club_interest",
+        bookstoreId: 9,
+        readingClubId: 34,
+        attemptId: ATTEMPT_ID,
+      });
+    }
+  });
+
+  test("routes resumable contact after authentication without clearing it for either account type", async () => {
+    for (const sessionData of [{ reader_profile: { id: 1 } }, { bookstore: { id: 4 } }]) {
+      const storage = createMemoryStorage();
+      savePendingReaderAction({ type: "contact_bookstore", targetId: 9, returnPath: "/bookstores/eterna" }, { storage, now: () => NOW, randomUUID: () => ATTEMPT_ID });
+      const navigated = [];
+      const tracked = [];
+
+      const result = await pendingActions.completePendingReaderAuthentication?.({
+        sessionData,
+        registered: true,
+        fallbackPath: "/fallback",
+        storage,
+        now: () => NOW,
+        navigateTo: (path) => navigated.push(path),
+        track: async (event) => tracked.push(event),
+      });
+
+      assert.equal(result?.status, "pending");
+      assert.deepEqual(navigated, ["/bookstores/eterna"]);
+      assert.equal(readPendingReaderAction({ storage, now: () => NOW })?.attempt_id, ATTEMPT_ID);
+      assert.deepEqual(tracked, [{ eventType: "reader_registration_completed", actionType: "contact_bookstore", bookstoreId: 9, attemptId: ATTEMPT_ID }]);
+    }
+  });
+
+  test("cancels only the pending action created by the open auth dialog", () => {
+    const storage = createMemoryStorage();
+    const first = savePendingReaderAction({ type: "contact_bookstore", targetId: 9, returnPath: "/bookstores/eterna" }, { storage, now: () => NOW, randomUUID: () => ATTEMPT_ID });
+    const replacement = savePendingReaderAction({ type: "reading_club_interest", targetId: 33, returnPath: "/#clubes" }, { storage, now: () => NOW, randomUUID: () => "223e4567-e89b-42d3-a456-426614174000" });
+
+    assert.equal(pendingActions.cancelPendingReaderAction?.(first, { storage, now: () => NOW }), false);
+    assert.equal(readPendingReaderAction({ storage, now: () => NOW })?.attempt_id, replacement.attempt_id);
+    assert.equal(pendingActions.cancelPendingReaderAction?.(replacement, { storage, now: () => NOW }), true);
+    assert.equal(readPendingReaderAction({ storage, now: () => NOW }), null);
   });
 
 }

@@ -297,7 +297,8 @@ export function registerProfileEditorStateTests(test) {
     const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
     const commerceSource = readFileSync(new URL("../src/components/Commerce.jsx", import.meta.url), "utf8");
 
-    assert.equal((publicPagesSource.match(/whatsappPhone=\{/g) || []).length, 4);
+    assert.match(publicPagesSource, /export function BookstoreWhatsAppAction/);
+    assert.match(publicPagesSource, /whatsappPhone=\{store\?\.whatsapp_phone\}/);
     assert.match(publicPagesSource, /mailto:\$\{store\.correo\}/);
     assert.match(commerceSource, /buildWhatsAppHref\(whatsappPhone, message\)/);
   });
@@ -305,7 +306,7 @@ export function registerProfileEditorStateTests(test) {
     const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
 
     assert.match(publicPagesSource, /const mapsHref = buildGoogleMapsAddressUrl\(store\.address\)/);
-    assert.match(publicPagesSource, /content: <ContactLink href=\{mapsHref\}>\{store\.address\.trim\(\)\}<\/ContactLink>/);
+    assert.match(publicPagesSource, /content: mapsHref \? <ContactLink href=\{mapsHref\}>\{address\}<\/ContactLink> : address/);
     assert.match(publicPagesSource, /function ContactLink\(\{ href, children \}\) \{\s*return <a href=\{href\} target="_blank" rel="noopener noreferrer">/);
   });
   test("opens public bookstore book details from clickable cards", () => {

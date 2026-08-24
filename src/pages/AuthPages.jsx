@@ -6,7 +6,7 @@ import { AppLink, navigate } from "../navigation";
 import { ArrowIcon, BookIcon, EyeIcon, EyeOffIcon, GoogleIcon } from "../components/Icons";
 import { buildGoogleOAuthStartPayload, canStartGoogleOAuth, getGoogleOAuthCallback, getGoogleOAuthError, getGoogleOAuthLinkMessage } from "../googleOAuthState";
 import { trackReaderFunnelEvent } from "../analyticsState";
-import { getPendingReaderActionCopy } from "../pendingReaderAction";
+import { buildPendingReaderActionEvent, getPendingReaderActionCopy } from "../pendingReaderAction";
 import { buildRegisterPath } from "../registerState";
 
 export function GoogleButton({ intent, privacyAccepted = false, isAuthor = false, authorRightsDeclarationAccepted = false, pendingAction, onError }) {
@@ -16,7 +16,7 @@ export function GoogleButton({ intent, privacyAccepted = false, isAuthor = false
   if (!enabled) return null;
   function start() {
     setBusy(true);
-    if (pendingAction) trackReaderFunnelEvent({ eventType: "reader_auth_started", actionType: pendingAction.type, bookstoreId: pendingAction.bookstore_id, attemptId: pendingAction.attempt_id });
+    if (pendingAction) trackReaderFunnelEvent(buildPendingReaderActionEvent(pendingAction, "reader_auth_started"));
     apiFetch("/auth/google/start", { method: "POST", body: JSON.stringify(buildGoogleOAuthStartPayload({ intent, privacyAccepted, isAuthor, authorRightsDeclarationAccepted })) })
       .then((data) => window.location.assign(data.authorization_url))
       .catch((error) => { setBusy(false); onError(error.message); });
@@ -113,7 +113,7 @@ export function LoginPage({ onLogin, onAuthenticated, pendingAction, me, session
   }
   function submit(event) {
     event.preventDefault();
-    if (pendingAction) trackReaderFunnelEvent({ eventType: "reader_auth_started", actionType: pendingAction.type, bookstoreId: pendingAction.bookstore_id, attemptId: pendingAction.attempt_id });
+    if (pendingAction) trackReaderFunnelEvent(buildPendingReaderActionEvent(pendingAction, "reader_auth_started"));
     startTransition(() => {
       apiFetch("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) })
         .then(() => onLogin())

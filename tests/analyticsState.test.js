@@ -80,6 +80,20 @@ export function registerAnalyticsStateTests(register) {
     assert.deepEqual(sent, [["/analytics/reader-funnel-events", buildReaderFunnelEventPayload(event)]]);
   });
 
+  register("builds reader-hosted club funnel payloads without a bookstore", () => {
+    assert.deepEqual(buildReaderFunnelEventPayload({
+      eventType: "reader_intent_started",
+      actionType: "reading_club_interest",
+      readingClubId: 33,
+      attemptId: ATTEMPT_ID,
+    }), {
+      event_type: "reader_intent_started",
+      action_type: "reading_club_interest",
+      reading_club_id: 33,
+      attempt_id: ATTEMPT_ID,
+    });
+  });
+
   register("normalizes all four bookstore follower metrics", () => {
     assert.deepEqual(normalizeFollowerMetrics({ active_followers: 18, follows: 6, unfollows: 2, net_change: 4 }), {
       active_followers: 18,

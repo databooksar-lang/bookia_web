@@ -5,7 +5,7 @@ export function TermsPage() {
     <article className="editorial-page about-page legal-page">
       <p className="section-label">Terminos y Condiciones</p>
       <h1>Reglas claras para buscar, publicar y conectar.</h1>
-      <p>Vigente desde el 16 de agosto de 2026.</p>
+      <p>Vigente desde el 24 de agosto de 2026.</p>
       <p>Este documento resume las condiciones de uso de Bookia y no reemplaza asesoramiento legal profesional.</p>
 
       <h2>Responsable</h2>
@@ -18,7 +18,7 @@ export function TermsPage() {
       <p>Bookia es una plataforma digital que ayuda a lectores y visitantes a descubrir libros, librerias, vendedores de usados y proyectos relacionados con la circulacion de libros. Las librerias pueden crear y administrar una vidriera publica con datos de contacto, catalogo, imagenes, disponibilidad y actividades como clubes de lectura.</p>
 
       <h2>Usuarios lectores, visitantes y librerias</h2>
-      <p>Las personas visitantes pueden buscar libros, consultar perfiles publicos y contactar directamente a las librerias sin crear una cuenta. Las personas lectoras registradas pueden guardar libros, seguir o dejar de seguir librerias y administrar un perfil publico con su biografia, los generos de lectura que seleccione, sus rasgos lectores declarados y una lista de hasta 20 libros que desean encontrar. Los libros guardados como favoritos y las librerias seguidas son privados. Las librerias registradas pueden gestionar su perfil, catalogo, fotos, disponibilidad, datos de contacto y herramientas de carga segun su plan vigente.</p>
+      <p>Las personas visitantes pueden buscar libros y consultar perfiles publicos sin crear una cuenta. En el perfil publico de una libreria, el contacto digital requiere una cuenta autenticada; expresar interes en un club de lectura tambien requiere una cuenta autenticada. Esta regla no alcanza al descubrimiento anonimo ni a los resultados de busqueda: el flujo de detalle de un libro abierto fuera del perfil de la libreria puede ofrecer contacto directo por WhatsApp mediante el numero comercial publico que la libreria decidio publicar. Las personas lectoras registradas pueden guardar libros, seguir o dejar de seguir librerias y administrar un perfil publico con su biografia, los generos de lectura que seleccione, sus rasgos lectores declarados y una lista de hasta 20 libros que desean encontrar. Los libros guardados como favoritos y las librerias seguidas son privados. Las librerias registradas pueden gestionar su perfil, catalogo, fotos, disponibilidad, datos de contacto y herramientas de carga segun su plan vigente.</p>
 
       <h2>Perfiles de autor</h2>
       <p>Una persona lectora puede activar gratuitamente y de forma inmediata la capacidad de autor y gestionar hasta cinco obras propias con sus datos y portada. Al hacerlo declara que es autora o que cuenta con autorizacion suficiente para publicar las obras que incorpore, y asume responsabilidad por la veracidad de los datos y por los derechos sobre ese contenido. En esta etapa, las obras no se publican fuera de su panel; los estados Visible y Oculto preparan una publicacion futura. Mientras la capacidad este activa y su perfil lector sea publico, Bookia mostrara la insignia Autor/a en Bookia. La capacidad puede desactivarse sin borrar las obras; Bookia tambien puede ocultar contenido o suspenderla ante infracciones, reclamos, abuso o riesgos para terceros o para la plataforma.</p>

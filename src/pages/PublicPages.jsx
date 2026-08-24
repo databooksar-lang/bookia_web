@@ -9,7 +9,7 @@ import { formatCommercialPrice, getCommercialPrices } from "../plansPricingState
 import { buildFacebookHref, buildInstagramHref, buildWebsiteHref, buildWhatsAppHref, formatDisplayUrl, formatDisplayWhatsApp } from "../formatters";
 import { AppLink, navigate } from "../navigation";
 import { buildRegisterPath } from "../registerState";
-import { savePendingReaderAction } from "../pendingReaderAction";
+import { buildPendingReaderActionEvent, cancelPendingReaderAction, clearPendingReaderAction, completeResumablePendingReaderAction, readPendingReaderAction, savePendingReaderAction } from "../pendingReaderAction";
 import { displayBookstoreDescription } from "../profileEditorState";
 import { displayReadingClubDate } from "../readingClubState";
 import { buildGoogleMapsAddressUrl, buildPublicSearchParams, buildReadingClubSearchParams, filterBookstores, getAvailableReadingClubGenres, getBookstoreTags, getDiscoveryCarouselNavigation, getDiscoveryCarouselScrollOptions, getVisibleReadingClubs, selectDiscoveryCarouselItems } from "../publicSearchState";
@@ -21,7 +21,138 @@ import { BookstoreDescription } from "../components/BookstoreDescription";
 import { SectionIndex } from "../components/SectionIndex";
 import { ReaderAuthorBadge, ReaderAuthorBooks, ReaderMonogram, ReaderPassport, ReaderSocialLinks, ReaderWantedBooksPublic } from "../components/ReaderPublicProfile";
 import { BookCover } from "../components/BookCover";
+import { activateDialogFocus, AuthRequiredDialog, handleActionDialogBackdrop, handleActionDialogEscape, isolateDialogBackground, ReaderActionContinuationDialog, trapDialogFocus } from "../components/AuthRequiredDialog";
 import { ArrowIcon, BookIcon, LocationIcon, SearchIcon, StoreIcon, WhatsAppIcon } from "../components/Icons";
+
+export { activateDialogFocus, AuthRequiredDialog, handleActionDialogBackdrop, handleActionDialogEscape, isolateDialogBackground, trapDialogFocus };
+
+export const PENDING_ACTION_PERSISTENCE_ERROR = "La acción no se pudo guardar para continuar. Revisá la configuración del navegador e intentá nuevamente.";
+
+export function resolveBookstoreContactSession(me, store) {
+  if (me === undefined) return undefined;
+  if (store?.contact_requires_auth === true) return null;
+  if (store?.contact_requires_auth === false) return me || true;
+  return me;
+}
+
+export function getBookstoreSessionReconciliationKey(me, store, lastReconciledKey = null) {
+  if (!me || store?.contact_requires_auth !== true || !store?.id) return null;
+  const key = String(store.id);
+  return key === lastReconciledKey ? null : key;
+}
+
+export function resolveBookstoreContactContinuation(action, store, items = []) {
+  if (action?.type !== "contact_bookstore" || action.target_id !== store?.id) return null;
+  const catalogItem = action.catalog_item_id ? items.find((item) => item.id === action.catalog_item_id) : null;
+  if (action.catalog_item_id && !catalogItem) {
+    return { status: "unavailable", message: "Ese libro ya no está disponible en el catálogo. Podés seguir explorando la librería." };
+  }
+  const message = catalogItem ? `Hola, quisiera consultarte por el libro ${catalogItem.title} que vi publicado en Bookia.` : undefined;
+  const href = buildWhatsAppHref(store.whatsapp_phone, message);
+  if (!href) return { status: "unavailable", message: "Esta librería ya no tiene WhatsApp disponible. Podés volver a intentarlo más adelante." };
+  return {
+    status: "ready",
+    href,
+    catalogItem,
+    source: action.source || (catalogItem ? "bookstore_catalog_card" : "bookstore_profile_contact"),
+  };
+}
+
+export function handleBookstoreContactLoadFailure({ error, slug, storage, origin, now }) {
+  const action = readPendingReaderAction({ storage, origin, now });
+  const returnPath = action?.return_path?.split(/[?#]/, 1)[0];
+  if (action?.type !== "contact_bookstore" || returnPath !== `/bookstores/${slug}`) return null;
+  if (![404, 410].includes(error?.status)) return { status: "retryable", action };
+  cancelPendingReaderAction(action, { storage, origin, now });
+  return { status: "unavailable", action, message: "Esta librería ya no está disponible para contactar. Podés volver a la búsqueda y elegir otra." };
+}
+
+export function getReadingClubInterestMode(me) {
+  if (me === undefined) return "loading";
+  return me ? "open_form" : "auth_required";
+}
+
+export function getReadingClubInterestPrefill(me) {
+  return {
+    name: me?.reader_profile?.display_name || me?.bookstore?.name || "",
+    email: me?.account?.email || "",
+    phone: "",
+    privacy_accepted: false,
+  };
+}
+
+export function resolveReadingClubContinuation(action, clubs = [], { loading = false, error = "" } = {}) {
+  if (action?.type !== "reading_club_interest") return null;
+  if (loading || error) return { status: "deferred", club: null };
+  const club = clubs.find((candidate) => candidate.id === action.target_id);
+  return club ? { status: "ready", club } : { status: "unavailable", message: "Ese club ya no está disponible. Podés explorar otros encuentros." };
+}
+
+export async function submitReadingClubInterest({ clubId, draft, storage, origin, now, send = apiFetch, track = trackReaderFunnelEvent }) {
+  const result = await send(`/reading-clubs/${clubId}/interests`, { method: "POST", body: JSON.stringify(draft) });
+  await completeResumablePendingReaderAction({ type: "reading_club_interest", targetId: clubId, storage, origin, now, track });
+  return result;
+}
+
+export function BookstoreWhatsAppAction({ me, store, item = null, source, onRequireAuth, className = "primary-button", ariaLabel, children }) {
+  const label = children || <><WhatsAppIcon size={19} /> {item ? "Contactar por WhatsApp" : "Hablar por WhatsApp"}</>;
+  if (me === undefined || !me) {
+    return <button type="button" className={className} aria-label={ariaLabel} disabled={me === undefined} onClick={(event) => { event.stopPropagation(); onRequireAuth?.({ item, source }); }} onKeyDown={(event) => event.stopPropagation()}>{label}</button>;
+  }
+  return <WhatsAppButton className={className} whatsappPhone={store?.whatsapp_phone} message={item ? `Hola, quisiera consultarte por el libro ${item.title} que vi publicado en Bookia.` : undefined} ariaLabel={ariaLabel} onClick={(event) => { event.stopPropagation(); trackWhatsAppClicked(store, source, item?.id); }}>{label}</WhatsAppButton>;
+}
+
+export function startBookstoreContactIntent({ store, item = null, source, returnPath, storage, origin, now, randomUUID, track = trackReaderFunnelEvent }) {
+  const action = savePendingReaderAction({
+    type: "contact_bookstore",
+    targetId: store?.id,
+    bookstoreId: store?.id,
+    catalogItemId: item?.id,
+    source,
+    returnPath,
+  }, { storage, origin, now, randomUUID });
+  if (action) track(buildPendingReaderActionEvent(action, "reader_intent_started"));
+  return action;
+}
+
+export function startReadingClubInterestIntent({ club, host, returnPath, storage, origin, now, randomUUID, track = trackReaderFunnelEvent }) {
+  const action = savePendingReaderAction({
+    type: "reading_club_interest",
+    targetId: club?.id,
+    bookstoreId: host?.type === "bookstore" ? club?.bookstore_id : undefined,
+    returnPath,
+  }, { storage, origin, now, randomUUID });
+  if (action) track(buildPendingReaderActionEvent(action, "reader_intent_started"));
+  return action;
+}
+
+export function BookstoreContactCard({ store, me, onRequireAuth }) {
+  const mapsHref = buildGoogleMapsAddressUrl(store.address);
+  const address = store.address?.trim();
+  if (!me) {
+    return (
+      <aside className="store-contact-card is-locked">
+        <p className="contact-label">Datos de interés</p>
+        {address ? <dl><div><dt>Dirección</dt><dd>{mapsHref ? <ContactLink href={mapsHref}>{address}</ContactLink> : address}</dd></div></dl> : null}
+        <div className="store-contact-lock"><span aria-hidden="true">🔒</span><p>Creá una cuenta o iniciá sesión para acceder al contacto digital de esta librería.</p></div>
+        <BookstoreWhatsAppAction me={me} store={store} source="bookstore_profile_contact" onRequireAuth={onRequireAuth} />
+      </aside>
+    );
+  }
+  const whatsappLabel = formatDisplayWhatsApp(store.whatsapp_phone);
+  const instagramHref = buildInstagramHref(store.instagram_handle);
+  const facebookHref = buildFacebookHref(store.facebook_handle);
+  const websiteHref = buildWebsiteHref(store.website_url);
+  const contactItems = [
+    whatsappLabel ? { label: "Celular con WhatsApp", content: whatsappLabel } : null,
+    store.correo && String(store.correo).trim() ? { label: "Correo", content: <a href={`mailto:${store.correo}`}>{store.correo}</a> } : null,
+    instagramHref ? { label: "Instagram", content: <ContactLink href={instagramHref}>{formatDisplayUrl(instagramHref)}</ContactLink> } : null,
+    facebookHref ? { label: "Facebook", content: <ContactLink href={facebookHref}>{formatDisplayUrl(facebookHref)}</ContactLink> } : null,
+    websiteHref ? { label: "Sitio web", content: <ContactLink href={websiteHref}>{formatDisplayUrl(websiteHref)}</ContactLink> } : null,
+    address ? { label: "Dirección", content: mapsHref ? <ContactLink href={mapsHref}>{address}</ContactLink> : address } : null,
+  ].filter(Boolean);
+  return contactItems.length > 0 ? <aside className="store-contact-card"><p className="contact-label">Datos de interés</p><dl>{contactItems.map((item) => <div key={item.label}><dt>{item.label}</dt><dd>{item.content}</dd></div>)}</dl><BookstoreWhatsAppAction me={me} store={store} source="bookstore_profile_contact" onRequireAuth={onRequireAuth} /></aside> : null;
+}
 
 function trackBookDetailOpened(item, source) {
   const bookstoreId = item?.bookstore?.id;
@@ -80,7 +211,7 @@ function useFavoriteBooks(me) {
       bookstoreId,
       returnPath: `${window.location.pathname}${window.location.search}${window.location.hash}`,
     });
-    if (action) trackReaderFunnelEvent({ eventType: "reader_intent_started", actionType: action.type, bookstoreId: action.bookstore_id, attemptId: action.attempt_id });
+    if (action) trackReaderFunnelEvent(buildPendingReaderActionEvent(action, "reader_intent_started"));
     navigate(buildRegisterPath({ profileType: "reader" }));
   }
 
@@ -403,6 +534,7 @@ export function ReadingClubPublicCard({
   onOpenDetails = null,
   onOpenInterest = null,
   showInterest = false,
+  interestDisabled = false,
   hideExternalLink = false,
 }) {
   const hostName = host?.type === "bookstore" ? host.name : host?.display_name;
@@ -430,7 +562,7 @@ export function ReadingClubPublicCard({
       <div className="reading-club-public-actions-main">
         {hostPath && hostName ? <AppLink className="secondary-button reading-club-card-action" href={hostPath}>{profileLabel}</AppLink> : null}
         {onOpenDetails ? club.external_url ? <a className="secondary-button reading-club-card-action" href={club.external_url} target="_blank" rel="noopener noreferrer">+ info</a> : <button type="button" className="secondary-button reading-club-card-action" onClick={onOpenDetails}>+ info</button> : null}
-        {showInterest && onOpenInterest ? <button type="button" className="primary-button reading-club-card-action" onClick={onOpenInterest}>Estoy interesado@</button> : null}
+        {showInterest && onOpenInterest ? <button type="button" className="primary-button reading-club-card-action" onClick={onOpenInterest} disabled={interestDisabled}>Estoy interesado@</button> : null}
       </div>
       {hasExternalLink ? <a className="reading-club-external-link" href={club.external_url} target="_blank" rel="noopener noreferrer">Ver más sobre este encuentro <ArrowIcon size={15} /></a> : null}
     </div> : null}
@@ -489,7 +621,7 @@ function BookstoresSection({ stores, loading }) {
 }
 
 
-function ReadingClubsSection() {
+function ReadingClubsSection({ me }) {
   const [clubs, setClubs] = useState([]);
   const [availableGenres, setAvailableGenres] = useState([]);
   const [genreSlug, setGenreSlug] = useState("");
@@ -501,6 +633,9 @@ function ReadingClubsSection() {
   const [selectedClubHost, setSelectedClubHost] = useState(null);
   const [selectedClubHostPath, setSelectedClubHostPath] = useState("");
   const [interestOpen, setInterestOpen] = useState(false);
+  const [authAction, setAuthAction] = useState(null);
+  const [continuationAction, setContinuationAction] = useState(null);
+  const [actionError, setActionError] = useState("");
 
   useEffect(() => {
     const params = buildReadingClubSearchParams(genreSlug);
@@ -537,11 +672,59 @@ function ReadingClubsSection() {
     setInterestOpen(false);
   }
 
-  function openClubInterest(club, host, hostPath) {
+  function showClubInterest(club, host, hostPath) {
     setSelectedClub(club);
     setSelectedClubHost(host);
     setSelectedClubHostPath(hostPath);
     setInterestOpen(true);
+  }
+
+  function openClubInterest(club, host, hostPath) {
+    const mode = getReadingClubInterestMode(me);
+    if (mode === "loading") return;
+    if (mode === "open_form") {
+      showClubInterest(club, host, hostPath);
+      return;
+    }
+    const action = startReadingClubInterestIntent({
+      club,
+      host,
+      returnPath: `${window.location.pathname}${window.location.search}${window.location.hash || "#clubes"}`,
+    });
+    if (!action) {
+      setActionError(PENDING_ACTION_PERSISTENCE_ERROR);
+      return;
+    }
+    setActionError("");
+    setAuthAction(action);
+  }
+
+  function cancelClubAuth() {
+    cancelPendingReaderAction(authAction);
+    setAuthAction(null);
+  }
+
+  useEffect(() => {
+    if (loading || !me) return;
+    const action = readPendingReaderAction();
+    const continuation = resolveReadingClubContinuation(action, clubs, { loading, error });
+    if (!continuation) return;
+    if (continuation.status === "deferred") return;
+    if (continuation.status === "unavailable") {
+      clearPendingReaderAction();
+      setActionError(continuation.message);
+      return;
+    }
+    setContinuationAction(action);
+  }, [loading, error, clubs, me]);
+
+  function continueClubInterest() {
+    const club = clubs.find((candidate) => candidate.id === continuationAction?.target_id);
+    if (!club) return;
+    const host = club.host;
+    const hostPath = host?.slug ? (host.type === "bookstore" ? `/bookstores/${host.slug}` : `/readers/${host.slug}`) : "";
+    setContinuationAction(null);
+    showClubInterest(club, host, hostPath);
   }
 
   useEffect(() => {
@@ -566,6 +749,7 @@ function ReadingClubsSection() {
       </form>
       {loading ? <div className="reading-club-public-list loading-stores" aria-label="Cargando clubes de lectura"><span /><span /><span /></div> : null}
       {error ? <p className="feedback error" role="alert">{error}</p> : null}
+      {actionError ? <p className="feedback error" role="alert">{actionError}</p> : null}
       {!loading && !error && clubs.length > 0 ? <p className="discovery-results-summary" aria-live="polite">{visibleClubs.length} {visibleClubs.length === 1 ? "club encontrado" : "clubes encontrados"}</p> : null}
       {!loading && !error && clubs.length === 0 && !hasActiveFilters ? <EmptyState compact title="Todavía no hay clubes de lectura disponibles">Estamos sumando encuentros para que encuentres tu próxima conversación.</EmptyState> : null}
       {!loading && !error && clubs.length === 0 && hasActiveFilters ? <div className="discovery-empty-result"><EmptyState compact title="No encontramos clubes con esos filtros">Probá otro nombre, tema o género, o limpiá los filtros.</EmptyState><button type="button" className="secondary-button" onClick={clearFilters}>Limpiar filtros</button></div> : null}
@@ -574,18 +758,20 @@ function ReadingClubsSection() {
           {visibleClubs.map((club) => {
             const host = club.host;
             const hostPath = host?.slug ? (host.type === "bookstore" ? `/bookstores/${host.slug}` : `/readers/${host.slug}`) : "";
-            return <ReadingClubPublicCard key={club.id} club={club} host={host} hostPath={hostPath} bookstoreId={host?.type === "bookstore" ? club.bookstore_id : null} source="public_reading_clubs" showOrganizer showInterest showShare onOpenDetails={() => openClubDetails(club, host, hostPath)} onOpenInterest={() => openClubInterest(club, host, hostPath)} hideExternalLink />;
+            return <ReadingClubPublicCard key={club.id} club={club} host={host} hostPath={hostPath} bookstoreId={host?.type === "bookstore" ? club.bookstore_id : null} source="public_reading_clubs" showOrganizer showInterest showShare onOpenDetails={() => openClubDetails(club, host, hostPath)} onOpenInterest={() => openClubInterest(club, host, hostPath)} interestDisabled={me === undefined} hideExternalLink />;
           })}
         </div>
       ) : null}
       {canExpand ? <button type="button" className="secondary-button discovery-expand-button" aria-controls="reading-clubs-results" aria-expanded={showAll} onClick={() => setShowAll((current) => !current)}>{showAll ? "Mostrar menos" : "Ver todos los clubes"}</button> : null}
       <BenefitsStrip className="reading-clubs-benefits-strip" benefits={READING_CLUB_BENEFITS} ariaLabel="Beneficios de los clubes de lectura" />
-      <ReadingClubDetailModal selectedClub={selectedClub} host={selectedClubHost} hostPath={selectedClubHostPath} initialInterestOpen={interestOpen} onClose={closeClubDetails} />
+      <ReadingClubDetailModal selectedClub={selectedClub} host={selectedClubHost} hostPath={selectedClubHostPath} initialInterestOpen={interestOpen} me={me} onClose={closeClubDetails} />
+      {authAction ? <AuthRequiredDialog action={authAction} onCancel={cancelClubAuth} /> : null}
+      {continuationAction ? <ReaderActionContinuationDialog action={continuationAction} continueLabel="Continuar con mi interés" onContinue={continueClubInterest} onCancel={() => setContinuationAction(null)} /> : null}
     </section>
   );
 }
 
-export function ReadingClubDetailModal({ selectedClub, host = null, hostPath = "", initialInterestOpen = false, onClose }) {
+export function ReadingClubDetailModal({ selectedClub, host = null, hostPath = "", initialInterestOpen = false, me = null, onClose }) {
   const [interestOpen, setInterestOpen] = useState(false);
   const [interestDraft, setInterestDraft] = useState({ name: "", email: "", phone: "", privacy_accepted: false });
   const [interestStatus, setInterestStatus] = useState("");
@@ -595,8 +781,8 @@ export function ReadingClubDetailModal({ selectedClub, host = null, hostPath = "
     setInterestOpen(initialInterestOpen);
     setInterestStatus("");
     setInterestError("");
-    setInterestDraft({ name: "", email: "", phone: "", privacy_accepted: false });
-  }, [selectedClub?.id, initialInterestOpen]);
+    setInterestDraft(getReadingClubInterestPrefill(me));
+  }, [selectedClub?.id, initialInterestOpen, me]);
   if (!selectedClub) return null;
   const hostName = host?.type === "bookstore" ? host.name : host?.display_name;
 
@@ -605,10 +791,10 @@ export function ReadingClubDetailModal({ selectedClub, host = null, hostPath = "
     if (interestSaving) return;
     setInterestSaving(true);
     setInterestError("");
-    apiFetch(`/reading-clubs/${selectedClub.id}/interests`, { method: "POST", body: JSON.stringify(interestDraft), suppressSessionExpiry: true })
+    submitReadingClubInterest({ clubId: selectedClub.id, draft: interestDraft })
       .then((result) => {
         setInterestStatus(result.detail);
-        setInterestDraft({ name: "", email: "", phone: "", privacy_accepted: false });
+        setInterestDraft(getReadingClubInterestPrefill(me));
         setInterestOpen(false);
       })
       .catch((error) => setInterestError(error.message || "No pudimos registrar tu interés."))
@@ -714,7 +900,7 @@ export function HomePage({ me }) {
       <BenefitsStrip benefits={SEARCH_BENEFITS} ariaLabel="Beneficios de la búsqueda de libros" />
       {searchFilters !== null ? <SearchResults filters={searchFilters} stores={stores} me={me} onClearFilters={() => { setDraftFilters(EMPTY_SEARCH_FILTERS); setSearchFilters(EMPTY_SEARCH_FILTERS); }} /> : null}
       <BookstoresSection stores={stores} loading={storesLoading} />
-      <ReadingClubsSection />
+      <ReadingClubsSection me={me} />
       <NewsletterSignup />
     </>
   );
@@ -895,7 +1081,7 @@ function BookGenreTags({ item }) {
   );
 }
 
-function BookDetailModal({ selectedBook, selectedBookImageUrl, onImageChange, onClose, favorites, isSessionLoading }) {
+export function BookDetailModal({ selectedBook, selectedBookImageUrl, onImageChange, onClose, favorites, isSessionLoading, contactGate = null, contactError = "", isBackgroundObscured = false }) {
   const modalCardRef = useRef(null);
   const closeButtonRef = useRef(null);
 
@@ -927,11 +1113,12 @@ function BookDetailModal({ selectedBook, selectedBookImageUrl, onImageChange, on
   if (!selectedBook) return null;
 
   const selectedBookGallery = bookImageGallery(selectedBook);
-  const bookstore = selectedBook.bookstore;
+  const bookstore = contactGate?.store || selectedBook.bookstore;
   const hasBookstoreContact = Boolean(buildWhatsAppHref(bookstore?.whatsapp_phone));
+  const showBookstoreContact = contactGate ? (contactGate.me === undefined || !contactGate.me || hasBookstoreContact) : hasBookstoreContact;
 
   return (
-    <div className="book-detail-modal" role="dialog" aria-modal="true" aria-labelledby="book-detail-title" onClick={onClose}>
+    <div className="book-detail-modal" role="dialog" aria-hidden={isBackgroundObscured ? "true" : undefined} inert={isBackgroundObscured ? "" : undefined} aria-modal={isBackgroundObscured ? undefined : "true"} aria-labelledby="book-detail-title" onClick={onClose}>
       <div ref={modalCardRef} className="book-detail-modal-card" onClick={(event) => event.stopPropagation()} onKeyDown={trapDialogFocus}>
         <button ref={closeButtonRef} type="button" className="book-detail-modal-close" onClick={onClose}>Cerrar</button>
         <div className="book-detail-modal-layout">
@@ -970,10 +1157,9 @@ function BookDetailModal({ selectedBook, selectedBookImageUrl, onImageChange, on
               <div><dt>Edicion</dt><dd>{bookEditionLine(selectedBook)}</dd></div>
               <div><dt>Libreria</dt><dd>{bookstore ? <AppLink className="book-detail-store-link" href={`/bookstores/${bookstore.slug}`} onClick={() => trackBookstoreOpened(bookstore, "book_detail_modal")}>{bookstore.name} <ArrowIcon size={14} /></AppLink> : "Libreria no visible"}</dd></div>
             </dl>
-            {hasBookstoreContact ? (
-              <WhatsAppButton className="primary-button book-detail-whatsapp" whatsappPhone={bookstore.whatsapp_phone} message={`Hola, quisiera consultarte por el libro ${selectedBook.title} que vi publicado en Bookia.`} onClick={() => trackWhatsAppClicked(bookstore, "book_detail_modal", selectedBook.id)}>
-                <WhatsAppIcon size={19} /> Contactar por WhatsApp
-              </WhatsAppButton>
+            {contactGate && contactError ? <p className="feedback error bookstore-contact-feedback" role="alert">{contactError}</p> : null}
+            {showBookstoreContact ? (
+              contactGate ? <BookstoreWhatsAppAction className="primary-button book-detail-whatsapp" me={contactGate.me} store={bookstore} item={selectedBook} source="book_detail_modal" onRequireAuth={contactGate.onRequireAuth}><WhatsAppIcon size={19} /> Contactar por WhatsApp</BookstoreWhatsAppAction> : <WhatsAppButton className="primary-button book-detail-whatsapp" whatsappPhone={bookstore.whatsapp_phone} message={`Hola, quisiera consultarte por el libro ${selectedBook.title} que vi publicado en Bookia.`} onClick={() => trackWhatsAppClicked(bookstore, "book_detail_modal", selectedBook.id)}><WhatsAppIcon size={19} /> Contactar por WhatsApp</WhatsAppButton>
             ) : null}
           </div>
         </div>
@@ -982,7 +1168,7 @@ function BookDetailModal({ selectedBook, selectedBookImageUrl, onImageChange, on
   );
 }
 
-export function BookstorePage({ slug, me }) {
+export function BookstorePage({ slug, me, refreshSession }) {
   const [store, setStore] = useState(null);
   const [items, setItems] = useState([]);
   const [readingClubs, setReadingClubs] = useState([]);
@@ -990,13 +1176,32 @@ export function BookstorePage({ slug, me }) {
   const [error, setError] = useState("");
   const [selectedBook, setSelectedBook] = useState(null);
   const [selectedBookImageUrl, setSelectedBookImageUrl] = useState(null);
+  const [authAction, setAuthAction] = useState(null);
+  const [contactContinuation, setContactContinuation] = useState(null);
+  const [actionError, setActionError] = useState("");
+  const reconciledSessionRef = useRef(null);
   const favorites = useFavoriteBooks(me);
   const visibleItems = items.filter((item) => item.availability_status !== "hidden");
+  const contactSession = resolveBookstoreContactSession(me, store);
 
   useEffect(() => {
     setLoading(true);
-    apiFetch(`/bookstores/${slug}`).then((data) => { setStore(data.bookstore); setItems(data.items); setReadingClubs(data.reading_clubs || []); setError(""); }).catch((fetchError) => setError(fetchError.message)).finally(() => setLoading(false));
+    apiFetch(`/bookstores/${slug}`).then((data) => { setStore(data.bookstore); setItems(data.items); setReadingClubs(data.reading_clubs || []); setError(""); }).catch((fetchError) => {
+      const actionFailure = handleBookstoreContactLoadFailure({ error: fetchError, slug });
+      if (actionFailure?.status === "unavailable") setActionError(actionFailure.message);
+      setError(fetchError.message);
+    }).finally(() => setLoading(false));
   }, [slug]);
+
+  useEffect(() => {
+    const reconciliationKey = getBookstoreSessionReconciliationKey(me, store, reconciledSessionRef.current);
+    if (!reconciliationKey) {
+      if (!me || store?.contact_requires_auth !== true) reconciledSessionRef.current = null;
+      return;
+    }
+    reconciledSessionRef.current = reconciliationKey;
+    refreshSession?.();
+  }, [me, store, refreshSession]);
 
   useEffect(() => {
     const sharedBookId = getSharedBookId(window.location.search);
@@ -1004,6 +1209,19 @@ export function BookstorePage({ slug, me }) {
     const sharedItem = items.find((item) => item.id === sharedBookId && item.availability_status !== "hidden");
     if (sharedItem) openBookDetail(sharedItem);
   }, [items, selectedBook]);
+
+  useEffect(() => {
+    if (loading || !contactSession || !store) return;
+    const action = readPendingReaderAction();
+    const continuation = resolveBookstoreContactContinuation(action, store, items);
+    if (!continuation) return;
+    if (continuation.status === "unavailable") {
+      clearPendingReaderAction();
+      setActionError(continuation.message);
+      return;
+    }
+    setContactContinuation({ action, ...continuation });
+  }, [loading, contactSession, store, items]);
 
   function openBookDetail(item) {
     trackBookDetailOpened(item, "bookstore_page");
@@ -1016,6 +1234,33 @@ export function BookstorePage({ slug, me }) {
     setSelectedBook(null);
     setSelectedBookImageUrl(null);
   }
+
+  function requireBookstoreAuth({ item, source }) {
+    const action = startBookstoreContactIntent({
+      store,
+      item,
+      source,
+      returnPath: `${window.location.pathname}${window.location.search}${window.location.hash}`,
+    });
+    if (!action) {
+      setActionError(PENDING_ACTION_PERSISTENCE_ERROR);
+      return;
+    }
+    setActionError("");
+    setAuthAction(action);
+  }
+
+  function cancelBookstoreAuth() {
+    cancelPendingReaderAction(authAction);
+    setAuthAction(null);
+  }
+
+  function completeBookstoreContact() {
+    if (!contactContinuation) return;
+    completeResumablePendingReaderAction({ type: "contact_bookstore", targetId: store.id });
+    trackWhatsAppClicked(store, contactContinuation.source, contactContinuation.catalogItem?.id);
+    setContactContinuation(null);
+  }
   useEffect(() => {
     if (!selectedBook) return undefined;
     const onKeyDown = (event) => event.key === "Escape" && closeBookDetail();
@@ -1024,35 +1269,24 @@ export function BookstorePage({ slug, me }) {
   }, [selectedBook]);
 
   if (loading) return <div className="page-state"><div className="loading-mark" /><p>Cargando libreria...</p></div>;
-  if (error || !store) return <div className="page-state"><EmptyState title="No encontramos esa libreria">{error || "Revisa el enlace o volve a la busqueda."}</EmptyState><button className="secondary-button" onClick={() => navigate("/")}>Volver a buscar</button></div>;
+  if (error || !store) return <div className="page-state"><EmptyState title={actionError ? "No pudimos retomar ese contacto" : "No encontramos esa libreria"}>{actionError || error || "Revisa el enlace o volve a la busqueda."}</EmptyState><button className="secondary-button" onClick={() => navigate("/")}>Volver a buscar</button></div>;
 
   const heroImageUrl = resolveApiUrl(store.hero_image_url);
   const logoUrl = resolveApiUrl(store.logo_url);
-  const whatsappLabel = formatDisplayWhatsApp(store.whatsapp_phone);
   const hasWhatsApp = Boolean(buildWhatsAppHref(store.whatsapp_phone));
-  const instagramHref = buildInstagramHref(store.instagram_handle);
-  const facebookHref = buildFacebookHref(store.facebook_handle);
-  const websiteHref = buildWebsiteHref(store.website_url);
-  const mapsHref = buildGoogleMapsAddressUrl(store.address);
   const bookstoreTags = [store.tag_1, store.tag_2].map((tag) => String(tag || '').trim()).filter(Boolean);
   const isFollowing = favorites.followedBookstoreIds.has(store.id);
   const followPending = favorites.pendingBookstoreIds.has(store.id);
-  const contactItems = [
-    whatsappLabel ? { label: "Celular con WhatsApp", content: whatsappLabel } : null,
-    store.correo && String(store.correo).trim() ? { label: "Correo", content: <a href={`mailto:${store.correo}`}>{store.correo}</a> } : null,
-    instagramHref ? { label: "Instagram", content: <ContactLink href={instagramHref}>{formatDisplayUrl(instagramHref)}</ContactLink> } : null,
-    facebookHref ? { label: "Facebook", content: <ContactLink href={facebookHref}>{formatDisplayUrl(facebookHref)}</ContactLink> } : null,
-    websiteHref ? { label: "Sitio web", content: <ContactLink href={websiteHref}>{formatDisplayUrl(websiteHref)}</ContactLink> } : null,
-    mapsHref ? { label: "Direccion", content: <ContactLink href={mapsHref}>{store.address.trim()}</ContactLink> } : null,
-  ].filter(Boolean);
+  const topActionDialogOpen = Boolean(authAction || contactContinuation);
 
   return (
     <section className="store-page">
       <div className={`store-hero${heroImageUrl ? " has-hero" : ""}`} style={heroImageUrl ? { backgroundImage: `url(${heroImageUrl})` } : undefined} />
       <div className="store-profile-panel">
         <div className="store-identity"><p className="section-label">Libreria en Bookia</p>{logoUrl ? <img className="store-logo" src={logoUrl} alt={`Logo de ${store.name}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : null}<h1>{store.name}</h1><BookstoreDescription value={displayBookstoreDescription(store.description)} /><BookstoreProfileShareMenu bookstore={store} />{!me?.bookstore ? <button type="button" className={`secondary-button bookstore-follow-button${isFollowing ? " is-following" : ""}`} aria-pressed={isFollowing} aria-busy={followPending} disabled={followPending || me === undefined || favorites.favoritesLoading} onClick={() => favorites.toggleFollowBookstore(store)}>{isFollowing ? "Dejar de seguir" : "Seguir"}</button> : null}{bookstoreTags.length > 0 ? <div className="store-tags" aria-label="Etiquetas de la libreria">{bookstoreTags.map((tag) => <span key={tag} className="store-tag">{tag}</span>)}</div> : null}{favorites.favoriteError ? <p className="feedback error bookstore-follow-feedback" role="alert">{favorites.favoriteError}</p> : null}</div>
-        {contactItems.length > 0 || hasWhatsApp ? <aside className="store-contact-card"><p className="contact-label">Datos de interes</p>{contactItems.length > 0 ? <dl>{contactItems.map((item) => <div key={item.label}><dt>{item.label}</dt><dd>{item.content}</dd></div>)}</dl> : null}{hasWhatsApp ? <WhatsAppButton whatsappPhone={store.whatsapp_phone} onClick={() => trackWhatsAppClicked(store, "bookstore_profile_contact")}><WhatsAppIcon size={19} /> Hablar por WhatsApp</WhatsAppButton> : null}</aside> : null}
+        <BookstoreContactCard store={store} me={contactSession} onRequireAuth={requireBookstoreAuth} />
       </div>
+      {actionError ? <p className="feedback error bookstore-contact-feedback" role="alert">{actionError}</p> : null}
       <div className="store-catalog">
         <div className="section-heading results-heading"><div><p className="section-label">Estantes disponibles</p><h2>Catalogo de {store.name}</h2><p>{visibleItems.length} {visibleItems.length === 1 ? "libro publicado" : "libros publicados"}</p></div><button className="secondary-button" onClick={() => navigate("/")}>Volver a buscar</button></div>
         {visibleItems.length === 0 ? <EmptyState title="Este catalogo se esta preparando">Volve pronto para descubrir sus libros.</EmptyState> : (
@@ -1074,7 +1308,7 @@ export function BookstorePage({ slug, me }) {
               >
                 <div className="book-card-cover-actions">
                   <BookCover item={item} />
-                  {hasWhatsApp ? <WhatsAppButton className="book-card-whatsapp" whatsappPhone={store.whatsapp_phone} message={`Hola, quisiera consultarte por el libro ${item.title} que vi publicado en Bookia.`} ariaLabel={`Contactar por WhatsApp por ${item.title}`} onClick={(event) => { event.stopPropagation(); trackWhatsAppClicked(store, "bookstore_catalog_card", item.id); }} onKeyDown={(event) => event.stopPropagation()}><WhatsAppIcon size={20} /></WhatsAppButton> : null}
+                  {(contactSession === undefined || !contactSession || hasWhatsApp) ? <BookstoreWhatsAppAction className="book-card-whatsapp" me={contactSession} store={store} item={item} source="bookstore_catalog_card" onRequireAuth={requireBookstoreAuth} ariaLabel={`Contactar por WhatsApp por ${item.title}`}><WhatsAppIcon size={20} /></BookstoreWhatsAppAction> : null}
                 </div>
                 <div>
                   <div className="book-card-meta-row">
@@ -1103,7 +1337,9 @@ export function BookstorePage({ slug, me }) {
           </div>
         </section>
       ) : null}
-      <BookDetailModal selectedBook={selectedBook} selectedBookImageUrl={selectedBookImageUrl} onImageChange={setSelectedBookImageUrl} onClose={closeBookDetail} favorites={favorites} isSessionLoading={me === undefined || favorites.favoritesLoading} />
+      <BookDetailModal selectedBook={selectedBook} selectedBookImageUrl={selectedBookImageUrl} onImageChange={setSelectedBookImageUrl} onClose={closeBookDetail} favorites={favorites} isSessionLoading={me === undefined || favorites.favoritesLoading} contactGate={{ me: contactSession, store, onRequireAuth: requireBookstoreAuth }} contactError={actionError} isBackgroundObscured={topActionDialogOpen} />
+      {authAction ? <AuthRequiredDialog action={authAction} onCancel={cancelBookstoreAuth} /> : null}
+      {contactContinuation ? <ReaderActionContinuationDialog action={contactContinuation.action} continueLabel="Continuar a WhatsApp" continueHref={contactContinuation.href} onContinue={completeBookstoreContact} onCancel={() => setContactContinuation(null)} /> : null}
     </section>
   );
 }
