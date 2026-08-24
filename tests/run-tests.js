@@ -693,6 +693,7 @@ tests.push(["keeps the horizontal book share menu inside the mobile viewport", (
   assert.match(editorialStyles, /\.book-share-options\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*flex-wrap:\s*wrap;/);
   assert.match(editorialStyles, /\.book-share-options \.book-share-story-button\s*\{[^}]*width:\s*38px;[^}]*height:\s*38px;[^}]*display:\s*inline-flex;/);
   assert.match(editorialStyles, /@media \(max-width: 620px\)[\s\S]*?\.book-share-options\s*\{[^}]*max-width:\s*calc\(100vw\s*-\s*32px\);/);
+  assert.match(editorialStyles, /@media \(max-width: 620px\)[\s\S]*?\.dashboard-list-active \.catalog-secondary-actions \.book-share-options\s*\{[^}]*left:\s*0;[^}]*right:\s*auto;/);
   assert.doesNotMatch(editorialStyles, /\.dashboard-list-active \.card-actions button(?:\s*\{|:has)/);
   assert.match(editorialStyles, /\.dashboard-list-active \.card-actions-main > button,\s*\.dashboard-list-active \.card-actions-main > \.book-share-menu > \.book-share-trigger,\s*\.dashboard-list-active \.card-actions > \.danger-button\s*\{/);
   assert.match(editorialStyles, /\.dashboard-list-active \.card-actions-main > button:has\(svg\)\s*\{/);
