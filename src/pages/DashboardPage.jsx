@@ -16,6 +16,7 @@ import { BillingSubscriptionPanel } from "../components/BillingSubscriptionPanel
 import { BookShareMenu } from "../components/BookShareMenu";
 import { normalizeFollowerMetrics } from "../analyticsState";
 import { ReadingClubManager } from "../components/ReadingClubManager";
+import DashboardMetrics from "../components/DashboardMetrics";
 
 const EMPTY_ITEM = {
   title: "",
@@ -92,10 +93,6 @@ const EMPTY_ANALYTICS = {
   top_reading_clubs: [],
   follower_metrics: { active_followers: 0, follows: 0, unfollows: 0, net_change: 0 },
 };
-
-function formatMetricValue(value) {
-  return new Intl.NumberFormat("es-AR").format(Number(value || 0));
-}
 
 function getArgentinaToday() {
   const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Argentina/Buenos_Aires", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
@@ -637,39 +634,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
         {analyticsError ? <p className="feedback error" role="alert">{analyticsError}</p> : null}
         {!analyticsLoading ? (
           <>
-            <div className="metrics-summary-grid">
-              <article><span>Aperturas de libros</span><strong>{formatMetricValue(analytics.totals.book_detail_opened)}</strong></article>
-              <article><span>Visitas a libreria</span><strong>{formatMetricValue(analytics.totals.bookstore_opened)}</strong></article>
-              <article><span>Clicks en WhatsApp</span><strong>{formatMetricValue(analytics.totals.whatsapp_clicked)}</strong></article>
-              <article><span>Libros compartidos</span><strong>{formatMetricValue(analytics.totals.book_shared)}</strong></article>
-              <article><span>Clubes compartidos</span><strong>{formatMetricValue(analytics.totals.reading_club_shared)}</strong></article>
-              <article><span>Compartidos por WhatsApp</span><strong>{formatMetricValue(analytics.share_channels?.whatsapp)}</strong></article>
-              <article><span>Compartidos por Instagram</span><strong>{formatMetricValue(analytics.share_channels?.instagram)}</strong></article>
-              <article><span>Compartidos por Telegram</span><strong>{formatMetricValue(analytics.share_channels?.telegram)}</strong></article>
-              <article><span>Enlaces copiados</span><strong>{formatMetricValue(analytics.share_channels?.copy_link)}</strong></article>
-              <article><span>Seguidores activos</span><strong>{formatMetricValue(analytics.follower_metrics.active_followers)}</strong></article>
-              <article><span>Nuevos seguidores</span><strong>{formatMetricValue(analytics.follower_metrics.follows)}</strong></article>
-              <article><span>Dejaron de seguir</span><strong>{formatMetricValue(analytics.follower_metrics.unfollows)}</strong></article>
-              <article><span>Cambio neto</span><strong>{formatMetricValue(analytics.follower_metrics.net_change)}</strong></article>
-            </div>
-            {analytics.top_books.length === 0 ? <EmptyState title="Todavia no hay metricas">Cuando las personas interactuen con tu vidriera, vas a ver los libros con mas interes aca.</EmptyState> : (
-              <div className="dashboard-list metrics-book-list">
-                {analytics.top_books.map((book) => (
-                  <article key={book.id} className="dashboard-card metrics-book-item">
-                    <div><span className="catalog-id">Libro #{book.id}</span><h3>{book.title}</h3><p>{book.author || "Autor no visible"}</p></div>
-                    <dl>
-                      <div><dt>Aperturas</dt><dd>{formatMetricValue(book.book_detail_opened)}</dd></div>
-                      <div><dt>WhatsApp</dt><dd>{formatMetricValue(book.whatsapp_clicked)}</dd></div>
-                      <div><dt>Compartidos por WhatsApp</dt><dd>{formatMetricValue(book.shares_by_channel?.whatsapp)}</dd></div>
-                      <div><dt>Compartidos por Instagram</dt><dd>{formatMetricValue(book.shares_by_channel?.instagram)}</dd></div>
-                      <div><dt>Compartidos por Telegram</dt><dd>{formatMetricValue(book.shares_by_channel?.telegram)}</dd></div>
-                      <div><dt>Enlaces copiados</dt><dd>{formatMetricValue(book.shares_by_channel?.copy_link)}</dd></div>
-                    </dl>
-                  </article>
-                ))}
-              </div>
-            )}
-            {analytics.top_reading_clubs.length > 0 ? <div className="dashboard-list metrics-book-list">{analytics.top_reading_clubs.map((club) => <article key={club.id} className="dashboard-card metrics-book-item"><div><span className="catalog-id">Club de lectura</span><h3>{club.title}</h3></div><dl><div><dt>WhatsApp</dt><dd>{formatMetricValue(club.shares_by_channel?.whatsapp)}</dd></div><div><dt>Instagram</dt><dd>{formatMetricValue(club.shares_by_channel?.instagram)}</dd></div><div><dt>Telegram</dt><dd>{formatMetricValue(club.shares_by_channel?.telegram)}</dd></div><div><dt>Enlaces copiados</dt><dd>{formatMetricValue(club.shares_by_channel?.copy_link)}</dd></div></dl></article>)}</div> : null}
+            <DashboardMetrics analytics={analytics} />
           </>
         ) : null}
       </DashboardPanel>

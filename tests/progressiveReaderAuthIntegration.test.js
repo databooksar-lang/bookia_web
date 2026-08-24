@@ -48,16 +48,16 @@ export function registerProgressiveReaderAuthIntegrationTests(test) {
 
   test("shows followed bookstores in the reader profile and follower totals in metrics", () => {
     const reader = readFileSync(new URL("../src/pages/ReaderProfilePage.jsx", import.meta.url), "utf8");
-    const dashboard = readFileSync(new URL("../src/pages/DashboardPage.jsx", import.meta.url), "utf8");
+    const dashboardMetrics = readFileSync(new URL("../src/components/DashboardMetrics.jsx", import.meta.url), "utf8");
 
     assert.match(reader, /onBookstores:\s*setFollowedBookstores/);
     assert.match(reader, /Librer.as seguidas/);
     assert.match(reader, /resolveApiUrl\(bookstore\.logo_url\)/);
     assert.match(reader, /dashboard\/favorites\/bookstores\/\$\{bookstoreId\}/);
-    assert.match(dashboard, /Seguidores activos/);
-    assert.match(dashboard, /Nuevos seguidores/);
-    assert.match(dashboard, /Dejaron de seguir/);
-    assert.match(dashboard, /Cambio neto/);
+    assert.match(dashboardMetrics, /Seguidores activos/);
+    assert.match(dashboardMetrics, /Nuevos seguidores/);
+    assert.match(dashboardMetrics, /Dejaron de seguir/);
+    assert.match(dashboardMetrics, /Cambio neto/);
   });
 
   test("styles progressive reader actions accessibly at desktop and mobile sizes", () => {
