@@ -4752,6 +4752,7 @@ textarea:focus {
 .book-share-feedback { max-width: 220px; margin: 0; color: var(--forest-deep); font-size: 0.8rem; font-weight: 700; }
 @media (max-width: 620px) {
   .book-share-options { max-width: calc(100vw - 32px); }
+  .dashboard-list-active .catalog-secondary-actions .book-share-options { left: 0; right: auto; }
 }
 .reading-club-public-card.is-shared-club { outline: 3px solid var(--forest-deep); outline-offset: 3px; }
 .search-result-row > .favorite-book-button { justify-self: end; }
