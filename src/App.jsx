@@ -15,8 +15,7 @@ import { TermsPage } from "./pages/TermsPage";
 import { ReaderProfilePage } from "./pages/ReaderProfilePage";
 import { BillingReturnPage } from "./pages/BillingReturnPage";
 import { getAccountDestination } from "./accountDestination";
-import { trackReaderFunnelEvent } from "./analyticsState";
-import { applyPendingReaderAction, clearPendingReaderAction, getPendingActionAuthenticationMode, isAutoAppliedPendingReaderAction, readPendingReaderAction } from "./pendingReaderAction";
+import { applyPendingReaderAction, completePendingReaderAuthentication, isAutoAppliedPendingReaderAction, readPendingReaderAction } from "./pendingReaderAction";
 
 export default function App() {
   const { pathname, search } = useLocationState();
@@ -39,35 +38,16 @@ export default function App() {
   }, []);
 
   const completeReaderAuthentication = useCallback(async (sessionData, { registered = false } = {}) => {
-    const action = readPendingReaderAction();
-    if (!action) {
-      navigate(getAccountDestination(sessionData));
-      return { status: "none" };
-    }
-    const authenticationMode = getPendingActionAuthenticationMode(action, sessionData);
-    if (authenticationMode === "wrong_account") {
-      clearPendingReaderAction();
+    const result = await completePendingReaderAuthentication({ sessionData, registered, fallbackPath: getAccountDestination(sessionData), navigateTo: navigate });
+    if (result.status === "wrong_account") {
       setReaderActionFeedback({ kind: "error", message: "Esta acción necesita un perfil lector y no se aplicó a esta cuenta." });
-      navigate(getAccountDestination(sessionData));
-      return { status: "wrong_account" };
-    }
-    if (registered) {
-      trackReaderFunnelEvent({ eventType: "reader_registration_completed", actionType: action.type, bookstoreId: action.bookstore_id, attemptId: action.attempt_id });
-    }
-    if (authenticationMode === "resume") {
-      navigate(action.return_path);
-      return { status: "pending", action, returnPath: action.return_path };
-    }
-    try {
-      const result = await applyPendingReaderAction();
-      setReaderActionFeedback({ kind: "success", message: result.message });
-      navigate(result.returnPath);
       return result;
-    } catch (error) {
-      setReaderActionFeedback({ kind: "error", message: `Tu cuenta está lista, pero no pudimos completar la acción. ${error.message}` });
-      navigate(action.return_path);
-      return { status: "error", error };
     }
+    if (result.status === "applied") {
+      setReaderActionFeedback({ kind: "success", message: result.message });
+    }
+    if (result.status === "error") setReaderActionFeedback({ kind: "error", message: `Tu cuenta está lista, pero no pudimos completar la acción. ${result.error.message}` });
+    return result;
   }, []);
 
   function retryPendingReaderAction() {

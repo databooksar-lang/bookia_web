@@ -18,9 +18,8 @@ export function registerProgressiveReaderAuthIntegrationTests(test) {
   test("coordinates post-auth pending actions and exposes success or retry feedback", () => {
     const source = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
 
+    assert.match(source, /completePendingReaderAuthentication/);
     assert.match(source, /applyPendingReaderAction/);
-    assert.match(source, /reader_registration_completed/);
-    assert.match(source, /clearPendingReaderAction/);
     assert.match(source, /retryPendingReaderAction/);
     assert.match(source, /role=\{readerActionFeedback\.kind === "error" \? "alert" : "status"\}/);
     assert.match(source, /onAuthenticated=\{completeReaderAuthentication\}/);

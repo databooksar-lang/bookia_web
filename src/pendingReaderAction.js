@@ -67,12 +67,17 @@ export function getPendingActionAuthenticationMode(action, sessionData) {
   return "none";
 }
 
+export function buildPendingReaderActionEvent(action, eventType) {
+  return { eventType, actionType: action.type, bookstoreId: action.bookstore_id, attemptId: action.attempt_id };
+}
+
 export function createPendingReaderAction({ type, targetId, bookstoreId, catalogItemId, source, returnPath, origin = currentOrigin(), attemptId, createdAt } = {}, { now = currentTime, randomUUID = createUuid } = {}) {
   const safeReturnPath = normalizePendingReturnPath(returnPath, origin);
   const safeAttemptId = attemptId || randomUUID();
   const safeCreatedAt = createdAt || new Date(now()).toISOString();
   if (!ACTION_TYPES.has(type) || !positiveInteger(targetId) || !safeReturnPath || !validUuid(safeAttemptId) || !validTimestamp(safeCreatedAt)) return null;
   if (bookstoreId !== undefined && bookstoreId !== null && !positiveInteger(bookstoreId)) return null;
+  if (type === "contact_bookstore" && bookstoreId !== undefined && bookstoreId !== null && bookstoreId !== targetId) return null;
   if (catalogItemId !== undefined && catalogItemId !== null && !positiveInteger(catalogItemId)) return null;
   if (catalogItemId !== undefined && catalogItemId !== null && type !== "contact_bookstore") return null;
   if (source !== undefined && (type !== "contact_bookstore" || !BOOKSTORE_CONTACT_SOURCES.has(source))) return null;
@@ -80,7 +85,7 @@ export function createPendingReaderAction({ type, targetId, bookstoreId, catalog
     version: PENDING_READER_ACTION_VERSION,
     type,
     target_id: targetId,
-    ...(positiveInteger(bookstoreId) ? { bookstore_id: bookstoreId } : {}),
+    ...(type === "contact_bookstore" ? { bookstore_id: targetId } : positiveInteger(bookstoreId) ? { bookstore_id: bookstoreId } : {}),
     ...(positiveInteger(catalogItemId) ? { catalog_item_id: catalogItemId } : {}),
     ...(source ? { source } : {}),
     return_path: safeReturnPath,
@@ -202,12 +207,7 @@ export function applyPendingReaderAction({ storage = currentStorage(), origin = 
     }
     clearPendingReaderAction({ storage });
     try {
-      await track({
-        eventType: "reader_action_applied",
-        actionType: action.type,
-        bookstoreId: action.bookstore_id,
-        attemptId: action.attempt_id,
-      });
+      await track(buildPendingReaderActionEvent(action, "reader_action_applied"));
     } catch {
       // Analytics must never undo a successfully applied reader action.
     }
@@ -230,14 +230,38 @@ export async function completeResumablePendingReaderAction({ type, targetId, sto
   if (!isResumablePendingReaderAction(action) || action.type !== type || action.target_id !== targetId) return { status: "none" };
   clearPendingReaderAction({ storage });
   try {
-    await track({
-      eventType: "reader_action_applied",
-      actionType: action.type,
-      bookstoreId: action.bookstore_id,
-      attemptId: action.attempt_id,
-    });
+    await track(buildPendingReaderActionEvent(action, "reader_action_applied"));
   } catch {
     // Analytics must never undo a successfully completed reader action.
   }
   return { status: "completed", action, message: getPendingReaderActionCopy(action).confirmation };
+}
+
+export async function completePendingReaderAuthentication({ sessionData, registered = false, fallbackPath, storage = currentStorage(), origin = currentOrigin(), now = currentTime, navigateTo, apply = applyPendingReaderAction, track = trackReaderFunnelEvent } = {}) {
+  const action = readPendingReaderAction({ storage, origin, now });
+  if (!action) {
+    navigateTo?.(fallbackPath);
+    return { status: "none", returnPath: fallbackPath };
+  }
+  const authenticationMode = getPendingActionAuthenticationMode(action, sessionData);
+  if (authenticationMode === "wrong_account") {
+    clearPendingReaderAction({ storage });
+    navigateTo?.(fallbackPath);
+    return { status: "wrong_account", action, returnPath: fallbackPath };
+  }
+  if (registered) {
+    Promise.resolve().then(() => track(buildPendingReaderActionEvent(action, "reader_registration_completed"))).catch(() => {});
+  }
+  if (authenticationMode === "resume") {
+    navigateTo?.(action.return_path);
+    return { status: "pending", action, returnPath: action.return_path };
+  }
+  try {
+    const result = await apply({ storage, origin, now, track });
+    navigateTo?.(result.returnPath);
+    return result;
+  } catch (error) {
+    navigateTo?.(action.return_path);
+    return { status: "error", action, error, returnPath: action.return_path };
+  }
 }

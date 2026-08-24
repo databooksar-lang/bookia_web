@@ -9,7 +9,7 @@ import { ArrowIcon, EyeIcon, EyeOffIcon } from "../components/Icons";
 import { GoogleButton } from "./AuthPages";
 import { buildRegisterPath, buildRegistrationRequest, getRegisterQueryState, getRegisterStep, isFreeTrialPlan, isSupportedBookstorePlan } from "../registerState";
 import { trackReaderFunnelEvent } from "../analyticsState";
-import { getPendingReaderActionCopy } from "../pendingReaderAction";
+import { buildPendingReaderActionEvent, getPendingReaderActionCopy } from "../pendingReaderAction";
 
 const BASE_CATALOG_OPTIONS = [
   { limit: "40", title: "Sin adicional", description: "Hasta 40 libros", offeringCode: null },
@@ -138,7 +138,7 @@ export function RegisterPage({ onRegister, onAuthenticated, pendingAction, me, l
       return;
     }
     const { path, body } = buildRegistrationRequest({ profileType, email, password, whatsappPhone, bookstoreType, displayName, bookstoreName, planCode, catalogLimit: selectedCatalogLimit, expectedMonthlyTotal: monthlyTotal, privacyAccepted, isAuthor, authorRightsDeclarationAccepted });
-    if (isReader && pendingAction) trackReaderFunnelEvent({ eventType: "reader_auth_started", actionType: pendingAction.type, bookstoreId: pendingAction.bookstore_id, attemptId: pendingAction.attempt_id });
+    if (isReader && pendingAction) trackReaderFunnelEvent(buildPendingReaderActionEvent(pendingAction, "reader_auth_started"));
     setBusy(true);
     apiFetch(path, { method: "POST", body: JSON.stringify(body) })
         .then(() => {

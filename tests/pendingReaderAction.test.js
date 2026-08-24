@@ -190,6 +190,7 @@ export function registerPendingReaderActionTests(test) {
       version: 2,
       type: "contact_bookstore",
       target_id: 9,
+      bookstore_id: 9,
       catalog_item_id: 21,
       source: "book_detail_modal",
       return_path: "/bookstores/eterna",
@@ -255,6 +256,48 @@ export function registerPendingReaderActionTests(test) {
     assert.equal(second?.status, "none");
     assert.deepEqual(tracked, [{ eventType: "reader_action_applied", actionType: "reading_club_interest", bookstoreId: 9, attemptId: ATTEMPT_ID }]);
     assert.equal(storage.getItem(PENDING_READER_ACTION_STORAGE_KEY), null);
+  });
+
+  test("attributes every contact completion event to its target bookstore", async () => {
+    const storage = createMemoryStorage();
+    const action = savePendingReaderAction({ type: "contact_bookstore", targetId: 9, returnPath: "/bookstores/eterna" }, { storage, now: () => NOW, randomUUID: () => ATTEMPT_ID });
+    const tracked = [];
+
+    await pendingActions.completeResumablePendingReaderAction({ type: "contact_bookstore", targetId: 9, storage, now: () => NOW, track: async (event) => tracked.push(event) });
+
+    assert.equal(action.bookstore_id, 9);
+    assert.deepEqual(tracked, [{ eventType: "reader_action_applied", actionType: "contact_bookstore", bookstoreId: 9, attemptId: ATTEMPT_ID }]);
+  });
+
+  test("builds bookstore-attributed analytics for every contact funnel stage", () => {
+    const action = createPendingReaderAction({ type: "contact_bookstore", targetId: 9, returnPath: "/bookstores/eterna", attemptId: ATTEMPT_ID, createdAt: "2026-08-11T12:00:00.000Z" });
+    for (const eventType of ["reader_intent_started", "reader_auth_started", "reader_registration_completed", "reader_action_applied"]) {
+      assert.deepEqual(pendingActions.buildPendingReaderActionEvent?.(action, eventType), { eventType, actionType: "contact_bookstore", bookstoreId: 9, attemptId: ATTEMPT_ID });
+    }
+  });
+
+  test("routes resumable contact after authentication without clearing it for either account type", async () => {
+    for (const sessionData of [{ reader_profile: { id: 1 } }, { bookstore: { id: 4 } }]) {
+      const storage = createMemoryStorage();
+      savePendingReaderAction({ type: "contact_bookstore", targetId: 9, returnPath: "/bookstores/eterna" }, { storage, now: () => NOW, randomUUID: () => ATTEMPT_ID });
+      const navigated = [];
+      const tracked = [];
+
+      const result = await pendingActions.completePendingReaderAuthentication?.({
+        sessionData,
+        registered: true,
+        fallbackPath: "/fallback",
+        storage,
+        now: () => NOW,
+        navigateTo: (path) => navigated.push(path),
+        track: async (event) => tracked.push(event),
+      });
+
+      assert.equal(result?.status, "pending");
+      assert.deepEqual(navigated, ["/bookstores/eterna"]);
+      assert.equal(readPendingReaderAction({ storage, now: () => NOW })?.attempt_id, ATTEMPT_ID);
+      assert.deepEqual(tracked, [{ eventType: "reader_registration_completed", actionType: "contact_bookstore", bookstoreId: 9, attemptId: ATTEMPT_ID }]);
+    }
   });
 
   test("cancels only the pending action created by the open auth dialog", () => {

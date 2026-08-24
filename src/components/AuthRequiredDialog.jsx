@@ -21,26 +21,45 @@ export function trapDialogFocus(event, container, activeElement = typeof documen
   }
 }
 
+export function activateDialogFocus(primaryElement, previousFocus, { schedule = (callback) => globalThis.requestAnimationFrame?.(callback), cancel = (frame) => globalThis.cancelAnimationFrame?.(frame) } = {}) {
+  const focusFrame = schedule(() => primaryElement?.focus());
+  return () => {
+    if (focusFrame !== undefined) cancel(focusFrame);
+    previousFocus?.focus?.();
+  };
+}
+
+export function handleActionDialogEscape(event, onCancel) {
+  if (event.key !== "Escape") return false;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  onCancel();
+  return true;
+}
+
+export function handleActionDialogBackdrop(event, onCancel) {
+  if (event.target !== event.currentTarget) return false;
+  onCancel();
+  return true;
+}
+
 function ActionDialogFrame({ titleId, title, description, onCancel, primaryRef, children }) {
   const cardRef = useRef(null);
 
   useEffect(() => {
     const previousFocus = document.activeElement;
-    const focusFrame = globalThis.requestAnimationFrame?.(() => primaryRef.current?.focus());
-    const onKeyDown = (event) => {
-      if (event.key === "Escape") onCancel();
-    };
-    window.addEventListener("keydown", onKeyDown);
+    const restoreFocus = activateDialogFocus(primaryRef.current, previousFocus);
+    const onKeyDown = (event) => handleActionDialogEscape(event, onCancel);
+    window.addEventListener("keydown", onKeyDown, true);
     return () => {
-      window.removeEventListener("keydown", onKeyDown);
-      if (focusFrame !== undefined) globalThis.cancelAnimationFrame?.(focusFrame);
-      previousFocus?.focus?.();
+      window.removeEventListener("keydown", onKeyDown, true);
+      restoreFocus();
     };
   }, [onCancel, primaryRef]);
 
   return (
-    <div className="auth-required-dialog" role="dialog" aria-modal="true" aria-labelledby={titleId} onClick={onCancel}>
-      <div ref={cardRef} className="auth-required-dialog-card" onClick={(event) => event.stopPropagation()} onKeyDown={(event) => trapDialogFocus(event, cardRef.current)}>
+    <div className="auth-required-dialog" role="dialog" aria-modal="true" aria-labelledby={titleId} onClick={(event) => handleActionDialogBackdrop(event, onCancel)}>
+      <div ref={cardRef} className="auth-required-dialog-card" onKeyDown={(event) => trapDialogFocus(event, cardRef.current)}>
         <p className="section-label">Cuenta Bookia</p>
         <h2 id={titleId}>{title}</h2>
         <p>{description}</p>

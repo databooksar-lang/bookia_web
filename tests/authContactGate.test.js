@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { createServer } from "vite";
-import { PENDING_READER_ACTION_STORAGE_KEY, readPendingReaderAction, savePendingReaderAction } from "../src/pendingReaderAction.js";
+import { PENDING_READER_ACTION_STORAGE_KEY, cancelPendingReaderAction, readPendingReaderAction, savePendingReaderAction } from "../src/pendingReaderAction.js";
 
 const NOW = Date.parse("2026-08-11T12:00:00.000Z");
 const ATTEMPT_ID = "123e4567-e89b-42d3-a456-426614174000";
@@ -83,6 +83,55 @@ export function registerAuthContactGateTests(test) {
     }
   });
 
+  test("moves focus into the auth dialog, restores its trigger, and consumes Escape before stacked modals", async () => {
+    const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
+    try {
+      const module = await vite.ssrLoadModule("/src/pages/PublicPages.jsx");
+      const focused = [];
+      const trigger = { focus: () => focused.push("trigger") };
+      const primary = { focus: () => focused.push("primary") };
+      let scheduled;
+      const cleanup = module.activateDialogFocus?.(primary, trigger, { schedule: (callback) => { scheduled = callback; return 7; }, cancel: (frame) => focused.push(`cancel-${frame}`) });
+      scheduled?.();
+      cleanup?.();
+
+      const calls = [];
+      const storage = createMemoryStorage();
+      const action = savePendingReaderAction({ type: "contact_bookstore", targetId: 9, returnPath: "/bookstores/eterna" }, { storage, now: () => NOW, randomUUID: () => ATTEMPT_ID });
+      const event = { key: "Escape", preventDefault: () => calls.push("prevent"), stopImmediatePropagation: () => calls.push("stop") };
+      const handled = module.handleActionDialogEscape?.(event, () => {
+        calls.push("cancel");
+        cancelPendingReaderAction(action, { storage, now: () => NOW });
+      });
+
+      assert.deepEqual(focused, ["primary", "cancel-7", "trigger"]);
+      assert.equal(handled, true);
+      assert.deepEqual(calls, ["prevent", "stop", "cancel"]);
+      assert.equal(readPendingReaderAction({ storage, now: () => NOW }), null);
+    } finally {
+      await vite.close();
+    }
+  });
+
+  test("cancels from the auth backdrop only when the backdrop itself was clicked", async () => {
+    const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
+    try {
+      const module = await vite.ssrLoadModule("/src/pages/PublicPages.jsx");
+      const calls = [];
+      const backdrop = {};
+      const storage = createMemoryStorage();
+      const action = savePendingReaderAction({ type: "contact_bookstore", targetId: 9, returnPath: "/bookstores/eterna" }, { storage, now: () => NOW, randomUUID: () => ATTEMPT_ID });
+
+      assert.equal(module.handleActionDialogBackdrop?.({ target: {}, currentTarget: backdrop }, () => calls.push("cancel")), false);
+      assert.equal(readPendingReaderAction({ storage, now: () => NOW })?.attempt_id, ATTEMPT_ID);
+      assert.equal(module.handleActionDialogBackdrop?.({ target: backdrop, currentTarget: backdrop }, () => { calls.push("cancel"); cancelPendingReaderAction(action, { storage, now: () => NOW }); }), true);
+      assert.deepEqual(calls, ["cancel"]);
+      assert.equal(readPendingReaderAction({ storage, now: () => NOW }), null);
+    } finally {
+      await vite.close();
+    }
+  });
+
   test("resolves bookstore continuations from freshly loaded contact and catalog data", async () => {
     const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
     try {
@@ -100,6 +149,34 @@ export function registerAuthContactGateTests(test) {
       assert.equal(module.resolveBookstoreContactContinuation({ type: "contact_bookstore", target_id: 9, catalog_item_id: 99 }, store, items).status, "unavailable");
       assert.equal(module.resolveBookstoreContactContinuation({ type: "contact_bookstore", target_id: 9 }, { id: 9 }, items).status, "unavailable");
       assert.equal(module.resolveBookstoreContactContinuation({ type: "contact_bookstore", target_id: 8 }, store, items), null);
+    } finally {
+      await vite.close();
+    }
+  });
+
+  test("clears a matching contact intent only for a terminal bookstore load failure", async () => {
+    const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
+    try {
+      const module = await vite.ssrLoadModule("/src/pages/PublicPages.jsx");
+      for (const status of [undefined, 500, 503]) {
+        const storage = createMemoryStorage();
+        savePendingReaderAction({ type: "contact_bookstore", targetId: 9, returnPath: "/bookstores/eterna" }, { storage, now: () => NOW, randomUUID: () => ATTEMPT_ID });
+        const result = module.handleBookstoreContactLoadFailure?.({ error: Object.assign(new Error("temporary"), { status }), slug: "eterna", storage, now: () => NOW });
+        assert.equal(result?.status, "retryable");
+        assert.equal(readPendingReaderAction({ storage, now: () => NOW })?.target_id, 9);
+      }
+
+      const storage = createMemoryStorage();
+      savePendingReaderAction({ type: "contact_bookstore", targetId: 9, returnPath: "/bookstores/eterna" }, { storage, now: () => NOW, randomUUID: () => ATTEMPT_ID });
+      const result = module.handleBookstoreContactLoadFailure?.({ error: Object.assign(new Error("missing"), { status: 404 }), slug: "eterna", storage, now: () => NOW });
+      assert.equal(result?.status, "unavailable");
+      assert.match(result?.message || "", /librería ya no está disponible/i);
+      assert.equal(readPendingReaderAction({ storage, now: () => NOW }), null);
+
+      const unrelatedStorage = createMemoryStorage();
+      savePendingReaderAction({ type: "contact_bookstore", targetId: 10, returnPath: "/bookstores/otra" }, { storage: unrelatedStorage, now: () => NOW, randomUUID: () => ATTEMPT_ID });
+      assert.equal(module.handleBookstoreContactLoadFailure?.({ error: Object.assign(new Error("missing"), { status: 404 }), slug: "eterna", storage: unrelatedStorage, now: () => NOW }), null);
+      assert.equal(readPendingReaderAction({ storage: unrelatedStorage, now: () => NOW })?.target_id, 10);
     } finally {
       await vite.close();
     }
@@ -145,6 +222,11 @@ export function registerAuthContactGateTests(test) {
       assert.deepEqual(module.resolveReadingClubContinuation({ type: "reading_club_interest", target_id: 33 }, [{ id: 33, title: "Narrativas" }]), { status: "ready", club: { id: 33, title: "Narrativas" } });
       assert.equal(module.resolveReadingClubContinuation({ type: "reading_club_interest", target_id: 33 }, []).status, "unavailable");
       assert.equal(module.resolveReadingClubContinuation({ type: "contact_bookstore", target_id: 33 }, []), null);
+      const storage = createMemoryStorage();
+      const pending = savePendingReaderAction({ type: "reading_club_interest", targetId: 33, returnPath: "/#clubes" }, { storage, now: () => NOW, randomUUID: () => ATTEMPT_ID });
+      assert.equal(module.resolveReadingClubContinuation(pending, [], { error: "offline" }).status, "deferred");
+      assert.equal(readPendingReaderAction({ storage, now: () => NOW })?.target_id, 33);
+      assert.equal(module.resolveReadingClubContinuation(pending, [], { error: "" }).status, "unavailable");
       const unresolvedMarkup = renderToStaticMarkup(createElement(module.ReadingClubPublicCard, { club: { id: 33, title: "Narrativas", meeting_date: "2026-09-10" }, showInterest: true, onOpenDetails: () => {}, onOpenInterest: () => {}, interestDisabled: true }));
       assert.match(unresolvedMarkup, /disabled=""[^>]*>Estoy interesado@/);
     } finally {
@@ -194,6 +276,37 @@ export function registerAuthContactGateTests(test) {
       assert.match(source, /source="bookstore_catalog_card"/);
       assert.match(source, /source="book_detail_modal"/);
       assert.match(source, /contactGate=\{\{ me, store, onRequireAuth: requireBookstoreAuth \}\}/);
+    } finally {
+      await vite.close();
+    }
+  });
+
+  test("persists each of the three bookstore-profile contact clicks with exact analytics attribution", async () => {
+    const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
+    try {
+      const module = await vite.ssrLoadModule("/src/pages/PublicPages.jsx");
+      const store = { id: 9 };
+      const tracked = [];
+      for (const [source, item] of [["bookstore_profile_contact", null], ["bookstore_catalog_card", { id: 21, title: "Rayuela" }], ["book_detail_modal", { id: 21, title: "Rayuela" }]]) {
+        const storage = createMemoryStorage();
+        let requested;
+        const button = module.BookstoreWhatsAppAction({ me: null, store, item, source, onRequireAuth: (input) => { requested = input; } });
+        let propagationStopped = false;
+        button.props.onClick({ stopPropagation: () => { propagationStopped = true; } });
+        const action = module.startBookstoreContactIntent?.({ store, ...requested, returnPath: "/bookstores/eterna", storage, now: () => NOW, randomUUID: () => ATTEMPT_ID, track: (event) => tracked.push(event) });
+        const stored = readPendingReaderAction({ storage, now: () => NOW });
+
+        assert.equal(propagationStopped, true);
+        assert.equal(action?.source, source);
+        assert.equal(stored?.target_id, 9);
+        assert.equal(stored?.bookstore_id, 9);
+        assert.equal(stored?.catalog_item_id, item?.id);
+      }
+      assert.deepEqual(tracked, [
+        { eventType: "reader_intent_started", actionType: "contact_bookstore", bookstoreId: 9, attemptId: ATTEMPT_ID },
+        { eventType: "reader_intent_started", actionType: "contact_bookstore", bookstoreId: 9, attemptId: ATTEMPT_ID },
+        { eventType: "reader_intent_started", actionType: "contact_bookstore", bookstoreId: 9, attemptId: ATTEMPT_ID },
+      ]);
     } finally {
       await vite.close();
     }
