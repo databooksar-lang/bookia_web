@@ -1,3 +1,5 @@
+import { Fragment } from "react";
+
 import { parseBookstoreDescription } from "../bookstoreDescriptionFormat";
 
 function InlineDescription({ nodes }) {
@@ -7,7 +9,7 @@ function InlineDescription({ nodes }) {
     if (node.type === "emphasis") return <em key={key}><InlineDescription nodes={node.children} /></em>;
     if (node.type === "link") return <a key={key} href={node.href} target="_blank" rel="noopener noreferrer"><InlineDescription nodes={node.children} /></a>;
     if (node.type === "lineBreak") return <br key={key} />;
-    return <>{node.value}</>;
+    return <Fragment key={key}>{node.value}</Fragment>;
   });
 }
 
