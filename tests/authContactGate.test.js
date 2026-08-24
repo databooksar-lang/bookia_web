@@ -26,12 +26,12 @@ export function registerAuthContactGateTests(test) {
     assert.doesNotMatch(terms, /contactar directamente a las librerias sin crear una cuenta/i);
     assert.match(terms, /Vigente desde el 24 de agosto de 2026/);
     assert.match(privacy, /Vigente desde el 24 de agosto de 2026/);
-    assert.match(terms, /perfil publico de una libreria.*contacto digital.*cuenta autenticada/is);
+    assert.match(terms, /contacto digital.*WhatsApp.*cuenta autenticada.*todas las superficies de descubrimiento/is);
     assert.match(terms, /inter.s.*club de lectura.*cuenta autenticada/is);
-    assert.match(terms, /descubrimiento.*resultados de b.squeda.*detalle de un libro.*WhatsApp.*numero comercial publico/is);
-    assert.match(privacy, /perfil publico de una libreria.*contacto digital.*cuenta autenticada/is);
+    assert.doesNotMatch(terms, /Esta regla no alcanza al descubrimiento anonimo/i);
+    assert.match(privacy, /contacto digital.*WhatsApp.*cuenta autenticada.*todas las superficies de descubrimiento/is);
     assert.match(privacy, /inter.s.*club.*cuenta autenticada/is);
-    assert.match(privacy, /descubrimiento.*resultados de b.squeda.*detalle de un libro.*WhatsApp.*numero comercial publico/is);
+    assert.doesNotMatch(privacy, /Esta regla no alcanza al descubrimiento anonimo/i);
   });
 
   test("styles the auth gate and locked contact card for desktop and mobile", () => {
@@ -304,7 +304,7 @@ export function registerAuthContactGateTests(test) {
     }
   });
 
-  test("keeps non-profile book contact direct while wiring the three bookstore-profile gates", async () => {
+  test("gates WhatsApp from every public book-discovery surface", async () => {
     const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
     try {
       const module = await vite.ssrLoadModule("/src/pages/PublicPages.jsx");
@@ -316,14 +316,19 @@ export function registerAuthContactGateTests(test) {
         onClose: () => {},
         favorites: { favoriteIds: new Set(), pendingIds: new Set(), toggleFavorite: () => {} },
         isSessionLoading: false,
+        contactGate: { me: null, onRequireAuth: () => {} },
       }));
       const source = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
 
-      assert.match(markup, /href="https:\/\/wa\.me\//);
+      assert.match(markup, /type="button"/);
+      assert.doesNotMatch(markup, /href="https:\/\/wa\.me\//);
       assert.match(source, /source="bookstore_profile_contact"/);
       assert.match(source, /source="bookstore_catalog_card"/);
       assert.match(source, /source="book_detail_modal"/);
       assert.match(source, /contactGate=\{\{ me: contactSession, store, onRequireAuth: requireBookstoreAuth \}\}/);
+      assert.match(source, /function InitialBookDiscovery[\s\S]*contactGate=/);
+      assert.match(source, /function SearchResults[\s\S]*BookstoreWhatsAppAction[\s\S]*source="search_results"/);
+      assert.match(source, /function SearchResults[\s\S]*contactGate=/);
     } finally {
       await vite.close();
     }
