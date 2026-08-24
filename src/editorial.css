@@ -1200,6 +1200,38 @@ button:disabled {
   color: rgba(255, 250, 240, 0.82);
 }
 
+.store-identity > .bookstore-profile-share-menu {
+  width: max-content;
+  max-width: 100%;
+  margin-top: 22px;
+}
+
+.bookstore-profile-share-trigger {
+  color: var(--forest-deep);
+  background: var(--cream);
+  border-color: rgba(255, 250, 240, 0.72);
+  box-shadow: 0 10px 24px rgba(11, 45, 36, 0.2);
+}
+
+.bookstore-profile-share-trigger:hover {
+  color: var(--forest-deep);
+  background: #fff;
+  border-color: #fff;
+}
+
+.bookstore-profile-share-menu .book-share-options {
+  position: static;
+  right: auto;
+  left: 0;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  flex-wrap: nowrap;
+}
+
+.bookstore-profile-share-menu .book-share-feedback {
+  color: var(--cream);
+}
+
 .store-tags {
   display: flex;
   flex-wrap: wrap;

@@ -35,6 +35,7 @@ import { registerFavoritesStateTests } from "./favoritesState.test.js";
 import { registerAccountDestinationTests } from "./accountDestination.test.js";
 import { registerBookSharingStateTests } from "./bookSharingState.test.js";
 import { registerReadingClubSharingStateTests } from "./readingClubSharingState.test.js";
+import { registerBookstoreProfileSharingStateTests } from "./bookstoreProfileSharingState.test.js";
 import { registerSectionIndexTests } from "./sectionIndex.test.js";
 import { registerGoogleOAuthStateTests } from "./googleOAuthState.test.js";
 import { registerPendingReaderActionTests } from "./pendingReaderAction.test.js";
@@ -189,6 +190,7 @@ registerFavoritesStateTests((name, fn) => tests.push([name, fn]));
 registerAccountDestinationTests((name, fn) => tests.push([name, fn]));
 registerBookSharingStateTests((name, fn) => tests.push([name, fn]));
 registerReadingClubSharingStateTests((name, fn) => tests.push([name, fn]));
+registerBookstoreProfileSharingStateTests((name, fn) => tests.push([name, fn]));
 
 tests.push(["offers a reusable favorite control throughout public book discovery", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
