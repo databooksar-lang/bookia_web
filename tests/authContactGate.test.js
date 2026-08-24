@@ -69,6 +69,13 @@ export function registerAuthContactGateTests(test) {
     }
   });
 
+  test("sends the auth-gate create-account CTA to the base registration route", () => {
+    const dialog = readFileSync(new URL("../src/components/AuthRequiredDialog.jsx", import.meta.url), "utf8");
+
+    assert.match(dialog, /onClick=\{\(\) => navigate\("\/register"\)\}>Crear cuenta/);
+    assert.doesNotMatch(dialog, /buildRegisterPath\(\{ profileType: "reader" \}\)/);
+  });
+
   test("traps focus in both directions at dialog boundaries", async () => {
     const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
     try {
