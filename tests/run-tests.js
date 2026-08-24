@@ -39,6 +39,7 @@ import { registerSectionIndexTests } from "./sectionIndex.test.js";
 import { registerGoogleOAuthStateTests } from "./googleOAuthState.test.js";
 import { registerPendingReaderActionTests } from "./pendingReaderAction.test.js";
 import { registerProgressiveReaderAuthIntegrationTests } from "./progressiveReaderAuthIntegration.test.js";
+import { registerDashboardMetricsPresentationTests } from "./dashboardMetricsPresentation.test.js";
 
 import { registerDashboardNavigationStateTests } from './dashboardNavigationState.test.js';
 
@@ -168,6 +169,7 @@ registerSectionIndexTests((name, fn) => tests.push([name, fn]));
 registerGoogleOAuthStateTests((name, fn) => tests.push([name, fn]));
 registerPendingReaderActionTests((name, fn) => tests.push([name, fn]));
 registerProgressiveReaderAuthIntegrationTests((name, fn) => tests.push([name, fn]));
+registerDashboardMetricsPresentationTests((name, fn) => tests.push([name, fn]));
 registerPlansPricingStateTests((name, fn) => tests.push([name, fn]));
 registerAnalyticsStateTests((name, fn) => tests.push([name, fn]));
 registerRegisterStateTests((name, fn) => tests.push([name, fn]));

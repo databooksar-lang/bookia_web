@@ -9,6 +9,18 @@ export function normalizeFollowerMetrics(metrics = {}) {
   };
 }
 
+export function getMetricChangeTone(value) {
+  const normalizedValue = Number(value || 0);
+  if (normalizedValue > 0) return "positive";
+  if (normalizedValue < 0) return "negative";
+  return "neutral";
+}
+
+export function sumShareChannels(channels = {}) {
+  return ["whatsapp", "instagram", "telegram", "copy_link"]
+    .reduce((total, channel) => total + Number(channels[channel] || 0), 0);
+}
+
 export function buildWebInteractionEventPayload({ eventType, bookstoreId, catalogItemId, readingClubId, source, metadata }) {
   const payload = {
     event_type: eventType,
