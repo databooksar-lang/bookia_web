@@ -39,8 +39,26 @@ function drawStoryText(context, text, x, y, maxWidth, lineHeight, maxLines) {
   let line = "";
 
   for (const word of words) {
+    if (context.measureText(word).width > maxWidth) {
+      if (line) {
+        lines.push(line);
+        line = "";
+      }
+      let chunk = "";
+      for (const character of Array.from(word)) {
+        const candidate = `${chunk}${character}`;
+        if (chunk && context.measureText(candidate).width > maxWidth) {
+          lines.push(chunk);
+          chunk = character;
+        } else {
+          chunk = candidate;
+        }
+      }
+      line = chunk;
+      continue;
+    }
     const candidate = line ? `${line} ${word}` : word;
-    if (context.measureText(candidate).width <= maxWidth || !line) {
+    if (context.measureText(candidate).width <= maxWidth) {
       line = candidate;
     } else {
       lines.push(line);
@@ -49,7 +67,13 @@ function drawStoryText(context, text, x, y, maxWidth, lineHeight, maxLines) {
   }
   if (line) lines.push(line);
 
-  lines.slice(0, maxLines).forEach((currentLine, index) => context.fillText(currentLine, x, y + (index * lineHeight)));
+  const visibleLines = lines.slice(0, maxLines);
+  if (lines.length > maxLines && visibleLines.length) {
+    let lastLine = visibleLines.at(-1).replace(/…$/, "").trimEnd();
+    while (lastLine && context.measureText(`${lastLine}…`).width > maxWidth) lastLine = lastLine.slice(0, -1).trimEnd();
+    visibleLines[visibleLines.length - 1] = `${lastLine}…`;
+  }
+  visibleLines.forEach((currentLine, index) => context.fillText(currentLine, x, y + (index * lineHeight)));
 }
 
 function drawStoryCoverPlaceholder(context, x, y, width, height) {
@@ -158,9 +182,20 @@ function storyCoverRequestCredentials(coverUrl) {
 }
 
 export async function loadInstagramStoryCover({ coverUrl, fetchLike = globalThis.fetch, imageFactory = () => globalThis.document?.createElement("img") }) {
-  if (!coverUrl || typeof fetchLike !== "function") return null;
-  const response = await fetchLike(coverUrl, { credentials: storyCoverRequestCredentials(coverUrl) });
-  if (!response.ok) throw new Error("No pudimos cargar la tapa del libro.");
+  return loadInstagramStoryImage({
+    imageUrl: coverUrl,
+    credentials: storyCoverRequestCredentials(coverUrl),
+    fetchLike,
+    imageFactory,
+    loadError: "No pudimos cargar la tapa del libro.",
+    decodeError: "No pudimos leer la tapa del libro.",
+  });
+}
+
+async function loadInstagramStoryImage({ imageUrl, credentials, fetchLike, imageFactory, loadError, decodeError }) {
+  if (!imageUrl || typeof fetchLike !== "function") return null;
+  const response = await fetchLike(imageUrl, { credentials });
+  if (!response.ok) throw new Error(loadError);
   const contentType = String(response.headers?.get?.("content-type") || "").split(";", 1)[0].trim().toLowerCase();
   if (!new Set(["image/jpeg", "image/png", "image/webp"]).has(contentType)) throw new Error("La tapa no tiene un formato de imagen compatible.");
   const blob = await readStoryCoverBlob(response, contentType);
@@ -170,12 +205,27 @@ export async function loadInstagramStoryCover({ coverUrl, fetchLike = globalThis
     const image = imageFactory();
     await new Promise((resolve, reject) => {
       image.onload = resolve;
-      image.onerror = () => reject(new Error("No pudimos leer la tapa del libro."));
+      image.onerror = () => reject(new Error(decodeError));
       image.src = objectUrl;
     });
     return image;
   } finally {
     URL.revokeObjectURL(objectUrl);
+  }
+}
+
+export async function loadInstagramStoryBookstoreLogo({ logoUrl, fetchLike = globalThis.fetch, imageFactory = () => globalThis.document?.createElement("img") } = {}) {
+  try {
+    return await loadInstagramStoryImage({
+      imageUrl: logoUrl,
+      credentials: "omit",
+      fetchLike,
+      imageFactory,
+      loadError: "No pudimos cargar el logo de la librería.",
+      decodeError: "No pudimos leer el logo de la librería.",
+    });
+  } catch {
+    return null;
   }
 }
 
@@ -213,6 +263,50 @@ function drawStoryCover(context, image, x, y, width, height) {
   context.restore();
 }
 
+function drawStoryImageCover(context, image, x, y, width, height) {
+  const scale = Math.max(width / image.width, height / image.height);
+  const sourceWidth = width / scale;
+  const sourceHeight = height / scale;
+  const sourceX = (image.width - sourceWidth) / 2;
+  const sourceY = (image.height - sourceHeight) / 2;
+  context.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height);
+}
+
+function buildStoryBookstoreMonogram(bookstoreName) {
+  const words = String(bookstoreName || "")
+    .trim()
+    .split(/\s+/)
+    .map((word) => Array.from(word.replace(/[^\p{L}\p{N}]/gu, "")).join(""))
+    .filter(Boolean);
+  if (!words.length) return "BK";
+  if (words.length === 1) return Array.from(words[0]).slice(0, 2).join("").toLocaleUpperCase("es-AR");
+  return `${Array.from(words[0])[0]}${Array.from(words[1])[0]}`.toLocaleUpperCase("es-AR");
+}
+
+function drawStoryBookstoreIdentity(context, logo, bookstoreName) {
+  const centerX = 200;
+  const centerY = 390;
+  const radius = 58;
+  context.save();
+  context.beginPath();
+  context.arc(centerX, centerY, radius, 0, Math.PI * 2);
+  context.closePath();
+  context.fillStyle = "#f7f1e6";
+  context.fill();
+  context.clip();
+  if (logo) {
+    drawStoryImageCover(context, logo, centerX - radius, centerY - radius, radius * 2, radius * 2);
+  }
+  context.restore();
+
+  if (!logo) {
+    context.fillStyle = "#0b2d24";
+    context.font = "700 34px Georgia, serif";
+    context.textAlign = "center";
+    context.fillText(buildStoryBookstoreMonogram(bookstoreName), centerX, centerY + 12);
+  }
+}
+
 function canvasToPng(canvas) {
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
@@ -236,7 +330,7 @@ export function buildInstagramStoryMetadata({ item, bookstore }) {
     language: truncateStoryText(cleanStoryText(item?.language, "Idioma no visible"), 32),
     bookStatus: STORY_BOOK_STATUS_LABELS[item?.book_status] || "Usado",
     bookstoreName,
-    callToAction: `ENCONTRALO EN ${bookstoreName.toLocaleUpperCase("es-AR")}`,
+    callToAction: "VER EL LIBRO EN BOOKIA →",
   };
 }
 
@@ -265,7 +359,45 @@ export function buildInstagramStoryCoverPath(item, { trustedOrigins = [] } = {})
   return allowedPath.test(pathname) ? coverPath : null;
 }
 
-export async function createInstagramStoryFile({ item, bookstore, coverUrl, fetchLike = globalThis.fetch, documentLike = globalThis.document, FileCtor = globalThis.File }) {
+export function buildInstagramStoryBookstoreLogoPath(bookstore, { trustedOrigins = [] } = {}) {
+  const bookstoreSlug = String(bookstore?.slug || "").trim();
+  const logoPath = String(bookstore?.logo_url || "").trim();
+  if (!bookstoreSlug || !logoPath || logoPath.startsWith("//")) return null;
+
+  let pathname = logoPath;
+  if (/^https?:\/\//i.test(logoPath)) {
+    try {
+      const parsedUrl = new URL(logoPath);
+      if (!trustedOrigins.includes(parsedUrl.origin)) return null;
+      pathname = parsedUrl.pathname;
+    } catch {
+      return null;
+    }
+  } else if (!logoPath.startsWith("/")) {
+    return null;
+  } else {
+    pathname = logoPath.split(/[?#]/, 1)[0];
+  }
+
+  const expectedPath = `/bookstores/${encodeURIComponent(bookstoreSlug)}/logo`;
+  return pathname === expectedPath || pathname === `/api${expectedPath}` ? logoPath : null;
+}
+
+export function buildInstagramStoryAssetUrls({ item, bookstore, trustedOrigins = [], resolveUrl = (path) => path }) {
+  const coverPath = buildInstagramStoryCoverPath(item, { trustedOrigins });
+  const bookstoreLogoPath = buildInstagramStoryBookstoreLogoPath(bookstore, { trustedOrigins });
+  const resolveAssetUrl = (path) => {
+    if (!path) return null;
+    if (/^https?:\/\//i.test(path)) return resolveUrl(path);
+    return resolveUrl(path.startsWith("/api/") ? path.slice(4) : path);
+  };
+  return {
+    coverUrl: resolveAssetUrl(coverPath),
+    bookstoreLogoUrl: resolveAssetUrl(bookstoreLogoPath),
+  };
+}
+
+export async function createInstagramStoryFile({ item, bookstore, coverUrl, bookstoreLogoUrl, fetchLike = globalThis.fetch, documentLike = globalThis.document, FileCtor = globalThis.File }) {
   if (!documentLike?.createElement || typeof FileCtor !== "function") throw new Error("Este navegador no puede crear una imagen para Story.");
   const canvas = documentLike.createElement("canvas");
   const context = canvas.getContext("2d");
@@ -274,61 +406,79 @@ export async function createInstagramStoryFile({ item, bookstore, coverUrl, fetc
   const metadata = buildInstagramStoryMetadata({ item, bookstore });
   canvas.width = STORY_WIDTH;
   canvas.height = STORY_HEIGHT;
-  context.fillStyle = "#f7f1e6";
-  context.fillRect(0, 0, STORY_WIDTH, STORY_HEIGHT);
   context.fillStyle = "#0b2d24";
-  context.font = "700 68px Georgia, serif";
+  context.fillRect(0, 0, STORY_WIDTH, STORY_HEIGHT);
+  context.fillStyle = "#f7f1e6";
+  context.font = "700 64px Georgia, serif";
   context.textAlign = "left";
-  context.fillText("bookia", 88, 130);
-  context.font = "700 24px system-ui, sans-serif";
-  context.fillText("LIBRO RECOMENDADO", 88, 180);
+  context.fillText("bookia", 140, 270);
+  context.beginPath();
+  context.arc(330, 250, 9, 0, Math.PI * 2);
+  context.fillStyle = "#e85d3f";
+  context.fill();
+  context.fillStyle = "#f7f1e6";
+  context.font = "800 22px system-ui, sans-serif";
+  context.textAlign = "right";
+  context.fillText("LIBRO RECOMENDADO", 940, 260);
 
   const coverPromise = loadInstagramStoryCover({ coverUrl, fetchLike, imageFactory: () => documentLike.createElement("img") }).catch(() => null);
-  const logoPromise = loadInstagramStoryLogo({ imageFactory: () => documentLike.createElement("img") });
-  const [cover, logo] = await Promise.all([coverPromise, logoPromise]);
-  if (logo) context.drawImage(logo, 860, 44, 112, 112);
-  drawStoryCover(context, cover, 180, 250, 720, 820);
+  const bookstoreLogoPromise = loadInstagramStoryBookstoreLogo({ logoUrl: bookstoreLogoUrl, fetchLike, imageFactory: () => documentLike.createElement("img") });
+  const [cover, bookstoreLogo] = await Promise.all([coverPromise, bookstoreLogoPromise]);
 
-  context.fillStyle = "#e4e6db";
-  context.fillRect(88, 1134, 258, 58);
-  context.fillStyle = "#0b2d24";
-  context.font = "800 23px system-ui, sans-serif";
-  context.textAlign = "center";
-  context.fillText(metadata.availability.toLocaleUpperCase("es-AR"), 217, 1172);
-
+  drawStoryBookstoreIdentity(context, bookstoreLogo, metadata.bookstoreName);
   context.textAlign = "left";
-  context.font = "700 82px Georgia, serif";
-  drawStoryText(context, metadata.title, 88, 1318, 904, 90, 2);
-  context.fillStyle = "#536259";
-  context.font = "400 38px system-ui, sans-serif";
-  drawStoryText(context, metadata.author, 88, 1502, 904, 48, 2);
+  context.fillStyle = "#f7f1e6";
+  context.font = "800 20px system-ui, sans-serif";
+  context.fillText("DISPONIBLE EN", 290, 372);
+  context.font = "700 54px Georgia, serif";
+  drawStoryText(context, metadata.bookstoreName, 290, 430, 650, 58, 1);
 
-  context.strokeStyle = "#c9c6b9";
-  context.lineWidth = 2;
   context.beginPath();
-  context.moveTo(88, 1610);
-  context.lineTo(992, 1610);
-  context.stroke();
-  const fields = [["GÉNERO", metadata.genre], ["EDITORIAL", metadata.publisher], ["IDIOMA", metadata.language], ["ESTADO", metadata.bookStatus]];
-  fields.forEach(([label, value], index) => {
-    const column = index % 2;
-    const row = Math.floor(index / 2);
-    const x = 88 + (column * 450);
-    const y = 1664 + (row * 90);
-    context.fillStyle = "#68736b";
-    context.font = "700 18px system-ui, sans-serif";
-    context.fillText(label, x, y);
-    context.fillStyle = "#0b2d24";
-    context.font = "700 25px system-ui, sans-serif";
-    drawStoryText(context, value, x, y + 32, 380, 28, 1);
-  });
-  context.strokeStyle = "#0b2d24";
-  context.lineWidth = 3;
-  context.strokeRect(88, 1832, 904, 62);
+  context.arc(860, 760, 260, 0, Math.PI * 2);
+  context.fillStyle = "#e85d3f";
+  context.fill();
+
+  context.save();
+  context.translate(540, 850);
+  context.rotate(-4 * (Math.PI / 180));
+  context.fillStyle = "rgba(247, 241, 230, 0.22)";
+  context.fillRect(-280, -340, 600, 720);
+  drawStoryCover(context, cover, -310, -370, 600, 720);
+  context.restore();
+
+  context.save();
+  context.beginPath();
+  context.arc(820, 1020, 104, 0, Math.PI * 2);
+  context.closePath();
+  context.fillStyle = "#f7f1e6";
+  context.fill();
   context.fillStyle = "#0b2d24";
-  context.font = "800 22px system-ui, sans-serif";
+  context.font = "900 26px system-ui, sans-serif";
   context.textAlign = "center";
-  context.fillText(metadata.callToAction, 540, 1872);
+  const availability = metadata.availability.toLocaleUpperCase("es-AR");
+  if (availability === "DISPONIBLE") {
+    context.fillText("DISPONIBLE", 820, 1012);
+    context.fillText("AHORA", 820, 1052);
+  } else {
+    drawStoryText(context, availability, 820, 1028, 160, 32, 2);
+  }
+  context.restore();
+
+  context.fillStyle = "#f7f1e6";
+  context.textAlign = "left";
+  const titleFontSize = metadata.title.length > 42 ? 56 : 68;
+  context.font = `700 ${titleFontSize}px Georgia, serif`;
+  drawStoryText(context, metadata.title, 140, 1320, 800, titleFontSize + 6, 2);
+  context.fillStyle = "#dfe6dc";
+  context.font = "400 34px system-ui, sans-serif";
+  drawStoryText(context, metadata.author, 140, 1468, 800, 40, 2);
+
+  context.fillStyle = "#e85d3f";
+  context.fillRect(140, 1510, 800, 130);
+  context.fillStyle = "#0b2d24";
+  context.font = "900 28px system-ui, sans-serif";
+  context.textAlign = "center";
+  context.fillText(metadata.callToAction, 540, 1590);
 
   const png = await canvasToPng(canvas);
   const filename = `bookia-story-${metadata.title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase() || "libro"}.png`;

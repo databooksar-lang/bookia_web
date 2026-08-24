@@ -2,7 +2,7 @@ import { useId, useState } from "react";
 
 import { trackWebInteractionEvent } from "../analyticsState";
 import { resolveApiUrl } from "../api";
-import { buildBookShareMessage, buildBookShareUrl, buildInstagramStoryCoverPath, buildTelegramShareHref, buildWhatsAppShareHref, copyBookShareUrl, createInstagramStoryFile, shareInstagramStoryFile } from "../bookSharingState";
+import { buildBookShareMessage, buildBookShareUrl, buildInstagramStoryAssetUrls, buildTelegramShareHref, buildWhatsAppShareHref, copyBookShareUrl, createInstagramStoryFile, shareInstagramStoryFile } from "../bookSharingState";
 import { basePath } from "../routing";
 import { InstagramIcon, ShareIcon, TelegramIcon, WhatsAppIcon } from "./Icons";
 
@@ -37,10 +37,11 @@ export function BookShareMenu({ item, bookstore }) {
     setIsStoryBusy(true);
     setMessage("");
     try {
+      const storyAssets = buildInstagramStoryAssetUrls({ item, bookstore, trustedOrigins: getTrustedApiOrigins(), resolveUrl: resolveApiUrl });
       const file = await createInstagramStoryFile({
         item,
         bookstore,
-        coverUrl: resolveApiUrl(buildInstagramStoryCoverPath(item, { trustedOrigins: getTrustedApiOrigins() })),
+        ...storyAssets,
       });
       const result = await shareInstagramStoryFile({ file, title: item.title });
       if (result === "cancelled") {
