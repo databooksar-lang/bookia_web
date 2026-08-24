@@ -21,10 +21,25 @@ import { BookstoreDescription } from "../components/BookstoreDescription";
 import { SectionIndex } from "../components/SectionIndex";
 import { ReaderAuthorBadge, ReaderAuthorBooks, ReaderMonogram, ReaderPassport, ReaderSocialLinks, ReaderWantedBooksPublic } from "../components/ReaderPublicProfile";
 import { BookCover } from "../components/BookCover";
-import { activateDialogFocus, AuthRequiredDialog, handleActionDialogBackdrop, handleActionDialogEscape, ReaderActionContinuationDialog, trapDialogFocus } from "../components/AuthRequiredDialog";
+import { activateDialogFocus, AuthRequiredDialog, handleActionDialogBackdrop, handleActionDialogEscape, isolateDialogBackground, ReaderActionContinuationDialog, trapDialogFocus } from "../components/AuthRequiredDialog";
 import { ArrowIcon, BookIcon, LocationIcon, SearchIcon, StoreIcon, WhatsAppIcon } from "../components/Icons";
 
-export { activateDialogFocus, AuthRequiredDialog, handleActionDialogBackdrop, handleActionDialogEscape, trapDialogFocus };
+export { activateDialogFocus, AuthRequiredDialog, handleActionDialogBackdrop, handleActionDialogEscape, isolateDialogBackground, trapDialogFocus };
+
+export const PENDING_ACTION_PERSISTENCE_ERROR = "La acción no se pudo guardar para continuar. Revisá la configuración del navegador e intentá nuevamente.";
+
+export function resolveBookstoreContactSession(me, store) {
+  if (me === undefined) return undefined;
+  if (store?.contact_requires_auth === true) return null;
+  if (store?.contact_requires_auth === false) return me || true;
+  return me;
+}
+
+export function getBookstoreSessionReconciliationKey(me, store, lastReconciledKey = null) {
+  if (!me || store?.contact_requires_auth !== true || !store?.id) return null;
+  const key = String(store.id);
+  return key === lastReconciledKey ? null : key;
+}
 
 export function resolveBookstoreContactContinuation(action, store, items = []) {
   if (action?.type !== "contact_bookstore" || action.target_id !== store?.id) return null;
@@ -94,6 +109,17 @@ export function startBookstoreContactIntent({ store, item = null, source, return
     bookstoreId: store?.id,
     catalogItemId: item?.id,
     source,
+    returnPath,
+  }, { storage, origin, now, randomUUID });
+  if (action) track(buildPendingReaderActionEvent(action, "reader_intent_started"));
+  return action;
+}
+
+export function startReadingClubInterestIntent({ club, host, returnPath, storage, origin, now, randomUUID, track = trackReaderFunnelEvent }) {
+  const action = savePendingReaderAction({
+    type: "reading_club_interest",
+    targetId: club?.id,
+    bookstoreId: host?.type === "bookstore" ? club?.bookstore_id : undefined,
     returnPath,
   }, { storage, origin, now, randomUUID });
   if (action) track(buildPendingReaderActionEvent(action, "reader_intent_started"));
@@ -660,14 +686,16 @@ function ReadingClubsSection({ me }) {
       showClubInterest(club, host, hostPath);
       return;
     }
-    const action = savePendingReaderAction({
-      type: "reading_club_interest",
-      targetId: club.id,
-      bookstoreId: host?.type === "bookstore" ? club.bookstore_id : undefined,
+    const action = startReadingClubInterestIntent({
+      club,
+      host,
       returnPath: `${window.location.pathname}${window.location.search}${window.location.hash || "#clubes"}`,
     });
-    if (!action) return;
-    trackReaderFunnelEvent(buildPendingReaderActionEvent(action, "reader_intent_started"));
+    if (!action) {
+      setActionError(PENDING_ACTION_PERSISTENCE_ERROR);
+      return;
+    }
+    setActionError("");
     setAuthAction(action);
   }
 
@@ -1053,7 +1081,7 @@ function BookGenreTags({ item }) {
   );
 }
 
-export function BookDetailModal({ selectedBook, selectedBookImageUrl, onImageChange, onClose, favorites, isSessionLoading, contactGate = null }) {
+export function BookDetailModal({ selectedBook, selectedBookImageUrl, onImageChange, onClose, favorites, isSessionLoading, contactGate = null, contactError = "", isBackgroundObscured = false }) {
   const modalCardRef = useRef(null);
   const closeButtonRef = useRef(null);
 
@@ -1090,7 +1118,7 @@ export function BookDetailModal({ selectedBook, selectedBookImageUrl, onImageCha
   const showBookstoreContact = contactGate ? (contactGate.me === undefined || !contactGate.me || hasBookstoreContact) : hasBookstoreContact;
 
   return (
-    <div className="book-detail-modal" role="dialog" aria-modal="true" aria-labelledby="book-detail-title" onClick={onClose}>
+    <div className="book-detail-modal" role="dialog" aria-hidden={isBackgroundObscured ? "true" : undefined} inert={isBackgroundObscured ? "" : undefined} aria-modal={isBackgroundObscured ? undefined : "true"} aria-labelledby="book-detail-title" onClick={onClose}>
       <div ref={modalCardRef} className="book-detail-modal-card" onClick={(event) => event.stopPropagation()} onKeyDown={trapDialogFocus}>
         <button ref={closeButtonRef} type="button" className="book-detail-modal-close" onClick={onClose}>Cerrar</button>
         <div className="book-detail-modal-layout">
@@ -1129,6 +1157,7 @@ export function BookDetailModal({ selectedBook, selectedBookImageUrl, onImageCha
               <div><dt>Edicion</dt><dd>{bookEditionLine(selectedBook)}</dd></div>
               <div><dt>Libreria</dt><dd>{bookstore ? <AppLink className="book-detail-store-link" href={`/bookstores/${bookstore.slug}`} onClick={() => trackBookstoreOpened(bookstore, "book_detail_modal")}>{bookstore.name} <ArrowIcon size={14} /></AppLink> : "Libreria no visible"}</dd></div>
             </dl>
+            {contactGate && contactError ? <p className="feedback error bookstore-contact-feedback" role="alert">{contactError}</p> : null}
             {showBookstoreContact ? (
               contactGate ? <BookstoreWhatsAppAction className="primary-button book-detail-whatsapp" me={contactGate.me} store={bookstore} item={selectedBook} source="book_detail_modal" onRequireAuth={contactGate.onRequireAuth}><WhatsAppIcon size={19} /> Contactar por WhatsApp</BookstoreWhatsAppAction> : <WhatsAppButton className="primary-button book-detail-whatsapp" whatsappPhone={bookstore.whatsapp_phone} message={`Hola, quisiera consultarte por el libro ${selectedBook.title} que vi publicado en Bookia.`} onClick={() => trackWhatsAppClicked(bookstore, "book_detail_modal", selectedBook.id)}><WhatsAppIcon size={19} /> Contactar por WhatsApp</WhatsAppButton>
             ) : null}
@@ -1139,7 +1168,7 @@ export function BookDetailModal({ selectedBook, selectedBookImageUrl, onImageCha
   );
 }
 
-export function BookstorePage({ slug, me }) {
+export function BookstorePage({ slug, me, refreshSession }) {
   const [store, setStore] = useState(null);
   const [items, setItems] = useState([]);
   const [readingClubs, setReadingClubs] = useState([]);
@@ -1150,8 +1179,10 @@ export function BookstorePage({ slug, me }) {
   const [authAction, setAuthAction] = useState(null);
   const [contactContinuation, setContactContinuation] = useState(null);
   const [actionError, setActionError] = useState("");
+  const reconciledSessionRef = useRef(null);
   const favorites = useFavoriteBooks(me);
   const visibleItems = items.filter((item) => item.availability_status !== "hidden");
+  const contactSession = resolveBookstoreContactSession(me, store);
 
   useEffect(() => {
     setLoading(true);
@@ -1163,6 +1194,16 @@ export function BookstorePage({ slug, me }) {
   }, [slug]);
 
   useEffect(() => {
+    const reconciliationKey = getBookstoreSessionReconciliationKey(me, store, reconciledSessionRef.current);
+    if (!reconciliationKey) {
+      if (!me || store?.contact_requires_auth !== true) reconciledSessionRef.current = null;
+      return;
+    }
+    reconciledSessionRef.current = reconciliationKey;
+    refreshSession?.();
+  }, [me, store, refreshSession]);
+
+  useEffect(() => {
     const sharedBookId = getSharedBookId(window.location.search);
     if (!sharedBookId || selectedBook || items.length === 0) return;
     const sharedItem = items.find((item) => item.id === sharedBookId && item.availability_status !== "hidden");
@@ -1170,7 +1211,7 @@ export function BookstorePage({ slug, me }) {
   }, [items, selectedBook]);
 
   useEffect(() => {
-    if (loading || !me || !store) return;
+    if (loading || !contactSession || !store) return;
     const action = readPendingReaderAction();
     const continuation = resolveBookstoreContactContinuation(action, store, items);
     if (!continuation) return;
@@ -1180,7 +1221,7 @@ export function BookstorePage({ slug, me }) {
       return;
     }
     setContactContinuation({ action, ...continuation });
-  }, [loading, me, store, items]);
+  }, [loading, contactSession, store, items]);
 
   function openBookDetail(item) {
     trackBookDetailOpened(item, "bookstore_page");
@@ -1201,7 +1242,10 @@ export function BookstorePage({ slug, me }) {
       source,
       returnPath: `${window.location.pathname}${window.location.search}${window.location.hash}`,
     });
-    if (!action) return;
+    if (!action) {
+      setActionError(PENDING_ACTION_PERSISTENCE_ERROR);
+      return;
+    }
     setActionError("");
     setAuthAction(action);
   }
@@ -1233,13 +1277,14 @@ export function BookstorePage({ slug, me }) {
   const bookstoreTags = [store.tag_1, store.tag_2].map((tag) => String(tag || '').trim()).filter(Boolean);
   const isFollowing = favorites.followedBookstoreIds.has(store.id);
   const followPending = favorites.pendingBookstoreIds.has(store.id);
+  const topActionDialogOpen = Boolean(authAction || contactContinuation);
 
   return (
     <section className="store-page">
       <div className={`store-hero${heroImageUrl ? " has-hero" : ""}`} style={heroImageUrl ? { backgroundImage: `url(${heroImageUrl})` } : undefined} />
       <div className="store-profile-panel">
         <div className="store-identity"><p className="section-label">Libreria en Bookia</p>{logoUrl ? <img className="store-logo" src={logoUrl} alt={`Logo de ${store.name}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : null}<h1>{store.name}</h1><BookstoreDescription value={displayBookstoreDescription(store.description)} /><BookstoreProfileShareMenu bookstore={store} />{!me?.bookstore ? <button type="button" className={`secondary-button bookstore-follow-button${isFollowing ? " is-following" : ""}`} aria-pressed={isFollowing} aria-busy={followPending} disabled={followPending || me === undefined || favorites.favoritesLoading} onClick={() => favorites.toggleFollowBookstore(store)}>{isFollowing ? "Dejar de seguir" : "Seguir"}</button> : null}{bookstoreTags.length > 0 ? <div className="store-tags" aria-label="Etiquetas de la libreria">{bookstoreTags.map((tag) => <span key={tag} className="store-tag">{tag}</span>)}</div> : null}{favorites.favoriteError ? <p className="feedback error bookstore-follow-feedback" role="alert">{favorites.favoriteError}</p> : null}</div>
-        <BookstoreContactCard store={store} me={me} onRequireAuth={requireBookstoreAuth} />
+        <BookstoreContactCard store={store} me={contactSession} onRequireAuth={requireBookstoreAuth} />
       </div>
       {actionError ? <p className="feedback error bookstore-contact-feedback" role="alert">{actionError}</p> : null}
       <div className="store-catalog">
@@ -1263,7 +1308,7 @@ export function BookstorePage({ slug, me }) {
               >
                 <div className="book-card-cover-actions">
                   <BookCover item={item} />
-                  {(me === undefined || !me || hasWhatsApp) ? <BookstoreWhatsAppAction className="book-card-whatsapp" me={me} store={store} item={item} source="bookstore_catalog_card" onRequireAuth={requireBookstoreAuth} ariaLabel={`Contactar por WhatsApp por ${item.title}`}><WhatsAppIcon size={20} /></BookstoreWhatsAppAction> : null}
+                  {(contactSession === undefined || !contactSession || hasWhatsApp) ? <BookstoreWhatsAppAction className="book-card-whatsapp" me={contactSession} store={store} item={item} source="bookstore_catalog_card" onRequireAuth={requireBookstoreAuth} ariaLabel={`Contactar por WhatsApp por ${item.title}`}><WhatsAppIcon size={20} /></BookstoreWhatsAppAction> : null}
                 </div>
                 <div>
                   <div className="book-card-meta-row">
@@ -1292,7 +1337,7 @@ export function BookstorePage({ slug, me }) {
           </div>
         </section>
       ) : null}
-      <BookDetailModal selectedBook={selectedBook} selectedBookImageUrl={selectedBookImageUrl} onImageChange={setSelectedBookImageUrl} onClose={closeBookDetail} favorites={favorites} isSessionLoading={me === undefined || favorites.favoritesLoading} contactGate={{ me, store, onRequireAuth: requireBookstoreAuth }} />
+      <BookDetailModal selectedBook={selectedBook} selectedBookImageUrl={selectedBookImageUrl} onImageChange={setSelectedBookImageUrl} onClose={closeBookDetail} favorites={favorites} isSessionLoading={me === undefined || favorites.favoritesLoading} contactGate={{ me: contactSession, store, onRequireAuth: requireBookstoreAuth }} contactError={actionError} isBackgroundObscured={topActionDialogOpen} />
       {authAction ? <AuthRequiredDialog action={authAction} onCancel={cancelBookstoreAuth} /> : null}
       {contactContinuation ? <ReaderActionContinuationDialog action={contactContinuation.action} continueLabel="Continuar a WhatsApp" continueHref={contactContinuation.href} onContinue={completeBookstoreContact} onCancel={() => setContactContinuation(null)} /> : null}
     </section>

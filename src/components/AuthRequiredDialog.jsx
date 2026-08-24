@@ -43,22 +43,54 @@ export function handleActionDialogBackdrop(event, onCancel) {
   return true;
 }
 
+export function isolateDialogBackground(dialogElement) {
+  if (!dialogElement) return () => {};
+  const restorations = [];
+  const body = dialogElement.ownerDocument?.body;
+  let current = dialogElement;
+  while (current?.parentElement) {
+    const parent = current.parentElement;
+    for (const sibling of parent.children || []) {
+      if (sibling === current) continue;
+      const hadAriaHidden = sibling.hasAttribute("aria-hidden");
+      const ariaHidden = sibling.getAttribute("aria-hidden");
+      const hadInert = sibling.hasAttribute("inert");
+      if (ariaHidden === "true" && hadInert) continue;
+      sibling.setAttribute("aria-hidden", "true");
+      sibling.setAttribute("inert", "");
+      restorations.push(() => {
+        if (hadAriaHidden) sibling.setAttribute("aria-hidden", ariaHidden);
+        else sibling.removeAttribute("aria-hidden");
+        if (!hadInert) sibling.removeAttribute("inert");
+      });
+    }
+    if (parent === body) break;
+    current = parent;
+  }
+  return () => {
+    for (const restore of restorations.reverse()) restore();
+  };
+}
+
 function ActionDialogFrame({ titleId, title, description, onCancel, primaryRef, children }) {
+  const dialogRef = useRef(null);
   const cardRef = useRef(null);
 
   useEffect(() => {
     const previousFocus = document.activeElement;
+    const restoreBackground = isolateDialogBackground(dialogRef.current);
     const restoreFocus = activateDialogFocus(primaryRef.current, previousFocus);
     const onKeyDown = (event) => handleActionDialogEscape(event, onCancel);
     window.addEventListener("keydown", onKeyDown, true);
     return () => {
       window.removeEventListener("keydown", onKeyDown, true);
+      restoreBackground();
       restoreFocus();
     };
   }, [onCancel, primaryRef]);
 
   return (
-    <div className="auth-required-dialog" role="dialog" aria-modal="true" aria-labelledby={titleId} onClick={(event) => handleActionDialogBackdrop(event, onCancel)}>
+    <div ref={dialogRef} className="auth-required-dialog" role="dialog" aria-modal="true" aria-labelledby={titleId} onClick={(event) => handleActionDialogBackdrop(event, onCancel)}>
       <div ref={cardRef} className="auth-required-dialog-card" onKeyDown={(event) => trapDialogFocus(event, cardRef.current)}>
         <p className="section-label">Cuenta Bookia</p>
         <h2 id={titleId}>{title}</h2>

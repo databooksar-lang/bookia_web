@@ -41,11 +41,12 @@ export function buildWebInteractionEventPayload({ eventType, bookstoreId, catalo
   return payload;
 }
 
-export function buildReaderFunnelEventPayload({ eventType, actionType, bookstoreId, attemptId }) {
+export function buildReaderFunnelEventPayload({ eventType, actionType, bookstoreId, readingClubId, attemptId }) {
   return {
     event_type: eventType,
     action_type: actionType,
     ...(bookstoreId !== undefined && bookstoreId !== null ? { bookstore_id: bookstoreId } : {}),
+    ...(readingClubId !== undefined && readingClubId !== null ? { reading_club_id: readingClubId } : {}),
     attempt_id: attemptId,
   };
 }

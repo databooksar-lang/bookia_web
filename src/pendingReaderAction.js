@@ -68,7 +68,13 @@ export function getPendingActionAuthenticationMode(action, sessionData) {
 }
 
 export function buildPendingReaderActionEvent(action, eventType) {
-  return { eventType, actionType: action.type, bookstoreId: action.bookstore_id, attemptId: action.attempt_id };
+  return {
+    eventType,
+    actionType: action.type,
+    ...(positiveInteger(action.bookstore_id) ? { bookstoreId: action.bookstore_id } : {}),
+    ...(action.type === "reading_club_interest" ? { readingClubId: action.target_id } : {}),
+    attemptId: action.attempt_id,
+  };
 }
 
 export function createPendingReaderAction({ type, targetId, bookstoreId, catalogItemId, source, returnPath, origin = currentOrigin(), attemptId, createdAt } = {}, { now = currentTime, randomUUID = createUuid } = {}) {

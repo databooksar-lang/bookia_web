@@ -24,10 +24,14 @@ export function registerAuthContactGateTests(test) {
     const privacy = readFileSync(new URL("../src/pages/PrivacyPage.jsx", import.meta.url), "utf8");
 
     assert.doesNotMatch(terms, /contactar directamente a las librerias sin crear una cuenta/i);
-    assert.match(terms, /cuenta autenticada.*contacto digital/i);
-    assert.match(terms, /cuenta autenticada.*inter.s.*club/i);
-    assert.match(privacy, /datos de contacto digital.*cuentas autenticadas/i);
-    assert.match(privacy, /cuenta autenticada.*inter.s.*club/i);
+    assert.match(terms, /Vigente desde el 24 de agosto de 2026/);
+    assert.match(privacy, /Vigente desde el 24 de agosto de 2026/);
+    assert.match(terms, /perfil publico de una libreria.*contacto digital.*cuenta autenticada/is);
+    assert.match(terms, /inter.s.*club de lectura.*cuenta autenticada/is);
+    assert.match(terms, /descubrimiento.*resultados de b.squeda.*detalle de un libro.*WhatsApp.*numero comercial publico/is);
+    assert.match(privacy, /perfil publico de una libreria.*contacto digital.*cuenta autenticada/is);
+    assert.match(privacy, /inter.s.*club.*cuenta autenticada/is);
+    assert.match(privacy, /descubrimiento.*resultados de b.squeda.*detalle de un libro.*WhatsApp.*numero comercial publico/is);
   });
 
   test("styles the auth gate and locked contact card for desktop and mobile", () => {
@@ -210,6 +214,42 @@ export function registerAuthContactGateTests(test) {
     }
   });
 
+  test("treats the loaded backend contact flag as authoritative after session hydration", async () => {
+    const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
+    try {
+      const module = await vite.ssrLoadModule("/src/pages/PublicPages.jsx");
+      const staleMe = { account: { email: "expired@example.com" }, reader_profile: { id: 4 } };
+      const lockedStore = { id: 9, name: "Eterna", address: "Honduras 5574", whatsapp_phone: null, correo: null, contact_requires_auth: true };
+      const contactSession = module.resolveBookstoreContactSession?.(staleMe, lockedStore);
+      const contactMarkup = renderToStaticMarkup(createElement(module.BookstoreContactCard, { store: lockedStore, me: contactSession, onRequireAuth: () => {} }));
+
+      assert.equal(contactSession, null);
+      assert.match(contactMarkup, /is-locked/);
+      assert.match(contactMarkup, /contacto digital/i);
+      assert.doesNotMatch(contactMarkup, /mailto:|wa\.me/);
+      assert.equal(module.resolveBookstoreContactSession?.(undefined, { ...lockedStore, contact_requires_auth: false }), undefined);
+      assert.equal(module.getBookstoreSessionReconciliationKey?.(staleMe, lockedStore), "9");
+      assert.equal(module.getBookstoreSessionReconciliationKey?.(staleMe, lockedStore, "9"), null);
+
+      for (const source of ["bookstore_profile_contact", "bookstore_catalog_card", "book_detail_modal"]) {
+        const markup = renderToStaticMarkup(createElement(module.BookstoreWhatsAppAction, {
+          me: contactSession,
+          store: lockedStore,
+          item: source === "bookstore_profile_contact" ? null : { id: 21, title: "Rayuela" },
+          source,
+          onRequireAuth: () => {},
+        }));
+        assert.match(markup, /type="button"/);
+        assert.doesNotMatch(markup, /wa\.me/);
+      }
+
+      const appSource = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
+      assert.match(appSource, /<BookstorePage[^>]*refreshSession=\{refreshMe\}/);
+    } finally {
+      await vite.close();
+    }
+  });
+
   test("gates club interest by session state and prefills either account type without phone or consent", async () => {
     const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
     try {
@@ -251,7 +291,7 @@ export function registerAuthContactGateTests(test) {
       assert.equal(result.detail, "Interés enviado.");
       assert.deepEqual(calls, [["/reading-clubs/33/interests", { method: "POST", body: JSON.stringify({ name: "Ana", email: "ana@example.com", phone: "111", privacy_accepted: true }) }]]);
       assert.equal(storage.getItem(PENDING_READER_ACTION_STORAGE_KEY), null);
-      assert.deepEqual(tracked, [{ eventType: "reader_action_applied", actionType: "reading_club_interest", bookstoreId: 9, attemptId: ATTEMPT_ID }]);
+      assert.deepEqual(tracked, [{ eventType: "reader_action_applied", actionType: "reading_club_interest", bookstoreId: 9, readingClubId: 33, attemptId: ATTEMPT_ID }]);
     } finally {
       await vite.close();
     }
@@ -276,7 +316,7 @@ export function registerAuthContactGateTests(test) {
       assert.match(source, /source="bookstore_profile_contact"/);
       assert.match(source, /source="bookstore_catalog_card"/);
       assert.match(source, /source="book_detail_modal"/);
-      assert.match(source, /contactGate=\{\{ me, store, onRequireAuth: requireBookstoreAuth \}\}/);
+      assert.match(source, /contactGate=\{\{ me: contactSession, store, onRequireAuth: requireBookstoreAuth \}\}/);
     } finally {
       await vite.close();
     }
@@ -308,6 +348,136 @@ export function registerAuthContactGateTests(test) {
         { eventType: "reader_intent_started", actionType: "contact_bookstore", bookstoreId: 9, attemptId: ATTEMPT_ID },
         { eventType: "reader_intent_started", actionType: "contact_bookstore", bookstoreId: 9, attemptId: ATTEMPT_ID },
       ]);
+    } finally {
+      await vite.close();
+    }
+  });
+
+  test("isolates and restores every background layer beneath a stacked action dialog", async () => {
+    const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
+    try {
+      const module = await vite.ssrLoadModule("/src/pages/PublicPages.jsx");
+      function element(initial = {}) {
+        const attributes = new Map(Object.entries(initial));
+        return {
+          children: [],
+          parentElement: null,
+          ownerDocument: null,
+          hasAttribute: (name) => attributes.has(name),
+          getAttribute: (name) => attributes.get(name) ?? null,
+          setAttribute: (name, value) => attributes.set(name, String(value)),
+          removeAttribute: (name) => attributes.delete(name),
+        };
+      }
+      function append(parent, ...children) {
+        parent.children.push(...children);
+        for (const child of children) child.parentElement = parent;
+      }
+      const body = element();
+      const app = element();
+      const header = element({ "aria-hidden": "false" });
+      const main = element();
+      const footer = element();
+      const page = element();
+      const content = element();
+      const bookModal = element({ "aria-hidden": "true", inert: "" });
+      const authDialog = element();
+      const doc = { body };
+      for (const node of [body, app, header, main, footer, page, content, bookModal, authDialog]) node.ownerDocument = doc;
+      append(body, app);
+      append(app, header, main, footer);
+      append(main, page);
+      append(page, content, bookModal, authDialog);
+
+      const restore = module.isolateDialogBackground?.(authDialog);
+      for (const node of [content, bookModal, header, footer]) {
+        assert.equal(node.getAttribute("aria-hidden"), "true");
+        assert.equal(node.hasAttribute("inert"), true);
+      }
+      assert.equal(authDialog.hasAttribute("aria-hidden"), false);
+      bookModal.removeAttribute("aria-hidden");
+      bookModal.removeAttribute("inert");
+      restore?.();
+      assert.equal(header.getAttribute("aria-hidden"), "false");
+      for (const node of [content, bookModal, footer]) {
+        assert.equal(node.hasAttribute("aria-hidden"), false);
+        assert.equal(node.hasAttribute("inert"), false);
+      }
+
+      const bookMarkup = renderToStaticMarkup(createElement(module.BookDetailModal, {
+        selectedBook: { id: 21, title: "Rayuela", availability_status: "available", book_status: "usado", bookstore: { id: 9, slug: "eterna", name: "Eterna", whatsapp_phone: "5491123456789" } },
+        selectedBookImageUrl: null,
+        onImageChange: () => {},
+        onClose: () => {},
+        favorites: { favoriteIds: new Set(), pendingIds: new Set(), toggleFavorite: () => {} },
+        isSessionLoading: false,
+        isBackgroundObscured: true,
+      }));
+      const authMarkup = renderToStaticMarkup(createElement(module.AuthRequiredDialog, { action: { type: "contact_bookstore", target_id: 9 }, onCancel: () => {} }));
+      assert.match(bookMarkup, /role="dialog"[^>]*aria-hidden="true"[^>]*inert=""/);
+      assert.doesNotMatch(bookMarkup, /aria-modal="true"/);
+      assert.equal((`${bookMarkup}${authMarkup}`.match(/aria-modal="true"/g) || []).length, 1);
+    } finally {
+      await vite.close();
+    }
+  });
+
+  test("reports pending-action persistence failures without clearing an existing action", async () => {
+    const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
+    const storage = createMemoryStorage();
+    const existing = savePendingReaderAction({ type: "contact_bookstore", targetId: 8, returnPath: "/bookstores/existing" }, { storage, now: () => NOW, randomUUID: () => ATTEMPT_ID });
+    const throwingStorage = { ...storage, setItem: () => { throw new Error("blocked"); } };
+    try {
+      const module = await vite.ssrLoadModule("/src/pages/PublicPages.jsx");
+      const tracked = [];
+      const contact = module.startBookstoreContactIntent?.({
+        store: { id: 9 },
+        source: "bookstore_profile_contact",
+        returnPath: "/bookstores/eterna",
+        storage: throwingStorage,
+        now: () => NOW,
+        randomUUID: () => "223e4567-e89b-42d3-a456-426614174000",
+        track: (event) => tracked.push(event),
+      });
+      const club = module.startReadingClubInterestIntent?.({
+        club: { id: 33, bookstore_id: null },
+        host: { type: "reader" },
+        returnPath: "/#clubes",
+        storage: throwingStorage,
+        now: () => NOW,
+        randomUUID: () => "323e4567-e89b-42d3-a456-426614174000",
+        track: (event) => tracked.push(event),
+      });
+      const missingUuid = module.startReadingClubInterestIntent?.({
+        club: { id: 34, bookstore_id: null },
+        host: { type: "reader" },
+        returnPath: "/#clubes",
+        storage,
+        now: () => NOW,
+        randomUUID: () => "",
+        track: (event) => tracked.push(event),
+      });
+
+      assert.equal(contact, null);
+      assert.equal(club, null);
+      assert.equal(missingUuid, null);
+      assert.deepEqual(tracked, []);
+      assert.equal(readPendingReaderAction({ storage, now: () => NOW })?.attempt_id, existing.attempt_id);
+      assert.match(module.PENDING_ACTION_PERSISTENCE_ERROR || "", /intent.+guardar|acci.n.+guardar/i);
+      const modalMarkup = renderToStaticMarkup(createElement(module.BookDetailModal, {
+        selectedBook: { id: 21, title: "Rayuela", availability_status: "available", book_status: "usado", bookstore: { id: 9, slug: "eterna", name: "Eterna" } },
+        selectedBookImageUrl: null,
+        onImageChange: () => {},
+        onClose: () => {},
+        favorites: { favoriteIds: new Set(), pendingIds: new Set(), toggleFavorite: () => {} },
+        isSessionLoading: false,
+        contactGate: { me: null, store: { id: 9, name: "Eterna", contact_requires_auth: true }, onRequireAuth: () => {} },
+        contactError: module.PENDING_ACTION_PERSISTENCE_ERROR,
+      }));
+      assert.match(modalMarkup, /role="alert"/);
+      assert.match(modalMarkup, /acci.n no se pudo guardar/i);
+      const source = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+      assert.match(source, /setActionError\(PENDING_ACTION_PERSISTENCE_ERROR\)/);
     } finally {
       await vite.close();
     }

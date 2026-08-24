@@ -254,7 +254,7 @@ export function registerPendingReaderActionTests(test) {
 
     assert.equal(first?.status, "completed");
     assert.equal(second?.status, "none");
-    assert.deepEqual(tracked, [{ eventType: "reader_action_applied", actionType: "reading_club_interest", bookstoreId: 9, attemptId: ATTEMPT_ID }]);
+    assert.deepEqual(tracked, [{ eventType: "reader_action_applied", actionType: "reading_club_interest", bookstoreId: 9, readingClubId: 33, attemptId: ATTEMPT_ID }]);
     assert.equal(storage.getItem(PENDING_READER_ACTION_STORAGE_KEY), null);
   });
 
@@ -273,6 +273,26 @@ export function registerPendingReaderActionTests(test) {
     const action = createPendingReaderAction({ type: "contact_bookstore", targetId: 9, returnPath: "/bookstores/eterna", attemptId: ATTEMPT_ID, createdAt: "2026-08-11T12:00:00.000Z" });
     for (const eventType of ["reader_intent_started", "reader_auth_started", "reader_registration_completed", "reader_action_applied"]) {
       assert.deepEqual(pendingActions.buildPendingReaderActionEvent?.(action, eventType), { eventType, actionType: "contact_bookstore", bookstoreId: 9, attemptId: ATTEMPT_ID });
+    }
+  });
+
+  test("builds club-targeted analytics for every reader-hosted and bookstore-hosted funnel stage", () => {
+    const readerHosted = createPendingReaderAction({ type: "reading_club_interest", targetId: 33, returnPath: "/#clubes", attemptId: ATTEMPT_ID, createdAt: "2026-08-11T12:00:00.000Z" });
+    const bookstoreHosted = createPendingReaderAction({ type: "reading_club_interest", targetId: 34, bookstoreId: 9, returnPath: "/#clubes", attemptId: ATTEMPT_ID, createdAt: "2026-08-11T12:00:00.000Z" });
+    for (const eventType of ["reader_intent_started", "reader_auth_started", "reader_registration_completed", "reader_action_applied"]) {
+      assert.deepEqual(pendingActions.buildPendingReaderActionEvent?.(readerHosted, eventType), {
+        eventType,
+        actionType: "reading_club_interest",
+        readingClubId: 33,
+        attemptId: ATTEMPT_ID,
+      });
+      assert.deepEqual(pendingActions.buildPendingReaderActionEvent?.(bookstoreHosted, eventType), {
+        eventType,
+        actionType: "reading_club_interest",
+        bookstoreId: 9,
+        readingClubId: 34,
+        attemptId: ATTEMPT_ID,
+      });
     }
   });
 
