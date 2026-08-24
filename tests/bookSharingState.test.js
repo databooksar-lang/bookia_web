@@ -1,6 +1,58 @@
 import assert from "node:assert/strict";
 
-import { buildBookShareMessage, buildBookShareUrl, buildInstagramStoryCoverPath, buildInstagramStoryMetadata, buildTelegramShareHref, buildWhatsAppShareHref, copyBookShareUrl, getSharedBookId, loadInstagramStoryCover, loadInstagramStoryLogo, shareBookToInstagram, shareInstagramStoryFile } from "../src/bookSharingState.js";
+import * as bookSharingState from "../src/bookSharingState.js";
+
+const { buildBookShareMessage, buildBookShareUrl, buildInstagramStoryCoverPath, buildInstagramStoryMetadata, buildTelegramShareHref, buildWhatsAppShareHref, copyBookShareUrl, getSharedBookId, loadInstagramStoryCover, shareBookToInstagram, shareInstagramStoryFile } = bookSharingState;
+
+const PNG_HEADER = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 2, 88, 0, 0, 3, 132]);
+
+function createStoryImage(width, height) {
+  const image = { width, height };
+  Object.defineProperty(image, "src", { set() { queueMicrotask(() => image.onload()); } });
+  return image;
+}
+
+function createStoryDocument(images = []) {
+  const drawCalls = [];
+  const filledArcs = [];
+  const textCalls = [];
+  const styledRectangles = [];
+  let currentArc = null;
+  const context = {
+    arc(...args) { currentArc = args; }, beginPath() { currentArc = null; }, clip() {}, closePath() {}, fill() { if (currentArc) filledArcs.push({ args: currentArc, fillStyle: this.fillStyle }); }, lineTo() {}, moveTo() {}, quadraticCurveTo() {}, restore() {}, rotate() {}, save() {}, stroke() {}, strokeRect() {}, translate() {},
+    drawImage(...args) { drawCalls.push(args); },
+    fillRect(...args) { styledRectangles.push({ args, fillStyle: this.fillStyle }); },
+    fillText(value, x, y) { textCalls.push({ value, x, y, fillStyle: this.fillStyle, font: this.font, textAlign: this.textAlign }); },
+    measureText(value) {
+      const fontSize = Number(String(this.font || "").match(/(\d+)px/)?.[1] || 40);
+      return { width: String(value).length * fontSize * 0.5 };
+    },
+  };
+  const canvas = { width: 0, height: 0, getContext: () => context, toBlob: (callback) => callback(new Blob(["story"], { type: "image/png" })) };
+  const imageQueue = [...images];
+  return {
+    canvas,
+    drawCalls,
+    filledArcs,
+    textCalls,
+    styledRectangles,
+    createElement(kind) {
+      if (kind === "canvas") return canvas;
+      if (imageQueue.length) return imageQueue.shift();
+      const brokenImage = {};
+      Object.defineProperty(brokenImage, "src", { set() { queueMicrotask(() => brokenImage.onerror()); } });
+      return brokenImage;
+    },
+  };
+}
+
+class FakeFile {
+  constructor(parts, name, options) {
+    this.parts = parts;
+    this.name = name;
+    this.type = options.type;
+  }
+}
 
 export function registerBookSharingStateTests(register) {
   register("builds a canonical bookstore book-share URL", () => {
@@ -87,7 +139,7 @@ export function registerBookSharingStateTests(register) {
         language: "Español",
         bookStatus: "Nuevo",
         bookstoreName: "Eterna Cadencia",
-        callToAction: "ENCONTRALO EN ETERNA CADENCIA",
+        callToAction: "VER EL LIBRO EN BOOKIA →",
       },
     );
   });
@@ -105,7 +157,7 @@ export function registerBookSharingStateTests(register) {
     assert.equal(metadata.publisher, "Editorial no visible");
     assert.equal(metadata.language, "Idioma no visible");
     assert.equal(metadata.bookStatus, "Usado");
-    assert.equal(metadata.callToAction, "ENCONTRALO EN BOOKIA");
+    assert.equal(metadata.callToAction, "VER EL LIBRO EN BOOKIA →");
   });
 
   register("shares the generated Story file when the device supports file sharing", async () => {
@@ -194,6 +246,179 @@ export function registerBookSharingStateTests(register) {
     assert.equal(buildInstagramStoryCoverPath({ id: 42, cover_image_url: null }), null);
   });
 
+  register("keeps only the bookstore logo route that belongs to the shared bookstore", () => {
+    assert.equal(
+      bookSharingState.buildInstagramStoryBookstoreLogoPath?.({ slug: "eterna-cadencia", logo_url: "/bookstores/eterna-cadencia/logo" }),
+      "/bookstores/eterna-cadencia/logo",
+    );
+    assert.equal(
+      bookSharingState.buildInstagramStoryBookstoreLogoPath?.({ slug: "eterna-cadencia", logo_url: "/api/bookstores/eterna-cadencia/logo" }),
+      "/api/bookstores/eterna-cadencia/logo",
+    );
+    assert.equal(
+      bookSharingState.buildInstagramStoryBookstoreLogoPath?.(
+        { slug: "eterna-cadencia", logo_url: "https://api.bookia.example/bookstores/eterna-cadencia/logo" },
+        { trustedOrigins: ["https://api.bookia.example"] },
+      ),
+      "https://api.bookia.example/bookstores/eterna-cadencia/logo",
+    );
+  });
+
+  register("rejects mismatched and untrusted bookstore logos for a Story", () => {
+    assert.equal(bookSharingState.buildInstagramStoryBookstoreLogoPath?.({ slug: "eterna-cadencia", logo_url: "/bookstores/otra-libreria/logo" }), null);
+    assert.equal(
+      bookSharingState.buildInstagramStoryBookstoreLogoPath?.(
+        { slug: "eterna-cadencia", logo_url: "https://untrusted.example/bookstores/eterna-cadencia/logo" },
+        { trustedOrigins: ["https://api.bookia.example"] },
+      ),
+      null,
+    );
+    assert.equal(bookSharingState.buildInstagramStoryBookstoreLogoPath?.({ slug: "eterna-cadencia", logo_url: null }), null);
+  });
+
+  register("resolves only validated cover and bookstore-logo assets for a Story", () => {
+    const assets = bookSharingState.buildInstagramStoryAssetUrls?.({
+      item: { id: 42, cover_image_url: "/dashboard/catalog/42/cover" },
+      bookstore: { slug: "eterna-cadencia", logo_url: "/bookstores/otra-libreria/logo" },
+      trustedOrigins: ["https://api.bookia.example"],
+      resolveUrl: (path) => `https://api.bookia.example${path}`,
+    });
+
+    assert.deepEqual(assets, {
+      coverUrl: "https://api.bookia.example/dashboard/catalog/42/cover",
+      bookstoreLogoUrl: null,
+    });
+  });
+
+  register("resolves API-prefixed Story assets without duplicating the external API prefix", () => {
+    const assets = bookSharingState.buildInstagramStoryAssetUrls?.({
+      item: { id: 42, cover_image_url: "/api/dashboard/catalog/42/cover" },
+      bookstore: { slug: "eterna-cadencia", logo_url: "/api/bookstores/eterna-cadencia/logo" },
+      resolveUrl: (path) => `https://api.bookia.example${path}`,
+    });
+
+    assert.deepEqual(assets, {
+      coverUrl: "https://api.bookia.example/dashboard/catalog/42/cover",
+      bookstoreLogoUrl: "https://api.bookia.example/bookstores/eterna-cadencia/logo",
+    });
+  });
+
+  register("loads a public bookstore logo without session credentials", async () => {
+    const pngHeader = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 32, 0, 0, 0, 32]);
+    const requests = [];
+    const image = {};
+    Object.defineProperty(image, "src", { set() { queueMicrotask(() => image.onload()); } });
+
+    const logo = await bookSharingState.loadInstagramStoryBookstoreLogo?.({
+      logoUrl: "/api/bookstores/eterna-cadencia/logo",
+      fetchLike: async (url, options) => {
+        requests.push({ url, options });
+        return { ok: true, headers: new Headers({ "content-type": "image/png", "content-length": String(pngHeader.byteLength) }), blob: async () => new Blob([pngHeader], { type: "image/png" }) };
+      },
+      imageFactory: () => image,
+    });
+
+    assert.equal(logo, image);
+    assert.deepEqual(requests, [{ url: "/api/bookstores/eterna-cadencia/logo", options: { credentials: "omit" } }]);
+  });
+
+  register("falls back before decoding when a bookstore logo response is not an image", async () => {
+    let decodeStarted = false;
+    const logo = await bookSharingState.loadInstagramStoryBookstoreLogo?.({
+      logoUrl: "/api/bookstores/eterna-cadencia/logo",
+      fetchLike: async () => ({ ok: true, headers: new Headers({ "content-type": "text/html", "content-length": "128" }) }),
+      imageFactory: () => { decodeStarted = true; return {}; },
+    });
+
+    assert.equal(logo, null);
+    assert.equal(decodeStarted, false);
+  });
+
+  register("creates the bookstore-led Instagram Story with logo, cover and safe-area copy", async () => {
+    const cover = createStoryImage(600, 900);
+    const bookstoreLogo = createStoryImage(320, 320);
+    const documentLike = createStoryDocument([cover, bookstoreLogo]);
+    const requests = [];
+
+    const file = await bookSharingState.createInstagramStoryFile({
+      item: { id: 42, title: "Estadística práctica para ciencia de datos", author: "Peter Bruce, Andrew Bruce y Peter Gedeck", availability_status: "available", publisher: "Marcombo", language: "Español", book_status: "usado", genres: [{ name: "Informática" }] },
+      bookstore: { name: "Databooksar", slug: "databooksar" },
+      coverUrl: "/api/dashboard/catalog/42/cover",
+      bookstoreLogoUrl: "/api/bookstores/databooksar/logo",
+      fetchLike: async (url, options) => {
+        requests.push({ url, options });
+        return { ok: true, headers: new Headers({ "content-type": "image/png", "content-length": String(PNG_HEADER.byteLength) }), blob: async () => new Blob([PNG_HEADER], { type: "image/png" }) };
+      },
+      documentLike,
+      FileCtor: FakeFile,
+    });
+
+    assert.equal(documentLike.canvas.width, 1080);
+    assert.equal(documentLike.canvas.height, 1920);
+    assert.deepEqual(requests, [
+      { url: "/api/dashboard/catalog/42/cover", options: { credentials: "include" } },
+      { url: "/api/bookstores/databooksar/logo", options: { credentials: "omit" } },
+    ]);
+    assert.ok(documentLike.drawCalls.some((args) => args[0] === cover));
+    assert.ok(documentLike.drawCalls.some((args) => args[0] === bookstoreLogo));
+    assert.ok(documentLike.filledArcs.some(({ args: [, y, radius], fillStyle }) => y > 500 && radius >= 200 && fillStyle === "#e85d3f"));
+    const text = documentLike.textCalls.map(({ value }) => value);
+    ["bookia", "LIBRO RECOMENDADO", "DISPONIBLE EN", "Databooksar", "DISPONIBLE", "AHORA", "VER EL LIBRO EN BOOKIA →"].forEach((value) => assert.ok(text.includes(value), `missing Story text: ${value}`));
+    assert.ok(text.join(" ").includes("Estadística práctica para ciencia de datos"));
+    assert.ok(text.join(" ").includes("Peter Bruce, Andrew Bruce y Peter Gedeck"));
+    ["GÉNERO", "EDITORIAL", "IDIOMA", "ESTADO"].forEach((value) => assert.equal(text.includes(value), false));
+    assert.ok(documentLike.textCalls.filter(({ value }) => String(value).trim()).every(({ y }) => y >= 220 && y <= 1640));
+    assert.ok(documentLike.styledRectangles.some(({ args: [x, y, width, height], fillStyle }) => x >= 140 && y >= 1480 && x + width <= 940 && y + height <= 1640 && fillStyle === "#e85d3f"));
+    assert.equal(file.type, "image/png");
+    assert.match(file.name, /^bookia-story-estadistica-practica-para-ciencia-de-datos\.png$/);
+  });
+
+  register("uses readable bookstore monograms when a Story logo is unavailable", async () => {
+    const oneWordDocument = createStoryDocument();
+    const twoWordDocument = createStoryDocument();
+
+    const oneWordFile = await bookSharingState.createInstagramStoryFile({ item: { title: "Libro" }, bookstore: { name: "Databooksar" }, documentLike: oneWordDocument, FileCtor: FakeFile });
+    const twoWordFile = await bookSharingState.createInstagramStoryFile({ item: { title: "Libro" }, bookstore: { name: "Eterna Cadencia" }, documentLike: twoWordDocument, FileCtor: FakeFile });
+
+    assert.ok(oneWordDocument.textCalls.some(({ value }) => value === "DA"));
+    assert.ok(twoWordDocument.textCalls.some(({ value }) => value === "EC"));
+    assert.equal(oneWordFile.type, "image/png");
+    assert.equal(twoWordFile.type, "image/png");
+  });
+
+  register("keeps an ellipsis on the last visible line of an overflowing Story title", async () => {
+    const documentLike = createStoryDocument();
+
+    await bookSharingState.createInstagramStoryFile({
+      item: { title: "Un título extraordinariamente largo que no debe invadir toda la Story ni desaparecer sin aviso", author: "Autora" },
+      bookstore: { name: "Databooksar" },
+      documentLike,
+      FileCtor: FakeFile,
+    });
+
+    const titleLines = documentLike.textCalls.filter(({ y, font }) => y >= 1320 && y < 1468 && String(font).includes("Georgia")).map(({ value }) => value);
+    assert.equal(titleLines.length, 2);
+    assert.match(titleLines.at(-1), /…$/);
+  });
+
+  register("keeps every rendered line of an unbroken Story title inside its maximum width", async () => {
+    const documentLike = createStoryDocument();
+
+    await bookSharingState.createInstagramStoryFile({
+      item: { title: "Supercalifragilisticoextraordinariamentelarguisimosinespaciosparacortar", author: "Autora" },
+      bookstore: { name: "Databooksar" },
+      documentLike,
+      FileCtor: FakeFile,
+    });
+
+    const titleCalls = documentLike.textCalls.filter(({ y, font }) => y >= 1320 && y < 1468 && String(font).includes("Georgia"));
+    assert.ok(titleCalls.length >= 1 && titleCalls.length <= 2);
+    assert.ok(titleCalls.every(({ value, font }) => {
+      const fontSize = Number(String(font).match(/(\d+)px/)?.[1]);
+      return String(value).length * fontSize * 0.5 <= 800;
+    }));
+  });
+
   register("loads a public catalog cover without session credentials", async () => {
     const pngHeader = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 32, 0, 0, 0, 32]);
     const requests = [];
@@ -246,14 +471,4 @@ export function registerBookSharingStateTests(register) {
     );
   });
 
-  register("continues without a logo when the Story logo cannot load", async () => {
-    let requestedSource = "";
-    const image = {};
-    Object.defineProperty(image, "src", { set(value) { requestedSource = value; queueMicrotask(() => image.onerror()); } });
-
-    const logo = await loadInstagramStoryLogo({ imageFactory: () => image });
-
-    assert.equal(logo, null);
-    assert.equal(requestedSource, "/images/logo-cuadrado.png");
-  });
 }
