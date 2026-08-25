@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { resolveApiUrl } from "../api";
 import { deriveReaderMonogram, hasReaderTraits, READER_TRAIT_GROUPS, readerTraitLabel } from "../readerIdentityState";
 import { getPublicWantedBooksView, normalizePublicWantedBooks } from "../readerWantedBooksState";
 import { GoodreadsIcon, InstagramIcon, LinkIcon, TikTokIcon, YouTubeIcon } from "./Icons";
+import { AuthorBookShareMenu } from "./AuthorBookShareMenu";
 
 const SOCIAL_LINK_DETAILS = {
   instagram: { label: "Instagram", Icon: InstagramIcon },
@@ -66,13 +67,46 @@ export function ReaderWantedBooksPublic({ items = [] }) {
   );
 }
 
-export function ReaderAuthorBooks({ reader, books = [] }) {
+export function ReaderAuthorBooks({ reader, books = [], onOpenDetails }) {
   if (!books.length) return null;
   return <section className="reader-public-author-books" aria-labelledby="reader-author-books-title">
     <div className="section-heading results-heading"><div><p className="section-label">OBRAS PROPIAS</p><h2 id="reader-author-books-title">Libros de {reader.display_name}</h2></div></div>
     <div className="reader-public-author-books-grid">{books.map((book) => <article key={book.cover_url} className="reader-public-author-book-card">
       <img src={resolveApiUrl(book.cover_url)} alt={`Portada de ${book.title}`} />
-      <div><p className="reader-public-author-book-genre">{book.genre?.name || "Sin género"}</p><h3>{book.title}</h3>{book.publisher || book.publication_year ? <p className="reader-public-author-book-meta">{[book.publisher, book.publication_year].filter(Boolean).join(" · ")}</p> : null}<p>{book.synopsis}</p></div>
+      <div><p className="reader-public-author-book-genre">{book.genre?.name || "Sin género"}</p><h3>{book.title}</h3>{book.publisher || book.publication_year ? <p className="reader-public-author-book-meta">{[book.publisher, book.publication_year].filter(Boolean).join(" · ")}</p> : null}<p className="reader-public-author-book-synopsis">{book.synopsis}</p><div className="reader-public-author-book-actions"><button type="button" className="secondary-button" aria-label={`Ver detalles de ${book.title}`} onClick={() => onOpenDetails?.(book)}>Ver detalles</button><AuthorBookShareMenu book={book} reader={reader} /></div></div>
     </article>)}</div>
   </section>;
+}
+
+export function ReaderAuthorBookDetailModal({ reader, book, onClose }) {
+  const modalCardRef = useRef(null);
+  const closeButtonRef = useRef(null);
+  useEffect(() => {
+    if (!book) return undefined;
+    const previousFocus = document.activeElement;
+    const frame = globalThis.requestAnimationFrame?.(() => closeButtonRef.current?.focus());
+    const onKeyDown = (event) => { if (event.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKeyDown);
+    return () => { window.removeEventListener("keydown", onKeyDown); if (frame !== undefined) globalThis.cancelAnimationFrame?.(frame); previousFocus?.focus?.(); };
+  }, [book]);
+  if (!book) return null;
+  function trapDialogFocus(event) {
+    if (event.key !== "Tab") return;
+    const focusable = [...(modalCardRef.current?.querySelectorAll('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])') || [])];
+    if (!focusable.length) return;
+    const first = focusable[0]; const last = focusable.at(-1);
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  }
+  return <div className="book-detail-modal reader-author-book-detail-modal" role="dialog" aria-modal="true" aria-labelledby="author-book-detail-title" onClick={onClose}>
+    <div ref={modalCardRef} className="book-detail-modal-card" onClick={(event) => event.stopPropagation()} onKeyDown={trapDialogFocus}>
+      <button ref={closeButtonRef} type="button" className="book-detail-modal-close" onClick={onClose}>Cerrar</button>
+      <div className="book-detail-modal-layout"><img className="book-detail-cover" src={resolveApiUrl(book.cover_url)} alt={`Portada de ${book.title}`} /><div className="book-detail-copy">
+        <p className="reader-public-author-book-genre">{book.genre?.name || "Sin género"}</p><h2 id="author-book-detail-title">{book.title}</h2><p className="book-detail-author">{reader.display_name}</p>
+        <div className="book-detail-section"><span>Sinopsis</span><p>{book.synopsis}</p></div>
+        <dl className="book-detail-meta"><div><dt>Editorial</dt><dd>{book.publisher || "Editorial no visible"}</dd></div><div><dt>Año</dt><dd>{book.publication_year || "Año no visible"}</dd></div></dl>
+        <div className="reader-author-book-detail-actions"><AuthorBookShareMenu book={book} reader={reader} /></div>
+      </div></div>
+    </div>
+  </div>;
 }

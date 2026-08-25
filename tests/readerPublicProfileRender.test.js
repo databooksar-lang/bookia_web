@@ -64,16 +64,17 @@ export function registerReaderPublicProfileRenderTests(test) {
     }
   });
 
-  test("renders complete public author book cards and hides the empty section", async () => {
+  test("renders public author book detail and share actions and hides the empty section", async () => {
     const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
     try {
-      const { ReaderAuthorBooks } = await vite.ssrLoadModule("/src/components/ReaderPublicProfile.jsx");
-      const reader = { display_name: "Ana Borges" };
+      const { ReaderAuthorBooks, ReaderAuthorBookDetailModal } = await vite.ssrLoadModule("/src/components/ReaderPublicProfile.jsx");
+      const reader = { display_name: "Ana Borges", slug: "ana-borges" };
       const emptyMarkup = renderToStaticMarkup(createElement(ReaderAuthorBooks, { reader, books: [] }));
       const markup = renderToStaticMarkup(createElement(ReaderAuthorBooks, {
         reader,
-        books: [{ title: "La casa del viento", synopsis: "Una novela sobre memoria.", genre: { id: 3, name: "Novela" }, publisher: "Ediciones Sur", publication_year: 2026, cover_url: "/readers/ana/author-books/7/cover" }],
+        books: [{ id: 7, title: "La casa del viento", synopsis: "Una novela sobre memoria.", genre: { id: 3, name: "Novela" }, publisher: "Ediciones Sur", publication_year: 2026, cover_url: "/readers/ana/author-books/7/cover" }],
       }));
+      const detailMarkup = renderToStaticMarkup(createElement(ReaderAuthorBookDetailModal, { reader, book: { id: 7, title: "La casa del viento", synopsis: "Una novela sobre memoria.", genre: { name: "Novela" }, publisher: "Ediciones Sur", publication_year: 2026, cover_url: "/readers/ana/author-books/7/cover" }, onClose() {} }));
 
       assert.equal(emptyMarkup, "");
       assert.match(markup, /Libros de Ana Borges/);
@@ -83,6 +84,10 @@ export function registerReaderPublicProfileRenderTests(test) {
       assert.match(markup, /Ediciones Sur/);
       assert.match(markup, /2026/);
       assert.match(markup, /\/readers\/ana\/author-books\/7\/cover/);
+      assert.match(markup, /Ver detalles de La casa del viento/);
+      assert.match(markup, /aria-label="Compartir"/);
+      assert.match(detailMarkup, /role="dialog"/);
+      assert.match(detailMarkup, /Sinopsis/);
     } finally {
       await vite.close();
     }
