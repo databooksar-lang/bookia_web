@@ -144,6 +144,29 @@ export function registerAuthContactGateTests(test) {
     }
   });
 
+  test("dismisses an auth or continuation dialog without reviving its action on a later login", async () => {
+    const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
+    try {
+      const module = await vite.ssrLoadModule("/src/pages/PublicPages.jsx");
+      const storage = createMemoryStorage();
+      const action = savePendingReaderAction({ type: "contact_bookstore", targetId: 9, returnPath: "/bookstores/eterna" }, { storage, now: () => NOW, randomUUID: () => ATTEMPT_ID });
+      let dialogOpen = true;
+
+      assert.equal(typeof module.dismissReaderActionDialog, "function");
+      assert.equal(module.dismissReaderActionDialog(action, () => { dialogOpen = false; }, { storage, now: () => NOW }), true);
+      assert.equal(dialogOpen, false);
+      assert.equal(readPendingReaderAction({ storage, now: () => NOW }), null);
+
+      const replacement = savePendingReaderAction({ type: "reading_club_interest", targetId: 33, returnPath: "/#clubes" }, { storage, now: () => NOW, randomUUID: () => "223e4567-e89b-42d3-a456-426614174000" });
+      let staleDialogOpen = true;
+      assert.equal(module.dismissReaderActionDialog(action, () => { staleDialogOpen = false; }, { storage, now: () => NOW }), false);
+      assert.equal(staleDialogOpen, false);
+      assert.equal(readPendingReaderAction({ storage, now: () => NOW })?.attempt_id, replacement.attempt_id);
+    } finally {
+      await vite.close();
+    }
+  });
+
   test("resolves bookstore continuations from freshly loaded contact and catalog data", async () => {
     const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
     try {
