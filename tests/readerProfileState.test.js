@@ -4,20 +4,20 @@ import { readFileSync } from "node:fs";
 import { buildReaderProfilePayload, createReaderProfileDraft, favoriteGenreSelectionLabel, getReaderFavoriteGenresState, loadReaderFavorites, normalizeReaderFavoriteGenres, normalizeReaderFavorites, normalizeReaderFollowedBookstores, normalizeReaderSocialLinks, toggleReaderFavoriteGenre } from "../src/readerProfileState.js";
 
 export function registerReaderProfileStateTests(test) {
-  test("defaults a reader profile to public only when visibility is missing", () => {
-    assert.equal(createReaderProfileDraft({}).is_public, true);
-    assert.equal(createReaderProfileDraft({ is_public: false }).is_public, false);
+  test("always creates public reader profile drafts without a privacy field", () => {
+    assert.equal(createReaderProfileDraft({}).is_public, undefined);
+    assert.equal(createReaderProfileDraft({ is_public: false }).is_public, undefined);
   });
 
   test("creates a reader profile draft with selected favorite genre ids", () => {
     assert.deepEqual(
       createReaderProfileDraft({ favorite_genres: [{ id: 3, name: "Poesia" }, { id: 9, name: "Fantasia" }] }),
-      { display_name: "", slug: "", description: "", is_public: true, favorite_genre_ids: [3, 9], traits: { how_i_read: [], what_i_seek: [], book_relationship: [] }, social_links: [] },
+      { display_name: "", slug: "", description: "", favorite_genre_ids: [3, 9], traits: { how_i_read: [], what_i_seek: [], book_relationship: [] }, social_links: [] },
     );
   });
 
   test("builds reader profile payloads with empty and selected favorite genres", () => {
-    const baseDraft = { display_name: "Ana", slug: "ana-lee", description: "Leo", is_public: true };
+    const baseDraft = { display_name: "Ana", slug: "ana-lee", description: "Leo" };
 
     const traits = { how_i_read: ["daily_ritual"], what_i_seek: ["make_me_think"], book_relationship: [] };
     assert.deepEqual(buildReaderProfilePayload({ ...baseDraft, favorite_genre_ids: [], traits }), { ...baseDraft, favorite_genre_ids: [], traits, social_links: [] });
@@ -75,6 +75,7 @@ export function registerReaderProfileStateTests(test) {
     assert.match(profilePage, /type="checkbox"/);
     assert.match(profilePage, /favoriteGenreSelectionLabel\(draft\.favorite_genre_ids\)/);
     assert.doesNotMatch(profilePage, /body: JSON\.stringify\(draft\)/);
+    assert.doesNotMatch(profilePage, />Perfil público</);
     assert.match(profilePage, /favoriteGenreIdsKey/);
     assert.match(publicPages, /reader\.favorite_genres\?\.length/);
     assert.match(publicPages, /aria-label="Generos favoritos"/);

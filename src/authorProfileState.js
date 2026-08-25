@@ -2,9 +2,9 @@ export function isActiveAuthor(authorProfile) {
   return authorProfile?.is_active === true;
 }
 
-export function getAuthorProfileView({ authorProfile, readerProfile } = {}) {
+export function getAuthorProfileView({ authorProfile } = {}) {
   if (!isActiveAuthor(authorProfile)) return "inactive";
-  return readerProfile?.is_public === true ? "active_public" : "active_private";
+  return "active_public";
 }
 
 export async function activateAuthorProfile(apiFetch) {
