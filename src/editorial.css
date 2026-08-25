@@ -6084,6 +6084,12 @@ textarea:focus {
   margin: 0 0 8px;
 }
 
+.reader-public-author-book-synopsis { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+.reader-public-author-book-actions,
+.reader-author-book-detail-actions { display: flex; align-items: center; gap: 10px; }
+.reader-public-author-book-actions .book-share-menu { margin-left: auto; }
+.reader-author-book-detail-actions { margin-top: 20px; }
+
 .reader-public-author-book-genre {
   color: var(--forest);
   font-size: 0.76rem;

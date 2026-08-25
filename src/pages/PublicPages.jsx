@@ -20,6 +20,8 @@ import { FavoriteBookButton } from "../components/FavoriteBookButton";
 import { BookstoreDescription } from "../components/BookstoreDescription";
 import { SectionIndex } from "../components/SectionIndex";
 import { ReaderAuthorBadge, ReaderAuthorBooks, ReaderMonogram, ReaderPassport, ReaderSocialLinks, ReaderWantedBooksPublic } from "../components/ReaderPublicProfile";
+import { ReaderAuthorBookDetailModal } from "../components/ReaderPublicProfile";
+import { getSharedAuthorBookId } from "../authorBookSharingState";
 import { BookCover } from "../components/BookCover";
 import { activateDialogFocus, AuthRequiredDialog, handleActionDialogBackdrop, handleActionDialogEscape, isolateDialogBackground, ReaderActionContinuationDialog, trapDialogFocus } from "../components/AuthRequiredDialog";
 import { ArrowIcon, BookIcon, LocationIcon, SearchIcon, StoreIcon, WhatsAppIcon } from "../components/Icons";
@@ -1375,11 +1377,12 @@ export function ReaderReadingClubs({ reader, readingClubs, onBack, sharedClubId 
   </section>;
 }
 
-export function ReaderPage({ slug }) {
+export function ReaderPage({ slug, search = "" }) {
   const [reader, setReader] = useState(null);
   const [readingClubs, setReadingClubs] = useState([]);
   const [wantedBooks, setWantedBooks] = useState([]);
   const [authorBooks, setAuthorBooks] = useState([]);
+  const [selectedAuthorBook, setSelectedAuthorBook] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -1387,6 +1390,20 @@ export function ReaderPage({ slug }) {
     setLoading(true);
     apiFetch(`/readers/${slug}`).then((data) => { setReader(data.reader); setReadingClubs(data.reading_clubs || []); setWantedBooks(data.wanted_books || []); setAuthorBooks(data.author_books || []); setError(""); }).catch((fetchError) => setError(fetchError.message)).finally(() => setLoading(false));
   }, [slug]);
+  useEffect(() => {
+    const sharedId = getSharedAuthorBookId(search);
+    setSelectedAuthorBook(sharedId ? authorBooks.find((book) => book.id === sharedId) || null : null);
+  }, [authorBooks, search]);
+
+  function openAuthorBook(book) {
+    setSelectedAuthorBook(book);
+    navigate(`/readers/${encodeURIComponent(slug)}?book=${book.id}`);
+  }
+
+  function closeAuthorBook() {
+    setSelectedAuthorBook(null);
+    navigate(`/readers/${encodeURIComponent(slug)}`);
+  }
 
   if (loading) return <div className="page-state"><div className="loading-mark" /><p>Cargando lector...</p></div>;
   if (error || !reader) return <div className="page-state"><EmptyState title="No encontramos a este lector">{error || "Revis\u00E1 el enlace o volv\u00E9 a la b\u00FAsqueda."}</EmptyState><button className="secondary-button" onClick={() => navigate("/")}>Volver a buscar</button></div>;
@@ -1394,7 +1411,8 @@ export function ReaderPage({ slug }) {
   return <section className="store-page reader-page">
     <div className="store-profile-panel reader-profile-panel"><div className="reader-profile-identity"><ReaderMonogram displayName={reader.display_name} className="is-profile-hero" /><div className="store-identity"><div className="reader-profile-labels"><p className="section-label">Lector en Bookia</p><ReaderAuthorBadge isAuthor={reader.is_author} /></div><h1>{reader.display_name}</h1><BookstoreDescription value={reader.description || "Comparte clubes de lectura con la comunidad Bookia."} />{reader.favorite_genres?.length ? <div className="store-tags" aria-label="Generos favoritos">{reader.favorite_genres.map((genre) => <span key={genre.id} className="store-tag">{genre.name}</span>)}</div> : null}</div></div><ReaderPassport reader={reader} /></div>
     <ReaderSocialLinks links={reader.social_links || []} />
-    <ReaderAuthorBooks reader={reader} books={authorBooks} />
+    <ReaderAuthorBooks reader={reader} books={authorBooks} onOpenDetails={openAuthorBook} />
+    <ReaderAuthorBookDetailModal reader={reader} book={selectedAuthorBook} onClose={closeAuthorBook} />
     <ReaderWantedBooksPublic items={wantedBooks} />
     <ReaderReadingClubs reader={reader} readingClubs={readingClubs} onBack={() => navigate("/")} sharedClubId={typeof window === "undefined" ? null : getSharedReadingClubId(window.location.search)} />
   </section>;
