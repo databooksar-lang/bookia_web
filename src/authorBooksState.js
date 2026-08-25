@@ -8,6 +8,7 @@ export function createAuthorBookDraft(item = {}) {
     genre_id: Number.isInteger(item?.genre?.id) ? String(item.genre.id) : "",
     publisher: item?.publisher || "",
     publication_year: Number.isInteger(item?.publication_year) ? String(item.publication_year) : "",
+    external_url: item?.external_url || "",
     is_hidden: item?.is_hidden === true,
     cover: null,
   };
@@ -26,6 +27,7 @@ export function normalizeAuthorBooks(data = {}) {
       synopsis,
       publisher: String(item.publisher || "").trim(),
       publication_year: Number.isInteger(item.publication_year) ? item.publication_year : null,
+      external_url: String(item.external_url || "").trim(),
       is_hidden: item.is_hidden === true,
       cover_url: coverUrl,
     }];
@@ -39,8 +41,10 @@ export function buildAuthorBookFormData(draft = {}) {
   form.set("genre_id", String(draft.genre_id || "").trim());
   const publisher = String(draft.publisher || "").trim();
   const publicationYear = String(draft.publication_year || "").trim();
+  const externalUrl = String(draft.external_url || "").trim();
   if (publisher) form.set("publisher", publisher);
   if (publicationYear) form.set("publication_year", publicationYear);
+  if (externalUrl) form.set("external_url", externalUrl);
   if (draft.cover) form.set("cover", draft.cover);
   return form;
 }
@@ -53,6 +57,7 @@ export function buildAuthorBookUpdatePayload(draft = {}) {
     genre_id: Number(draft.genre_id),
     publisher: String(draft.publisher || "").trim() || null,
     publication_year: year ? Number(year) : null,
+    external_url: String(draft.external_url || "").trim() || null,
     is_hidden: draft.is_hidden === true,
   };
 }

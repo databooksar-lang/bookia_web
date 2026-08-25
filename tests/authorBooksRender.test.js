@@ -49,6 +49,10 @@ export function registerAuthorBooksRenderTests(test) {
       assert.match(createMarkup, /1 de 5 libros/);
       assert.match(createMarkup, /se publica en tu perfil público/i);
       assert.match(createMarkup, /Agregar libro/);
+      assert.match(createMarkup, /Enlace externo/);
+      assert.match(createMarkup, /author-book-field-wide/);
+      assert.match(createMarkup, /inputMode="url"/);
+      assert.doesNotMatch(createMarkup, /type="url"/);
       assert.match(createMarkup, /Portada/);
       assert.match(createMarkup, /La casa del viento/);
       assert.match(createMarkup, /Ediciones Sur · 2026/);
