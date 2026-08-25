@@ -21,6 +21,8 @@ export function SiteHeader({ pathname, me, refreshMe }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const accountHref = me?.bookstore ? "/dashboard" : me ? "/profile" : "/login";
   const accountLabel = me?.bookstore ? "Mi cuenta" : me ? "Mi Perfil" : "Ingresar";
+  const greetingName = (me?.bookstore?.name ?? me?.reader_profile?.display_name ?? "").trim();
+  const greeting = greetingName ? `Hola ${greetingName}!` : "Hola!";
 
   function logout() {
     apiFetch("/auth/logout", { method: "POST" })
@@ -40,6 +42,7 @@ export function SiteHeader({ pathname, me, refreshMe }) {
           <span className="brand-mark"><img src={BOOKIA_LOGO_SRC} alt="" /></span>
           <span className="brand-name">Bookia</span>
         </AppLink>
+        {me ? <span className="header-greeting">{greeting}</span> : null}
 
         <button
           className="menu-toggle"

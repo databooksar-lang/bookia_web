@@ -295,6 +295,35 @@ tests.push(["centralizes logout in the authenticated site header", () => {
   assert.doesNotMatch(readerProfileSource, /function logout\(\)/);
   assert.doesNotMatch(readerProfileSource, /Cerrar sesion/);
 }]);
+tests.push(["greets authenticated readers and bookstores by name in the site header", async () => {
+  const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
+  try {
+    const { SiteHeader } = await vite.ssrLoadModule("/src/components/SiteChrome.jsx");
+    const sharedProps = { pathname: "/", refreshMe: () => {} };
+    const readerMarkup = renderToStaticMarkup(createElement(SiteHeader, {
+      ...sharedProps,
+      me: { reader_profile: { display_name: "Ana" } },
+    }));
+    const bookstoreMarkup = renderToStaticMarkup(createElement(SiteHeader, {
+      ...sharedProps,
+      me: { bookstore: { name: "Eterna Cadencia" } },
+    }));
+    const unnamedMarkup = renderToStaticMarkup(createElement(SiteHeader, {
+      ...sharedProps,
+      me: { reader_profile: { display_name: "" } },
+    }));
+    const visitorMarkup = renderToStaticMarkup(createElement(SiteHeader, { ...sharedProps, me: null }));
+
+    assert.match(readerMarkup, /Hola Ana!/);
+    assert.match(bookstoreMarkup, /Hola Eterna Cadencia!/);
+    assert.match(unnamedMarkup, /Hola!/);
+    assert.doesNotMatch(visitorMarkup, /Hola/);
+    assert.match(readerMarkup, /Cerrar sesion/);
+    assert.match(bookstoreMarkup, /Mi cuenta/);
+  } finally {
+    await vite.close();
+  }
+}]);
 tests.push(["keeps plan selection inside the bookstore registration flow", () => {
   const appSource = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
   const registerSource = readFileSync(new URL("../src/pages/RegisterPage.jsx", import.meta.url), "utf8");
