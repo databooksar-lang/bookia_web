@@ -28,6 +28,12 @@ export { activateDialogFocus, AuthRequiredDialog, handleActionDialogBackdrop, ha
 
 export const PENDING_ACTION_PERSISTENCE_ERROR = "La acción no se pudo guardar para continuar. Revisá la configuración del navegador e intentá nuevamente.";
 
+export function dismissReaderActionDialog(action, closeDialog, options) {
+  const cancelled = cancelPendingReaderAction(action, options);
+  closeDialog?.();
+  return cancelled;
+}
+
 export function resolveBookstoreContactSession(me, store) {
   if (me === undefined) return undefined;
   if (store?.contact_requires_auth === true) return null;
@@ -374,7 +380,7 @@ function InitialBookDiscovery({ items, loading, me }) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [selectedBook]);
 
-  return <><DiscoveryCarousel items={items} loading={loading} onOpenBook={openBookDetail} />{selectedBook ? <DiscoveryBookDetailModal selectedBook={selectedBook} selectedBookImageUrl={selectedBookImageUrl} onImageChange={setSelectedBookImageUrl} onClose={closeBookDetail} me={me} contactGate={{ me, onRequireAuth: requireBookstoreAuth }} isBackgroundObscured={Boolean(authAction)} /> : null}{authAction ? <AuthRequiredDialog action={authAction} onCancel={() => setAuthAction(null)} /> : null}</>;
+  return <><DiscoveryCarousel items={items} loading={loading} onOpenBook={openBookDetail} />{selectedBook ? <DiscoveryBookDetailModal selectedBook={selectedBook} selectedBookImageUrl={selectedBookImageUrl} onImageChange={setSelectedBookImageUrl} onClose={closeBookDetail} me={me} contactGate={{ me, onRequireAuth: requireBookstoreAuth }} isBackgroundObscured={Boolean(authAction)} /> : null}{authAction ? <AuthRequiredDialog action={authAction} onCancel={() => dismissReaderActionDialog(authAction, () => setAuthAction(null))} /> : null}</>;
 }
 
 function DiscoveryBookDetailModal({ me, ...modalProps }) {
@@ -509,7 +515,7 @@ function SearchResults({ filters, stores, me, onClearFilters }) {
         </div>
       ) : null}
       <BookDetailModal selectedBook={selectedBook} selectedBookImageUrl={selectedBookImageUrl} onImageChange={setSelectedBookImageUrl} onClose={closeBookDetail} favorites={favorites} isSessionLoading={me === undefined || favorites.favoritesLoading} contactGate={{ me, onRequireAuth: requireBookstoreAuth }} isBackgroundObscured={Boolean(authAction)} />
-      {authAction ? <AuthRequiredDialog action={authAction} onCancel={() => setAuthAction(null)} /> : null}
+      {authAction ? <AuthRequiredDialog action={authAction} onCancel={() => dismissReaderActionDialog(authAction, () => setAuthAction(null))} /> : null}
     </section>
   );
 }
@@ -783,7 +789,7 @@ function ReadingClubsSection({ me }) {
       <BenefitsStrip className="reading-clubs-benefits-strip" benefits={READING_CLUB_BENEFITS} ariaLabel="Beneficios de los clubes de lectura" />
       <ReadingClubDetailModal selectedClub={selectedClub} host={selectedClubHost} hostPath={selectedClubHostPath} initialInterestOpen={interestOpen} me={me} onClose={closeClubDetails} />
       {authAction ? <AuthRequiredDialog action={authAction} onCancel={cancelClubAuth} /> : null}
-      {continuationAction ? <ReaderActionContinuationDialog action={continuationAction} continueLabel="Continuar con mi interés" onContinue={continueClubInterest} onCancel={() => setContinuationAction(null)} /> : null}
+      {continuationAction ? <ReaderActionContinuationDialog action={continuationAction} continueLabel="Continuar con mi interés" onContinue={continueClubInterest} onCancel={() => dismissReaderActionDialog(continuationAction, () => setContinuationAction(null))} /> : null}
     </section>
   );
 }
@@ -1356,7 +1362,7 @@ export function BookstorePage({ slug, me, refreshSession }) {
       ) : null}
       <BookDetailModal selectedBook={selectedBook} selectedBookImageUrl={selectedBookImageUrl} onImageChange={setSelectedBookImageUrl} onClose={closeBookDetail} favorites={favorites} isSessionLoading={me === undefined || favorites.favoritesLoading} contactGate={{ me: contactSession, store, onRequireAuth: requireBookstoreAuth }} contactError={actionError} isBackgroundObscured={topActionDialogOpen} />
       {authAction ? <AuthRequiredDialog action={authAction} onCancel={cancelBookstoreAuth} /> : null}
-      {contactContinuation ? <ReaderActionContinuationDialog action={contactContinuation.action} continueLabel="Continuar a WhatsApp" continueHref={contactContinuation.href} onContinue={completeBookstoreContact} onCancel={() => setContactContinuation(null)} /> : null}
+      {contactContinuation ? <ReaderActionContinuationDialog action={contactContinuation.action} continueLabel="Continuar a WhatsApp" continueHref={contactContinuation.href} onContinue={completeBookstoreContact} onCancel={() => dismissReaderActionDialog(contactContinuation.action, () => setContactContinuation(null))} /> : null}
     </section>
   );
 }
