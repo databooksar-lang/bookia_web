@@ -74,7 +74,8 @@ export function registerReaderPublicProfileRenderTests(test) {
         reader,
         books: [{ id: 7, title: "La casa del viento", synopsis: "Una novela sobre memoria.", genre: { id: 3, name: "Novela" }, publisher: "Ediciones Sur", publication_year: 2026, cover_url: "/readers/ana/author-books/7/cover" }],
       }));
-      const detailMarkup = renderToStaticMarkup(createElement(ReaderAuthorBookDetailModal, { reader, book: { id: 7, title: "La casa del viento", synopsis: "Una novela sobre memoria.", genre: { name: "Novela" }, publisher: "Ediciones Sur", publication_year: 2026, cover_url: "/readers/ana/author-books/7/cover" }, onClose() {} }));
+      const detailWithoutExternalUrlMarkup = renderToStaticMarkup(createElement(ReaderAuthorBookDetailModal, { reader, book: { id: 7, title: "La casa del viento", synopsis: "Una novela sobre memoria.", genre: { name: "Novela" }, publisher: "Ediciones Sur", publication_year: 2026, cover_url: "/readers/ana/author-books/7/cover" }, onClose() {} }));
+      const detailMarkup = renderToStaticMarkup(createElement(ReaderAuthorBookDetailModal, { reader, book: { id: 7, title: "La casa del viento", synopsis: "Una novela sobre memoria.", genre: { name: "Novela" }, publisher: "Ediciones Sur", publication_year: 2026, external_url: "https://tienda.example/libro", cover_url: "/readers/ana/author-books/7/cover" }, onClose() {} }));
 
       assert.equal(emptyMarkup, "");
       assert.match(markup, /Libros de Ana Borges/);
@@ -88,6 +89,12 @@ export function registerReaderPublicProfileRenderTests(test) {
       assert.match(markup, /aria-label="Compartir"/);
       assert.match(detailMarkup, /role="dialog"/);
       assert.match(detailMarkup, /Sinopsis/);
+      assert.match(detailMarkup, /href="https:\/\/tienda\.example\/libro"/);
+      assert.match(detailMarkup, /target="_blank"/);
+      assert.match(detailMarkup, /rel="noopener noreferrer"/);
+      assert.match(detailMarkup, /aria-label="Visitar enlace \(abre en una pestaña nueva\)"/);
+      assert.match(detailMarkup, />Visitar enlace</);
+      assert.doesNotMatch(detailWithoutExternalUrlMarkup, /Visitar enlace/);
     } finally {
       await vite.close();
     }

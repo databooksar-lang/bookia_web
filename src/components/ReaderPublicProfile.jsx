@@ -105,6 +105,7 @@ export function ReaderAuthorBookDetailModal({ reader, book, onClose }) {
         <p className="reader-public-author-book-genre">{book.genre?.name || "Sin género"}</p><h2 id="author-book-detail-title">{book.title}</h2><p className="book-detail-author">{reader.display_name}</p>
         <div className="book-detail-section"><span>Sinopsis</span><p>{book.synopsis}</p></div>
         <dl className="book-detail-meta"><div><dt>Editorial</dt><dd>{book.publisher || "Editorial no visible"}</dd></div><div><dt>Año</dt><dd>{book.publication_year || "Año no visible"}</dd></div></dl>
+        {book.external_url ? <a className="secondary-button" href={book.external_url} target="_blank" rel="noopener noreferrer" aria-label="Visitar enlace (abre en una pestaña nueva)">Visitar enlace</a> : null}
         <div className="reader-author-book-detail-actions"><AuthorBookShareMenu book={book} reader={reader} /></div>
       </div></div>
     </div>
