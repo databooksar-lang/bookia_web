@@ -3,8 +3,9 @@ import { useEffect, useRef, useState } from "react";
 import { resolveApiUrl } from "../api";
 import { deriveReaderMonogram, hasReaderTraits, READER_TRAIT_GROUPS, readerTraitLabel } from "../readerIdentityState";
 import { getPublicWantedBooksView, normalizePublicWantedBooks } from "../readerWantedBooksState";
-import { GoodreadsIcon, InstagramIcon, LinkIcon, TikTokIcon, YouTubeIcon } from "./Icons";
+import { GoodreadsIcon, InstagramIcon, LinkIcon, TikTokIcon, WhatsAppIcon, YouTubeIcon } from "./Icons";
 import { AuthorBookShareMenu } from "./AuthorBookShareMenu";
+import { WhatsAppButton } from "./Commerce";
 
 const SOCIAL_LINK_DETAILS = {
   instagram: { label: "Instagram", Icon: InstagramIcon },
@@ -78,7 +79,17 @@ export function ReaderAuthorBooks({ reader, books = [], onOpenDetails }) {
   </section>;
 }
 
-export function ReaderAuthorBookDetailModal({ reader, book, onClose }) {
+export function AuthorBookWhatsAppAction({ reader, book, onRequireAuth }) {
+  const contact = reader?.author_contact;
+  if (!contact?.available) return null;
+  const label = <><WhatsAppIcon size={19} /> Contactar por WhatsApp</>;
+  if (contact.contact_requires_auth || !contact.whatsapp_phone) {
+    return <button type="button" className="primary-button" onClick={() => onRequireAuth?.(book)}>{label}</button>;
+  }
+  return <WhatsAppButton className="primary-button" whatsappPhone={contact.whatsapp_phone} message={`Hola, quisiera consultarte por el libro ${book.title} que vi publicado en Bookia.`}>{label}</WhatsAppButton>;
+}
+
+export function ReaderAuthorBookDetailModal({ reader, book, onClose, onRequireAuth }) {
   const modalCardRef = useRef(null);
   const closeButtonRef = useRef(null);
   useEffect(() => {
@@ -106,6 +117,7 @@ export function ReaderAuthorBookDetailModal({ reader, book, onClose }) {
         <div className="book-detail-section"><span>Sinopsis</span><p>{book.synopsis}</p></div>
         <dl className="book-detail-meta"><div><dt>Editorial</dt><dd>{book.publisher || "Editorial no visible"}</dd></div><div><dt>Año</dt><dd>{book.publication_year || "Año no visible"}</dd></div></dl>
         {book.external_url ? <a className="secondary-button" href={book.external_url} target="_blank" rel="noopener noreferrer" aria-label="Visitar enlace (abre en una pestaña nueva)">Visitar enlace</a> : null}
+        <AuthorBookWhatsAppAction reader={reader} book={book} onRequireAuth={onRequireAuth} />
         <div className="reader-author-book-detail-actions"><AuthorBookShareMenu book={book} reader={reader} /></div>
       </div></div>
     </div>

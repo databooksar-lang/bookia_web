@@ -30,6 +30,8 @@ export function registerAuthContactGateTests(test) {
     assert.match(terms, /inter.s.*club de lectura.*cuenta autenticada/is);
     assert.doesNotMatch(terms, /Esta regla no alcanza al descubrimiento anonimo/i);
     assert.match(privacy, /contacto digital.*WhatsApp.*cuenta autenticada.*todas las superficies de descubrimiento/is);
+    assert.match(terms, /autoras.*celular con WhatsApp.*cuenta autenticada/is);
+    assert.match(privacy, /celular con WhatsApp.*personas autoras.*cuentas autenticadas/is);
     assert.match(privacy, /inter.s.*club.*cuenta autenticada/is);
     assert.doesNotMatch(privacy, /Esta regla no alcanza al descubrimiento anonimo/i);
   });

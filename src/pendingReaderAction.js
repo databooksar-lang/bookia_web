@@ -5,7 +5,7 @@ export const PENDING_READER_ACTION_STORAGE_KEY = "bookia.pending_reader_action";
 const PENDING_READER_ACTION_VERSION = 2;
 const READER_AUTH_TTL_MS = 30 * 60 * 1000;
 const AUTO_APPLIED_ACTION_TYPES = new Set(["favorite_book", "follow_bookstore"]);
-const RESUMABLE_ACTION_TYPES = new Set(["contact_bookstore", "reading_club_interest"]);
+const RESUMABLE_ACTION_TYPES = new Set(["contact_bookstore", "contact_author", "reading_club_interest"]);
 const ACTION_TYPES = new Set([...AUTO_APPLIED_ACTION_TYPES, ...RESUMABLE_ACTION_TYPES]);
 const BOOKSTORE_CONTACT_SOURCES = new Set(["bookstore_profile_contact", "bookstore_catalog_card", "book_detail_modal"]);
 const pendingApplications = new WeakMap();
@@ -178,6 +178,15 @@ export function getPendingReaderActionCopy(action) {
       confirmation: "Contacto iniciado por WhatsApp.",
     };
   }
+  if (action?.type === "contact_author") {
+    return {
+      title: "Consultá por esta obra",
+      description: "Creá una cuenta o ingresá para acceder al contacto por WhatsApp del autor o autora.",
+      continuationTitle: "Tu consulta está lista",
+      continuationDescription: "Revisá la consulta y elegí cuándo continuar a WhatsApp.",
+      confirmation: "Contacto iniciado por WhatsApp.",
+    };
+  }
   if (action?.type === "reading_club_interest") {
     return {
       title: "Mostrá tu interés en este club de lectura",
@@ -235,10 +244,12 @@ export async function completeResumablePendingReaderAction({ type, targetId, sto
   const action = readPendingReaderAction({ storage, origin, now });
   if (!isResumablePendingReaderAction(action) || action.type !== type || action.target_id !== targetId) return { status: "none" };
   clearPendingReaderAction({ storage });
-  try {
-    await track(buildPendingReaderActionEvent(action, "reader_action_applied"));
-  } catch {
-    // Analytics must never undo a successfully completed reader action.
+  if (action.type !== "contact_author") {
+    try {
+      await track(buildPendingReaderActionEvent(action, "reader_action_applied"));
+    } catch {
+      // Analytics must never undo a successfully completed reader action.
+    }
   }
   return { status: "completed", action, message: getPendingReaderActionCopy(action).confirmation };
 }
@@ -255,7 +266,7 @@ export async function completePendingReaderAuthentication({ sessionData, registe
     navigateTo?.(fallbackPath);
     return { status: "wrong_account", action, returnPath: fallbackPath };
   }
-  if (registered) {
+  if (registered && action.type !== "contact_author") {
     Promise.resolve().then(() => track(buildPendingReaderActionEvent(action, "reader_registration_completed"))).catch(() => {});
   }
   if (authenticationMode === "resume") {

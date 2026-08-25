@@ -5,6 +5,11 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { createServer } from "vite";
 
 export function registerReaderPublicProfileRenderTests(test) {
+  test("keeps an author WhatsApp continuation pending until the public profile loads", () => {
+    const source = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+    assert.match(source, /useEffect\(\(\) => \{\s*if \(!reader\) return;\s*const action = readPendingReaderAction\(\);\s*const continuation = resolveAuthorBookContactContinuation/);
+  });
+
   test("renders public social links with platform labels and hardened external targets", async () => {
     const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
     try {
@@ -75,7 +80,8 @@ export function registerReaderPublicProfileRenderTests(test) {
         books: [{ id: 7, title: "La casa del viento", synopsis: "Una novela sobre memoria.", genre: { id: 3, name: "Novela" }, publisher: "Ediciones Sur", publication_year: 2026, cover_url: "/readers/ana/author-books/7/cover" }],
       }));
       const detailWithoutExternalUrlMarkup = renderToStaticMarkup(createElement(ReaderAuthorBookDetailModal, { reader, book: { id: 7, title: "La casa del viento", synopsis: "Una novela sobre memoria.", genre: { name: "Novela" }, publisher: "Ediciones Sur", publication_year: 2026, cover_url: "/readers/ana/author-books/7/cover" }, onClose() {} }));
-      const detailMarkup = renderToStaticMarkup(createElement(ReaderAuthorBookDetailModal, { reader, book: { id: 7, title: "La casa del viento", synopsis: "Una novela sobre memoria.", genre: { name: "Novela" }, publisher: "Ediciones Sur", publication_year: 2026, external_url: "https://tienda.example/libro", cover_url: "/readers/ana/author-books/7/cover" }, onClose() {} }));
+      const detailMarkup = renderToStaticMarkup(createElement(ReaderAuthorBookDetailModal, { reader: { ...reader, author_contact: { available: true, whatsapp_phone: "5491122223333" } }, book: { id: 7, title: "La casa del viento", synopsis: "Una novela sobre memoria.", genre: { name: "Novela" }, publisher: "Ediciones Sur", publication_year: 2026, external_url: "https://tienda.example/libro", cover_url: "/readers/ana/author-books/7/cover" }, onClose() {} }));
+      const authRequiredMarkup = renderToStaticMarkup(createElement(ReaderAuthorBookDetailModal, { reader: { ...reader, author_contact: { available: true, contact_requires_auth: true } }, book: { id: 7, title: "La casa del viento", synopsis: "Una novela sobre memoria.", genre: { name: "Novela" }, cover_url: "/readers/ana/author-books/7/cover" }, onClose() {}, onRequireAuth() {} }));
 
       assert.equal(emptyMarkup, "");
       assert.match(markup, /Libros de Ana Borges/);
@@ -94,7 +100,12 @@ export function registerReaderPublicProfileRenderTests(test) {
       assert.match(detailMarkup, /rel="noopener noreferrer"/);
       assert.match(detailMarkup, /aria-label="Visitar enlace \(abre en una pestaña nueva\)"/);
       assert.match(detailMarkup, />Visitar enlace</);
+      assert.match(detailMarkup, /href="https:\/\/wa\.me\/5491122223333\?text=Hola%2C%20quisiera%20consultarte%20por%20el%20libro%20La%20casa%20del%20viento%20que%20vi%20publicado%20en%20Bookia\./);
+      assert.match(detailMarkup, /Contactar por WhatsApp/);
+      assert.match(authRequiredMarkup, /Contactar por WhatsApp/);
+      assert.doesNotMatch(authRequiredMarkup, /wa\.me/);
       assert.doesNotMatch(detailWithoutExternalUrlMarkup, /Visitar enlace/);
+      assert.doesNotMatch(detailWithoutExternalUrlMarkup, /Contactar por WhatsApp/);
     } finally {
       await vite.close();
     }

@@ -66,6 +66,18 @@ export function resolveBookstoreContactContinuation(action, store, items = []) {
   };
 }
 
+export function startAuthorBookContactIntent({ book, returnPath, storage, origin, now, randomUUID }) {
+  return savePendingReaderAction({ type: "contact_author", targetId: book?.id, returnPath }, { storage, origin, now, randomUUID });
+}
+
+export function resolveAuthorBookContactContinuation(action, reader, books = []) {
+  if (action?.type !== "contact_author") return null;
+  const book = books.find((candidate) => candidate.id === action.target_id);
+  const href = book ? buildWhatsAppHref(reader?.author_contact?.whatsapp_phone, `Hola, quisiera consultarte por el libro ${book.title} que vi publicado en Bookia.`) : null;
+  if (!href) return { status: "unavailable", message: "Esta obra ya no tiene WhatsApp disponible para contacto." };
+  return { status: "ready", book, href };
+}
+
 export function handleBookstoreContactLoadFailure({ error, slug, storage, origin, now }) {
   const action = readPendingReaderAction({ storage, origin, now });
   const returnPath = action?.return_path?.split(/[?#]/, 1)[0];
@@ -1383,6 +1395,8 @@ export function ReaderPage({ slug, search = "" }) {
   const [wantedBooks, setWantedBooks] = useState([]);
   const [authorBooks, setAuthorBooks] = useState([]);
   const [selectedAuthorBook, setSelectedAuthorBook] = useState(null);
+  const [authAction, setAuthAction] = useState(null);
+  const [contactContinuation, setContactContinuation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -1394,6 +1408,13 @@ export function ReaderPage({ slug, search = "" }) {
     const sharedId = getSharedAuthorBookId(search);
     setSelectedAuthorBook(sharedId ? authorBooks.find((book) => book.id === sharedId) || null : null);
   }, [authorBooks, search]);
+  useEffect(() => {
+    if (!reader) return;
+    const action = readPendingReaderAction();
+    const continuation = resolveAuthorBookContactContinuation(action, reader, authorBooks);
+    if (continuation?.status === "ready") setContactContinuation(continuation);
+    else if (continuation?.status === "unavailable") { clearPendingReaderAction(); setContactContinuation(null); }
+  }, [reader, authorBooks]);
 
   function openAuthorBook(book) {
     setSelectedAuthorBook(book);
@@ -1404,6 +1425,15 @@ export function ReaderPage({ slug, search = "" }) {
     setSelectedAuthorBook(null);
     navigate(`/readers/${encodeURIComponent(slug)}`);
   }
+  function requireAuthorAuth(book) {
+    const action = startAuthorBookContactIntent({ book, returnPath: `/readers/${encodeURIComponent(slug)}?book=${book.id}` });
+    if (action) setAuthAction(action);
+  }
+  function completeAuthorContact() {
+    if (!contactContinuation) return;
+    setContactContinuation(null);
+    completeResumablePendingReaderAction({ type: "contact_author", targetId: contactContinuation.book.id });
+  }
 
   if (loading) return <div className="page-state"><div className="loading-mark" /><p>Cargando lector...</p></div>;
   if (error || !reader) return <div className="page-state"><EmptyState title="No encontramos a este lector">{error || "Revis\u00E1 el enlace o volv\u00E9 a la b\u00FAsqueda."}</EmptyState><button className="secondary-button" onClick={() => navigate("/")}>Volver a buscar</button></div>;
@@ -1412,8 +1442,10 @@ export function ReaderPage({ slug, search = "" }) {
     <div className="store-profile-panel reader-profile-panel"><div className="reader-profile-identity"><ReaderMonogram displayName={reader.display_name} className="is-profile-hero" /><div className="store-identity"><div className="reader-profile-labels"><p className="section-label">Lector en Bookia</p><ReaderAuthorBadge isAuthor={reader.is_author} /></div><h1>{reader.display_name}</h1><BookstoreDescription value={reader.description || "Comparte clubes de lectura con la comunidad Bookia."} />{reader.favorite_genres?.length ? <div className="store-tags" aria-label="Generos favoritos">{reader.favorite_genres.map((genre) => <span key={genre.id} className="store-tag">{genre.name}</span>)}</div> : null}</div></div><ReaderPassport reader={reader} /></div>
     <ReaderSocialLinks links={reader.social_links || []} />
     <ReaderAuthorBooks reader={reader} books={authorBooks} onOpenDetails={openAuthorBook} />
-    <ReaderAuthorBookDetailModal reader={reader} book={selectedAuthorBook} onClose={closeAuthorBook} />
+    <ReaderAuthorBookDetailModal reader={reader} book={selectedAuthorBook} onClose={closeAuthorBook} onRequireAuth={requireAuthorAuth} />
     <ReaderWantedBooksPublic items={wantedBooks} />
     <ReaderReadingClubs reader={reader} readingClubs={readingClubs} onBack={() => navigate("/")} sharedClubId={typeof window === "undefined" ? null : getSharedReadingClubId(window.location.search)} />
+    {authAction ? <AuthRequiredDialog action={authAction} onCancel={() => dismissReaderActionDialog(authAction, () => setAuthAction(null))} /> : null}
+    {contactContinuation ? <ReaderActionContinuationDialog action={{ type: "contact_author" }} continueLabel="Continuar a WhatsApp" continueHref={contactContinuation.href} onContinue={completeAuthorContact} onCancel={() => { clearPendingReaderAction(); setContactContinuation(null); }} /> : null}
   </section>;
 }

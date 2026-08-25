@@ -3,7 +3,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { createServer } from "vite";
 
-import { activateAuthorProfile, deactivateAuthorProfile, getAuthorProfileView, isActiveAuthor } from "../src/authorProfileState.js";
+import { activateAuthorProfile, deactivateAuthorProfile, getAuthorProfileView, isActiveAuthor, updateAuthorProfileWhatsApp } from "../src/authorProfileState.js";
 
 export function registerAuthorProfileStateTests(test) {
   test("derives author views without reader profile privacy", () => {
@@ -23,9 +23,11 @@ export function registerAuthorProfileStateTests(test) {
 
     assert.deepEqual(await activateAuthorProfile(apiFetch), { is_active: true });
     assert.deepEqual(await deactivateAuthorProfile(apiFetch), { is_active: false });
+    assert.deepEqual(await updateAuthorProfileWhatsApp(apiFetch, "11 2222-3333"), { is_active: false });
     assert.deepEqual(requests, [
       { path: "/dashboard/author-profile/activate", options: { method: "POST", body: JSON.stringify({ rights_declaration_accepted: true }) } },
       { path: "/dashboard/author-profile/deactivate", options: { method: "POST" } },
+      { path: "/dashboard/author-profile", options: { method: "PATCH", body: JSON.stringify({ whatsapp_phone: "11 2222-3333" }) } },
     ]);
   });
 
@@ -43,6 +45,7 @@ export function registerAuthorProfileStateTests(test) {
       assert.match(inactiveMarkup, /Activar perfil de autor\/a/);
       assert.doesNotMatch(inactiveMarkup, /Desactivar perfil/);
       assert.match(activeMarkup, /Tu perfil de autor\/a está activo/);
+      assert.match(activeMarkup, /Celular con WhatsApp/);
       assert.match(activeMarkup, /Desactivar perfil/);
       assert.doesNotMatch(activeMarkup, /rights-declaration/);
       assert.equal(renderToStaticMarkup(createElement(ReaderAuthorBadge, { isAuthor: false })), "");

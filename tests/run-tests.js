@@ -877,7 +877,7 @@ tests.push(["publishes terms and conditions for Bookia's marketplace role", () =
   assert.match(privacySource, /version de la declaracion de derechos aceptada/);
   assert.match(privacySource, /La desactivacion oculta la insignia/);
   assert.match(termsSource, /hasta cinco obras propias/);
-  assert.match(termsSource, /no se publican fuera de su panel/);
+  assert.match(termsSource, /celular con WhatsApp para consultas sobre sus obras/);
   assert.match(privacySource, /titulos, sinopsis, genero, editorial, ano y portadas/);
   assert.match(privacySource, /los libros propios y sus portadas se conservan/);
   assert.match(privacySource, /limitacion de frecuencia respaldada por la base de datos/);
