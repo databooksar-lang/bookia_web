@@ -6,13 +6,12 @@ import { createServer } from "vite";
 import { activateAuthorProfile, deactivateAuthorProfile, getAuthorProfileView, isActiveAuthor } from "../src/authorProfileState.js";
 
 export function registerAuthorProfileStateTests(test) {
-  test("derives inactive, private-active, and public-active author views", () => {
+  test("derives author views without reader profile privacy", () => {
     assert.equal(isActiveAuthor(null), false);
     assert.equal(isActiveAuthor({ is_active: false }), false);
     assert.equal(isActiveAuthor({ is_active: true }), true);
-    assert.equal(getAuthorProfileView({ authorProfile: null, readerProfile: { is_public: false } }), "inactive");
-    assert.equal(getAuthorProfileView({ authorProfile: { is_active: true }, readerProfile: { is_public: false } }), "active_private");
-    assert.equal(getAuthorProfileView({ authorProfile: { is_active: true }, readerProfile: { is_public: true } }), "active_public");
+    assert.equal(getAuthorProfileView({ authorProfile: null, readerProfile: {} }), "inactive");
+    assert.equal(getAuthorProfileView({ authorProfile: { is_active: true }, readerProfile: {} }), "active_public");
   });
 
   test("uses the protected author activation and deactivation API contracts", async () => {
