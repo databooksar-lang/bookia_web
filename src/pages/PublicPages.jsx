@@ -346,6 +346,7 @@ export function DiscoveryCarousel({ items = [], loading, onOpenBook }) {
 function InitialBookDiscovery({ items, loading, me }) {
   const [selectedBook, setSelectedBook] = useState(null);
   const [selectedBookImageUrl, setSelectedBookImageUrl] = useState(null);
+  const [authAction, setAuthAction] = useState(null);
 
   function openBookDetail(item) {
     trackBookDetailOpened(item, "discovery_carousel");
@@ -359,6 +360,13 @@ function InitialBookDiscovery({ items, loading, me }) {
     setSelectedBookImageUrl(null);
   }
 
+  function requireBookstoreAuth({ item, source }) {
+    const store = item?.bookstore;
+    if (!store?.id || !store?.slug) return;
+    const action = startBookstoreContactIntent({ store, item, source, returnPath: `/bookstores/${store.slug}` });
+    if (action) setAuthAction(action);
+  }
+
   useEffect(() => {
     if (!selectedBook) return undefined;
     const onKeyDown = (event) => event.key === "Escape" && closeBookDetail();
@@ -366,7 +374,7 @@ function InitialBookDiscovery({ items, loading, me }) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [selectedBook]);
 
-  return <><DiscoveryCarousel items={items} loading={loading} onOpenBook={openBookDetail} />{selectedBook ? <DiscoveryBookDetailModal selectedBook={selectedBook} selectedBookImageUrl={selectedBookImageUrl} onImageChange={setSelectedBookImageUrl} onClose={closeBookDetail} me={me} /> : null}</>;
+  return <><DiscoveryCarousel items={items} loading={loading} onOpenBook={openBookDetail} />{selectedBook ? <DiscoveryBookDetailModal selectedBook={selectedBook} selectedBookImageUrl={selectedBookImageUrl} onImageChange={setSelectedBookImageUrl} onClose={closeBookDetail} me={me} contactGate={{ me, onRequireAuth: requireBookstoreAuth }} isBackgroundObscured={Boolean(authAction)} /> : null}{authAction ? <AuthRequiredDialog action={authAction} onCancel={() => setAuthAction(null)} /> : null}</>;
 }
 
 function DiscoveryBookDetailModal({ me, ...modalProps }) {
@@ -381,6 +389,7 @@ function SearchResults({ filters, stores, me, onClearFilters }) {
   const [selectedBookImageUrl, setSelectedBookImageUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [authAction, setAuthAction] = useState(null);
   const favorites = useFavoriteBooks(me);
   const hasSearched = filters !== null;
   const visibleItems = items.filter((item) => item.availability_status !== "hidden");
@@ -402,6 +411,13 @@ function SearchResults({ filters, stores, me, onClearFilters }) {
   function closeBookDetail() {
     setSelectedBook(null);
     setSelectedBookImageUrl(null);
+  }
+
+  function requireBookstoreAuth({ item, source }) {
+    const store = item?.bookstore;
+    if (!store?.id || !store?.slug) return;
+    const action = startBookstoreContactIntent({ store, item, source, returnPath: `/bookstores/${store.slug}` });
+    if (action) setAuthAction(action);
   }
 
   useEffect(() => {
@@ -483,16 +499,17 @@ function SearchResults({ filters, stores, me, onClearFilters }) {
                 <span>Libreria</span>
                 <AppLink href={`/bookstores/${item.bookstore.slug}`} onClick={() => trackBookstoreOpened(item.bookstore, "search_results")}>{item.bookstore.name} <ArrowIcon size={15} /></AppLink>
               </div>
-              <WhatsAppButton className="primary-button search-result-whatsapp" whatsappPhone={item.bookstore.whatsapp_phone} message={`Hola, quisiera consultarte por el libro ${item.title} que vi publicado en Bookia.`} onClick={() => trackWhatsAppClicked(item.bookstore, "search_results", item.id)}>
+              <BookstoreWhatsAppAction className="primary-button search-result-whatsapp" me={me} store={item.bookstore} item={item} source="search_results" onRequireAuth={requireBookstoreAuth}>
                 <WhatsAppIcon size={19} /> Contactar
-              </WhatsAppButton>
+              </BookstoreWhatsAppAction>
               <FavoriteBookButton itemId={item.id} bookstoreId={item.bookstore?.id} isFavorite={favorites.favoriteIds.has(item.id)} isPending={favorites.pendingIds.has(item.id)} isSessionLoading={me === undefined || favorites.favoritesLoading} onToggle={favorites.toggleFavorite} />
 
             </article>
           ))}
         </div>
       ) : null}
-      <BookDetailModal selectedBook={selectedBook} selectedBookImageUrl={selectedBookImageUrl} onImageChange={setSelectedBookImageUrl} onClose={closeBookDetail} favorites={favorites} isSessionLoading={me === undefined || favorites.favoritesLoading} />
+      <BookDetailModal selectedBook={selectedBook} selectedBookImageUrl={selectedBookImageUrl} onImageChange={setSelectedBookImageUrl} onClose={closeBookDetail} favorites={favorites} isSessionLoading={me === undefined || favorites.favoritesLoading} contactGate={{ me, onRequireAuth: requireBookstoreAuth }} isBackgroundObscured={Boolean(authAction)} />
+      {authAction ? <AuthRequiredDialog action={authAction} onCancel={() => setAuthAction(null)} /> : null}
     </section>
   );
 }
@@ -1115,7 +1132,7 @@ export function BookDetailModal({ selectedBook, selectedBookImageUrl, onImageCha
   const selectedBookGallery = bookImageGallery(selectedBook);
   const bookstore = contactGate?.store || selectedBook.bookstore;
   const hasBookstoreContact = Boolean(buildWhatsAppHref(bookstore?.whatsapp_phone));
-  const showBookstoreContact = contactGate ? (contactGate.me === undefined || !contactGate.me || hasBookstoreContact) : hasBookstoreContact;
+  const showBookstoreContact = contactGate && (contactGate.me === undefined || !contactGate.me || hasBookstoreContact);
 
   return (
     <div className="book-detail-modal" role="dialog" aria-hidden={isBackgroundObscured ? "true" : undefined} inert={isBackgroundObscured ? "" : undefined} aria-modal={isBackgroundObscured ? undefined : "true"} aria-labelledby="book-detail-title" onClick={onClose}>
@@ -1159,7 +1176,7 @@ export function BookDetailModal({ selectedBook, selectedBookImageUrl, onImageCha
             </dl>
             {contactGate && contactError ? <p className="feedback error bookstore-contact-feedback" role="alert">{contactError}</p> : null}
             {showBookstoreContact ? (
-              contactGate ? <BookstoreWhatsAppAction className="primary-button book-detail-whatsapp" me={contactGate.me} store={bookstore} item={selectedBook} source="book_detail_modal" onRequireAuth={contactGate.onRequireAuth}><WhatsAppIcon size={19} /> Contactar por WhatsApp</BookstoreWhatsAppAction> : <WhatsAppButton className="primary-button book-detail-whatsapp" whatsappPhone={bookstore.whatsapp_phone} message={`Hola, quisiera consultarte por el libro ${selectedBook.title} que vi publicado en Bookia.`} onClick={() => trackWhatsAppClicked(bookstore, "book_detail_modal", selectedBook.id)}><WhatsAppIcon size={19} /> Contactar por WhatsApp</WhatsAppButton>
+              <BookstoreWhatsAppAction className="primary-button book-detail-whatsapp" me={contactGate.me} store={bookstore} item={selectedBook} source="book_detail_modal" onRequireAuth={contactGate.onRequireAuth}><WhatsAppIcon size={19} /> Contactar por WhatsApp</BookstoreWhatsAppAction>
             ) : null}
           </div>
         </div>

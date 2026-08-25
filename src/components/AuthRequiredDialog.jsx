@@ -2,7 +2,6 @@ import { useEffect, useRef } from "react";
 
 import { navigate } from "../navigation";
 import { getPendingReaderActionCopy } from "../pendingReaderAction";
-import { buildRegisterPath } from "../registerState";
 
 const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
@@ -107,7 +106,7 @@ export function AuthRequiredDialog({ action, onCancel }) {
   return (
     <ActionDialogFrame titleId="auth-required-title" title={copy.title} description={copy.description} onCancel={onCancel} primaryRef={primaryRef}>
       <div className="auth-required-dialog-actions">
-        <button ref={primaryRef} type="button" className="primary-button" onClick={() => navigate(buildRegisterPath({ profileType: "reader" }))}>Crear cuenta</button>
+        <button ref={primaryRef} type="button" className="primary-button" onClick={() => navigate("/register")}>Crear cuenta</button>
         <button type="button" className="secondary-button" onClick={() => navigate("/login")}>Iniciar sesión</button>
         <button type="button" className="text-link" onClick={onCancel}>Ahora no</button>
       </div>
