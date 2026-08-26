@@ -253,4 +253,22 @@ export function registerDashboardCatalogStateTests(register) {
     assert.match(source, /disabled=\{catalogMutationBusy\}>Volver a publicar/);
   });
 
+  register("allows permanently deleting a sold-out catalog book after confirmation", () => {
+    const source = readFileSync(new URL("../src/pages/DashboardPage.jsx", import.meta.url), "utf8");
+
+    assert.match(source, /const \[pendingDeleteItem, setPendingDeleteItem\] = useState\(null\);/);
+    assert.match(source, /onClick=\{\(\) => setPendingDeleteItem\(item\)\}\s+disabled=\{catalogMutationBusy\}>Eliminar</);
+    assert.match(source, /apiFetch\(`\/dashboard\/catalog\/\$\{pendingDeleteItem\.id\}`, \{ method: "DELETE" \}\)/);
+    assert.match(source, /¿Eliminar definitivamente “\{pendingDeleteItem\.title\}”\?/);
+    assert.match(source, /Esta acción no se puede deshacer\./);
+    assert.match(source, /pendingDeleteItem \? <div[\s\S]*?\{error \? <p className="feedback error" role="alert">\{error\}<\/p> : null\}/);
+  });
+
+  register("keeps catalog confirmation dialogs within a narrow mobile viewport", () => {
+    const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
+    const dialogRule = editorialStyles.match(/\.catalog-hide-dialog\s*\{([^}]*)\}/s)?.[1] || "";
+
+    assert.match(dialogRule, /box-sizing:\s*border-box;/);
+  });
+
 }
