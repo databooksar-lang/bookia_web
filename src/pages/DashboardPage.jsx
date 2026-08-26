@@ -182,6 +182,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
   const [saveErrorsByItemId, setSaveErrorsByItemId] = useState({});
   const [catalogActionBusy, setCatalogActionBusy] = useState(false);
   const [pendingHideItem, setPendingHideItem] = useState(null);
+  const [pendingDeleteItem, setPendingDeleteItem] = useState(null);
   const [imageBusyId, setImageBusyId] = useState(null);
   const [aiBusyId, setAiBusyId] = useState(null);
   const [aiSuggestionsByItemId, setAiSuggestionsByItemId] = useState({});
@@ -242,13 +243,16 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
   useEffect(() => { setAnalyticsDraft({ startDate: analyticsFilter.startDate || getArgentinaToday(), endDate: analyticsFilter.endDate || getArgentinaToday() }); }, [analyticsFilter.startDate, analyticsFilter.endDate, analyticsFilter.mode]);
   useEffect(() => { if (me?.bookstore && section === "metrics") loadAnalytics(); }, [me, section, analyticsFilter.mode, analyticsFilter.month, analyticsFilter.startDate, analyticsFilter.endDate]);
   useEffect(() => {
-    if (!pendingHideItem) return undefined;
+    if (!pendingHideItem && !pendingDeleteItem) return undefined;
     const closeOnEscape = (event) => {
-      if (event.key === "Escape" && !catalogMutationBusy) setPendingHideItem(null);
+      if (event.key === "Escape" && !catalogMutationBusy) {
+        setPendingHideItem(null);
+        setPendingDeleteItem(null);
+      }
     };
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [pendingHideItem, catalogMutationBusy]);
+  }, [pendingHideItem, pendingDeleteItem, catalogMutationBusy]);
 
   if (me === undefined) {
     return <div className="page-state"><div className="loading-mark" /><p>Preparando tu panel...</p></div>;
@@ -286,6 +290,19 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
   function confirmHideItem() {
     if (!pendingHideItem) return;
     updateAvailability(pendingHideItem.id, "hidden", () => setPendingHideItem(null));
+  }
+
+  function confirmDeleteItem() {
+    if (!pendingDeleteItem || catalogMutationBusy) return;
+    setCatalogActionBusy(true);
+    apiFetch(`/dashboard/catalog/${pendingDeleteItem.id}`, { method: "DELETE" })
+      .then(() => {
+        setPendingDeleteItem(null);
+        setError("");
+        return loadCatalog();
+      })
+      .catch((fetchError) => setError(fetchError.message))
+      .finally(() => setCatalogActionBusy(false));
   }
 
   function autocompleteItem(item) {
@@ -583,7 +600,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
                   <p><strong>Generos:</strong> {item.genres?.length ? item.genres.map((genre) => genre.name).join(", ") : "Sin generos"}</p>
                   <p><strong>Estado:</strong> {bookStatusLabel}</p>
                 </div>
-                <div className="card-actions"><button type="button" className="primary-button" onClick={() => updateAvailability(item.id, "available")} disabled={catalogMutationBusy}>Volver a publicar</button><button type="button" className="secondary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver vidriera digital</button></div>
+                <div className="card-actions"><button type="button" className="primary-button" onClick={() => updateAvailability(item.id, "available")} disabled={catalogMutationBusy}>Volver a publicar</button><button type="button" className="danger-button" onClick={() => setPendingDeleteItem(item)} disabled={catalogMutationBusy}>Eliminar</button><button type="button" className="secondary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>Ver vidriera digital</button></div>
               </article>
             );
           })}</div> : null}
@@ -650,6 +667,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
       </DashboardPanel>
       </div>
       {pendingHideItem ? <div className="catalog-hide-dialog-backdrop" onClick={(event) => { if (event.target === event.currentTarget && !catalogMutationBusy) setPendingHideItem(null); }}><section className="catalog-hide-dialog" role="dialog" aria-modal="true" aria-labelledby="catalog-hide-dialog-title" aria-describedby="catalog-hide-dialog-description"><p className="section-label">MOVER A AGOTADOS</p><h2 id="catalog-hide-dialog-title">¿Mover “{pendingHideItem.title}” a Agotados?</h2><p id="catalog-hide-dialog-description">Dejará de mostrarse en tu catálogo activo, pero podrás volver a publicarlo cuando quieras.</p><div className="catalog-hide-dialog-actions"><button type="button" className="secondary-button" onClick={() => setPendingHideItem(null)} disabled={catalogMutationBusy} autoFocus>Cancelar</button><button type="button" className="danger-button" onClick={confirmHideItem} disabled={catalogMutationBusy}>{catalogActionBusy ? "Moviendo..." : "Mover a agotados"}</button></div></section></div> : null}
+      {pendingDeleteItem ? <div className="catalog-hide-dialog-backdrop" onClick={(event) => { if (event.target === event.currentTarget && !catalogMutationBusy) setPendingDeleteItem(null); }}><section className="catalog-hide-dialog" role="dialog" aria-modal="true" aria-labelledby="catalog-delete-dialog-title" aria-describedby="catalog-delete-dialog-description"><p className="section-label">ELIMINAR LIBRO</p><h2 id="catalog-delete-dialog-title">¿Eliminar definitivamente “{pendingDeleteItem.title}”?</h2><p id="catalog-delete-dialog-description">Esta acción no se puede deshacer.</p>{error ? <p className="feedback error" role="alert">{error}</p> : null}<div className="catalog-hide-dialog-actions"><button type="button" className="secondary-button" onClick={() => setPendingDeleteItem(null)} disabled={catalogMutationBusy} autoFocus>Cancelar</button><button type="button" className="danger-button" onClick={confirmDeleteItem} disabled={catalogMutationBusy}>{catalogActionBusy ? "Eliminando..." : "Eliminar definitivamente"}</button></div></section></div> : null}
     </section>
   );
 }
