@@ -68,20 +68,6 @@ function drawReadingClubStoryCover(context, image, x, y, width, height) {
   context.save();
   roundedStoryRect(context, x, y, width, height, 36);
   context.clip();
-  if (!image?.width || !image?.height) {
-    context.fillStyle = "#0b2d24";
-    context.fillRect(x, y, width, height);
-    context.fillStyle = "#e85d3f";
-    context.fillRect(x + 82, y + 78, 16, height - 156);
-    context.fillStyle = "#fffaf0";
-    context.font = "700 44px Fraunces, Georgia, serif";
-    context.textAlign = "center";
-    context.fillText("CLUB DE LECTURA", x + (width / 2), y + (height / 2) - 18);
-    context.font = "600 25px Manrope, system-ui, sans-serif";
-    context.fillText("Una conversación para compartir", x + (width / 2), y + (height / 2) + 34);
-    context.restore();
-    return;
-  }
   const sourceRatio = image.width / image.height;
   const targetRatio = width / height;
   const sourceWidth = sourceRatio > targetRatio ? image.height * targetRatio : image.width;
@@ -94,6 +80,55 @@ function drawReadingClubStoryCover(context, image, x, y, width, height) {
   context.lineWidth = 3;
   context.stroke();
   context.restore();
+}
+
+function drawReadingClubStoryMetadata(context, metadata) {
+  context.fillStyle = "#e4e6db";
+  context.fillRect(140, 1014, 330, 56);
+  context.fillStyle = "#0b2d24";
+  context.font = "800 21px Manrope, system-ui, sans-serif";
+  context.textAlign = "center";
+  context.fillText(fitStoryText(context, metadata.genre.toLocaleUpperCase("es-AR"), 294), 305, 1051);
+  context.textAlign = "left";
+  context.font = "700 66px Fraunces, Georgia, serif";
+  drawStoryText(context, metadata.title, 140, 1135, 800, 70, 2);
+  context.fillStyle = "#536259";
+  context.font = "500 29px Manrope, system-ui, sans-serif";
+  drawStoryText(context, metadata.description, 140, 1257, 800, 39, 2);
+  drawReadingClubStoryDetails(context, metadata, 1344);
+}
+
+function drawReadingClubStoryDetails(context, metadata, detailsTop) {
+  [["FECHA", metadata.date], ["LUGAR", metadata.location], ["ORGANIZA", metadata.hostName]].forEach(([label, value], index) => {
+    const x = 140 + (index * 274);
+    context.fillStyle = "#68736b";
+    context.font = "800 17px Manrope, system-ui, sans-serif";
+    context.fillText(label, x, detailsTop + 24);
+    context.fillStyle = "#0b2d24";
+    context.font = "800 23px Manrope, system-ui, sans-serif";
+    drawStoryText(context, value.toLocaleUpperCase("es-AR"), x, detailsTop + 59, 240, 28, 1);
+  });
+}
+
+function drawReadingClubStoryExpandedDetails(context, metadata) {
+  context.fillStyle = "#e4e6db";
+  context.fillRect(140, 372, 330, 56);
+  context.fillStyle = "#0b2d24";
+  context.font = "800 21px Manrope, system-ui, sans-serif";
+  context.textAlign = "center";
+  context.fillText(fitStoryText(context, metadata.genre.toLocaleUpperCase("es-AR"), 294), 305, 409);
+  context.textAlign = "left";
+  context.font = "700 66px Fraunces, Georgia, serif";
+  drawStoryText(context, metadata.title, 140, 500, 800, 70, 3);
+  context.fillStyle = "#e85d3f";
+  context.fillRect(140, 742, 800, 8);
+  context.fillStyle = "#68736b";
+  context.font = "800 17px Manrope, system-ui, sans-serif";
+  context.fillText("SOBRE EL CLUB", 140, 790);
+  context.fillStyle = "#536259";
+  context.font = "500 29px Manrope, system-ui, sans-serif";
+  drawStoryText(context, metadata.description, 140, 842, 800, 39, 5);
+  drawReadingClubStoryDetails(context, metadata, 1138);
 }
 
 function canvasToPng(canvas) {
@@ -215,30 +250,12 @@ export async function createReadingClubInstagramStoryFile({ club, hostName, cove
   const [cover, logo] = await Promise.all([coverPromise, logoPromise]);
   if (logo) context.drawImage(logo, 828, 220, 112, 112);
   const hasCover = Boolean(cover?.width && cover?.height);
-  drawReadingClubStoryCover(context, hasCover ? cover : null, 140, 372, 800, 600);
-
-  context.fillStyle = "#e4e6db";
-  context.fillRect(140, 1014, 330, 56);
-  context.fillStyle = "#0b2d24";
-  context.font = "800 21px Manrope, system-ui, sans-serif";
-  context.textAlign = "center";
-  context.fillText(fitStoryText(context, metadata.genre.toLocaleUpperCase("es-AR"), 294), 305, 1051);
-  context.textAlign = "left";
-  context.font = "700 66px Fraunces, Georgia, serif";
-  drawStoryText(context, metadata.title, 140, 1135, 800, 70, 2);
-  context.fillStyle = "#536259";
-  context.font = "500 29px Manrope, system-ui, sans-serif";
-  drawStoryText(context, metadata.description, 140, 1257, 800, 39, 2);
-  const detailsTop = 1344;
-  [["FECHA", metadata.date], ["LUGAR", metadata.location], ["ORGANIZA", metadata.hostName]].forEach(([label, value], index) => {
-    const x = 140 + (index * 274);
-    context.fillStyle = "#68736b";
-    context.font = "800 17px Manrope, system-ui, sans-serif";
-    context.fillText(label, x, detailsTop + 24);
-    context.fillStyle = "#0b2d24";
-    context.font = "800 23px Manrope, system-ui, sans-serif";
-    drawStoryText(context, value.toLocaleUpperCase("es-AR"), x, detailsTop + 59, 240, 28, 1);
-  });
+  if (hasCover) {
+    drawReadingClubStoryCover(context, cover, 140, 372, 800, 600);
+    drawReadingClubStoryMetadata(context, metadata);
+  } else {
+    drawReadingClubStoryExpandedDetails(context, metadata);
+  }
   const ctaTop = 1482;
   context.fillStyle = "#e85d3f";
   context.fillRect(140, ctaTop, 800, 150);

@@ -135,12 +135,13 @@ export function registerReadingClubSharingStateTests(register) {
     assert.ok(documentLike.styledRectangles.some(({ args: [x, y, width, height], fillStyle }) => x >= 140 && y >= 1480 && x + width <= 940 && y + height <= 1640 && fillStyle === "#e85d3f"));
   });
 
-  register("creates the editorial fallback when a reading-club Story has no usable cover", async () => {
+  register("uses the expanded-details layout when a reading-club Story has no usable cover", async () => {
     const documentLike = createStoryDocument();
     let requested = false;
+    const description = "Una descripción extensa que debe ocupar el espacio editorial disponible cuando la portada no carga.";
 
     const file = await createReadingClubInstagramStoryFile({
-      club: { id: 7, title: "Club de prueba", description: "Una descripción extensa que sigue disponible aunque la portada no cargue." },
+      club: { id: 7, title: "Club de prueba", description },
       hostName: "Bookia",
       coverUrl: "/api/reading-clubs/7/cover",
       fetchLike: async () => { requested = true; return { ok: false, headers: new Headers() }; },
@@ -150,11 +151,12 @@ export function registerReadingClubSharingStateTests(register) {
 
     assert.equal(requested, true);
     assert.equal(documentLike.drawCalls.length, 0);
-    assert.ok(documentLike.text.includes("CLUB DE LECTURA"));
+    assert.ok(documentLike.textCalls.some(({ value, y }) => String(value).includes("descripción extensa") && y < 1000));
+    assert.ok(!documentLike.styledRectangles.some(({ args: [x, y, width, height], fillStyle }) => x === 140 && y === 372 && width === 800 && height === 600 && fillStyle === "#0b2d24"));
     assert.equal(file.type, "image/png");
   });
 
-  register("keeps the editorial fallback and all its content inside the Instagram safe area", async () => {
+  register("keeps the expanded-details layout and all its content inside the Instagram safe area", async () => {
     const documentLike = createStoryDocument();
     const description = "Una invitación extensa para conversar sobre una lectura, intercambiar ideas, descubrir autores y llegar al encuentro con nuevas preguntas para compartir entre todas las personas del club.";
 
@@ -166,7 +168,7 @@ export function registerReadingClubSharingStateTests(register) {
     });
 
     assert.ok(documentLike.text.includes("CLUB DE LECTURA"));
-    assert.ok(documentLike.textCalls.some(({ value, y }) => value === "Club sin portada" && y >= 1000));
+    assert.ok(documentLike.textCalls.some(({ value, y }) => value === "Club sin portada" && y >= 400 && y < 1000));
     assert.ok(documentLike.textCalls.filter(({ value }) => String(value).trim()).every(({ y }) => y >= 220 && y <= 1640));
     assert.ok(documentLike.styledRectangles.some(({ args: [x, y, width, height], fillStyle }) => x >= 140 && y >= 1480 && x + width <= 940 && y + height <= 1640 && fillStyle === "#e85d3f"));
   });
