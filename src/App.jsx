@@ -92,7 +92,7 @@ export default function App() {
   else if (pathname === "/billing/return") page = <BillingReturnPage locationSearch={search} refreshMe={refreshMe} />;
   else if (pathname === "/profile") page = <ReaderProfilePage me={me} refreshMe={refreshMe} locationSearch={search} />;
   else if (pathname.startsWith("/bookstores/")) page = <BookstorePage slug={pathname.replace("/bookstores/", "")} me={me} refreshSession={refreshMe} />;
-  else if (pathname.startsWith("/readers/")) page = <ReaderPage slug={pathname.replace("/readers/", "")} search={search} />;
+  else if (pathname.startsWith("/readers/")) page = <ReaderPage slug={pathname.replace("/readers/", "")} search={search} me={me} />;
 
   return (
     <div className="app-shell">

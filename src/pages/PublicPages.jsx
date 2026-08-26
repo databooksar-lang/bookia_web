@@ -1381,15 +1381,81 @@ export function BookstorePage({ slug, me, refreshSession }) {
   );
 }
 
-export function ReaderReadingClubs({ reader, readingClubs, onBack, sharedClubId = null }) {
+export function ReaderReadingClubs({ reader, readingClubs, onBack, sharedClubId = null, me = null }) {
+  const [selectedClub, setSelectedClub] = useState(null);
+  const [interestOpen, setInterestOpen] = useState(false);
+  const [authAction, setAuthAction] = useState(null);
+  const [continuationAction, setContinuationAction] = useState(null);
+  const [actionError, setActionError] = useState("");
+
+  function closeClubDetails() {
+    setSelectedClub(null);
+    setInterestOpen(false);
+  }
+
+  function openClubInterest(club) {
+    const mode = getReadingClubInterestMode(me);
+    if (mode === "loading") return;
+    if (mode === "open_form") {
+      setSelectedClub(club);
+      setInterestOpen(true);
+      return;
+    }
+    const action = startReadingClubInterestIntent({
+      club,
+      host: { type: "reader", slug: reader.slug, display_name: reader.display_name },
+      returnPath: `${window.location.pathname}${window.location.search}`,
+    });
+    if (!action) {
+      setActionError(PENDING_ACTION_PERSISTENCE_ERROR);
+      return;
+    }
+    setActionError("");
+    setAuthAction(action);
+  }
+
+  function continueClubInterest() {
+    const club = readingClubs.find((candidate) => candidate.id === continuationAction?.target_id);
+    if (!club) return;
+    setContinuationAction(null);
+    setSelectedClub(club);
+    setInterestOpen(true);
+  }
+
+  useEffect(() => {
+    if (!selectedClub) return undefined;
+    const onKeyDown = (event) => event.key === "Escape" && closeClubDetails();
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [selectedClub]);
+
+  useEffect(() => {
+    if (!me || !readingClubs.length) return;
+    const action = readPendingReaderAction();
+    const continuation = resolveReadingClubContinuation(action, readingClubs);
+    if (!continuation) return;
+    if (continuation.status === "unavailable") {
+      clearPendingReaderAction();
+      setActionError(continuation.message);
+      return;
+    }
+    setContinuationAction(action);
+  }, [me, readingClubs]);
+
   if (!readingClubs.length) return null;
 
+  const host = { type: "reader", slug: reader.slug, display_name: reader.display_name };
+
   return <section className="store-reading-clubs"><div className="section-heading results-heading"><div><p className="section-label">Clubes de lectura</p><h2>Encuentros de {reader.display_name}</h2><p>{readingClubs.length} {readingClubs.length === 1 ? "club publicado" : "clubes publicados"}</p></div><button className="secondary-button" onClick={onBack}>Volver a buscar</button></div>
-    <div className="reading-club-public-list">{readingClubs.map((club) => <ReadingClubPublicCard key={club.id} club={club} shared={sharedClubId === club.id} />)}</div>
+    {actionError ? <p className="feedback error" role="alert">{actionError}</p> : null}
+    <div className="reading-club-public-list">{readingClubs.map((club) => <ReadingClubPublicCard key={club.id} club={club} host={host} source="reader_reading_clubs" showShare={typeof window !== "undefined"} shared={sharedClubId === club.id} onOpenDetails={() => { setSelectedClub(club); setInterestOpen(false); }} onOpenInterest={() => openClubInterest(club)} showInterest interestDisabled={me === undefined} hideExternalLink />)}</div>
+    <ReadingClubDetailModal selectedClub={selectedClub} host={host} initialInterestOpen={interestOpen} me={me} onClose={closeClubDetails} />
+    {authAction ? <AuthRequiredDialog action={authAction} onCancel={() => dismissReaderActionDialog(authAction, () => setAuthAction(null))} /> : null}
+    {continuationAction ? <ReaderActionContinuationDialog action={continuationAction} continueLabel="Continuar con mi interés" onContinue={continueClubInterest} onCancel={() => dismissReaderActionDialog(continuationAction, () => setContinuationAction(null))} /> : null}
   </section>;
 }
 
-export function ReaderPage({ slug, search = "" }) {
+export function ReaderPage({ slug, search = "", me = null }) {
   const [reader, setReader] = useState(null);
   const [readingClubs, setReadingClubs] = useState([]);
   const [wantedBooks, setWantedBooks] = useState([]);
@@ -1444,7 +1510,7 @@ export function ReaderPage({ slug, search = "" }) {
     <ReaderAuthorBooks reader={reader} books={authorBooks} onOpenDetails={openAuthorBook} />
     <ReaderAuthorBookDetailModal reader={reader} book={selectedAuthorBook} onClose={closeAuthorBook} onRequireAuth={requireAuthorAuth} />
     <ReaderWantedBooksPublic items={wantedBooks} />
-    <ReaderReadingClubs reader={reader} readingClubs={readingClubs} onBack={() => navigate("/")} sharedClubId={typeof window === "undefined" ? null : getSharedReadingClubId(window.location.search)} />
+    <ReaderReadingClubs reader={reader} readingClubs={readingClubs} onBack={() => navigate("/")} sharedClubId={typeof window === "undefined" ? null : getSharedReadingClubId(window.location.search)} me={me} />
     {authAction ? <AuthRequiredDialog action={authAction} onCancel={() => dismissReaderActionDialog(authAction, () => setAuthAction(null))} /> : null}
     {contactContinuation ? <ReaderActionContinuationDialog action={{ type: "contact_author" }} continueLabel="Continuar a WhatsApp" continueHref={contactContinuation.href} onContinue={completeAuthorContact} onCancel={() => { clearPendingReaderAction(); setContactContinuation(null); }} /> : null}
   </section>;

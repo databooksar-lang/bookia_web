@@ -136,6 +136,34 @@ export function registerReaderPublicProfileRenderTests(test) {
     }
   });
 
+  test("offers the public reading-club detail and interest actions from a reader profile", async () => {
+    const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
+    try {
+      const { ReaderReadingClubs } = await vite.ssrLoadModule("/src/pages/PublicPages.jsx");
+      const markup = renderToStaticMarkup(createElement(ReaderReadingClubs, {
+        reader: { display_name: "Gabriel", slug: "gabriel" },
+        me: { reader_profile: { id: 2 } },
+        readingClubs: [{
+          id: 7,
+          title: "Lecturas del mes",
+          description: "Una charla abierta.",
+          genre: { name: "Narrativa" },
+          meeting_date: "2026-08-20",
+          location: "Sala 1",
+          external_url: "https://example.com/club",
+        }],
+        onBack: () => {},
+      }));
+
+      assert.match(markup, /type="button"/);
+      assert.match(markup, /aria-label="Ver detalles de Lecturas del mes"/);
+      assert.match(markup, />\+ info</);
+      assert.match(markup, /Estoy interesado@/);
+    } finally {
+      await vite.close();
+    }
+  });
+
   test("renders an optional cover and compact action area for a public reading club", async () => {
     const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
     try {
