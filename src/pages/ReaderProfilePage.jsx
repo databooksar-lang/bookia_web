@@ -11,7 +11,7 @@ import { RichDescriptionEditor } from "../components/RichDescriptionEditor";
 import { ReaderFavoriteBookRow } from "../components/ReaderFavoriteBookRow";
 import { AuthorProfileSection } from "../components/AuthorProfileSection";
 import { ReadingClubManager } from "../components/ReadingClubManager";
-import { activateAuthorProfile, deactivateAuthorProfile, isActiveAuthor } from "../authorProfileState";
+import { activateAuthorProfile, deactivateAuthorProfile, isActiveAuthor, updateAuthorProfileWhatsApp } from "../authorProfileState";
 
 const READER_PROFILE_TABS = [
   { section: "info", label: "📝 Mi info" },
@@ -57,8 +57,11 @@ export function ReaderProfilePage({ me, refreshMe, locationSearch = "" }) {
   const [authorAccepted, setAuthorAccepted] = useState(false);
   const [authorPending, setAuthorPending] = useState(false);
   const [authorFeedback, setAuthorFeedback] = useState("");
+  const [authorWhatsAppPhone, setAuthorWhatsAppPhone] = useState("");
   const authorProfile = me?.author_profile;
   const authorIsActive = isActiveAuthor(authorProfile);
+
+  useEffect(() => { setAuthorWhatsAppPhone(authorProfile?.whatsapp_phone || ""); }, [authorProfile?.whatsapp_phone]);
 
   useEffect(() => { setDraft(createReaderProfileDraft(profile)); }, [profile?.display_name, profile?.slug, profile?.description, favoriteGenreIdsKey, profileTraitsKey]);
 
@@ -151,6 +154,16 @@ export function ReaderProfilePage({ me, refreshMe, locationSearch = "" }) {
       .catch((error) => setAuthorFeedback(error.message))
       .finally(() => setAuthorPending(false));
   }
+  function saveAuthorWhatsApp(event) {
+    event.preventDefault();
+    setAuthorPending(true);
+    setAuthorFeedback("");
+    updateAuthorProfileWhatsApp(apiFetch, authorWhatsAppPhone)
+      .then(() => refreshMe({ preserveOnError: true }))
+      .then(() => setAuthorFeedback("WhatsApp actualizado."))
+      .catch((error) => setAuthorFeedback(error.message))
+      .finally(() => setAuthorPending(false));
+  }
 
   return <section className="store-page reader-page"><div className="section-heading"><div><p className="section-label">MI PERFIL</p><h1>{draft.display_name || "Tu perfil lector"}</h1><p>Contale a la comunidad quién sos, qué leés y qué te inspira.</p></div><div className="dashboard-actions">{draft.slug ? <AppLink className="secondary-button reader-public-profile-button" href={`/readers/${draft.slug}`}>🌐 Ver perfil público</AppLink> : null}</div></div>
     <ReaderProfileTabs section={section} showAuthor={authorIsActive} />
@@ -159,6 +172,6 @@ export function ReaderProfilePage({ me, refreshMe, locationSearch = "" }) {
     <section className="reader-profile-tab-panel reader-wanted-dashboard" hidden={section !== "wanted"}><div className="section-heading"><div><p className="section-label">🔎 MI LISTA DE DESEOS</p><h2>Libros que estoy buscando</h2><p>Agregá hasta 20 títulos que te gustaría encontrar. Se mostrarán en tu perfil cuando sea público.</p></div></div>{wantedLoading ? <div className="loading-mark" /> : null}{!wantedLoading && (!atWantedLimit || wantedDraft.id) ? <form className="dashboard-card reader-wanted-form reader-profile-content-block reader-profile-wanted-editor" onSubmit={saveWanted}><div className="reader-wanted-form-fields"><label><span>Título</span><input value={wantedDraft.title} onChange={(event) => changeWanted("title", event.target.value)} maxLength={255} required /></label><label><span>Autor o autora <small>(opcional)</small></span><input value={wantedDraft.author} onChange={(event) => changeWanted("author", event.target.value)} maxLength={255} /></label><label className="reader-wanted-detail-field"><span>Detalle <small>(opcional)</small></span><textarea value={wantedDraft.details} onChange={(event) => changeWanted("details", event.target.value)} maxLength={500} rows={3} placeholder="Ej.: edición, idioma o estado que buscás." /></label></div><div className="card-actions"><div className="card-actions-main">{wantedDraft.id ? <button type="button" className="secondary-button" onClick={cancelWantedEdit} disabled={wantedSaving}>Cancelar</button> : null}<button type="submit" className="primary-button" disabled={wantedSaving}>{wantedSaving ? "Guardando..." : wantedDraft.id ? "Guardar cambios" : "Agregar libro"}</button></div></div></form> : null}{!wantedLoading && atWantedLimit && !wantedDraft.id ? <p className="feedback">Llegaste al máximo de 20 libros. Podés editar o quitar uno para agregar otro.</p> : null}{!wantedLoading && wantedBooks.length === 0 ? <EmptyState compact title="Tu lista todavía está vacía">Sumá esos libros que esperás cruzarte en una librería.</EmptyState> : <div className="reader-wanted-dashboard-list reader-profile-content-block reader-profile-wanted-list">{wantedBooks.map((item) => <article key={item.id} className="dashboard-card reader-wanted-dashboard-item"><div><h3>{item.title}</h3>{item.author ? <p>{item.author}</p> : null}{item.details ? <p className="reader-wanted-details">{item.details}</p> : null}</div><div className="card-actions"><button type="button" className="secondary-button" onClick={() => setWantedDraft(createWantedBookDraft(item))} disabled={wantedSaving}>Editar</button><button type="button" className="secondary-button" onClick={() => removeWanted(item.id)} disabled={wantedSaving}>Quitar</button></div></article>)}</div>}{wantedStatus ? <p className="feedback" role="status">{wantedStatus}</p> : null}</section>
     <section className="reader-profile-tab-panel reader-reading-clubs-dashboard" hidden={section !== "clubs"}><div className="section-heading"><div><p className="section-label">📖 CLUB DE LECTURA</p><h2>Compartí tus encuentros</h2><p>Creá, publicá y compartí los clubes que organizás con la comunidad Bookia.</p></div></div><ReadingClubManager host={profile.slug ? { type: "reader", slug: profile.slug } : null} hostName={profile.display_name} source="reader_profile_reading_clubs" genres={genres} genresLoading={genresLoading} genresError={genresError} formClassName="dashboard-card reader-profile-content-block" canPublish /></section>
     <aside className="dashboard-card author-profile-invitation" hidden={section !== "info" || authorIsActive}><div><p className="section-label">¿ESCRIBÍS LIBROS?</p><h2>Publicá tus libros en Bookia</h2><p>Activá gratis tu perfil de autor/a y preparate para compartir tus obras.</p></div><AppLink className="secondary-button" href={buildReaderProfileUrl("author")}>Conocer más</AppLink></aside>
-    {section === "author" ? <AuthorProfileSection authorProfile={authorProfile} readerProfile={profile} genres={genres} accepted={authorAccepted} onAcceptedChange={setAuthorAccepted} onActivate={activateAuthor} onDeactivate={deactivateAuthor} pending={authorPending} feedback={authorFeedback} /> : null}
+    {section === "author" ? <AuthorProfileSection authorProfile={authorProfile} readerProfile={profile} genres={genres} accepted={authorAccepted} onAcceptedChange={setAuthorAccepted} onActivate={activateAuthor} onDeactivate={deactivateAuthor} onSaveWhatsApp={saveAuthorWhatsApp} whatsappPhone={authorWhatsAppPhone} onWhatsAppPhoneChange={setAuthorWhatsAppPhone} pending={authorPending} feedback={authorFeedback} /> : null}
   </section>;
 }

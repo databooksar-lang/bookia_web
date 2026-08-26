@@ -5703,6 +5703,22 @@ textarea:focus {
   background: rgba(240, 246, 239, 0.68);
 }
 
+.author-profile-settings > div {
+  flex: 1 1 320px;
+}
+
+.author-profile-settings form {
+  display: grid;
+  flex: 0 1 300px;
+  gap: 8px;
+}
+
+.author-profile-settings form label {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
 .author-profile-settings .feedback {
   align-self: center;
   margin: 0;
@@ -5746,6 +5762,11 @@ textarea:focus {
 
   .author-book-form-grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .author-profile-settings form,
+  .author-profile-settings form .secondary-button {
+    width: 100%;
   }
 
   .author-book-field-wide {
