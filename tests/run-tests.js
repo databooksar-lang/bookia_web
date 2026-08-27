@@ -43,6 +43,7 @@ import { registerPendingReaderActionTests } from "./pendingReaderAction.test.js"
 import { registerProgressiveReaderAuthIntegrationTests } from "./progressiveReaderAuthIntegration.test.js";
 import { registerDashboardMetricsPresentationTests } from "./dashboardMetricsPresentation.test.js";
 import { registerAuthContactGateTests } from "./authContactGate.test.js";
+import { registerTiendanubeIntegrationStateTests } from "./tiendanubeIntegrationState.test.js";
 
 import { registerDashboardNavigationStateTests } from './dashboardNavigationState.test.js';
 
@@ -174,6 +175,7 @@ registerPendingReaderActionTests((name, fn) => tests.push([name, fn]));
 registerProgressiveReaderAuthIntegrationTests((name, fn) => tests.push([name, fn]));
 registerDashboardMetricsPresentationTests((name, fn) => tests.push([name, fn]));
 registerAuthContactGateTests((name, fn) => tests.push([name, fn]));
+registerTiendanubeIntegrationStateTests((name, fn) => tests.push([name, fn]));
 registerPlansPricingStateTests((name, fn) => tests.push([name, fn]));
 registerAnalyticsStateTests((name, fn) => tests.push([name, fn]));
 registerRegisterStateTests((name, fn) => tests.push([name, fn]));
@@ -858,7 +860,7 @@ tests.push(["publishes terms and conditions for Bookia's marketplace role", () =
   assert.match(registerSource, /href="\/privacy"/);
   assert.match(privacySource, /href="\/terms"/);
   assert.match(termsSource, /Terminos y Condiciones/);
-  assert.match(termsSource, /Vigente desde el 24 de agosto de 2026/);
+  assert.match(termsSource, /Vigente desde el 26 de agosto de 2026/);
   assert.match(termsSource, /Marcelo Gabriel Gonzalez/);
   assert.match(termsSource, /bookia.app.admin@gmail.com/);
   assert.match(termsSource, /Bookia no vende libros directamente/);

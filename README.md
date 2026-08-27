@@ -105,6 +105,7 @@ La respuesta debe incluir `Cache-Control: no-cache`.
 - El backend debe permitir el origen del frontend en `FRONTEND_ORIGINS`.
 - Como el frontend usa `credentials: "include"`, revisa tambien `SESSION_COOKIE_SECURE`, la politica `SESSION_COOKIE_SAMESITE` y `SESSION_COOKIE_DOMAIN` solo si realmente necesitas compartir cookies entre subdominios.
 - Si despliegas este frontend con `BOOKIA_API_UPSTREAM_URL`, las llamadas a la API salen por el mismo origen del frontend bajo `/api` y normalmente ya no hace falta depender de cookies cross-site.
+- La pestaña `Integraciones` usa los endpoints protegidos `/api/integrations/tiendanube/*`. El inicio OAuth navega al backend; sincronizar y desconectar usan la cookie CSRF compartida. No configures credenciales de Tiendanube en el frontend.
 Configuracion de produccion de Bookia (`https://mybookia.app`):
 
 ```env
