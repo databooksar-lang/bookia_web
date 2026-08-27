@@ -1,4 +1,4 @@
-const DASHBOARD_SECTIONS = new Set(["profile", "new-book", "catalog", "clubs", "metrics", "subscription"]);
+const DASHBOARD_SECTIONS = new Set(["profile", "new-book", "catalog", "integrations", "clubs", "metrics", "subscription"]);
 const CATALOG_VIEWS = new Set(["active", "sold-out"]);
 const ANALYTICS_MODES = new Set(["month", "custom"]);
 

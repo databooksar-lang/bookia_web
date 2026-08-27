@@ -24,8 +24,8 @@ export function registerAuthContactGateTests(test) {
     const privacy = readFileSync(new URL("../src/pages/PrivacyPage.jsx", import.meta.url), "utf8");
 
     assert.doesNotMatch(terms, /contactar directamente a las librerias sin crear una cuenta/i);
-    assert.match(terms, /Vigente desde el 24 de agosto de 2026/);
-    assert.match(privacy, /Vigente desde el 24 de agosto de 2026/);
+    assert.match(terms, /Vigente desde el 26 de agosto de 2026/);
+    assert.match(privacy, /Vigente desde el 26 de agosto de 2026/);
     assert.match(terms, /contacto digital.*WhatsApp.*cuenta autenticada.*todas las superficies de descubrimiento/is);
     assert.match(terms, /inter.s.*club de lectura.*cuenta autenticada/is);
     assert.doesNotMatch(terms, /Esta regla no alcanza al descubrimiento anonimo/i);

@@ -5,7 +5,7 @@ export function CookiePolicyPage() {
     <article className="editorial-page about-page legal-page">
       <p className="section-label">Politica de Cookies</p>
       <h1>Cookies tecnicas para que Bookia funcione.</h1>
-      <p>Vigente desde el 23 de julio de 2026.</p>
+      <p>Vigente desde el 26 de agosto de 2026.</p>
 
       <h2>Responsable</h2>
       <p>Marcelo Gabriel Gonzalez, en el partido de Gral San Martin, Provincia de Buenos Aires. Consultas: <a href="mailto:bookia.app.admin@gmail.com">bookia.app.admin@gmail.com</a>.</p>
@@ -14,6 +14,7 @@ export function CookiePolicyPage() {
       <p>Bookia usa cookies tecnicas necesarias para iniciar sesion, mantener la cuenta abierta y proteger formularios contra solicitudes no autorizadas.</p>
       <p><strong>bookia_session</strong> identifica la sesion iniciada. <strong>bookia_csrf</strong> ayuda a validar acciones sensibles y reducir abusos de seguridad.</p>
       <p><strong>bookia_google_oauth</strong> protege temporalmente el inicio o registro con Google. <strong>bookia_google_owner_link</strong> protege temporalmente la vinculacion de una cuenta de libreria con Google. Ambas son cookies HTTP-only y duran hasta 10 minutos.</p>
+      <p><strong>bookia_tiendanube_oauth</strong> protege temporalmente la conexion de una libreria con Tiendanube, vincula el retorno con la misma sesion y evita solicitudes falsificadas. Es HTTP-only, se limita a la ruta de la integracion y dura hasta 10 minutos.</p>
 
       <h2>Finalidad y duracion</h2>
       <p>Estas cookies se usan solo para prestar el servicio, autenticar usuarios, proteger la plataforma y recordar temporalmente la sesion. Pueden durar hasta el cierre de sesion, el vencimiento configurado por Bookia o la eliminacion manual desde el navegador.</p>

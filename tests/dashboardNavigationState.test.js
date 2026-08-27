@@ -21,6 +21,7 @@ export function registerDashboardNavigationStateTests(test) {
     assert.equal(parseDashboardNavigation("?section=profile").section, "profile");
     assert.equal(parseDashboardNavigation("?section=new-book").section, "new-book");
     assert.equal(parseDashboardNavigation("?section=catalog").section, "catalog");
+    assert.equal(parseDashboardNavigation("?section=integrations").section, "integrations");
     assert.equal(parseDashboardNavigation("?section=clubs").section, "clubs");
     assert.equal(parseDashboardNavigation("?section=metrics").section, "metrics");
     assert.equal(parseDashboardNavigation("?section=subscription").section, "subscription");
@@ -47,6 +48,7 @@ export function registerDashboardNavigationStateTests(test) {
   test("builds canonical dashboard URLs", () => {
     assert.equal(buildDashboardUrl("profile"), "/dashboard?section=profile");
     assert.equal(buildDashboardUrl("new-book"), "/dashboard?section=new-book");
+    assert.equal(buildDashboardUrl("integrations"), "/dashboard?section=integrations");
     assert.equal(buildDashboardUrl("clubs"), "/dashboard?section=clubs");
     assert.equal(buildDashboardUrl("metrics"), "/dashboard?section=metrics");
     assert.equal(buildDashboardUrl("catalog"), "/dashboard?section=catalog&view=active");

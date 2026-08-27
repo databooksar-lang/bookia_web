@@ -151,6 +151,43 @@ p {
   color: #fffaf3;
   font-size: 1.65rem;
 }
+
+.integration-card {
+  border: 1px solid var(--border, #ded8ce);
+  border-left: 5px solid #6b48ff;
+  border-radius: 18px;
+  padding: clamp(20px, 3vw, 30px);
+  background: #fff;
+  display: grid;
+  gap: 20px;
+}
+
+.integration-card.integration-reconnect_required { border-left-color: #b33a2f; }
+.integration-card.integration-partial { border-left-color: #b57412; }
+.integration-card-head { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; }
+.integration-card-head h3 { margin: 4px 0 8px; font-size: 1.55rem; }
+.integration-card-head p:last-child { margin: 0; color: var(--muted, #6c665d); }
+.integration-status { border-radius: 999px; padding: 7px 12px; background: #eeeafd; color: #4b2db5; font-weight: 700; white-space: nowrap; }
+.integration-status.is-disconnected { background: #f0efec; color: #5d5952; }
+.integration-status.is-partial { background: #fff0ce; color: #7b4a00; }
+.integration-status.is-reconnect_required { background: #ffe3df; color: #8d231b; }
+.integration-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0; }
+.integration-summary div { background: #f8f6f2; border-radius: 12px; padding: 14px; }
+.integration-summary dt { color: var(--muted, #6c665d); font-size: .82rem; }
+.integration-summary dd { margin: 5px 0 0; font-weight: 700; }
+.integration-actions, .catalog-commerce, .public-commerce, .book-card-commerce { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.integration-note, .integration-empty { margin: 0; color: var(--muted, #6c665d); }
+.catalog-commerce { margin: 10px 0; }
+.catalog-commerce a, .book-card-commerce a { color: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.public-commerce { margin: 10px 0 18px; }
+.public-commerce > strong { font-size: 1.3rem; }
+.book-card-commerce { margin-top: 10px; font-size: .9rem; }
+.book-card-commerce strong { font-size: 1.05rem; }
+
+@media (max-width: 680px) {
+  .integration-card-head { flex-direction: column; }
+  .integration-summary { grid-template-columns: 1fr; }
+}
 .header-greeting {
   min-width: 0;
   max-width: min(22vw, 280px);
