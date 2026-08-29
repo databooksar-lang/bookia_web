@@ -716,6 +716,7 @@ tests.push(["renders the free trial alongside both paid plans and emphasizes Plu
     assert.match(publicMarkup, /Prueba gratis/);
     assert.match(publicMarkup, /por 15 dias/);
     assert.match(publicMarkup, /Hasta 10 libros/);
+    assert.equal((publicMarkup.match(/Integraciones con tiendas/g) || []).length, 3);
     assert.match(publicMarkup, /Manual/);
     assert.match(publicMarkup, /Plus AI/);
     assert.match(publicMarkup, /plans-plan-featured/);

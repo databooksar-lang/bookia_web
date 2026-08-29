@@ -1047,9 +1047,9 @@ export function PlansPage({ isRegistrationFlow = false }) {
     return pricingState.prices ? formatCommercialPrice(pricingState.prices[offeringCode]) : "Precio no disponible";
   };
   const plans = [
-    { code: "trial", name: "Prueba gratis", price: "Sin costo", detail: "por 15 dias", limit: "Hasta 10 libros", benefits: ["Carga manual desde web y Telegram", "Sin funcionalidades de IA"], tone: "base" },
-    { code: "initial", name: "Manual", price: priceLabel("initial"), detail: "/mes", limit: "Hasta 25 libros", benefits: ["Carga manual desde web y Telegram", "Sin funcionalidades de IA"], tone: "base" },
-    { code: "base", name: "Plus AI", price: priceLabel("base"), detail: "/mes", limit: "Hasta 40 libros", benefits: ["Todas las funcionalidades web", "Funcionalidades de IA incluidas", "Acceso al bot de Telegram"], tone: "featured" },
+    { code: "trial", name: "Prueba gratis", price: "Sin costo", detail: "por 15 dias", limit: "Hasta 10 libros", benefits: ["Carga manual desde web y Telegram", "Sin funcionalidades de IA", "Integraciones con tiendas"], tone: "base" },
+    { code: "initial", name: "Manual", price: priceLabel("initial"), detail: "/mes", limit: "Hasta 25 libros", benefits: ["Carga manual desde web y Telegram", "Sin funcionalidades de IA", "Integraciones con tiendas"], tone: "base" },
+    { code: "base", name: "Plus AI", price: priceLabel("base"), detail: "/mes", limit: "Hasta 40 libros", benefits: ["Todas las funcionalidades web", "Funcionalidades de IA incluidas", "Acceso al bot de Telegram", "Integraciones con tiendas"], tone: "featured" },
   ];
 
   return (
