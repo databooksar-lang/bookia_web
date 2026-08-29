@@ -956,10 +956,10 @@ export function BookstoresPage() {
           <h1>Tu catálogo, frente a lectores que buscan qué leer.</h1>
           <p>Publicá tus libros en Bookia, recibí consultas directas y hacé visible tu librería en una comunidad de lectores.</p>
           <div className="bookstores-hero-actions">
-            <AppLink className="primary-button" href="/plans?register=bookstore" onClick={() => trackAcquisitionEvent("bookstore_trial_started")}>Empezar 30 días gratis <ArrowIcon /></AppLink>
+            <AppLink className="primary-button" href="/plans?register=bookstore" onClick={() => trackAcquisitionEvent("bookstore_trial_started")}>Empezar 15 días gratis <ArrowIcon /></AppLink>
             <a className="outline-light-button" href={demoHref} target="_blank" rel="noopener noreferrer" onClick={() => trackAcquisitionEvent("bookstore_demo_requested")}>Solicitar demostración <WhatsAppIcon size={18} /></a>
           </div>
-          <p className="bookstores-trust-note">30 días gratis. Luego, suscripción mensual; podés cancelarla desde Bookia.</p>
+          <p className="bookstores-trust-note">15 días gratis. Luego, suscripción mensual; podés cancelarla desde Bookia.</p>
         </div>
         <div className="bookstores-hero-art" aria-hidden="true"><img className="bookstores-hero-image" src="/images/bookstores-hero-library.png" alt="" /></div>
       </section>
@@ -984,7 +984,7 @@ export function BookstoresPage() {
         <div className="bookstores-ai-card"><p>GESTIÓN MÁS SIMPLE</p><h3>Menos tiempo cargando, más tiempo entre libros.</h3><ul><li>Carga desde foto</li><li>Autocompletado con IA cuando corresponda</li><li>Perfil público para tu librería</li><li>Promocioná novedades y clubes de lectura.</li></ul></div>
       </section>
 
-      <section className="bookstore-cta bookstores-final-cta"><div><p className="section-label">PARA LIBRERÍAS</p><h2>¿Preferís verlo antes de empezar?</h2><p>Pedinos una demostración y conocé cómo cargar, mostrar y compartir tu catálogo.</p></div><div className="bookstores-final-actions"><a className="light-button" href={demoHref} target="_blank" rel="noopener noreferrer" onClick={() => trackAcquisitionEvent("bookstore_demo_requested")}>Solicitar demostración por WhatsApp <WhatsAppIcon size={18} /></a><AppLink className="outline-light-button" href="/plans?register=bookstore" onClick={() => trackAcquisitionEvent("bookstore_trial_started")}>Empezar 30 días gratis <ArrowIcon /></AppLink></div></section>
+      <section className="bookstore-cta bookstores-final-cta"><div><p className="section-label">PARA LIBRERÍAS</p><h2>¿Preferís verlo antes de empezar?</h2><p>Pedinos una demostración y conocé cómo cargar, mostrar y compartir tu catálogo.</p></div><div className="bookstores-final-actions"><a className="light-button" href={demoHref} target="_blank" rel="noopener noreferrer" onClick={() => trackAcquisitionEvent("bookstore_demo_requested")}>Solicitar demostración por WhatsApp <WhatsAppIcon size={18} /></a><AppLink className="outline-light-button" href="/plans?register=bookstore" onClick={() => trackAcquisitionEvent("bookstore_trial_started")}>Empezar 15 días gratis <ArrowIcon /></AppLink></div></section>
     </div>
   );
 }
@@ -1047,7 +1047,7 @@ export function PlansPage({ isRegistrationFlow = false }) {
     return pricingState.prices ? formatCommercialPrice(pricingState.prices[offeringCode]) : "Precio no disponible";
   };
   const plans = [
-    { code: "trial", name: "Prueba gratis", price: "Sin costo", detail: "por 30 dias", limit: "Hasta 10 libros", benefits: ["Carga manual desde web y Telegram", "Sin funcionalidades de IA"], tone: "base" },
+    { code: "trial", name: "Prueba gratis", price: "Sin costo", detail: "por 15 dias", limit: "Hasta 10 libros", benefits: ["Carga manual desde web y Telegram", "Sin funcionalidades de IA"], tone: "base" },
     { code: "initial", name: "Manual", price: priceLabel("initial"), detail: "/mes", limit: "Hasta 25 libros", benefits: ["Carga manual desde web y Telegram", "Sin funcionalidades de IA"], tone: "base" },
     { code: "base", name: "Plus AI", price: priceLabel("base"), detail: "/mes", limit: "Hasta 40 libros", benefits: ["Todas las funcionalidades web", "Funcionalidades de IA incluidas", "Acceso al bot de Telegram"], tone: "featured" },
   ];
@@ -1055,7 +1055,7 @@ export function PlansPage({ isRegistrationFlow = false }) {
   return (
     <div className="editorial-page plans-page">
       <section className="plans-hero">
-        <div className="plans-hero-copy"><p className="section-label">Planes para librerias</p><h1>Una vidriera que crece con tu catalogo<span>.</span></h1><p>{isRegistrationFlow ? "Elegi el plan que mejor acompana a tu libreria. La prueba de 30 dias se activa automaticamente." : "Empeza sin costo, mostra tus libros y elegi la forma de carga que mejor funciona para vos."}</p></div>
+        <div className="plans-hero-copy"><p className="section-label">Planes para librerias</p><h1>Una vidriera que crece con tu catalogo<span>.</span></h1><p>{isRegistrationFlow ? "Elegi el plan que mejor acompana a tu libreria. La prueba de 15 dias se activa automaticamente." : "Empeza sin costo, mostra tus libros y elegi la forma de carga que mejor funciona para vos."}</p></div>
         <div className="plans-hero-art" aria-hidden="true"><img src="/images/plans-books.png" alt="" /></div>
       </section>
       <section className="plans-pricing" aria-label="Planes de Bookia">
