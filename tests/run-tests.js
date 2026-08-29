@@ -351,7 +351,7 @@ tests.push(["keeps plan selection inside the bookstore registration flow", () =>
   assert.match(plansSource, /isRegistrationFlow/);
   assert.match(plansSource, /\{ code: "trial", name: "Prueba gratis"/);
   assert.doesNotMatch(plansSource, /plans-trial-banner/);
-  assert.match(plansSource, /por 30 dias/);
+  assert.match(plansSource, /por 15 dias/);
   assert.match(plansSource, /Hasta 10 libros/);
   assert.match(plansSource, /\{ code: "initial", name: "Manual"/);
   assert.match(plansSource, /\{ code: "base", name: "Plus AI"/);
@@ -714,7 +714,7 @@ tests.push(["renders the free trial alongside both paid plans and emphasizes Plu
     const registrationMarkup = renderToStaticMarkup(createElement(publicPages.PlansPage, { isRegistrationFlow: true }));
 
     assert.match(publicMarkup, /Prueba gratis/);
-    assert.match(publicMarkup, /por 30 dias/);
+    assert.match(publicMarkup, /por 15 dias/);
     assert.match(publicMarkup, /Hasta 10 libros/);
     assert.match(publicMarkup, /Manual/);
     assert.match(publicMarkup, /Plus AI/);
@@ -899,7 +899,7 @@ tests.push(["publishes terms and conditions for Bookia's marketplace role", () =
   assert.doesNotMatch(privacySource, /sin cookies de analitica ni identificadores personales de visitantes/);
   assert.match(termsSource, /eventos del embudo.*agregados/s);
   assert.match(termsSource, /no prueban que haya existido una operacion comercial/);
-  assert.match(termsSource, /prueba gratis de 30 dias/);
+  assert.match(termsSource, /prueba gratis de 15 dias/);
   assert.match(termsSource, /7 dias/);
   assert.match(termsSource, /oculta la vidriera y el catalogo publico/);
   assert.match(termsSource, /reactivar la suscripcion desde su panel/);
