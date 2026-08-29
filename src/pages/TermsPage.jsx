@@ -5,7 +5,7 @@ export function TermsPage() {
     <article className="editorial-page about-page legal-page">
       <p className="section-label">Terminos y Condiciones</p>
       <h1>Reglas claras para buscar, publicar y conectar.</h1>
-      <p>Vigente desde el 26 de agosto de 2026.</p>
+      <p>Vigente desde el 28 de agosto de 2026.</p>
       <p>Este documento resume las condiciones de uso de Bookia y no reemplaza asesoramiento legal profesional.</p>
 
       <h2>Responsable</h2>
@@ -29,6 +29,7 @@ export function TermsPage() {
       <h2>Catalogos, publicaciones y contacto</h2>
       <p>Las librerias son responsables por la exactitud de nombres, autores, editoriales, fotos, descripciones, disponibilidad, estado del libro, precios informados por fuera de Bookia y datos de contacto publicados. Bookia puede ocultar, corregir o dar de baja contenido cuando detecte errores, abuso, datos falsos, infracciones o riesgos para la plataforma.</p>
       <p>Una libreria puede autorizar a Bookia a leer productos de su Tiendanube. La libreria declara que administra esa tienda y que puede importar y publicar esos datos. Tiendanube controla titulo, precio, moneda, stock, disponibilidad, enlace e imagen externa de los productos sincronizados; Bookia permite enriquecer datos editoriales y prioriza imagenes locales. La libreria debe revisar la importacion y puede desconectarla en cualquier momento.</p>
+      <p>La desconexion iniciada desde Bookia conserva el catalogo importado. Una solicitud de privacidad validada y enviada por Tiendanube para eliminar una tienda borra definitivamente la conexion y los productos importados asociados. Bookia no importa ni almacena clientes o pedidos de Tiendanube.</p>
 
       <h2>Bookia no vende libros directamente</h2>
       <p>Bookia no vende libros directamente, no cobra al lector, no procesa tarjetas y no almacena datos de medios de pago. Si un producto ofrece “Comprar en Tiendanube”, el enlace abre una tienda externa y la compra, el pago y sus condiciones son procesados por Tiendanube y la libreria. En los demas casos, la operacion comercial se acuerda directamente entre la persona interesada y la libreria, incluyendo precio final, reserva, disponibilidad real, entrega, retiro, envio, cambios, devoluciones, garantias y reclamos relacionados con el libro.</p>
