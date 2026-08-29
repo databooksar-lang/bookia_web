@@ -1059,6 +1059,12 @@ button:disabled {
   overflow: hidden;
 }
 
+.legal-page {
+  width: min(860px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 72px 0 96px;
+}
+
 .page-hero {
   width: min(1100px, calc(100% - 48px));
   margin: 0 auto;

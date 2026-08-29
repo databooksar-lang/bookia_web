@@ -48,7 +48,10 @@ export function registerTiendanubeIntegrationStateTests(test) {
 
   test("documents Tiendanube data, external purchases, and temporary OAuth cookie", () => {
     assert.match(privacySource, /token de acceso cifrado/);
+    assert.match(privacySource, /store\/redact/);
+    assert.match(privacySource, /no solicita ni conserva datos de clientes o pedidos/i);
     assert.match(termsSource, /procesados por Tiendanube y la libreria/);
+    assert.match(termsSource, /solicitud de privacidad validada/i);
     assert.match(cookiesSource, /bookia_tiendanube_oauth/);
   });
 }

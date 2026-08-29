@@ -851,6 +851,7 @@ tests.push(["publishes terms and conditions for Bookia's marketplace role", () =
   const privacySource = readFileSync(new URL("../src/pages/PrivacyPage.jsx", import.meta.url), "utf8");
   const siteChromeSource = readFileSync(new URL("../src/components/SiteChrome.jsx", import.meta.url), "utf8");
   const termsSource = readFileSync(new URL("../src/pages/TermsPage.jsx", import.meta.url), "utf8");
+  const editorialStyles = readFileSync(new URL("../src/editorial.css", import.meta.url), "utf8");
 
   assert.match(appSource, /TermsPage/);
   assert.match(appSource, /pathname === "\/terms"/);
@@ -860,7 +861,7 @@ tests.push(["publishes terms and conditions for Bookia's marketplace role", () =
   assert.match(registerSource, /href="\/privacy"/);
   assert.match(privacySource, /href="\/terms"/);
   assert.match(termsSource, /Terminos y Condiciones/);
-  assert.match(termsSource, /Vigente desde el 26 de agosto de 2026/);
+  assert.match(termsSource, /Vigente desde el 28 de agosto de 2026/);
   assert.match(termsSource, /Marcelo Gabriel Gonzalez/);
   assert.match(termsSource, /bookia.app.admin@gmail.com/);
   assert.match(termsSource, /Bookia no vende libros directamente/);
@@ -870,6 +871,8 @@ tests.push(["publishes terms and conditions for Bookia's marketplace role", () =
   assert.match(termsSource, /acceso con Google/);
   assert.match(termsSource, /Politica de Privacidad/);
   assert.match(termsSource, /no solicita previamente el correo pagador/);
+  assert.match(editorialStyles, /\.legal-page\s*\{[^}]*width:\s*min\(860px, calc\(100% - 48px\)\)/s);
+  assert.match(editorialStyles, /\.legal-page\s*\{[^}]*margin:\s*0 auto/s);
   assert.match(privacySource, /correo de la cuenta pagadora de Mercado Pago/);
   assert.match(privacySource, /Google/);
   assert.match(privacySource, /correo verificado/);
