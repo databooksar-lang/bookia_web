@@ -79,6 +79,35 @@ Notas:
 4. Publica el frontend en tu dominio, por ejemplo `bookia.com` o `www.bookia.com`.
 5. Verifica que al refrescar rutas internas la app siga cargando sin `404`.
 
+### Watch Paths De `bookia_web`
+
+`production` es el unico ambiente permanente. En **Railway -> Service -> Settings -> Build -> Watch Paths**, configura estos patrones para que el servicio se despliegue solo cuando cambie un archivo que afecta su build o runtime:
+
+```text
+/src/**
+/public/**
+/index.html
+/package.json
+/package-lock.json
+/vite.config.js
+/Dockerfile
+/Caddyfile
+/docker-entrypoint.sh
+/.dockerignore
+/*.png
+```
+
+Esta lista es la fuente de verdad de la politica. Si agregas o mueves un archivo que Vite, Docker, Caddy o el contenedor necesitan para construir o ejecutar la web, agrega el nuevo path aqui y en Railway en el mismo cambio.
+
+Los cambios exclusivos en tests, `README.md` u otra documentacion no deben provocar deployments. Si el mismo commit tambien modifica un archivo incluido en los patrones, Railway desplegara `bookia_web`.
+
+Ejemplos:
+
+- `src/App.jsx`, cualquier archivo bajo `public/` o un archivo de configuracion listado: despliega `bookia_web`.
+- `README.md` o `tests/run-tests.js` sin otros cambios: no despliega el servicio.
+
+Para verificar la configuracion, guarda los patrones y revisa un commit que solo cambie documentacion. En la actividad de `bookia_web`, Railway debe mostrar el deployment como omitido por no coincidir con los watch paths. Luego confirma que un cambio controlado bajo `src/` si inicia un deployment.
+
 ### Verificacion de cache tras publicar
 
 El HTML de la SPA y `runtime-config.js` se revalidan en cada visita para que las personas usuarias reciban el despliegue vigente. Los assets bajo `/assets/` tienen nombres versionados por Vite y se almacenan por un ano.

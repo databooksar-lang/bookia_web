@@ -66,4 +66,6 @@ Review Terms, Privacy, Cookies, and README when a change affects:
 - Preserve links among `/terms`, `/privacy`, and `/cookies` when editing legal pages or registration copy.
 - Keep README focused on setup, deployment, environment variables, and operations.
 - Keep AGENTS.md focused on agent orientation and guardrails.
+- When adding or moving any build input, runtime file, dependency manifest, or deployment configuration, review the Railway watch patterns documented in `README.md` and update them in Railway at the same time.
+- Keep tests, README files, and other documentation outside Railway watch patterns unless they also become build or runtime inputs.
 - Add or update targeted tests for user-visible routing, registration copy, API route detection, legal links, or documentation-sensitive behavior.
