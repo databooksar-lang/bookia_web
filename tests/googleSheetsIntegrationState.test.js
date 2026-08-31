@@ -10,6 +10,9 @@ import {
 
 const dashboardSource = readFileSync(new URL("../src/pages/DashboardPage.jsx", import.meta.url), "utf8");
 const panelSource = readFileSync(new URL("../src/components/GoogleSheetsIntegrationPanel.jsx", import.meta.url), "utf8");
+const privacySource = readFileSync(new URL("../src/pages/PrivacyPage.jsx", import.meta.url), "utf8");
+const termsSource = readFileSync(new URL("../src/pages/TermsPage.jsx", import.meta.url), "utf8");
+const cookiesSource = readFileSync(new URL("../src/pages/CookiePolicyPage.jsx", import.meta.url), "utf8");
 
 
 export function registerGoogleSheetsIntegrationStateTests(test) {
@@ -37,5 +40,14 @@ export function registerGoogleSheetsIntegrationStateTests(test) {
     assert.match(panelSource, /apiFetch\("\/integrations\/google-sheets", \{ method: "DELETE" \}\)/);
     assert.match(panelSource, /Sincronizar ahora/);
     assert.match(panelSource, /domingos a las 03:00/);
+  });
+
+  test("documents Google Sheets access, encrypted tokens, schedule, and temporary cookie", () => {
+    assert.match(privacySource, /Google Sheets/);
+    assert.match(privacySource, /token de actualizacion cifrado/i);
+    assert.match(privacySource, /sincronizacion semanal/i);
+    assert.match(termsSource, /Google Sheets/);
+    assert.match(termsSource, /filas? eliminadas?.*ocult/i);
+    assert.match(cookiesSource, /bookia_google_sheets_oauth/);
   });
 }
