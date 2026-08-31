@@ -177,6 +177,9 @@ p {
 .integration-summary dd { margin: 5px 0 0; font-weight: 700; }
 .integration-actions, .catalog-commerce, .public-commerce, .book-card-commerce { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .integration-note, .integration-empty { margin: 0; color: var(--muted, #6c665d); }
+.integration-connect-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: end; }
+.integration-connect-form label { display: grid; gap: 7px; min-width: 0; }
+.integration-connect-form input { width: 100%; }
 .catalog-commerce { margin: 10px 0; }
 .catalog-commerce a, .book-card-commerce a { color: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 .public-commerce { margin: 10px 0 18px; }
@@ -187,6 +190,7 @@ p {
 @media (max-width: 680px) {
   .integration-card-head { flex-direction: column; }
   .integration-summary { grid-template-columns: 1fr; }
+  .integration-connect-form { grid-template-columns: 1fr; }
 }
 .header-greeting {
   min-width: 0;

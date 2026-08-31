@@ -18,6 +18,7 @@ import { normalizeFollowerMetrics } from "../analyticsState";
 import { ReadingClubManager } from "../components/ReadingClubManager";
 import DashboardMetrics from "../components/DashboardMetrics";
 import { TiendanubeIntegrationPanel } from "../components/TiendanubeIntegrationPanel";
+import { GoogleSheetsIntegrationPanel } from "../components/GoogleSheetsIntegrationPanel";
 import { formatImportedCommerce } from "../tiendanubeIntegrationState";
 
 const EMPTY_ITEM = {
@@ -170,6 +171,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
   const { section, catalogView, analytics: analyticsFilter } = parseDashboardNavigation(locationSearch, getArgentinaToday());
   const registrationPending = new URLSearchParams(locationSearch).get("registered") === "pending";
   const tiendanubeCallbackResult = new URLSearchParams(locationSearch).get("tiendanube") || "";
+  const googleSheetsCallbackResult = new URLSearchParams(locationSearch).get("google_sheets") || "";
   const [items, setItems] = useState([]);
   const [titleQuery, setTitleQuery] = useState("");
   const [authorQuery, setAuthorQuery] = useState("");
@@ -621,6 +623,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
         className="dashboard-integrations-panel"
       >
         <TiendanubeIntegrationPanel isActive={section === "integrations"} callbackResult={tiendanubeCallbackResult} canManageCatalog={billingAccess.canManageCatalog} />
+        <GoogleSheetsIntegrationPanel isActive={section === "integrations"} callbackResult={googleSheetsCallbackResult} canManageCatalog={billingAccess.canManageCatalog} />
       </DashboardPanel>
 
       <DashboardPanel

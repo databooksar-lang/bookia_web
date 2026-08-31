@@ -44,6 +44,7 @@ import { registerProgressiveReaderAuthIntegrationTests } from "./progressiveRead
 import { registerDashboardMetricsPresentationTests } from "./dashboardMetricsPresentation.test.js";
 import { registerAuthContactGateTests } from "./authContactGate.test.js";
 import { registerTiendanubeIntegrationStateTests } from "./tiendanubeIntegrationState.test.js";
+import { registerGoogleSheetsIntegrationStateTests } from "./googleSheetsIntegrationState.test.js";
 
 import { registerDashboardNavigationStateTests } from './dashboardNavigationState.test.js';
 
@@ -176,6 +177,7 @@ registerProgressiveReaderAuthIntegrationTests((name, fn) => tests.push([name, fn
 registerDashboardMetricsPresentationTests((name, fn) => tests.push([name, fn]));
 registerAuthContactGateTests((name, fn) => tests.push([name, fn]));
 registerTiendanubeIntegrationStateTests((name, fn) => tests.push([name, fn]));
+registerGoogleSheetsIntegrationStateTests((name, fn) => tests.push([name, fn]));
 registerPlansPricingStateTests((name, fn) => tests.push([name, fn]));
 registerAnalyticsStateTests((name, fn) => tests.push([name, fn]));
 registerRegisterStateTests((name, fn) => tests.push([name, fn]));
