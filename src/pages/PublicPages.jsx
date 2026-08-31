@@ -23,6 +23,7 @@ import { ReaderAuthorBadge, ReaderAuthorBooks, ReaderMonogram, ReaderPassport, R
 import { ReaderAuthorBookDetailModal } from "../components/ReaderPublicProfile";
 import { getSharedAuthorBookId } from "../authorBookSharingState";
 import { formatImportedCommerce } from "../tiendanubeIntegrationState";
+import { getExternalCatalogPresentation, isExternalCatalogItem } from "../externalCatalogState";
 import { BookCover } from "../components/BookCover";
 import { activateDialogFocus, AuthRequiredDialog, handleActionDialogBackdrop, handleActionDialogEscape, isolateDialogBackground, ReaderActionContinuationDialog, trapDialogFocus } from "../components/AuthRequiredDialog";
 import { ArrowIcon, BookIcon, LocationIcon, SearchIcon, StoreIcon, WhatsAppIcon } from "../components/Icons";
@@ -30,6 +31,30 @@ import { ArrowIcon, BookIcon, LocationIcon, SearchIcon, StoreIcon, WhatsAppIcon 
 export { activateDialogFocus, AuthRequiredDialog, handleActionDialogBackdrop, handleActionDialogEscape, isolateDialogBackground, trapDialogFocus };
 
 export const PENDING_ACTION_PERSISTENCE_ERROR = "La acción no se pudo guardar para continuar. Revisá la configuración del navegador e intentá nuevamente.";
+
+function ExternalBookCommerce({ item, compact = false }) {
+  if (!isExternalCatalogItem(item)) return null;
+  const externalCatalog = getExternalCatalogPresentation(item);
+  const actionLabel = item.source === "tiendanube" ? "Comprar en Tiendanube" : externalCatalog.actionLabel;
+  const commerce = formatImportedCommerce(item);
+  return (
+    <div className={compact ? "book-card-commerce" : "public-commerce"}>
+      <strong>{commerce.price}</strong>
+      <span>{commerce.stock}</span>
+      {item.purchase_url ? (
+        <a
+          className={compact ? undefined : "primary-button"}
+          href={item.purchase_url}
+          target="_blank"
+          rel="noreferrer"
+          onClick={compact ? (event) => event.stopPropagation() : undefined}
+        >
+          {actionLabel}{compact ? null : <> <ArrowIcon size={14} /></>}
+        </a>
+      ) : null}
+    </div>
+  );
+}
 
 export function dismissReaderActionDialog(action, closeDialog, options) {
   const cancelled = cancelPendingReaderAction(action, options);
@@ -1183,7 +1208,7 @@ export function BookDetailModal({ selectedBook, selectedBookImageUrl, onImageCha
             </div>
             <h2 id="book-detail-title">{selectedBook.title}</h2>
             <p className="book-detail-author">{selectedBook.author || "Autor no visible"}</p>
-            {selectedBook.source === "tiendanube" ? <div className="public-commerce"><strong>{formatImportedCommerce(selectedBook).price}</strong><span>{formatImportedCommerce(selectedBook).stock}</span>{selectedBook.purchase_url ? <a className="primary-button" href={selectedBook.purchase_url} target="_blank" rel="noreferrer">Comprar en Tiendanube <ArrowIcon size={14} /></a> : null}</div> : null}
+            <ExternalBookCommerce item={selectedBook} />
             <BookGenreTags item={selectedBook} />
             <FavoriteBookButton itemId={selectedBook.id} bookstoreId={bookstore?.id} isFavorite={favorites?.favoriteIds.has(selectedBook.id)} isPending={favorites?.pendingIds.has(selectedBook.id)} isSessionLoading={isSessionLoading} onToggle={favorites?.toggleFavorite || (() => {})} />
             <div className="book-detail-section">
@@ -1359,7 +1384,7 @@ export function BookstorePage({ slug, me, refreshSession }) {
                   </div>
                   <h3>{item.title}</h3>
                   <p>{item.author || "Autor no visible"}</p>
-                  {item.source === "tiendanube" ? <div className="book-card-commerce"><strong>{formatImportedCommerce(item).price}</strong><span>{formatImportedCommerce(item).stock}</span>{item.purchase_url ? <a href={item.purchase_url} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()}>Comprar en Tiendanube</a> : null}</div> : null}
+                  <ExternalBookCommerce item={item} compact />
                   <BookGenreTags item={item} />
                   {item.description ? <p className="book-card-description">{item.description}</p> : <p className="book-card-description">Sin descripcion visible.</p>}
                   <small>{bookEditionLine(item)} / {bookStatusLabel(item.book_status)}</small>

@@ -20,6 +20,7 @@ import DashboardMetrics from "../components/DashboardMetrics";
 import { TiendanubeIntegrationPanel } from "../components/TiendanubeIntegrationPanel";
 import { GoogleSheetsIntegrationPanel } from "../components/GoogleSheetsIntegrationPanel";
 import { formatImportedCommerce } from "../tiendanubeIntegrationState";
+import { getExternalCatalogPresentation, isExternalCatalogItem } from "../externalCatalogState";
 
 const EMPTY_ITEM = {
   title: "",
@@ -97,6 +98,20 @@ const EMPTY_ANALYTICS = {
   top_reading_clubs: [],
   follower_metrics: { active_followers: 0, follows: 0, unfollows: 0, net_change: 0 },
 };
+
+function ExternalCatalogCommerce({ item }) {
+  if (!isExternalCatalogItem(item)) return null;
+  const externalCatalog = getExternalCatalogPresentation(item);
+  const commerce = formatImportedCommerce(item);
+  return (
+    <div className="catalog-commerce">
+      <span className="status-pill" aria-label={item.source === "tiendanube" ? "Origen: Tiendanube" : "Origen: Google Sheets"}>Origen: {externalCatalog.sourceLabel}</span>
+      <strong>{commerce.price}</strong>
+      <span>{commerce.stock}</span>
+      {item.purchase_url ? <a href={item.purchase_url} target="_blank" rel="noreferrer">{externalCatalog.actionLabel}</a> : null}
+    </div>
+  );
+}
 
 function getArgentinaToday() {
   const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Argentina/Buenos_Aires", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
@@ -537,7 +552,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
               <div className="catalog-item-summary">{coverUrl ? <img src={coverUrl} alt={`Tapa de ${item.title}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : <span className="catalog-cover-placeholder"><BookIcon /></span>}<div><span className="catalog-id">Libro #{item.id}</span>{item.is_featured ? <span className="status-pill">Destacado</span> : null}<h3>{item.title}</h3><p>{item.author || "Autor no visible"}</p><p>Estado: {isEditing ? BOOK_STATUS_LABELS[normalizeBookStatus(draftItem.book_status)] : bookStatusLabel}</p></div>{isEditing ? <span className={`status-pill status-${draftItem.availability_status}`}>{AVAILABILITY_LABELS[draftItem.availability_status] || statusLabel}</span> : <span className={`status-pill status-${normalizeEditableAvailability(item.availability_status)}`}>{statusLabel}</span>}</div>
               {item.genres?.length ? <div className="store-tags" aria-label="Generos del libro">{item.genres.map((genre) => <span key={genre.id} className="store-tag">{genre.name}</span>)}</div> : null}
               {item.description ? <p className="catalog-item-description">{item.description}</p> : null}
-              {item.source === "tiendanube" ? <div className="catalog-commerce"><span className="status-pill">Origen: Tiendanube</span><strong>{formatImportedCommerce(item).price}</strong><span>{formatImportedCommerce(item).stock}</span>{item.purchase_url ? <a href={item.purchase_url} target="_blank" rel="noreferrer">Ver en Tiendanube</a> : null}</div> : null}
+              <ExternalCatalogCommerce item={item} />
               {isEditing ? <fieldset className="dashboard-form-grid dashboard-form-grid-extended catalog-edit-fields" disabled={catalogActionsBusy}><label>Titulo<input value={draftItem.title} onChange={(event) => setDraftItem((current) => ({ ...current, title: event.target.value }))} /></label><label>Autor<input value={draftItem.author} onChange={(event) => setDraftItem((current) => ({ ...current, author: event.target.value }))} /></label><label>Disponibilidad<select value={draftItem.availability_status} onChange={(event) => setDraftItem((current) => ({ ...current, availability_status: event.target.value }))}>{EDITABLE_AVAILABILITY_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label><label>Editorial<input value={draftItem.publisher} onChange={(event) => setDraftItem((current) => ({ ...current, publisher: event.target.value }))} /></label><label>Idioma<input value={draftItem.language} onChange={(event) => setDraftItem((current) => ({ ...current, language: event.target.value }))} /></label><label>Estado<select value={draftItem.book_status} onChange={(event) => setDraftItem((current) => ({ ...current, book_status: event.target.value }))}>{EDITABLE_BOOK_STATUS_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label><GenreSelector genres={genres} genresLoading={genresLoading} genresError={genresError} selectedGenreIds={draftItem.genre_ids || []} onChange={(genreIds) => setDraftItem((current) => ({ ...current, genre_ids: genreIds }))} /><label className="dashboard-field-wide">Descripcion<textarea value={draftItem.description} onChange={(event) => setDraftItem((current) => ({ ...current, description: event.target.value }))} rows={4} /></label></fieldset> : null}
               {isEditing ? (
                 <div className="catalog-image-editor">
@@ -599,7 +614,7 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
                 <div className="catalog-item-summary">{coverUrl ? <img src={coverUrl} alt={`Tapa de ${item.title}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : <span className="catalog-cover-placeholder"><BookIcon /></span>}<div><span className="catalog-id">Libro #{item.id}</span><h3>{item.title}</h3><p>{item.author || "Autor no visible"}</p><p>Estado: {bookStatusLabel}</p></div><span className={`status-pill status-${item.availability_status}`}>{AVAILABILITY_LABELS[item.availability_status] || item.availability_status}</span></div>
                 {item.genres?.length ? <div className="store-tags" aria-label="Generos del libro">{item.genres.map((genre) => <span key={genre.id} className="store-tag">{genre.name}</span>)}</div> : null}
                 {item.description ? <p className="catalog-item-description">{item.description}</p> : null}
-                {item.source === "tiendanube" ? <div className="catalog-commerce"><span className="status-pill">Origen: Tiendanube</span><strong>{formatImportedCommerce(item).price}</strong><span>{formatImportedCommerce(item).stock}</span>{item.purchase_url ? <a href={item.purchase_url} target="_blank" rel="noreferrer">Ver en Tiendanube</a> : null}</div> : null}
+                <ExternalCatalogCommerce item={item} />
                 <div className="catalog-item-readonly">
                   <p><strong>Titulo:</strong> {item.title}</p>
                   <p><strong>Autor:</strong> {item.author || "Autor no visible"}</p>

@@ -6,6 +6,7 @@ import {
   getGoogleSheetsCallbackMessage,
   getGoogleSheetsViewState,
 } from "../src/googleSheetsIntegrationState.js";
+import { getExternalCatalogPresentation, isExternalCatalogItem } from "../src/externalCatalogState.js";
 
 
 const dashboardSource = readFileSync(new URL("../src/pages/DashboardPage.jsx", import.meta.url), "utf8");
@@ -40,6 +41,18 @@ export function registerGoogleSheetsIntegrationStateTests(test) {
     assert.match(panelSource, /apiFetch\("\/integrations\/google-sheets", \{ method: "DELETE" \}\)/);
     assert.match(panelSource, /Sincronizar ahora/);
     assert.match(panelSource, /domingos a las 03:00/);
+  });
+
+  test("presents Google Sheets commerce in dashboard and public catalog", () => {
+    assert.equal(isExternalCatalogItem({ source: "google_sheets" }), true);
+    assert.equal(isExternalCatalogItem({ source: null }), false);
+    assert.deepEqual(getExternalCatalogPresentation({ source: "google_sheets" }), {
+      sourceLabel: "Google Sheets",
+      actionLabel: "Ver opción de compra",
+    });
+    assert.match(dashboardSource, /Origen: \{externalCatalog\.sourceLabel\}/);
+    const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
+    assert.match(publicPagesSource, /externalCatalog\.actionLabel/);
   });
 
   test("documents Google Sheets access, encrypted tokens, schedule, and temporary cookie", () => {
