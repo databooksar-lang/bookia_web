@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { createServer } from "vite";
 
 import { isBookiaApiRoute } from "../src/apiRoutes.js";
-import { resolveApiUrl } from "../src/api.js";
+import { buildApiTransportOptions, resolveApiUrl } from "../src/api.js";
 import { buildSingleGenreIds, getSingleGenreValue } from "../src/genreSelection.js";
 import { getGenreSelectorState } from "../src/genreSelectorState.js";
 import { registerProfileEditorStateTests } from "./profileEditorState.test.js";
@@ -46,6 +46,7 @@ import { registerAuthContactGateTests } from "./authContactGate.test.js";
 import { registerTiendanubeIntegrationStateTests } from "./tiendanubeIntegrationState.test.js";
 import { registerGoogleSheetsIntegrationStateTests } from "./googleSheetsIntegrationState.test.js";
 import { registerMobilePlatformTests } from "./mobilePlatform.test.js";
+import { registerMobileSessionVaultTests } from "./mobileSessionVault.test.js";
 
 import { registerDashboardNavigationStateTests } from './dashboardNavigationState.test.js';
 
@@ -69,6 +70,36 @@ const tests = [
   }],
   ["does not duplicate the /api prefix for already-prefixed paths", () => {
     assert.equal(resolveApiUrl("/api/me"), "/api/me");
+  }],
+  ["uses bearer transport without cookies in the Android container", () => {
+    assert.deepEqual(
+      buildApiTransportOptions({
+        nativeAndroid: true,
+        options: { method: "POST" },
+        defaultHeaders: { "Content-Type": "application/json" },
+        mobileHeaders: { "X-Bookia-Client": "android", Authorization: "Bearer secure-token" },
+      }),
+      {
+        method: "POST",
+        credentials: "omit",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Bookia-Client": "android",
+          Authorization: "Bearer secure-token",
+        },
+      },
+    );
+  }],
+  ["keeps cookie transport for the web application", () => {
+    assert.deepEqual(
+      buildApiTransportOptions({
+        nativeAndroid: false,
+        options: { method: "GET" },
+        defaultHeaders: { Accept: "application/json" },
+        mobileHeaders: { "X-Bookia-Client": "android" },
+      }),
+      { method: "GET", credentials: "include", headers: { Accept: "application/json" } },
+    );
   }],
   ["generates a same-origin Caddy proxy when BOOKIA_API_UPSTREAM_URL is configured", () => {
     const entrypoint = readFileSync(new URL("../docker-entrypoint.sh", import.meta.url), "utf8");
@@ -180,6 +211,7 @@ registerAuthContactGateTests((name, fn) => tests.push([name, fn]));
 registerTiendanubeIntegrationStateTests((name, fn) => tests.push([name, fn]));
 registerGoogleSheetsIntegrationStateTests((name, fn) => tests.push([name, fn]));
 registerMobilePlatformTests((name, fn) => tests.push([name, fn]));
+registerMobileSessionVaultTests((name, fn) => tests.push([name, fn]));
 registerPlansPricingStateTests((name, fn) => tests.push([name, fn]));
 registerAnalyticsStateTests((name, fn) => tests.push([name, fn]));
 registerRegisterStateTests((name, fn) => tests.push([name, fn]));
