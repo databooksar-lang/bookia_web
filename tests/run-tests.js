@@ -47,6 +47,7 @@ import { registerTiendanubeIntegrationStateTests } from "./tiendanubeIntegration
 import { registerGoogleSheetsIntegrationStateTests } from "./googleSheetsIntegrationState.test.js";
 import { registerMobilePlatformTests } from "./mobilePlatform.test.js";
 import { registerMobileSessionVaultTests } from "./mobileSessionVault.test.js";
+import { registerMobilePushNotificationsTests } from "./mobilePushNotifications.test.js";
 
 import { registerDashboardNavigationStateTests } from './dashboardNavigationState.test.js';
 
@@ -212,6 +213,7 @@ registerTiendanubeIntegrationStateTests((name, fn) => tests.push([name, fn]));
 registerGoogleSheetsIntegrationStateTests((name, fn) => tests.push([name, fn]));
 registerMobilePlatformTests((name, fn) => tests.push([name, fn]));
 registerMobileSessionVaultTests((name, fn) => tests.push([name, fn]));
+registerMobilePushNotificationsTests((name, fn) => tests.push([name, fn]));
 registerPlansPricingStateTests((name, fn) => tests.push([name, fn]));
 registerAnalyticsStateTests((name, fn) => tests.push([name, fn]));
 registerRegisterStateTests((name, fn) => tests.push([name, fn]));

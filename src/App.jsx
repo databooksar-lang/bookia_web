@@ -16,6 +16,7 @@ import { ReaderProfilePage } from "./pages/ReaderProfilePage";
 import { BillingReturnPage } from "./pages/BillingReturnPage";
 import { getAccountDestination } from "./accountDestination";
 import { applyPendingReaderAction, completePendingReaderAuthentication, isAutoAppliedPendingReaderAction, readPendingReaderAction } from "./pendingReaderAction";
+import { pushNotificationsController } from "./mobile/pushNotifications";
 
 export default function App() {
   const { pathname, search } = useLocationState();
@@ -71,6 +72,9 @@ export default function App() {
       setMe(null);
       navigate("/login?reason=session-expired");
     });
+  }, []);
+  useEffect(() => {
+    pushNotificationsController.listen().catch(() => {});
   }, []);
 
 
