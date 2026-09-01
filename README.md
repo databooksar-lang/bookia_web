@@ -59,6 +59,8 @@ npm run mobile:build:debug
 
 El identificador de aplicación es `app.mybookia.mobile`. No versiones `android/app/google-services.json`, archivos `.jks`, `.keystore` ni credenciales de firma.
 
+Los App Links aceptan únicamente `https://mybookia.app` y `https://www.mybookia.app`. Antes de publicar, copia `public/.well-known/assetlinks.json.example` como `/.well-known/assetlinks.json` en ambos hosts y reemplaza el marcador por el fingerprint SHA-256 del certificado real de firma. Verifica la asociación en un dispositivo con `adb shell pm get-app-links app.mybookia.mobile`.
+
 ## Despliegue en Railway
 
 La recomendacion para Railway es desplegar este repo con el `Dockerfile` incluido.

@@ -305,7 +305,7 @@ function HeroSearch({ initialFilters, genres, genresLoading, onSearch, children 
       <div className="hero-books" aria-hidden="true"><img className="hero-illustration" src="/images/hero-bookia-discovery.webp" alt="" /></div>
       <form className="search-panel" onSubmit={submit} aria-label="Buscar libros">
         <p className="search-panel-heading">Buscá un libro</p>
-        <label className="search-field search-field-query"><span>¿Qué libro buscás?</span><span className="input-with-icon"><SearchIcon /><input value={filters.query} onChange={updateFilter("query")} placeholder="Ej.: Rayuela, Julio Cortázar o Sudamericana" /></span></label>
+        <label className="search-field search-field-query"><span>¿Qué libro buscás?</span><span className="input-with-icon"><SearchIcon /><input id="book-search-query" value={filters.query} onChange={updateFilter("query")} placeholder="Ej.: Rayuela, Julio Cortázar o Sudamericana" /></span></label>
         <details className="search-filters">
           <summary>Más filtros</summary>
           <div className="search-filter-fields">
