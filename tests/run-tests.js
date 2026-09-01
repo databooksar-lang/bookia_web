@@ -45,6 +45,7 @@ import { registerDashboardMetricsPresentationTests } from "./dashboardMetricsPre
 import { registerAuthContactGateTests } from "./authContactGate.test.js";
 import { registerTiendanubeIntegrationStateTests } from "./tiendanubeIntegrationState.test.js";
 import { registerGoogleSheetsIntegrationStateTests } from "./googleSheetsIntegrationState.test.js";
+import { registerMobilePlatformTests } from "./mobilePlatform.test.js";
 
 import { registerDashboardNavigationStateTests } from './dashboardNavigationState.test.js';
 
@@ -178,6 +179,7 @@ registerDashboardMetricsPresentationTests((name, fn) => tests.push([name, fn]));
 registerAuthContactGateTests((name, fn) => tests.push([name, fn]));
 registerTiendanubeIntegrationStateTests((name, fn) => tests.push([name, fn]));
 registerGoogleSheetsIntegrationStateTests((name, fn) => tests.push([name, fn]));
+registerMobilePlatformTests((name, fn) => tests.push([name, fn]));
 registerPlansPricingStateTests((name, fn) => tests.push([name, fn]));
 registerAnalyticsStateTests((name, fn) => tests.push([name, fn]));
 registerRegisterStateTests((name, fn) => tests.push([name, fn]));

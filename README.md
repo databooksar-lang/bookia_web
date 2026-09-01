@@ -34,6 +34,31 @@ npm run build
 npm run preview
 ```
 
+## Android
+
+La app Android reutiliza este mismo frontend mediante Capacitor 8. Requiere Node.js 20 o superior, JDK 21 y Android SDK 36.
+
+Configura la API pública HTTPS en el build móvil:
+
+```env
+VITE_MOBILE_API_BASE_URL=https://bookia-api-production.up.railway.app
+```
+
+Comandos principales:
+
+```powershell
+npm run mobile:sync
+npm run mobile:open
+npm run mobile:build:debug
+```
+
+- `mobile:sync` compila la web y sincroniza los assets y plugins con Android.
+- `mobile:open` abre el proyecto nativo en Android Studio.
+- `mobile:build:debug` genera un Android App Bundle de prueba.
+- `mobile:build` genera el bundle release; la firma se configura fuera del repositorio.
+
+El identificador de aplicación es `app.mybookia.mobile`. No versiones `android/app/google-services.json`, archivos `.jks`, `.keystore` ni credenciales de firma.
+
 ## Despliegue en Railway
 
 La recomendacion para Railway es desplegar este repo con el `Dockerfile` incluido.
