@@ -12,7 +12,7 @@ export function TermsPage() {
       <p>Bookia es gestionado por Marcelo Gabriel Gonzalez, en el partido de Gral San Martin, Provincia de Buenos Aires. Consultas: <a href="mailto:bookia.app.admin@gmail.com">bookia.app.admin@gmail.com</a>.</p>
 
       <h2>Aceptacion de los terminos</h2>
-      <p>Al navegar, crear una cuenta, registrar una libreria, publicar catalogos o usar el bot de Telegram de Bookia, aceptas estos Terminos y Condiciones, la <AppLink href="/privacy">Politica de Privacidad</AppLink> y la <AppLink href="/cookies">Politica de Cookies</AppLink>.</p>
+      <p>Al navegar, usar la app Android, crear una cuenta, registrar una libreria, publicar catalogos o usar el bot de Telegram de Bookia, aceptas estos Terminos y Condiciones, la <AppLink href="/privacy">Politica de Privacidad</AppLink> y la <AppLink href="/cookies">Politica de Cookies</AppLink>.</p>
 
       <h2>Que es Bookia</h2>
       <p>Bookia es una plataforma digital que ayuda a lectores y visitantes a descubrir libros, librerias, vendedores de usados y proyectos relacionados con la circulacion de libros. Las librerias pueden crear y administrar una vidriera publica con datos de contacto, catalogo, imagenes, disponibilidad y actividades como clubes de lectura.</p>

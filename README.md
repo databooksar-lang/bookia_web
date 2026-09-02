@@ -61,6 +61,8 @@ El identificador de aplicación es `app.mybookia.mobile`. No versiones `android/
 
 Los App Links aceptan únicamente `https://mybookia.app` y `https://www.mybookia.app`. Antes de publicar, copia `public/.well-known/assetlinks.json.example` como `/.well-known/assetlinks.json` en ambos hosts y reemplaza el marcador por el fingerprint SHA-256 del certificado real de firma. Verifica la asociación en un dispositivo con `adb shell pm get-app-links app.mybookia.mobile`.
 
+Para habilitar notificaciones, crea una app Android con el mismo package en Firebase, descarga `google-services.json` y colócalo localmente en `android/app/google-services.json`. El archivo está ignorado por Git. La API necesita `FIREBASE_PROJECT_ID`, `GOOGLE_APPLICATION_CREDENTIALS` y `PUSH_TOKEN_ENCRYPTION_KEY`; consulta `docs/android-release-checklist.md` para firma, Data Safety y publicación.
+
 ## Despliegue en Railway
 
 La recomendacion para Railway es desplegar este repo con el `Dockerfile` incluido.

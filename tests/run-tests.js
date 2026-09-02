@@ -1134,6 +1134,21 @@ tests.push(["uses the Bookia relationship graph in the About hero", () => {
   assert.match(editorialStyles, /@media \(max-width: 760px\)\s*\{\s*\.about-hero-logo\s*\{[^}]*width:\s*min\(92vw,\s*460px\);/s);
 }]);
 
+tests.push(["documents Android push privacy, native sessions and marketplace boundaries", () => {
+  const privacySource = readFileSync(new URL("../src/pages/PrivacyPage.jsx", import.meta.url), "utf8");
+  const cookiesSource = readFileSync(new URL("../src/pages/CookiePolicyPage.jsx", import.meta.url), "utf8");
+  const termsSource = readFileSync(new URL("../src/pages/TermsPage.jsx", import.meta.url), "utf8");
+
+  assert.match(privacySource, /Firebase Cloud Messaging/);
+  assert.match(privacySource, /token de dispositivo/);
+  assert.match(privacySource, /desactivar/i);
+  assert.match(privacySource, /retención|conservamos/i);
+  assert.match(cookiesSource, /Android/);
+  assert.match(cookiesSource, /almacenamiento seguro nativo/);
+  assert.match(termsSource, /plataforma digital/);
+  assert.match(termsSource, /no vende libros directamente/i);
+}]);
+
 for (const [name, fn] of tests) {
   try {
     await fn();
