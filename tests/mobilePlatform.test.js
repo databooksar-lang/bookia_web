@@ -3,6 +3,12 @@ import assert from "node:assert/strict";
 import { createMobilePlatform } from "../src/mobile/platform.js";
 
 export function registerMobilePlatformTests(test) {
+  test("uses Bookia's production API when an Android build has no injected configuration", () => {
+    const platform = createMobilePlatform({ native: true, platform: "android", apiBaseUrl: "" });
+
+    assert.equal(platform.getApiBase(), "https://bookia-api-production.up.railway.app");
+  });
+
   test("uses an explicit HTTPS API for the native Android app", () => {
     const platform = createMobilePlatform({
       native: true,

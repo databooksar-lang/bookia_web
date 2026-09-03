@@ -5,7 +5,7 @@ import { isNativeAndroidRuntime, mobileSessionTransport } from "./mobile/session
 const DEFAULT_SAME_ORIGIN_API_BASE = "/api";
 const RUNTIME_API_BASE = globalThis.__BOOKIA_CONFIG__?.apiBaseUrl || "";
 const BUILD_API_BASE = import.meta.env?.VITE_API_BASE_URL || "";
-const MOBILE_API_BASE = globalThis.__BOOKIA_CONFIG__?.mobileApiBaseUrl || import.meta.env?.VITE_MOBILE_API_BASE_URL || "";
+const MOBILE_API_BASE = import.meta.env?.VITE_MOBILE_API_BASE_URL || globalThis.__BOOKIA_CONFIG__?.mobileApiBaseUrl || "";
 const NATIVE_ANDROID = isNativeAndroidRuntime();
 const MOBILE_PLATFORM = createMobilePlatform({ native: NATIVE_ANDROID, platform: "android", apiBaseUrl: MOBILE_API_BASE });
 const API_BASE = normalizeApiBase(
