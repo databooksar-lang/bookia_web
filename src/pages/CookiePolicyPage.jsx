@@ -12,6 +12,7 @@ export function CookiePolicyPage() {
 
       <h2>Que cookies usamos</h2>
       <p>Bookia usa cookies tecnicas necesarias para iniciar sesion, mantener la cuenta abierta y proteger formularios contra solicitudes no autorizadas.</p>
+      <p>La app Android no usa las cookies web para autenticarte: conserva un token de sesión en almacenamiento seguro nativo protegido por Android Keystore y lo elimina al cerrar sesión o cuando la sesión deja de ser válida.</p>
       <p><strong>bookia_session</strong> identifica la sesion iniciada. <strong>bookia_csrf</strong> ayuda a validar acciones sensibles y reducir abusos de seguridad.</p>
       <p><strong>bookia_google_oauth</strong> protege temporalmente el inicio o registro con Google. <strong>bookia_google_owner_link</strong> protege temporalmente la vinculacion de una cuenta de libreria con Google. Ambas son cookies HTTP-only y duran hasta 10 minutos.</p>
       <p><strong>bookia_tiendanube_oauth</strong> protege temporalmente la conexion de una libreria con Tiendanube, vincula el retorno con la misma sesion y evita solicitudes falsificadas. Es HTTP-only, se limita a la ruta de la integracion y dura hasta 10 minutos.</p>

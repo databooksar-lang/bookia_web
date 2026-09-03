@@ -16,6 +16,13 @@ import { ReaderProfilePage } from "./pages/ReaderProfilePage";
 import { BillingReturnPage } from "./pages/BillingReturnPage";
 import { getAccountDestination } from "./accountDestination";
 import { applyPendingReaderAction, completePendingReaderAuthentication, isAutoAppliedPendingReaderAction, readPendingReaderAction } from "./pendingReaderAction";
+import { pushNotificationsController } from "./mobile/pushNotifications";
+import { App as CapacitorApp } from "@capacitor/app";
+import { installBookiaDeepLinkListener } from "./mobile/deepLinks";
+import { isNativeAndroidRuntime } from "./mobile/sessionVault";
+import { MobileTabBar } from "./components/MobileTabBar";
+
+const NATIVE_ANDROID = isNativeAndroidRuntime();
 
 export default function App() {
   const { pathname, search } = useLocationState();
@@ -72,6 +79,18 @@ export default function App() {
       navigate("/login?reason=session-expired");
     });
   }, []);
+  useEffect(() => {
+    pushNotificationsController.listen().catch(() => {});
+  }, []);
+  useEffect(() => {
+    let handle;
+    installBookiaDeepLinkListener({ nativeAndroid: NATIVE_ANDROID, appPlugin: CapacitorApp, navigate }).then((listener) => { handle = listener; });
+    return () => { handle?.remove(); };
+  }, []);
+  useEffect(() => {
+    if (pathname !== "/" || new URLSearchParams(search).get("focus") !== "search") return;
+    requestAnimationFrame(() => document.querySelector("#book-search-query")?.focus());
+  }, [pathname, search]);
 
 
   let page = <HomePage me={me} />;
@@ -95,13 +114,14 @@ export default function App() {
   else if (pathname.startsWith("/readers/")) page = <ReaderPage slug={pathname.replace("/readers/", "")} search={search} me={me} />;
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell${NATIVE_ANDROID ? " is-native-android" : ""}`}>
       <SiteHeader pathname={pathname} me={me} refreshMe={refreshMe} />
       <main>
         {readerActionFeedback ? <div className={`reader-action-feedback feedback ${readerActionFeedback.kind === "error" ? "error" : "success"}`} role={readerActionFeedback.kind === "error" ? "alert" : "status"}><span>{readerActionFeedback.message}</span>{readerActionFeedback.kind === "error" && isAutoAppliedPendingReaderAction(pendingReaderAction) && me?.reader_profile ? <button type="button" className="text-link" onClick={retryPendingReaderAction}>Reintentar</button> : null}<button type="button" className="reader-action-feedback-close" aria-label="Cerrar mensaje" onClick={() => setReaderActionFeedback(null)}>×</button></div> : null}
         {page}
       </main>
-      <SiteFooter />
+      {NATIVE_ANDROID ? null : <SiteFooter />}
+      <MobileTabBar me={me} pathname={pathname} nativeAndroid={NATIVE_ANDROID} />
     </div>
   );
 }

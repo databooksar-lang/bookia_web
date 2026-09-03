@@ -6,3 +6,6 @@ dist/
 Thumbs.db
 .worktrees/
 .codex-remote-attachments/
+android/app/google-services.json
+*.jks
+*.keystore

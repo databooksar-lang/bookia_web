@@ -1,9 +1,16 @@
 import { isBookiaApiRoute } from "./apiRoutes.js";
+import { createMobilePlatform } from "./mobile/platform.js";
+import { isNativeAndroidRuntime, mobileSessionTransport } from "./mobile/sessionVault.js";
 
 const DEFAULT_SAME_ORIGIN_API_BASE = "/api";
 const RUNTIME_API_BASE = globalThis.__BOOKIA_CONFIG__?.apiBaseUrl || "";
 const BUILD_API_BASE = import.meta.env?.VITE_API_BASE_URL || "";
-const API_BASE = normalizeApiBase(RUNTIME_API_BASE || BUILD_API_BASE || DEFAULT_SAME_ORIGIN_API_BASE);
+const MOBILE_API_BASE = globalThis.__BOOKIA_CONFIG__?.mobileApiBaseUrl || import.meta.env?.VITE_MOBILE_API_BASE_URL || "";
+const NATIVE_ANDROID = isNativeAndroidRuntime();
+const MOBILE_PLATFORM = createMobilePlatform({ native: NATIVE_ANDROID, platform: "android", apiBaseUrl: MOBILE_API_BASE });
+const API_BASE = normalizeApiBase(
+  NATIVE_ANDROID ? MOBILE_PLATFORM.getApiBase() : RUNTIME_API_BASE || BUILD_API_BASE || DEFAULT_SAME_ORIGIN_API_BASE,
+);
 const sessionExpiryListeners = new Set();
 let sessionExpiryHandled = false;
 
@@ -16,8 +23,8 @@ export function resetSessionExpiryForTests() {
   sessionExpiryHandled = false;
 }
 
-function notifySessionExpiry(path) {
-  if (sessionExpiryHandled || String(path).startsWith("/auth/") || !readCookie("bookia_csrf")) return;
+function notifySessionExpiry(path, hadMobileSession = false) {
+  if (sessionExpiryHandled || String(path).startsWith("/auth/") || (!hadMobileSession && !readCookie("bookia_csrf"))) return;
   sessionExpiryHandled = true;
   sessionExpiryListeners.forEach((listener) => listener());
 }
@@ -125,29 +132,43 @@ export function buildRequestHeaders(options = {}, csrfToken = "") {
   };
 }
 
+export function buildApiTransportOptions({ nativeAndroid, options, defaultHeaders, mobileHeaders }) {
+  return {
+    ...options,
+    credentials: nativeAndroid ? "omit" : "include",
+    headers: {
+      ...defaultHeaders,
+      ...(nativeAndroid ? mobileHeaders : {}),
+    },
+  };
+}
+
 export async function apiFetch(path, { suppressSessionExpiry = false, ...options } = {}) {
   let response;
   const method = (options.method || "GET").toUpperCase();
   const csrfToken = method === "GET" ? "" : readCookie("bookia_csrf");
   const defaultHeaders = buildRequestHeaders(options, csrfToken);
+  const mobileHeaders = await mobileSessionTransport.getRequestHeaders();
+  const hadMobileSession = Boolean(mobileHeaders.Authorization);
 
   try {
-    response = await fetch(resolveApiUrl(path), {
-      ...options,
-      credentials: "include",
-      headers: defaultHeaders,
-    });
+    response = await fetch(
+      resolveApiUrl(path),
+      buildApiTransportOptions({ nativeAndroid: NATIVE_ANDROID, options, defaultHeaders, mobileHeaders }),
+    );
   } catch (error) {
     throw new Error("No pudimos conectar con el servidor.");
   }
 
   if (response.status === 204) {
+    if (NATIVE_ANDROID && String(path).startsWith("/auth/logout")) await mobileSessionTransport.clear();
     return null;
   }
 
   const contentType = response.headers.get("content-type") || "";
   if (response.status === 401) {
-    if (!suppressSessionExpiry) notifySessionExpiry(path);
+    if (NATIVE_ANDROID && !String(path).startsWith("/auth/")) await mobileSessionTransport.clear();
+    if (!suppressSessionExpiry) notifySessionExpiry(path, hadMobileSession);
   }
 
   const expectsJson = contentType.includes("application/json");
@@ -170,5 +191,5 @@ export async function apiFetch(path, { suppressSessionExpiry = false, ...options
   if (!response.ok) {
     throw createApiError(data?.detail || "No pudimos completar la accion.", response.status);
   }
-  return data;
+  return mobileSessionTransport.acceptResponse(data);
 }

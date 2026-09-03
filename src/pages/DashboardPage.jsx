@@ -21,6 +21,7 @@ import { TiendanubeIntegrationPanel } from "../components/TiendanubeIntegrationP
 import { GoogleSheetsIntegrationPanel } from "../components/GoogleSheetsIntegrationPanel";
 import { formatImportedCommerce } from "../tiendanubeIntegrationState";
 import { getExternalCatalogPresentation, isExternalCatalogItem } from "../externalCatalogState";
+import { NotificationPreferences } from "../components/NotificationPreferences";
 
 const EMPTY_ITEM = {
   title: "",
@@ -453,6 +454,8 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
           <p className="dashboard-telegram-help">Iniciá sesión en el bot con el correo y la contraseña de tu librería para cargar libros desde Telegram.</p>
         </div>
       </header>
+
+      <NotificationPreferences />
 
       {registrationPending && me.billing?.status !== "payment_pending" ? <p className="feedback success">Registramos tu libreria.</p> : null}
       {me.billing?.status === "payment_pending" && billingAccess.canManageCatalog ? <p className="feedback success">Tu prueba gratis está activa hasta el {formatBillingDate(me.billing.trial_ends_at)}. Confirmá el medio de pago antes de esa fecha para conservar el acceso.</p> : null}

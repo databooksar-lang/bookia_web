@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { createServer } from "vite";
 
 import { isBookiaApiRoute } from "../src/apiRoutes.js";
-import { resolveApiUrl } from "../src/api.js";
+import { buildApiTransportOptions, resolveApiUrl } from "../src/api.js";
 import { buildSingleGenreIds, getSingleGenreValue } from "../src/genreSelection.js";
 import { getGenreSelectorState } from "../src/genreSelectorState.js";
 import { registerProfileEditorStateTests } from "./profileEditorState.test.js";
@@ -45,6 +45,10 @@ import { registerDashboardMetricsPresentationTests } from "./dashboardMetricsPre
 import { registerAuthContactGateTests } from "./authContactGate.test.js";
 import { registerTiendanubeIntegrationStateTests } from "./tiendanubeIntegrationState.test.js";
 import { registerGoogleSheetsIntegrationStateTests } from "./googleSheetsIntegrationState.test.js";
+import { registerMobilePlatformTests } from "./mobilePlatform.test.js";
+import { registerMobileSessionVaultTests } from "./mobileSessionVault.test.js";
+import { registerMobilePushNotificationsTests } from "./mobilePushNotifications.test.js";
+import { registerMobileDeepLinksTests } from "./mobileDeepLinks.test.js";
 
 import { registerDashboardNavigationStateTests } from './dashboardNavigationState.test.js';
 
@@ -68,6 +72,36 @@ const tests = [
   }],
   ["does not duplicate the /api prefix for already-prefixed paths", () => {
     assert.equal(resolveApiUrl("/api/me"), "/api/me");
+  }],
+  ["uses bearer transport without cookies in the Android container", () => {
+    assert.deepEqual(
+      buildApiTransportOptions({
+        nativeAndroid: true,
+        options: { method: "POST" },
+        defaultHeaders: { "Content-Type": "application/json" },
+        mobileHeaders: { "X-Bookia-Client": "android", Authorization: "Bearer secure-token" },
+      }),
+      {
+        method: "POST",
+        credentials: "omit",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Bookia-Client": "android",
+          Authorization: "Bearer secure-token",
+        },
+      },
+    );
+  }],
+  ["keeps cookie transport for the web application", () => {
+    assert.deepEqual(
+      buildApiTransportOptions({
+        nativeAndroid: false,
+        options: { method: "GET" },
+        defaultHeaders: { Accept: "application/json" },
+        mobileHeaders: { "X-Bookia-Client": "android" },
+      }),
+      { method: "GET", credentials: "include", headers: { Accept: "application/json" } },
+    );
   }],
   ["generates a same-origin Caddy proxy when BOOKIA_API_UPSTREAM_URL is configured", () => {
     const entrypoint = readFileSync(new URL("../docker-entrypoint.sh", import.meta.url), "utf8");
@@ -178,6 +212,10 @@ registerDashboardMetricsPresentationTests((name, fn) => tests.push([name, fn]));
 registerAuthContactGateTests((name, fn) => tests.push([name, fn]));
 registerTiendanubeIntegrationStateTests((name, fn) => tests.push([name, fn]));
 registerGoogleSheetsIntegrationStateTests((name, fn) => tests.push([name, fn]));
+registerMobilePlatformTests((name, fn) => tests.push([name, fn]));
+registerMobileSessionVaultTests((name, fn) => tests.push([name, fn]));
+registerMobilePushNotificationsTests((name, fn) => tests.push([name, fn]));
+registerMobileDeepLinksTests((name, fn) => tests.push([name, fn]));
 registerPlansPricingStateTests((name, fn) => tests.push([name, fn]));
 registerAnalyticsStateTests((name, fn) => tests.push([name, fn]));
 registerRegisterStateTests((name, fn) => tests.push([name, fn]));
@@ -1094,6 +1132,21 @@ tests.push(["uses the Bookia relationship graph in the About hero", () => {
   assert.match(publicPagesSource, /className="about-hero-logo" src="\/images\/grafo_bookia\.png" alt="Grafo de conexiones de Bookia"/);
   assert.match(editorialStyles, /\.about-hero-logo\s*\{[^}]*width:\s*min\(100%,\s*520px\);/s);
   assert.match(editorialStyles, /@media \(max-width: 760px\)\s*\{\s*\.about-hero-logo\s*\{[^}]*width:\s*min\(92vw,\s*460px\);/s);
+}]);
+
+tests.push(["documents Android push privacy, native sessions and marketplace boundaries", () => {
+  const privacySource = readFileSync(new URL("../src/pages/PrivacyPage.jsx", import.meta.url), "utf8");
+  const cookiesSource = readFileSync(new URL("../src/pages/CookiePolicyPage.jsx", import.meta.url), "utf8");
+  const termsSource = readFileSync(new URL("../src/pages/TermsPage.jsx", import.meta.url), "utf8");
+
+  assert.match(privacySource, /Firebase Cloud Messaging/);
+  assert.match(privacySource, /token de dispositivo/);
+  assert.match(privacySource, /desactivar/i);
+  assert.match(privacySource, /retención|conservamos/i);
+  assert.match(cookiesSource, /Android/);
+  assert.match(cookiesSource, /almacenamiento seguro nativo/);
+  assert.match(termsSource, /plataforma digital/);
+  assert.match(termsSource, /no vende libros directamente/i);
 }]);
 
 for (const [name, fn] of tests) {

@@ -34,6 +34,35 @@ npm run build
 npm run preview
 ```
 
+## Android
+
+La app Android reutiliza este mismo frontend mediante Capacitor 8. Requiere Node.js 20 o superior, JDK 21 y Android SDK 36.
+
+Configura la API pública HTTPS en el build móvil:
+
+```env
+VITE_MOBILE_API_BASE_URL=https://bookia-api-production.up.railway.app
+```
+
+Comandos principales:
+
+```powershell
+npm run mobile:sync
+npm run mobile:open
+npm run mobile:build:debug
+```
+
+- `mobile:sync` compila la web y sincroniza los assets y plugins con Android.
+- `mobile:open` abre el proyecto nativo en Android Studio.
+- `mobile:build:debug` genera un Android App Bundle de prueba.
+- `mobile:build` genera el bundle release; la firma se configura fuera del repositorio.
+
+El identificador de aplicación es `app.mybookia.mobile`. No versiones `android/app/google-services.json`, archivos `.jks`, `.keystore` ni credenciales de firma.
+
+Los App Links aceptan únicamente `https://mybookia.app` y `https://www.mybookia.app`. Antes de publicar, copia `public/.well-known/assetlinks.json.example` como `/.well-known/assetlinks.json` en ambos hosts y reemplaza el marcador por el fingerprint SHA-256 del certificado real de firma. Verifica la asociación en un dispositivo con `adb shell pm get-app-links app.mybookia.mobile`.
+
+Para habilitar notificaciones, crea una app Android con el mismo package en Firebase, descarga `google-services.json` y colócalo localmente en `android/app/google-services.json`. El archivo está ignorado por Git. La API necesita `FIREBASE_PROJECT_ID`, `GOOGLE_APPLICATION_CREDENTIALS` y `PUSH_TOKEN_ENCRYPTION_KEY`; consulta `docs/android-release-checklist.md` para firma, Data Safety y publicación.
+
 ## Despliegue en Railway
 
 La recomendacion para Railway es desplegar este repo con el `Dockerfile` incluido.
