@@ -5,7 +5,7 @@ import { isNativeAndroidRuntime, mobileSessionTransport } from "./mobile/session
 const DEFAULT_SAME_ORIGIN_API_BASE = "/api";
 const RUNTIME_API_BASE = globalThis.__BOOKIA_CONFIG__?.apiBaseUrl || "";
 const BUILD_API_BASE = import.meta.env?.VITE_API_BASE_URL || "";
-const MOBILE_API_BASE = globalThis.__BOOKIA_CONFIG__?.mobileApiBaseUrl || import.meta.env?.VITE_MOBILE_API_BASE_URL || "";
+const MOBILE_API_BASE = import.meta.env?.VITE_MOBILE_API_BASE_URL || globalThis.__BOOKIA_CONFIG__?.mobileApiBaseUrl || "";
 const NATIVE_ANDROID = isNativeAndroidRuntime();
 const MOBILE_PLATFORM = createMobilePlatform({ native: NATIVE_ANDROID, platform: "android", apiBaseUrl: MOBILE_API_BASE });
 const API_BASE = normalizeApiBase(
@@ -143,8 +143,7 @@ export function buildApiTransportOptions({ nativeAndroid, options, defaultHeader
   };
 }
 
-export async function apiFetch(path, { suppressSessionExpiry = false, ...options } = {}) {
-  let response;
+async function requestApiResponse(path, options) {
   const method = (options.method || "GET").toUpperCase();
   const csrfToken = method === "GET" ? "" : readCookie("bookia_csrf");
   const defaultHeaders = buildRequestHeaders(options, csrfToken);
@@ -152,44 +151,54 @@ export async function apiFetch(path, { suppressSessionExpiry = false, ...options
   const hadMobileSession = Boolean(mobileHeaders.Authorization);
 
   try {
-    response = await fetch(
+    const response = await fetch(
       resolveApiUrl(path),
       buildApiTransportOptions({ nativeAndroid: NATIVE_ANDROID, options, defaultHeaders, mobileHeaders }),
     );
+    return { response, hadMobileSession };
   } catch (error) {
     throw new Error("No pudimos conectar con el servidor.");
   }
+}
 
-  if (response.status === 204) {
-    if (NATIVE_ANDROID && String(path).startsWith("/auth/logout")) await mobileSessionTransport.clear();
-    return null;
+async function handleNoContentResponse(path) {
+  if (NATIVE_ANDROID && String(path).startsWith("/auth/logout")) {
+    await mobileSessionTransport.clear();
   }
+  return null;
+}
 
+async function handleUnauthorizedResponse(path, suppressSessionExpiry, hadMobileSession) {
+  if (NATIVE_ANDROID && !String(path).startsWith("/auth/")) {
+    await mobileSessionTransport.clear();
+  }
+  if (!suppressSessionExpiry) notifySessionExpiry(path, hadMobileSession);
+}
+
+async function parseApiResponse(path, response) {
   const contentType = response.headers.get("content-type") || "";
-  if (response.status === 401) {
-    if (NATIVE_ANDROID && !String(path).startsWith("/auth/")) await mobileSessionTransport.clear();
-    if (!suppressSessionExpiry) notifySessionExpiry(path, hadMobileSession);
-  }
-
-  const expectsJson = contentType.includes("application/json");
-
-  if (!expectsJson) {
+  if (!contentType.includes("application/json")) {
     const responseText = await response.text().catch(() => "");
-    if (response.ok) {
-      throw new Error(buildInvalidApiResponseMessage(path, response, contentType));
-    }
+    if (response.ok) throw new Error(buildInvalidApiResponseMessage(path, response, contentType));
     throw createApiError(buildNonJsonErrorMessage(path, response, contentType, responseText), response.status);
   }
 
-  let data = null;
+  let data;
   try {
     data = await response.json();
   } catch (error) {
     throw new Error(response.ok ? buildInvalidApiResponseMessage(path, response, contentType) : "No pudimos completar la accion.");
   }
 
-  if (!response.ok) {
-    throw createApiError(data?.detail || "No pudimos completar la accion.", response.status);
-  }
+  if (!response.ok) throw createApiError(data?.detail || "No pudimos completar la accion.", response.status);
   return mobileSessionTransport.acceptResponse(data);
+}
+
+export async function apiFetch(path, { suppressSessionExpiry = false, ...options } = {}) {
+  const { response, hadMobileSession } = await requestApiResponse(path, options);
+  if (response.status === 204) return handleNoContentResponse(path);
+  if (response.status === 401) {
+    await handleUnauthorizedResponse(path, suppressSessionExpiry, hadMobileSession);
+  }
+  return parseApiResponse(path, response);
 }
