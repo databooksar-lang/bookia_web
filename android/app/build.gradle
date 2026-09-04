@@ -1,5 +1,17 @@
 apply plugin: 'com.android.application'
 
+def bookiaKeystoreProperties = new Properties()
+def bookiaKeystorePropertiesFile = rootProject.file('keystore.properties')
+if (bookiaKeystorePropertiesFile.exists()) {
+    bookiaKeystorePropertiesFile.withInputStream { bookiaKeystoreProperties.load(it) }
+}
+
+def bookiaStoreFile = bookiaKeystoreProperties.getProperty('BOOKIA_STORE_FILE') ?: project.findProperty('BOOKIA_STORE_FILE') ?: System.getenv('BOOKIA_STORE_FILE')
+def bookiaStorePassword = bookiaKeystoreProperties.getProperty('BOOKIA_STORE_PASSWORD') ?: project.findProperty('BOOKIA_STORE_PASSWORD') ?: System.getenv('BOOKIA_STORE_PASSWORD')
+def bookiaKeyAlias = bookiaKeystoreProperties.getProperty('BOOKIA_KEY_ALIAS') ?: project.findProperty('BOOKIA_KEY_ALIAS') ?: System.getenv('BOOKIA_KEY_ALIAS')
+def bookiaKeyPassword = bookiaKeystoreProperties.getProperty('BOOKIA_KEY_PASSWORD') ?: project.findProperty('BOOKIA_KEY_PASSWORD') ?: System.getenv('BOOKIA_KEY_PASSWORD')
+def hasBookiaReleaseSigning = [bookiaStoreFile, bookiaStorePassword, bookiaKeyAlias, bookiaKeyPassword].every { it }
+
 android {
     namespace = "app.mybookia.mobile"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -7,8 +19,8 @@ android {
         applicationId "app.mybookia.mobile"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode 3
+        versionName "1.0.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,11 +28,34 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        if (hasBookiaReleaseSigning) {
+            release {
+                storeFile file(bookiaStoreFile)
+                storePassword bookiaStorePassword
+                keyAlias bookiaKeyAlias
+                keyPassword bookiaKeyPassword
+            }
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            if (hasBookiaReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
         }
+    }
+}
+
+gradle.taskGraph.whenReady { graph ->
+    def schedulesRelease = graph.allTasks.any { task ->
+        task.project == project && task.name.toLowerCase().contains('release')
+    }
+    if (schedulesRelease && !hasBookiaReleaseSigning) {
+        throw new GradleException('No se configuró la firma de producción. Definí BOOKIA_STORE_FILE, BOOKIA_STORE_PASSWORD, BOOKIA_KEY_ALIAS y BOOKIA_KEY_PASSWORD como variables de entorno o propiedades de Gradle.')
     }
 }
 
