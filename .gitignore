@@ -7,5 +7,6 @@ Thumbs.db
 .worktrees/
 .codex-remote-attachments/
 android/app/google-services.json
+android/keystore.properties
 *.jks
 *.keystore
