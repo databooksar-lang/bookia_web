@@ -6435,11 +6435,86 @@ textarea:focus {
   .billing-return { margin: 24px 12px; padding: 28px 20px; }
 }
 
+/* Public bookstore layout: keep long content inside its own column. */
+.bookstore-public-page .store-identity h1,
+.bookstore-public-page .section-heading h2,
+.bookstore-public-page .store-tag,
+.bookstore-public-page .book-card,
+.bookstore-public-page .reading-club-public-card {
+  overflow-wrap: anywhere;
+}
+
+.bookstore-public-page .section-heading > div,
+.bookstore-public-page .book-card > div,
+.bookstore-public-page .store-contact-card,
+.bookstore-public-page .store-contact-card dd,
+.bookstore-public-page .book-detail-gallery,
+.bookstore-public-page .book-detail-copy {
+  min-width: 0;
+}
+
+.bookstore-public-page .book-detail-copy {
+  overflow-wrap: anywhere;
+}
+
+.bookstore-public-page .bookstore-profile-share-trigger {
+  min-height: 44px;
+  justify-self: start;
+  max-width: 100%;
+}
+
+.bookstore-public-page .bookstore-profile-share-menu .book-share-options {
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .bookstore-public-page .store-identity h1 {
+    font-size: clamp(1.75rem, 7vw, 2.25rem);
+    line-height: 1.12;
+  }
+
+  .bookstore-public-page .section-heading h2 {
+    font-size: clamp(1.5rem, 6vw, 1.875rem);
+    line-height: 1.15;
+  }
+
+  .bookstore-public-page .store-profile-panel {
+    gap: 28px;
+  }
+
+  .bookstore-public-page .store-contact-card dl > div {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .bookstore-public-page .store-contact-card dd {
+    text-align: left;
+  }
+
+  .bookstore-public-page .book-card {
+    grid-template-columns: 82px minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .bookstore-public-page .book-card-meta-row {
+    flex-wrap: wrap;
+  }
+
+  .bookstore-public-page .store-catalog,
+  .bookstore-public-page .store-reading-clubs {
+    padding-top: 40px;
+  }
+}
+
 /* Progressive reader actions */
-.bookstore-follow-button {
+.bookstore-public-page .bookstore-follow-button {
+  display: flex;
   width: fit-content;
-  min-width: 9.5rem;
-  margin-top: 0.25rem;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  margin-top: 12px;
   color: var(--cream);
   background: rgba(255, 250, 240, 0.1);
   border-color: rgba(255, 250, 240, 0.42);
@@ -6611,7 +6686,6 @@ textarea:focus {
     flex-wrap: wrap;
   }
 
-  .bookstore-follow-button,
   .reader-followed-bookstore > button {
     width: 100%;
   }
