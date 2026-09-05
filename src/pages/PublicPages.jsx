@@ -1344,7 +1344,7 @@ export function BookstorePage({ slug, me, refreshSession }) {
   const topActionDialogOpen = Boolean(authAction || contactContinuation);
 
   return (
-    <section className="store-page">
+    <section className="store-page bookstore-public-page">
       <div className={`store-hero${heroImageUrl ? " has-hero" : ""}`} style={heroImageUrl ? { backgroundImage: `url(${heroImageUrl})` } : undefined} />
       <div className="store-profile-panel">
         <div className="store-identity"><p className="section-label">Libreria en Bookia</p>{logoUrl ? <img className="store-logo" src={logoUrl} alt={`Logo de ${store.name}`} onError={(event) => { event.currentTarget.hidden = true; }} /> : null}<h1>{store.name}</h1><BookstoreDescription value={displayBookstoreDescription(store.description)} /><BookstoreProfileShareMenu bookstore={store} />{!me?.bookstore ? <button type="button" className={`secondary-button bookstore-follow-button${isFollowing ? " is-following" : ""}`} aria-pressed={isFollowing} aria-busy={followPending} disabled={followPending || me === undefined || favorites.favoritesLoading} onClick={() => favorites.toggleFollowBookstore(store)}>{isFollowing ? "Dejar de seguir" : "Seguir"}</button> : null}{bookstoreTags.length > 0 ? <div className="store-tags" aria-label="Etiquetas de la libreria">{bookstoreTags.map((tag) => <span key={tag} className="store-tag">{tag}</span>)}</div> : null}{favorites.favoriteError ? <p className="feedback error bookstore-follow-feedback" role="alert">{favorites.favoriteError}</p> : null}</div>
