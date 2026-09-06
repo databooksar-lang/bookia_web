@@ -19,7 +19,7 @@ import { BookstoreProfileShareMenu } from "../components/BookstoreProfileShareMe
 import { FavoriteBookButton } from "../components/FavoriteBookButton";
 import { BookstoreDescription } from "../components/BookstoreDescription";
 import { SectionIndex } from "../components/SectionIndex";
-import { ReaderAuthorBadge, ReaderAuthorBooks, ReaderMonogram, ReaderPassport, ReaderSocialLinks, ReaderWantedBooksPublic } from "../components/ReaderPublicProfile";
+import { ReaderAuthorBadge, ReaderAuthorBooks, ReaderBiography, ReaderMonogram, ReaderPassport, ReaderSocialLinks, ReaderWantedBooksPublic } from "../components/ReaderPublicProfile";
 import { ReaderAuthorBookDetailModal } from "../components/ReaderPublicProfile";
 import { getSharedAuthorBookId } from "../authorBookSharingState";
 import { formatImportedCommerce } from "../tiendanubeIntegrationState";
@@ -1474,7 +1474,7 @@ export function ReaderReadingClubs({ reader, readingClubs, onBack, sharedClubId 
 
   const host = { type: "reader", slug: reader.slug, display_name: reader.display_name };
 
-  return <section className="store-reading-clubs"><div className="section-heading results-heading"><div><p className="section-label">Clubes de lectura</p><h2>Encuentros de {reader.display_name}</h2><p>{readingClubs.length} {readingClubs.length === 1 ? "club publicado" : "clubes publicados"}</p></div><button className="secondary-button" onClick={onBack}>Volver a buscar</button></div>
+  return <section className="store-reading-clubs"><div className="section-heading results-heading"><div><p className="section-label">EN COMUNIDAD</p><h2>Clubes de lectura</h2><p>{readingClubs.length} {readingClubs.length === 1 ? "club publicado" : "clubes publicados"}</p></div><button className="secondary-button" onClick={onBack}>Volver a buscar</button></div>
     {actionError ? <p className="feedback error" role="alert">{actionError}</p> : null}
     <div className="reading-club-public-list">{readingClubs.map((club) => <ReadingClubPublicCard key={club.id} club={club} host={host} source="reader_reading_clubs" showShare={typeof window !== "undefined"} shared={sharedClubId === club.id} onOpenDetails={() => { setSelectedClub(club); setInterestOpen(false); }} onOpenInterest={() => openClubInterest(club)} showInterest interestDisabled={me === undefined} hideExternalLink />)}</div>
     <ReadingClubDetailModal selectedClub={selectedClub} host={host} initialInterestOpen={interestOpen} me={me} onClose={closeClubDetails} />
@@ -1533,7 +1533,7 @@ export function ReaderPage({ slug, search = "", me = null }) {
   if (error || !reader) return <div className="page-state"><EmptyState title="No encontramos a este lector">{error || "Revis\u00E1 el enlace o volv\u00E9 a la b\u00FAsqueda."}</EmptyState><button className="secondary-button" onClick={() => navigate("/")}>Volver a buscar</button></div>;
 
   return <section className="store-page reader-page">
-    <div className="store-profile-panel reader-profile-panel"><div className="reader-profile-identity"><ReaderMonogram displayName={reader.display_name} className="is-profile-hero" /><div className="store-identity"><div className="reader-profile-labels"><p className="section-label">Lector en Bookia</p><ReaderAuthorBadge isAuthor={reader.is_author} /></div><h1>{reader.display_name}</h1><BookstoreDescription value={reader.description || "Comparte clubes de lectura con la comunidad Bookia."} />{reader.favorite_genres?.length ? <div className="store-tags" aria-label="Generos favoritos">{reader.favorite_genres.map((genre) => <span key={genre.id} className="store-tag">{genre.name}</span>)}</div> : null}</div></div><ReaderPassport reader={reader} /></div>
+    <div className="store-profile-panel reader-profile-panel"><div className="reader-profile-identity"><ReaderMonogram displayName={reader.display_name} className="is-profile-hero" /><div className="store-identity"><div className="reader-profile-labels"><p className="section-label">Lector en Bookia</p><ReaderAuthorBadge isAuthor={reader.is_author} /></div><h1>{reader.display_name}</h1><ReaderBiography key={slug} value={reader.description || "Comparte clubes de lectura con la comunidad Bookia."} />{reader.favorite_genres?.length ? <div className="store-tags" aria-label="Generos favoritos">{reader.favorite_genres.map((genre) => <span key={genre.id} className="store-tag">{genre.name}</span>)}</div> : null}</div></div><ReaderPassport reader={reader} /></div>
     <ReaderSocialLinks links={reader.social_links || []} />
     <ReaderAuthorBooks reader={reader} books={authorBooks} onOpenDetails={openAuthorBook} />
     <ReaderAuthorBookDetailModal reader={reader} book={selectedAuthorBook} onClose={closeAuthorBook} onRequireAuth={requireAuthorAuth} />
