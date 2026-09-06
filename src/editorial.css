@@ -6700,6 +6700,28 @@ textarea:focus {
 }
 
 /* Progressive public book search */
+.store-catalog .store-catalog-search {
+  width: 100%;
+  margin: 0 0 28px;
+  box-shadow: none;
+}
+
+.store-catalog-search .search-field-query {
+  grid-column: 1 / -1;
+}
+
+.store-catalog-search-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.store-catalog-load-more {
+  display: block;
+  margin: 28px auto 0;
+}
+
 .search-panel {
   grid-template-columns: minmax(0, 1fr) auto;
 }

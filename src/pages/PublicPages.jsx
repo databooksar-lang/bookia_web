@@ -1232,10 +1232,34 @@ export function BookDetailModal({ selectedBook, selectedBookImageUrl, onImageCha
   );
 }
 
+export function BookstoreCatalogSearch({ storeName, initialFilters, genres, genresLoading, onSearch, onClear }) {
+  const [filters, setFilters] = useState(() => createSearchFilters(initialFilters));
+  useEffect(() => setFilters(createSearchFilters(initialFilters)), [initialFilters]);
+  const update = (name) => (event) => setFilters((current) => ({ ...current, [name]: event.target.value }));
+  return <form className="search-panel store-catalog-search" role="search" aria-label={`Buscar en el catálogo de ${storeName}`} onSubmit={(event) => { event.preventDefault(); onSearch(filters); }}>
+    <label className="search-field search-field-query"><span>Buscá en esta librería</span><span className="input-with-icon"><SearchIcon /><input value={filters.query} onChange={update("query")} placeholder="Título, autor o editorial" /></span></label>
+    <details className="search-filters"><summary>Más filtros</summary><div className="search-filter-fields">
+      <label className="search-field"><span>Estado</span><select value={filters.bookStatus} onChange={update("bookStatus")}><option value="">Todos los estados</option><option value="nuevo">Nuevo</option><option value="usado">Usado</option></select></label>
+      <label className="search-field"><span>Idioma</span><input value={filters.language} onChange={update("language")} placeholder="Ej.: Español" /></label>
+      <label className="search-field"><span>Género</span><select value={filters.genreSlug} onChange={update("genreSlug")} disabled={genresLoading}><option value="">{genresLoading ? "Cargando géneros..." : "Todos los géneros"}</option>{genres.map((genre) => <option key={genre.id} value={genre.slug}>{genre.name}</option>)}</select></label>
+    </div></details>
+    <div className="store-catalog-search-actions"><button className="primary-button" type="submit">Buscar <ArrowIcon /></button><button className="secondary-button" type="button" onClick={() => { setFilters(createSearchFilters()); onClear(); }}>Limpiar filtros</button></div>
+  </form>;
+}
+
 export function BookstorePage({ slug, me, refreshSession }) {
   const [store, setStore] = useState(null);
   const [items, setItems] = useState([]);
   const [readingClubs, setReadingClubs] = useState([]);
+  const [catalogFilters, setCatalogFilters] = useState(() => createSearchFilters());
+  const [catalogTotal, setCatalogTotal] = useState(0);
+  const [catalogOffset, setCatalogOffset] = useState(0);
+  const [catalogLoading, setCatalogLoading] = useState(false);
+  const [catalogError, setCatalogError] = useState("");
+  const [genres, setGenres] = useState([]);
+  const [genresLoading, setGenresLoading] = useState(true);
+  const catalogRequest = useRef(0);
+  const hasCatalogFilters = Object.values(catalogFilters).some((value) => value.trim());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedBook, setSelectedBook] = useState(null);
@@ -1249,13 +1273,60 @@ export function BookstorePage({ slug, me, refreshSession }) {
   const contactSession = resolveBookstoreContactSession(me, store);
 
   useEffect(() => {
+    const request = ++catalogRequest.current;
     setLoading(true);
-    apiFetch(`/bookstores/${slug}`).then((data) => { setStore(data.bookstore); setItems(data.items); setReadingClubs(data.reading_clubs || []); setError(""); }).catch((fetchError) => {
+    setStore(null);
+    setItems([]);
+    setSelectedBook(null);
+    setCatalogFilters(createSearchFilters());
+    setCatalogError("");
+    setCatalogLoading(false);
+    apiFetch(`/bookstores/${encodeURIComponent(slug)}`).then(async (data) => {
+      if (request !== catalogRequest.current) return;
+      // Shared links and resumed contacts may refer to a later catalog page.
+      const action = readPendingReaderAction();
+      const targetId = getSharedBookId(window.location.search) || (action?.type === "contact_bookstore" && action.target_id === data.bookstore.id ? action.catalog_item_id : null);
+      while (targetId && !data.items.some((item) => item.id === targetId) && data.items.length < data.total) {
+        const next = await apiFetch(`/bookstores/${encodeURIComponent(slug)}?offset=${data.items.length}`);
+        if (request !== catalogRequest.current) return;
+        if (!next.items.length) break;
+        data.items.push(...next.items);
+        data.total = next.total;
+      }
+      setStore(data.bookstore); setItems(data.items); setReadingClubs(data.reading_clubs || []); setError("");
+      setCatalogTotal(data.total ?? data.items.length); setCatalogOffset(data.items.length);
+    }).catch((fetchError) => {
+      if (request !== catalogRequest.current) return;
       const actionFailure = handleBookstoreContactLoadFailure({ error: fetchError, slug });
       if (actionFailure?.status === "unavailable") setActionError(actionFailure.message);
       setError(fetchError.message);
-    }).finally(() => setLoading(false));
+    }).finally(() => { if (request === catalogRequest.current) setLoading(false); });
+    return () => { catalogRequest.current += 1; };
   }, [slug]);
+
+  useEffect(() => {
+    let active = true;
+    apiFetch("/genres").then((data) => { if (active) setGenres(data.items || []); }).catch(() => {}).finally(() => { if (active) setGenresLoading(false); });
+    return () => { active = false; };
+  }, []);
+
+  function searchCatalog(filters, offset = 0) {
+    const request = ++catalogRequest.current;
+    const params = buildPublicSearchParams(filters);
+    params.set("offset", String(offset));
+    setCatalogFilters({ ...filters });
+    setCatalogLoading(true);
+    setCatalogError("");
+    if (offset === 0) { setItems([]); setCatalogOffset(0); setCatalogTotal(0); }
+    apiFetch(`/bookstores/${encodeURIComponent(slug)}?${params}`).then((data) => {
+      if (request !== catalogRequest.current) return;
+      setItems((previous) => offset === 0 ? data.items : [...new Map([...previous, ...data.items].map((item) => [item.id, item])).values()]);
+      setCatalogTotal(data.total ?? data.items.length);
+      setCatalogOffset(offset + data.items.length);
+    }).catch((fetchError) => {
+      if (request === catalogRequest.current) setCatalogError(fetchError.message);
+    }).finally(() => { if (request === catalogRequest.current) setCatalogLoading(false); });
+  }
 
   useEffect(() => {
     const reconciliationKey = getBookstoreSessionReconciliationKey(me, store, reconciledSessionRef.current);
@@ -1275,7 +1346,7 @@ export function BookstorePage({ slug, me, refreshSession }) {
   }, [items, selectedBook]);
 
   useEffect(() => {
-    if (loading || !contactSession || !store) return;
+    if (loading || catalogLoading || !contactSession || !store) return;
     const action = readPendingReaderAction();
     const continuation = resolveBookstoreContactContinuation(action, store, items);
     if (!continuation) return;
@@ -1285,7 +1356,7 @@ export function BookstorePage({ slug, me, refreshSession }) {
       return;
     }
     setContactContinuation({ action, ...continuation });
-  }, [loading, contactSession, store, items]);
+  }, [loading, catalogLoading, contactSession, store, items]);
 
   function openBookDetail(item) {
     trackBookDetailOpened(item, "bookstore_page");
@@ -1352,8 +1423,11 @@ export function BookstorePage({ slug, me, refreshSession }) {
       </div>
       {actionError ? <p className="feedback error bookstore-contact-feedback" role="alert">{actionError}</p> : null}
       <div className="store-catalog">
-        <div className="section-heading results-heading"><div><p className="section-label">Estantes disponibles</p><h2>Catalogo de {store.name}</h2><p>{visibleItems.length} {visibleItems.length === 1 ? "libro publicado" : "libros publicados"}</p></div><button className="secondary-button" onClick={() => navigate("/")}>Volver a buscar</button></div>
-        {visibleItems.length === 0 ? <EmptyState title="Este catalogo se esta preparando">Volve pronto para descubrir sus libros.</EmptyState> : (
+        <div className="section-heading results-heading"><div><p className="section-label">Estantes disponibles</p><h2>Catalogo de {store.name}</h2><p aria-live="polite">{catalogLoading ? "Buscando libros..." : `${catalogTotal} ${catalogTotal === 1 ? "libro" : "libros"} ${hasCatalogFilters ? (catalogTotal === 1 ? "encontrado" : "encontrados") : (catalogTotal === 1 ? "publicado" : "publicados")}`}</p></div></div>
+        <BookstoreCatalogSearch key={slug} storeName={store.name} initialFilters={catalogFilters} genres={genres} genresLoading={genresLoading} onSearch={searchCatalog} onClear={() => searchCatalog(createSearchFilters())} />
+        {catalogError ? <div className="feedback error" role="alert">{catalogError} <button type="button" className="secondary-button" onClick={() => searchCatalog(catalogFilters, catalogOffset)}>Reintentar</button></div> : null}
+        {!catalogLoading && !catalogError && visibleItems.length === 0 ? <EmptyState title={hasCatalogFilters ? "No encontramos libros con esos filtros" : "Este catalogo se esta preparando"}>{hasCatalogFilters ? "Probá otra búsqueda o limpiá los filtros para explorar el catálogo." : "Volve pronto para descubrir sus libros."}</EmptyState> : null}
+        {visibleItems.length > 0 ? (
           <div className="book-grid">
             {visibleItems.map((item) => (
               <article
@@ -1392,7 +1466,8 @@ export function BookstorePage({ slug, me, refreshSession }) {
               </article>
             ))}
           </div>
-        )}
+        ) : null}
+        {catalogOffset < catalogTotal ? <button type="button" className="secondary-button store-catalog-load-more" disabled={catalogLoading} onClick={() => searchCatalog(catalogFilters, catalogOffset)}>{catalogLoading ? "Cargando..." : "Cargar más"}</button> : null}
       </div>
       {readingClubs.length > 0 ? (
         <section className="store-reading-clubs">

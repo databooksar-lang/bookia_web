@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { registerBookstoreCatalogSearchTests } from "./bookstoreCatalogSearch.test.js";
 import { existsSync, readFileSync } from "node:fs";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -198,6 +199,7 @@ const tests = [
 registerProfileEditorStateTests((name, fn) => tests.push([name, fn]));
 registerBookstoreDescriptionFormatTests((name, fn) => tests.push([name, fn]));
 registerBookstoreDescriptionRenderTests((name, fn) => tests.push([name, fn]));
+registerBookstoreCatalogSearchTests((name, fn) => tests.push([name, fn]));
 registerRichDescriptionEditorTests((name, fn) => tests.push([name, fn]));
 registerReadingClubDescriptionRenderTests((name, fn) => tests.push([name, fn]));
 registerReadingClubStateTests((name, fn) => tests.push([name, fn]));
