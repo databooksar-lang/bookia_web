@@ -1,0 +1,189 @@
+/* Public reader/author profiles only; preserve shared store and dashboard styles. */
+.reader-page {
+  width: min(1280px, calc(100% - 32px));
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.reader-page :is(h1, h2, h3, p, .store-tag, .book-detail-copy, .book-detail-meta) {
+  overflow-wrap: anywhere;
+}
+
+.reader-page :is(.section-heading > div, .reader-public-author-book-card > div, .book-detail-copy) {
+  min-width: 0;
+}
+
+.reader-page .reader-profile-panel {
+  padding: 28px;
+  gap: 28px;
+}
+
+.reader-page .reader-profile-panel:not(:has(.reader-passport)) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.reader-page .reader-profile-identity { gap: 20px; }
+.reader-page .store-identity h1 {
+  margin: 6px 0 14px;
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  line-height: 1.15;
+}
+
+.reader-page .section-heading h2 {
+  margin: 0;
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  line-height: 1.2;
+}
+
+.reader-page .section-heading { gap: 16px; margin-bottom: 20px; }
+.reader-page .section-heading p:not(.section-label) { margin: 8px 0 0; }
+.reader-page .section-label { font-size: .75rem; letter-spacing: .12em; }
+.reader-page .store-tags { gap: 8px; margin-top: 16px; }
+.reader-page .store-tag { padding: 6px 10px; font-size: .75rem; }
+
+.reader-biography { max-width: 65ch; color: rgba(255, 250, 240, .9); }
+.reader-biography-preview { max-height: 6.4em; overflow: hidden; }
+.reader-biography-preview:not(.is-expanded) .bookstore-description > :is(p, ul, ol) { margin-block: 0; }
+.reader-biography-preview.is-expanded { max-height: none; }
+.reader-biography .bookstore-description { line-height: 1.6; }
+.reader-biography .bookstore-description > :first-child { margin-top: 0; }
+.reader-biography-toggle {
+  min-height: 44px;
+  padding: 6px 0;
+  color: var(--cream);
+  background: transparent;
+  border: 0;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.reader-page .reader-profile-panel .reader-passport-book { padding: 18px 18px 18px 24px; }
+.reader-page .reader-passport-book .reader-passport-heading { margin-bottom: 12px; }
+.reader-page .reader-passport-book .reader-passport-heading h2 { font-size: 1.5rem; line-height: 1.2; }
+.reader-page .reader-passport-book .reader-passport-groups { gap: 8px; }
+.reader-page .reader-passport-book .reader-passport-group { padding-top: 8px; }
+.reader-page .reader-passport-book .reader-trait-chip { font-size: .8125rem; }
+.reader-page .reader-passport-book .section-label { color: var(--coral-dark); }
+.reader-page .reader-passport-groups[hidden] { display: none; }
+.reader-passport-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 44px;
+  padding: 0;
+  gap: 12px;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  font: inherit;
+  text-align: left;
+}
+
+.reader-page :is(.reader-public-wanted, .reader-public-author-books) {
+  margin-top: 24px;
+  padding: 24px;
+  box-shadow: 0 4px 14px rgba(11, 45, 36, .05);
+}
+.reader-page .store-reading-clubs { margin-top: 32px; }
+.reader-page .reader-public-author-books-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  gap: 16px;
+}
+.reader-page .reader-public-author-book-card {
+  min-width: 0;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 12px;
+  padding: 14px;
+  height: 100%;
+  box-sizing: border-box;
+}
+.reader-page .reader-public-author-book-card img { width: 72px; height: 108px; object-fit: contain; }
+.reader-page :is(.reader-public-author-book-card, .reader-public-wanted-item) h3 { font-size: 1.125rem; line-height: 1.35; }
+.reader-page .reading-club-public-card h3 { font-size: 1.25rem; line-height: 1.35; }
+.reader-page .reader-public-author-book-synopsis { font-size: 1rem; line-height: 1.6; }
+.reader-page .reader-public-author-book-actions { flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.reader-page .reader-public-author-book-actions .book-share-menu { margin-left: 0; }
+.reader-page .reader-public-wanted-item { padding: 14px 0; gap: 10px; grid-template-columns: 32px minmax(0, 1fr); }
+.reader-page .reader-wanted-index { width: 30px; height: 40px; }
+
+.reader-page :is(.primary-button, .secondary-button, .reader-social-links a, .book-detail-modal-close, .book-share-options a, .book-share-options button) {
+  min-height: 44px;
+  min-width: 44px;
+  max-width: 100%;
+}
+.reader-page :is(.primary-button, .secondary-button) { font-size: .875rem; line-height: 1.35; }
+.reader-page .reader-public-author-book-actions > .secondary-button { padding: 10px 12px; }
+.reader-page .reader-social-links a { box-sizing: border-box; }
+.reader-page .book-share-options { width: 224px; max-width: calc(100vw - 64px); }
+.reader-page :is(button, a):focus-visible {
+  outline: 3px solid var(--forest);
+  outline-offset: 3px;
+}
+.reader-page .reader-profile-identity :is(button, a):focus-visible { outline-color: var(--cream); }
+
+.reader-page .reader-author-book-detail-modal { padding: 16px; }
+.reader-page .reader-author-book-detail-modal .book-detail-modal-card {
+  box-sizing: border-box;
+  max-height: calc(100dvh - 32px);
+  overscroll-behavior: contain;
+  padding: 20px;
+  scroll-padding-top: 68px;
+}
+.reader-page .reader-author-book-detail-modal .book-detail-modal-close {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--cream);
+}
+.reader-page .reader-author-book-detail-modal .book-detail-modal-layout {
+  grid-template-columns: minmax(120px, 200px) minmax(0, 1fr);
+  gap: 24px;
+}
+.reader-page .reader-author-book-detail-modal .book-detail-cover { object-fit: contain; }
+.reader-page .reader-author-book-detail-modal .book-detail-copy h2 {
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  line-height: 1.2;
+  margin-top: 8px;
+}
+.reader-page .reader-author-book-detail-modal .book-detail-copy > :is(.primary-button, .secondary-button) { margin: 8px 8px 0 0; }
+.reader-page .reader-author-book-detail-modal .reader-author-book-detail-actions { padding-bottom: 8px; }
+.reader-page .reader-author-book-detail-actions .book-share-options {
+  position: static;
+  margin-top: 8px;
+}
+
+@media (max-width: 1100px) {
+  .reader-page .reader-public-author-books-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 620px) {
+  .reader-page { margin-top: 12px; }
+  .reader-page .reader-profile-panel { padding: 20px 16px; gap: 20px; }
+  .reader-page .reader-profile-identity { grid-template-columns: 56px minmax(0, 1fr); gap: 8px 14px; }
+  .reader-page .reader-profile-identity .store-identity { display: contents; }
+  .reader-page .reader-monogram.is-profile-hero { width: 56px; height: 56px; font-size: 1.25rem; grid-row: 1 / span 2; }
+  .reader-page .reader-profile-labels { grid-column: 2; gap: 6px; align-self: end; }
+  .reader-page .store-identity h1 { grid-column: 2; margin: 0; }
+  .reader-page .store-identity > :is(.reader-biography, .store-tags) { grid-column: 1 / -1; margin-top: 8px; }
+  .reader-page .reader-profile-labels .section-label { font-size: .6875rem; }
+  .reader-page .reader-author-badge { font-size: .6875rem; }
+  .reader-page .reader-passport-book .reader-passport-heading { margin: 0; padding-right: 0; }
+  .reader-page .reader-passport-heading > div { width: 100%; }
+  .reader-page .reader-profile-panel .reader-passport-book::before { right: 18px; width: 18px; height: 25px; }
+  .reader-page .reader-passport-book .reader-passport-groups:not([hidden]) { margin-top: 12px; }
+  .reader-page :is(.reader-public-wanted, .reader-public-author-books) { padding: 18px 16px; margin-top: 20px; }
+  .reader-page .reader-public-author-books-grid { grid-template-columns: minmax(0, 1fr); }
+  .reader-page .reader-public-author-book-card { grid-template-columns: 64px minmax(0, 1fr); padding: 12px; }
+  .reader-page .reader-public-author-book-card img { width: 64px; height: 96px; }
+  .reader-page .section-heading { margin-bottom: 16px; }
+  .reader-page .store-reading-clubs { margin-top: 24px; }
+  .reader-page .reader-author-book-detail-modal { padding: 10px; }
+  .reader-page .reader-author-book-detail-modal .book-detail-modal-card { max-height: calc(100dvh - 20px); padding: 16px; }
+  .reader-page .reader-author-book-detail-modal .book-detail-modal-layout { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .reader-page .reader-author-book-detail-modal .book-detail-cover { width: 112px; justify-self: start; }
+  .reader-page .reader-author-book-detail-modal .book-detail-section { margin-top: 16px; padding-top: 16px; }
+}

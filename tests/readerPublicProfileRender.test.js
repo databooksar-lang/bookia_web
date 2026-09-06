@@ -57,7 +57,7 @@ export function registerReaderPublicProfileRenderTests(test) {
       const items = [1, 2, 3, 4].map((id) => ({ title: `Libro ${id}`, author: id === 1 ? "Autora" : "", details: id === 1 ? "Edición ilustrada" : "" }));
       const markup = renderToStaticMarkup(createElement(ReaderWantedBooksPublic, { items }));
 
-      assert.match(markup, /Libros que estoy buscando/);
+      assert.match(markup, /Libros que busco/);
       assert.match(markup, /Libro 1/);
       assert.match(markup, /Edición ilustrada/);
       assert.match(markup, /Libro 3/);
@@ -84,7 +84,7 @@ export function registerReaderPublicProfileRenderTests(test) {
       const authRequiredMarkup = renderToStaticMarkup(createElement(ReaderAuthorBookDetailModal, { reader: { ...reader, author_contact: { available: true, contact_requires_auth: true } }, book: { id: 7, title: "La casa del viento", synopsis: "Una novela sobre memoria.", genre: { name: "Novela" }, cover_url: "/readers/ana/author-books/7/cover" }, onClose() {}, onRequireAuth() {} }));
 
       assert.equal(emptyMarkup, "");
-      assert.match(markup, /Libros de Ana Borges/);
+      assert.match(markup, /Libros publicados/);
       assert.match(markup, /La casa del viento/);
       assert.match(markup, /Una novela sobre memoria/);
       assert.match(markup, /Novela/);
@@ -125,7 +125,7 @@ export function registerReaderPublicProfileRenderTests(test) {
       }));
 
       assert.equal(emptyMarkup, "");
-      assert.match(clubMarkup, /Encuentros de Gabriel/);
+      assert.match(clubMarkup, /Clubes de lectura/);
       assert.match(clubMarkup, /Género del club/);
       assert.match(clubMarkup, /Sin género/);
       assert.match(clubMarkup, /id="club-7"/);

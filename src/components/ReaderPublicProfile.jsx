@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 import { resolveApiUrl } from "../api";
 import { deriveReaderMonogram, hasReaderTraits, READER_TRAIT_GROUPS, readerTraitLabel } from "../readerIdentityState";
@@ -6,6 +6,7 @@ import { getPublicWantedBooksView, normalizePublicWantedBooks } from "../readerW
 import { GoodreadsIcon, InstagramIcon, LinkIcon, TikTokIcon, WhatsAppIcon, YouTubeIcon } from "./Icons";
 import { AuthorBookShareMenu } from "./AuthorBookShareMenu";
 import { WhatsAppButton } from "./Commerce";
+import { BookstoreDescription } from "./BookstoreDescription";
 
 const SOCIAL_LINK_DETAILS = {
   instagram: { label: "Instagram", Icon: InstagramIcon },
@@ -33,14 +34,51 @@ export function ReaderAuthorBadge({ isAuthor }) {
   return isAuthor ? <span className="reader-author-badge">Autor/a en Bookia</span> : null;
 }
 
+export function ReaderBiography({ value }) {
+  const [expanded, setExpanded] = useState(false);
+  const [needsExpansion, setNeedsExpansion] = useState(false);
+  const contentRef = useRef(null);
+  const contentId = useId();
+
+  useEffect(() => {
+    const content = contentRef.current;
+    if (!content) return undefined;
+    const measure = () => {
+      const lineHeight = parseFloat(getComputedStyle(content).lineHeight);
+      setNeedsExpansion(content.scrollHeight > lineHeight * 4 + 1);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(content);
+    return () => observer.disconnect();
+  }, [value]);
+
+  return <div className="reader-biography">
+    <div id={contentId} className={`reader-biography-preview${expanded ? " is-expanded" : ""}`} onFocusCapture={() => setExpanded(true)}>
+      <div ref={contentRef}><BookstoreDescription value={value} /></div>
+    </div>
+    {needsExpansion ? <button type="button" className="reader-biography-toggle" aria-expanded={expanded} aria-controls={contentId} onClick={() => setExpanded((current) => !current)}>{expanded ? "Mostrar menos" : "Leer más"}</button> : null}
+  </div>;
+}
+
 export function ReaderPassport({ reader }) {
+  const [expanded, setExpanded] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" && window.matchMedia("(max-width: 620px)").matches);
+  const groupsId = useId();
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 620px)");
+    const update = () => setIsMobile(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
   if (!hasReaderTraits(reader?.traits)) return null;
   return (
     <section className="reader-passport reader-passport-book" aria-labelledby="reader-passport-title">
       <div className="reader-passport-heading">
-        <div><p className="section-label">MI IDENTIDAD</p><h2 id="reader-passport-title">Pasaporte lector</h2></div>
+        <div><p className="section-label">MI IDENTIDAD</p><h2 id="reader-passport-title">{isMobile ? <button type="button" className="reader-passport-toggle" aria-expanded={expanded} aria-controls={groupsId} onClick={() => setExpanded((current) => !current)}>Pasaporte lector <span aria-hidden="true">{expanded ? "−" : "+"}</span></button> : "Pasaporte lector"}</h2></div>
       </div>
-      <div className="reader-passport-groups">
+      <div id={groupsId} className="reader-passport-groups" hidden={isMobile && !expanded}>
         {READER_TRAIT_GROUPS.map((group) => reader.traits?.[group.key]?.length ? (
           <div key={group.key} className="reader-passport-group">
             <h3>{group.label}</h3>
@@ -59,7 +97,7 @@ export function ReaderWantedBooksPublic({ items = [] }) {
   const visibleItems = getPublicWantedBooksView(wantedBooks, expanded);
   return (
     <section className="reader-public-wanted" aria-labelledby="reader-wanted-title">
-      <div className="section-heading results-heading"><div><p className="section-label">MI LISTA DE DESEOS</p><h2 id="reader-wanted-title">Libros que estoy buscando</h2><p>Estas son las próximas historias que me gustaría encontrar.</p></div></div>
+      <div className="section-heading results-heading"><div><p className="section-label">MI LISTA DE DESEOS</p><h2 id="reader-wanted-title">Libros que busco</h2></div></div>
       <div className="reader-public-wanted-list">
         {visibleItems.map((item, index) => <article key={`${item.title}\u0000${item.author || ""}`} className="reader-public-wanted-item"><span className="reader-wanted-index" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span><div><h3>{item.title}</h3>{item.author ? <p>{item.author}</p> : null}{item.details ? <p className="reader-wanted-details">{item.details}</p> : null}</div></article>)}
       </div>
@@ -71,8 +109,8 @@ export function ReaderWantedBooksPublic({ items = [] }) {
 export function ReaderAuthorBooks({ reader, books = [], onOpenDetails }) {
   if (!books.length) return null;
   return <section className="reader-public-author-books" aria-labelledby="reader-author-books-title">
-    <div className="section-heading results-heading"><div><p className="section-label">OBRAS PROPIAS</p><h2 id="reader-author-books-title">Libros de {reader.display_name}</h2></div></div>
-    <div className="reader-public-author-books-grid">{books.map((book) => <article key={book.cover_url} className="reader-public-author-book-card">
+    <div className="section-heading results-heading"><div><p className="section-label">OBRAS PROPIAS</p><h2 id="reader-author-books-title">Libros publicados</h2></div></div>
+    <div className="reader-public-author-books-grid">{books.map((book) => <article key={book.id} className="reader-public-author-book-card">
       <img src={resolveApiUrl(book.cover_url)} alt={`Portada de ${book.title}`} />
       <div><p className="reader-public-author-book-genre">{book.genre?.name || "Sin género"}</p><h3>{book.title}</h3>{book.publisher || book.publication_year ? <p className="reader-public-author-book-meta">{[book.publisher, book.publication_year].filter(Boolean).join(" · ")}</p> : null}<p className="reader-public-author-book-synopsis">{book.synopsis}</p><div className="reader-public-author-book-actions"><button type="button" className="secondary-button" aria-label={`Ver detalles de ${book.title}`} onClick={() => onOpenDetails?.(book)}>Ver detalles</button><AuthorBookShareMenu book={book} reader={reader} /></div></div>
     </article>)}</div>
@@ -92,6 +130,18 @@ export function AuthorBookWhatsAppAction({ reader, book, onRequireAuth }) {
 export function ReaderAuthorBookDetailModal({ reader, book, onClose, onRequireAuth }) {
   const modalCardRef = useRef(null);
   const closeButtonRef = useRef(null);
+  const isOpen = Boolean(book);
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    const bodyOverflow = document.body.style.overflow;
+    const rootOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = bodyOverflow;
+      document.documentElement.style.overflow = rootOverflow;
+    };
+  }, [isOpen]);
   useEffect(() => {
     if (!book) return undefined;
     const previousFocus = document.activeElement;

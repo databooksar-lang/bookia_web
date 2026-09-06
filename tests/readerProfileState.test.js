@@ -89,7 +89,9 @@ export function registerReaderProfileStateTests(test) {
     assert.match(profilePage, /import\s*\{\s*RichDescriptionEditor\s*\}\s*from\s*["']\.\.\/components\/RichDescriptionEditor["']/);
     assert.match(profilePage, /<RichDescriptionEditor\b[^>]*\bvalue=\{draft\.description\}[^>]*\bonChange=/s);
     assert.match(profilePage, /maxLength=\{5000\}/);
-    assert.match(publicPages, /<BookstoreDescription value=\{reader\.description \|\| "Comparte clubes de lectura con la comunidad Bookia\."\}/);
+    assert.match(publicPages, /<ReaderBiography key=\{slug\} value=\{reader\.description \|\| "Comparte clubes de lectura con la comunidad Bookia\."\}/);
+    const publicProfile = readFileSync(new URL("../src/components/ReaderPublicProfile.jsx", import.meta.url), "utf8");
+    assert.match(publicProfile, /<BookstoreDescription value=\{value\}/);
   });
   test("stops a pending favorites load after its cleanup runs", async () => {
     let resolveFavorites;
