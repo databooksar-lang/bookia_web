@@ -1,3 +1,3 @@
 export function canUseAiAutocomplete(currentPlanCode) {
-  return currentPlanCode === "base" || currentPlanCode === "plus_ai";
+  return currentPlanCode === "trial" || currentPlanCode === "base" || currentPlanCode === "plus_ai";
 }
