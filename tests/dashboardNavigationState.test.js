@@ -114,10 +114,12 @@ export function registerDashboardNavigationStateTests(test) {
     assert.doesNotMatch(dashboardSource, /isCreateOpen|isActiveOpen|isHiddenOpen|isReadingClubsOpen/);
   });
 
-  test('highlights the public storefront action in the dashboard header', () => {
+  test('moves the main storefront action out of the dashboard header', () => {
     const dashboardSource = readFileSync(new URL('../src/pages/DashboardPage.jsx', import.meta.url), 'utf8');
 
-    assert.match(dashboardSource, /className="primary-button" onClick=\{\(\) => navigate\(`\/bookstores\/\$\{me\.bookstore\.slug\}`\)\}>🏬 Ver vidriera digital <ArrowIcon \/>/);
+    const dashboardHeader = dashboardSource.slice(dashboardSource.indexOf('<header className="dashboard-top">'), dashboardSource.indexOf('</header>'));
+    assert.doesNotMatch(dashboardHeader, /Ver vidriera digital|Vidriera oculta/);
+    assert.match(dashboardSource, /Ver vidriera digital/);
   });
 
   test('offers the Telegram bot from the dashboard header with safe external navigation', () => {

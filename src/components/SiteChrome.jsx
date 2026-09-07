@@ -20,7 +20,7 @@ function isActive(pathname, href) {
 export function SiteHeader({ pathname, me, refreshMe }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const accountHref = me?.bookstore ? "/dashboard" : me ? "/profile" : "/login";
-  const accountLabel = me?.bookstore ? "Mi cuenta" : me ? "Mi Perfil" : "Ingresar";
+  const accountLabel = me?.bookstore ? "Mi perfil" : me ? "Mi Perfil" : "Ingresar";
   const greetingName = (me?.bookstore?.name ?? me?.reader_profile?.display_name ?? "").trim();
   const greeting = greetingName ? `Hola ${greetingName}!` : "Hola!";
 
@@ -37,7 +37,7 @@ export function SiteHeader({ pathname, me, refreshMe }) {
 
   return (
     <header className="site-header">
-      <div className="header-inner">
+      <div className={`header-inner${me?.bookstore ? " header-inner-bookstore" : ""}`}>
         <AppLink className="brand" href="/" aria-label="Bookia, ir al inicio">
           <span className="brand-mark"><img src={BOOKIA_LOGO_SRC} alt="" /></span>
           <span className="brand-name">Bookia</span>
@@ -63,10 +63,20 @@ export function SiteHeader({ pathname, me, refreshMe }) {
           ))}
           {!me ? <AppLink href="/register" className="header-account">Registrate</AppLink> : null}
           {me ? <button className="header-logout" type="button" onClick={logout}>Cerrar sesion</button> : null}
-          <AppLink href={accountHref} className={`header-account${pathname === accountHref || pathname === "/dashboard" ? " is-active" : ""}`}>
+          {!me?.bookstore ? <AppLink href={accountHref} className={`header-account${pathname === accountHref || pathname === "/dashboard" ? " is-active" : ""}`}>
             {accountLabel}
-          </AppLink>
+          </AppLink> : null}
         </nav>
+        {me?.bookstore ? (
+          <div className="header-bookstore-actions">
+            <AppLink href={accountHref} className={`header-account header-bookstore-profile${pathname === accountHref ? " is-active" : ""}`}>
+              {accountLabel}
+            </AppLink>
+            <AppLink href={`/bookstores/${me.bookstore.slug}`} className="header-account header-storefront">
+              Ver vidriera digital
+            </AppLink>
+          </div>
+        ) : null}
       </div>
     </header>
   );
