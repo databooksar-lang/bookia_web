@@ -2,6 +2,14 @@
 
 SPA de React/Vite para el buscador publico, la ficha de librerias y el panel de gestion.
 
+## Carga desde fotos
+
+La prueba gratuita de 15 días incluye todas las funcionalidades de IA, incluida la carga por foto y el autocompletado de descripciones y géneros, con hasta 10 libros. Al vencer se restringen las modificaciones y la IA.
+
+El panel Alta de libros ofrece carga manual y desde foto. El permiso `can_use_photo_ingestion` de `/me` controla las acciones (Plus AI o prueba activa); las cargas previas, incluidas las de Telegram, se recuperan desde `/dashboard/photo-ingestions`. Cada envío multipart usa un `request_key` UUID, retenido con el archivo para un reintento explícito ante fallas de red. El cliente consulta el estado hasta 40 veces y permite retomarlo sin reenviar la foto. La librería guarda correcciones y confirma los libros seleccionados antes de publicarlos; la API valida la capacidad al publicar.
+
+Android usa `@capacitor/camera` v8 para cámara y galería con `saveToGallery: false`, sin solicitar acceso amplio al almacenamiento. Después de instalar dependencias ejecutar `npm run mobile:sync`. El navegador usa selección de archivo/captura. Las imágenes privadas se solicitan como blobs mediante el transporte autenticado de la API (incluido Bearer Android). Verificar en un dispositivo real cámara, galería, cancelación y recuperación tras cierre del proceso antes de publicar un AAB. Los archivos nuevos bajo `src/` y los manifiestos npm ya están cubiertos por los watch paths existentes; no se agregan patrones.
+
 ## Requisitos
 
 - Node.js 20 o compatible

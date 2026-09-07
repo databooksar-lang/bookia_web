@@ -202,3 +202,13 @@ export async function apiFetch(path, { suppressSessionExpiry = false, ...options
   }
   return parseApiResponse(path, response);
 }
+
+export async function apiFetchBlob(path, options = {}) {
+  const { response, hadMobileSession } = await requestApiResponse(path, options);
+  if (response.status === 401) await handleUnauthorizedResponse(path, false, hadMobileSession);
+  if (!response.ok) return parseApiResponse(path, response);
+  if (!(response.headers.get("content-type") || "").startsWith("image/")) {
+    throw new Error("No pudimos cargar la imagen.");
+  }
+  return response.blob();
+}

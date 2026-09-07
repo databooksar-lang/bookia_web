@@ -5,7 +5,7 @@ export function TermsPage() {
     <article className="editorial-page about-page legal-page">
       <p className="section-label">Terminos y Condiciones</p>
       <h1>Reglas claras para buscar, publicar y conectar.</h1>
-      <p>Vigente desde el 31 de agosto de 2026.</p>
+      <p>Vigente desde el 6 de septiembre de 2026.</p>
       <p>Este documento resume las condiciones de uso de Bookia y no reemplaza asesoramiento legal profesional.</p>
 
       <h2>Responsable</h2>
@@ -39,7 +39,7 @@ export function TermsPage() {
       <h2>Planes para librerias</h2>
       <p>Bookia ofrece suscripciones mensuales para librerias, con limites de catalogo y funciones segun el plan elegido. La contratacion se autoriza y cobra de forma recurrente mediante Mercado Pago. Bookia no recibe ni almacena los datos completos de la tarjeta.</p>
       <p>La cuenta de Mercado Pago que autoriza la suscripcion puede ser distinta de la cuenta de acceso a Bookia y puede pertenecer a la libreria o a una tercera persona que preste su consentimiento. Bookia no solicita previamente el correo pagador: Mercado Pago usa la cuenta activa al completar la autorizacion.</p>
-      <p>Las nuevas librerias acceden a una prueba gratis de 15 dias desde el registro, con hasta 10 libros y sin solicitar medio de pago ni realizar cobros automaticos. Finalizada la prueba, Bookia restringe las modificaciones hasta que la libreria elija y autorice una suscripcion mensual en Mercado Pago. Un cambio de plan o capacidad solicitado por la libreria se aplica en la renovacion siguiente, sin prorrateo.</p>
+      <p>Las nuevas librerias acceden a una prueba gratis de 15 dias desde el registro, con todas las funcionalidades de IA, hasta 10 libros y sin solicitar medio de pago ni realizar cobros automaticos. Finalizada la prueba, Bookia restringe las modificaciones hasta que la libreria elija y autorice una suscripcion mensual en Mercado Pago. Un cambio de plan o capacidad solicitado por la libreria se aplica en la renovacion siguiente, sin prorrateo.</p>
       <p>Ante un cobro rechazado, Bookia mantiene por 7 dias el acceso para administrar el catalogo. Vencido ese plazo sin regularizacion, se restringen las altas, bajas, ediciones y funciones con IA, pero la vidriera y el catalogo ya publicado permanecen visibles. La cancelacion evita nuevas renovaciones y conserva el acceso y la publicacion hasta finalizar el periodo vigente. Cuando la cancelacion se hace efectiva, Bookia oculta la vidriera y el catalogo publico, pero conserva la cuenta y sus datos.</p>
       <p>La libreria puede reactivar la suscripcion desde su panel. La reactivacion no incluye una nueva prueba gratis: crea una nueva suscripcion mensual en Mercado Pago y la libreria vuelve a publicarse cuando la autorizacion queda confirmada.</p>
       <p>Los precios en ARS para nuevas contrataciones pueden cambiar. El importe de una suscripcion existente se mantiene hasta que Bookia comunique y aplique expresamente una actualizacion o la libreria solicite un cambio de plan.</p>
@@ -51,6 +51,7 @@ export function TermsPage() {
       <p>Al cargar textos, listas de libros, fotos, logos, banners o datos de catalogo, cada usuario declara que tiene derecho a usarlos y autoriza a Bookia a alojarlos, mostrarlos y adaptarlos tecnicamente para prestar el servicio. Quien publica conserva la responsabilidad sobre ese contenido.</p>
 
       <h2>Funciones con IA</h2>
+      <p>La carga desde fotos está disponible en Plus AI y durante la prueba gratis activa, desde la web, Android y Telegram. Genera borradores que la librería puede corregir, descartar y confirmar antes de publicar. Cada libro publicado ocupa un lugar en el límite de catálogo; enviar una foto no garantiza su identificación ni publicación.</p>
       <p>Bookia puede usar OpenAI u otros proveedores para asistir en la extraccion de datos desde fotos, autocompletar informacion de catalogo o sugerir descripciones. Estas funciones pueden cometer errores; la libreria debe revisar y confirmar la informacion antes de publicarla.</p>
 
       <h2>Newsletter, privacidad y cookies</h2>
