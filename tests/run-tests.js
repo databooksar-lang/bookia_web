@@ -365,7 +365,22 @@ tests.push(["greets authenticated readers and bookstores by name in the site hea
     assert.match(unnamedMarkup, /Hola!/);
     assert.doesNotMatch(visitorMarkup, /Hola/);
     assert.match(readerMarkup, /Cerrar sesion/);
-    assert.match(bookstoreMarkup, /Mi cuenta/);
+    assert.match(bookstoreMarkup, /Mi perfil/);
+    assert.doesNotMatch(readerMarkup, /Ver vidriera digital/);
+    assert.doesNotMatch(visitorMarkup, /Ver vidriera digital/);
+    for (const status of ["active", "canceled", "payment_pending"]) {
+      for (const pathname of ["/", "/dashboard", "/about"]) {
+        const markup = renderToStaticMarkup(createElement(SiteHeader, {
+          ...sharedProps, pathname,
+          me: { bookstore: { name: "Eterna Cadencia", slug: "eterna-cadencia" }, billing: { status } },
+        }));
+        const actions = markup.slice(markup.indexOf('</nav>'));
+        assert.match(actions, /href="\/dashboard"[^>]*>Mi perfil<\/a>/);
+        assert.match(actions, /href="\/bookstores\/eterna-cadencia"/);
+        assert.ok(actions.indexOf("Mi perfil") < actions.indexOf("Ver vidriera digital"));
+        assert.doesNotMatch(actions, /aria-disabled|disabled|Vidriera oculta/);
+      }
+    }
   } finally {
     await vite.close();
   }
@@ -961,7 +976,7 @@ tests.push(["publishes terms and conditions for Bookia's marketplace role", () =
   assert.match(billingPanelSource, /volverá a publicarse cuando Mercado Pago confirme la autorización/);
   assert.match(dashboardSource, /billingAccess\.catalogIsPublic/);
   assert.match(dashboardSource, /Tu librería y su catálogo no están visibles públicamente/);
-  assert.match(dashboardSource, /Vidriera oculta/);
+  assert.doesNotMatch(dashboardSource, /Vidriera oculta/);
   assert.match(dashboardSource, /La reactivación está pendiente\. Confirmá el medio de pago desde Suscripción\./);
   assert.match(billingPanelSource, /Finalizó el/);
   assert.match(billingPanelSource, /Inicio de facturación/);

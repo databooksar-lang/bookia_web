@@ -449,7 +449,6 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
         <div className="dashboard-actions">
           <div className="dashboard-actions-buttons">
             <a className="secondary-button" href="https://t.me/bookia_ext_bot" target="_blank" rel="noreferrer">🤖 Usar bot de Telegram</a>
-            {billingAccess.catalogIsPublic ? <button className="primary-button" onClick={() => navigate(`/bookstores/${me.bookstore.slug}`)}>🏬 Ver vidriera digital <ArrowIcon /></button> : <span className="secondary-button button-disabled" aria-disabled="true">Vidriera oculta</span>}
           </div>
           <p className="dashboard-telegram-help">Iniciá sesión en el bot con el correo y la contraseña de tu librería para cargar libros desde Telegram.</p>
         </div>
