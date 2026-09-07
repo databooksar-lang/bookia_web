@@ -5,7 +5,7 @@ export function TermsPage() {
     <article className="editorial-page about-page legal-page">
       <p className="section-label">Terminos y Condiciones</p>
       <h1>Reglas claras para buscar, publicar y conectar.</h1>
-      <p>Vigente desde el 31 de agosto de 2026.</p>
+      <p>Vigente desde el 6 de septiembre de 2026.</p>
       <p>Este documento resume las condiciones de uso de Bookia y no reemplaza asesoramiento legal profesional.</p>
 
       <h2>Responsable</h2>
@@ -51,6 +51,7 @@ export function TermsPage() {
       <p>Al cargar textos, listas de libros, fotos, logos, banners o datos de catalogo, cada usuario declara que tiene derecho a usarlos y autoriza a Bookia a alojarlos, mostrarlos y adaptarlos tecnicamente para prestar el servicio. Quien publica conserva la responsabilidad sobre ese contenido.</p>
 
       <h2>Funciones con IA</h2>
+      <p>La carga desde fotos está disponible en Plus AI y durante la prueba gratis activa, desde la web, Android y Telegram. Genera borradores que la librería puede corregir, descartar y confirmar antes de publicar. Cada libro publicado ocupa un lugar en el límite de catálogo; enviar una foto no garantiza su identificación ni publicación.</p>
       <p>Bookia puede usar OpenAI u otros proveedores para asistir en la extraccion de datos desde fotos, autocompletar informacion de catalogo o sugerir descripciones. Estas funciones pueden cometer errores; la libreria debe revisar y confirmar la informacion antes de publicarla.</p>
 
       <h2>Newsletter, privacidad y cookies</h2>

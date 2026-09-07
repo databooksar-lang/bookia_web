@@ -1,4 +1,4 @@
-import { useEffect, useState, useTransition } from "react";
+import { lazy, Suspense, useEffect, useState, useTransition } from "react";
 
 import { apiFetch, resolveApiUrl } from "../api";
 import { getAiAutocompleteSourceState, mergeAiAutocompleteSuggestion } from "../aiAutocompleteState";
@@ -22,6 +22,8 @@ import { GoogleSheetsIntegrationPanel } from "../components/GoogleSheetsIntegrat
 import { formatImportedCommerce } from "../tiendanubeIntegrationState";
 import { getExternalCatalogPresentation, isExternalCatalogItem } from "../externalCatalogState";
 import { NotificationPreferences } from "../components/NotificationPreferences";
+
+const PhotoIngestionPanel = lazy(() => import("../components/PhotoIngestionPanel"));
 
 const EMPTY_ITEM = {
   title: "",
@@ -184,6 +186,7 @@ function GenreSelector({ genres, genresLoading = false, genresError = "", select
 }
 
 export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
+  const [creationMode, setCreationMode] = useState("manual");
   const { section, catalogView, analytics: analyticsFilter } = parseDashboardNavigation(locationSearch, getArgentinaToday());
   const registrationPending = new URLSearchParams(locationSearch).get("registered") === "pending";
   const tiendanubeCallbackResult = new URLSearchParams(locationSearch).get("tiendanube") || "";
@@ -472,12 +475,14 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
 
       <DashboardPanel
         label="Alta de libros"
-        title="Agregar libro manualmente"
-        description="Usa este formulario cuando quieras cargar un libro desde cero."
+        title="Agregar libros"
+        description="Elegí cómo querés cargar los libros de tu catálogo."
         isActive={section === "new-book"}
         className="dashboard-create"
       >
-        <form onSubmit={createItem}>
+        <nav className="dashboard-subtabs" aria-label="Modo de alta"><button type="button" className={`dashboard-subtab${creationMode === "manual" ? " is-active" : ""}`} aria-pressed={creationMode === "manual"} onClick={() => setCreationMode("manual")}>Carga manual</button><button type="button" className={`dashboard-subtab${creationMode === "photo" ? " is-active" : ""}`} aria-pressed={creationMode === "photo"} onClick={() => setCreationMode("photo")}>Desde una foto</button></nav>
+        {creationMode === "photo" && section === "new-book" ? <Suspense fallback={<p>Cargando fotos…</p>}><PhotoIngestionPanel canUse={me.can_use_photo_ingestion === true} onPublished={loadCatalog} /></Suspense> : null}
+        <form onSubmit={createItem} hidden={creationMode !== "manual"}>
           <div className="dashboard-card-head dashboard-card-head-inline">
             <p>Solo Titulo y Autor son obligatorios. El resto de los campos son opcionales.</p>
             <button className="primary-button" type="submit" disabled={createBusy}>{createBusy ? "Guardando..." : "Crear libro"}</button>

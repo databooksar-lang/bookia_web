@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { registerPhotoIngestionStateTests } from "./photoIngestionState.test.js";
 import { registerBookstoreCatalogSearchTests } from "./bookstoreCatalogSearch.test.js";
 import { existsSync, readFileSync } from "node:fs";
 import { createElement } from "react";
@@ -204,6 +205,7 @@ registerRichDescriptionEditorTests((name, fn) => tests.push([name, fn]));
 registerReadingClubDescriptionRenderTests((name, fn) => tests.push([name, fn]));
 registerReadingClubStateTests((name, fn) => tests.push([name, fn]));
 registerAiAutocompleteStateTests((name, fn) => tests.push([name, fn]));
+registerPhotoIngestionStateTests((name, fn) => tests.push([name, fn]));
 registerDashboardCatalogStateTests((name, fn) => tests.push([name, fn]));
 registerPublicSearchStateTests((name, fn) => tests.push([name, fn]));
 registerSectionIndexTests((name, fn) => tests.push([name, fn]));
@@ -919,7 +921,7 @@ tests.push(["publishes terms and conditions for Bookia's marketplace role", () =
   assert.match(registerSource, /href="\/privacy"/);
   assert.match(privacySource, /href="\/terms"/);
   assert.match(termsSource, /Terminos y Condiciones/);
-  assert.match(termsSource, /Vigente desde el 31 de agosto de 2026/);
+  assert.match(termsSource, /Vigente desde el 6 de septiembre de 2026/);
   assert.match(termsSource, /Marcelo Gabriel Gonzalez/);
   assert.match(termsSource, /bookia.app.admin@gmail.com/);
   assert.match(termsSource, /Bookia no vende libros directamente/);

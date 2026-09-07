@@ -714,3 +714,16 @@ select {
   }
 }
 
+/* Photo ingestion: one image, reviewable drafts and explicit publication. */
+.photo-ingestion-panel { display: grid; gap: 1rem; margin-top: 1.5rem; }
+.photo-ingestion-panel p { margin: .4rem 0; }
+.photo-ingestion-actions { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
+.photo-ingestion-actions label { display: grid; gap: .5rem; min-width: 0; max-width: 100%; }
+.photo-ingestion-actions input[type="file"] { max-width: 100%; }
+.photo-ingestion-preview { width: 100%; max-width: 420px; max-height: 320px; object-fit: contain; border-radius: 12px; background: #f4f1eb; }
+.photo-ingestion-drafts { display: grid; gap: 1rem; }
+.photo-ingestion-draft { min-width: 0; border: 1px solid #d9d4ca; border-radius: 12px; padding: 1rem; display: grid; gap: 1rem; }
+.photo-ingestion-select { display: flex; align-items: center; gap: .5rem; }
+.photo-ingestion-select input { width: auto; }
+.photo-ingestion-history ul { list-style: none; padding: 0; display: grid; gap: .5rem; }
+.photo-ingestion-panel > button { justify-self: start; }
