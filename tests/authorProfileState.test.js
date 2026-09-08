@@ -60,6 +60,10 @@ export function registerAuthorProfileStateTests(test) {
       assert.match(activeMarkup, /Tu perfil de autor\/a está activo/);
       assert.match(activeMarkup, /Celular con WhatsApp/);
       assert.match(activeMarkup, /Desactivar perfil/);
+      assert.ok(activeMarkup.indexOf("Tu perfil público") < activeMarkup.indexOf("Mis libros"));
+      assert.ok(activeMarkup.indexOf("Mis libros") < activeMarkup.indexOf("author-profile-danger-zone"));
+      assert.match(activeMarkup, /author-profile-public-settings/);
+      assert.match(activeMarkup, /author-profile-danger-zone/);
       assert.doesNotMatch(activeMarkup, /rights-declaration/);
       assert.equal(renderToStaticMarkup(createElement(ReaderAuthorBadge, { isAuthor: false })), "");
       assert.match(renderToStaticMarkup(createElement(ReaderAuthorBadge, { isAuthor: true })), />Autor\/a en Bookia</);
