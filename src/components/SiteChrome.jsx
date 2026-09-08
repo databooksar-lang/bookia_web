@@ -37,7 +37,7 @@ export function SiteHeader({ pathname, me, refreshMe }) {
 
   return (
     <header className="site-header">
-      <div className={`header-inner${me?.bookstore ? " header-inner-bookstore" : ""}`}>
+      <div className={`header-inner${me?.bookstore ? " header-inner-bookstore" : me?.reader_profile ? " header-inner-reader" : ""}`}>
         <AppLink className="brand" href="/" aria-label="Bookia, ir al inicio">
           <span className="brand-mark"><img src={BOOKIA_LOGO_SRC} alt="" /></span>
           <span className="brand-name">Bookia</span>
@@ -63,10 +63,15 @@ export function SiteHeader({ pathname, me, refreshMe }) {
           ))}
           {!me ? <AppLink href="/register" className="header-account">Registrate</AppLink> : null}
           {me ? <button className="header-logout" type="button" onClick={logout}>Cerrar sesion</button> : null}
-          {!me?.bookstore ? <AppLink href={accountHref} className={`header-account${pathname === accountHref || pathname === "/dashboard" ? " is-active" : ""}`}>
-            {accountLabel}
-          </AppLink> : null}
         </nav>
+        {me?.reader_profile && !me?.bookstore ? (
+          <div className="header-reader-actions">
+            <AppLink href={accountHref} className={`header-account header-reader-profile${pathname === accountHref ? " is-active" : ""}`}>
+              {accountLabel}
+            </AppLink>
+            {me.reader_profile.slug ? <AppLink href={`/readers/${me.reader_profile.slug}`} className="header-account header-reader-public-profile">Perfil Público</AppLink> : null}
+          </div>
+        ) : null}
         {me?.bookstore ? (
           <div className="header-bookstore-actions">
             <AppLink href={accountHref} className={`header-account header-bookstore-profile${pathname === accountHref ? " is-active" : ""}`}>

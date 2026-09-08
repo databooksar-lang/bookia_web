@@ -278,21 +278,25 @@ p {
   color: #0f4638;
   background: #fffaf3;
 }
-.header-inner-bookstore {
+.header-inner-bookstore,
+.header-inner-reader {
   flex-wrap: wrap;
   gap: 12px;
   padding-block: 12px;
 }
-.header-inner-bookstore .header-links {
+.header-inner-bookstore .header-links,
+.header-inner-reader .header-links {
   flex-shrink: 0;
 }
-.header-bookstore-actions {
+.header-bookstore-actions,
+.header-reader-actions {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-left: auto;
 }
-.header-bookstore-actions .header-account {
+.header-bookstore-actions .header-account,
+.header-reader-actions .header-account {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -308,15 +312,24 @@ p {
 .header-bookstore-actions .header-bookstore-profile:hover {
   background: #ffffff;
 }
+.header-reader-actions .header-reader-profile {
+  background: #fffaf3;
+}
+.header-reader-actions .header-reader-profile:hover {
+  background: #ffffff;
+}
 @media (max-width: 820px) {
-  .header-inner-bookstore .header-greeting {
+  .header-inner-bookstore .header-greeting,
+  .header-inner-reader .header-greeting {
     flex: 1;
   }
-  .header-inner-bookstore .header-bookstore-actions {
+  .header-inner-bookstore .header-bookstore-actions,
+  .header-inner-reader .header-reader-actions {
     width: 100%;
     justify-content: flex-end;
   }
-  .header-bookstore-actions .header-account {
+  .header-bookstore-actions .header-account,
+  .header-reader-actions .header-account {
     padding: 10px 12px !important;
   }
 }
