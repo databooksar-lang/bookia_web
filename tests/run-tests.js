@@ -28,6 +28,7 @@ import { registerReaderProfileStateTests } from "./readerProfileState.test.js";
 import { registerReaderProfileNavigationStateTests } from "./readerProfileNavigationState.test.js";
 import { registerReaderIdentityStateTests } from "./readerIdentityState.test.js";
 import { registerReaderWantedBooksStateTests } from "./readerWantedBooksState.test.js";
+import { registerAuthorDiscoveryStateTests } from "./authorDiscoveryState.test.js";
 import { registerReaderPublicProfileRenderTests } from "./readerPublicProfileRender.test.js";
 import { registerAuthorProfileStateTests } from "./authorProfileState.test.js";
 import { registerAuthorBooksStateTests } from "./authorBooksState.test.js";
@@ -57,6 +58,7 @@ import { registerDashboardNavigationStateTests } from './dashboardNavigationStat
 const tests = [
   ["treats /genres as an API route", () => {
     assert.equal(isBookiaApiRoute("/reading-clubs?genre_slug=policial"), true);
+    assert.equal(isBookiaApiRoute("/authors"), true);
     assert.equal(isBookiaApiRoute("/genres"), true);
     assert.equal(isBookiaApiRoute("/genres?active=true"), true);
     assert.equal(isBookiaApiRoute("/analytics/acquisition-events"), true);
@@ -227,6 +229,7 @@ registerBillingStateTests((name, fn) => tests.push([name, fn]));
 registerBillingSubscriptionStateTests((name, fn) => tests.push([name, fn]));
 registerDashboardNavigationStateTests((name, fn) => tests.push([name, fn]));
 registerReaderProfileStateTests((name, fn) => tests.push([name, fn]));
+registerAuthorDiscoveryStateTests((name, fn) => tests.push([name, fn]));
 registerReaderProfileNavigationStateTests((name, fn) => tests.push([name, fn]));
 registerAuthorProfileStateTests((name, fn) => tests.push([name, fn]));
 registerAuthorBooksStateTests((name, fn) => tests.push([name, fn]));

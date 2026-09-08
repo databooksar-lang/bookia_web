@@ -13,6 +13,7 @@ import { buildPendingReaderActionEvent, cancelPendingReaderAction, clearPendingR
 import { displayBookstoreDescription } from "../profileEditorState";
 import { displayReadingClubDate } from "../readingClubState";
 import { buildGoogleMapsAddressUrl, buildPublicSearchParams, buildReadingClubSearchParams, filterBookstores, getAvailableReadingClubGenres, getBookstoreTags, getDiscoveryCarouselNavigation, getDiscoveryCarouselScrollOptions, getVisibleReadingClubs, selectDiscoveryCarouselItems } from "../publicSearchState";
+import { normalizeAuthorDiscoveryItems } from "../authorDiscoveryState";
 import { EmptyState, WhatsAppButton } from "../components/Commerce";
 import { ReadingClubShareMenu } from "../components/ReadingClubShareMenu";
 import { BookstoreProfileShareMenu } from "../components/BookstoreProfileShareMenu";
@@ -387,6 +388,33 @@ export function DiscoveryCarousel({ items = [], loading, onOpenBook }) {
       </div>
     </section>
   );
+}
+
+export function AuthorsCarousel({ authors = [], loading }) {
+  const trackRef = useRef(null);
+  const [navigation, setNavigation] = useState(() => ({ canPrevious: false, canNext: authors.length > 1 }));
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track || loading || !authors.length) return undefined;
+    const updateNavigation = () => setNavigation(getDiscoveryCarouselNavigation(track));
+    updateNavigation();
+    track.addEventListener("scroll", updateNavigation, { passive: true });
+    globalThis.addEventListener?.("resize", updateNavigation);
+    return () => { track.removeEventListener("scroll", updateNavigation); globalThis.removeEventListener?.("resize", updateNavigation); };
+  }, [authors.length, loading]);
+  function scrollTrack(direction) {
+    const track = trackRef.current;
+    if (!track) return;
+    track.scrollBy(getDiscoveryCarouselScrollOptions({ direction, clientWidth: track.clientWidth, reduceMotion: globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches }));
+  }
+  if (loading) return <section className="authors-carousel authors-carousel-loading" aria-label="Cargando autores"><div className="discovery-carousel-heading"><span /><span /></div><div className="discovery-carousel-skeletons" aria-hidden="true"><span /><span /><span /></div></section>;
+  if (!authors.length) return null;
+  return <section className="authors-carousel" aria-labelledby="authors-carousel-title">
+    <div className="discovery-carousel-heading"><div><p className="section-label">AUTORES EN BOOKIA</p><h2 id="authors-carousel-title">Conocé a quienes escriben</h2></div><div className="discovery-carousel-controls"><button type="button" aria-label="Ver autores anteriores" disabled={!navigation.canPrevious} onClick={() => scrollTrack(-1)}><ArrowIcon /></button><button type="button" aria-label="Ver más autores" disabled={!navigation.canNext} onClick={() => scrollTrack(1)}><ArrowIcon /></button></div></div>
+    <div ref={trackRef} className="authors-carousel-track" aria-label="Autores en Bookia" tabIndex={0} onKeyDown={(event) => { if (event.key === "ArrowLeft" || event.key === "ArrowRight") { event.preventDefault(); scrollTrack(event.key === "ArrowLeft" ? -1 : 1); } }}>
+      {authors.map((author) => <article key={author.slug} className="author-discovery-card">{author.avatar_url ? <img className="author-discovery-avatar" src={resolveApiUrl(author.avatar_url)} alt={`Foto de ${author.display_name}`} loading="lazy" /> : <ReaderMonogram displayName={author.display_name} className="author-discovery-avatar" />}<div><h3>{author.display_name}</h3><p>{author.description || "Comparte sus historias con la comunidad Bookia."}</p></div><AppLink className="secondary-button" href={`/readers/${author.slug}`}>Ver perfil <ArrowIcon size={15} /></AppLink></article>)}
+    </div>
+  </section>;
 }
 
 function InitialBookDiscovery({ items, loading, me }) {
@@ -947,11 +975,14 @@ export function HomePage({ me }) {
   const [searchFilters, setSearchFilters] = useState(null);
   const [discoveryItems, setDiscoveryItems] = useState([]);
   const [discoveryLoading, setDiscoveryLoading] = useState(true);
+  const [authors, setAuthors] = useState([]);
+  const [authorsLoading, setAuthorsLoading] = useState(true);
 
   useEffect(() => {
     apiFetch("/bookstores").then((data) => setStores(data.items)).catch(() => setStores([])).finally(() => setStoresLoading(false));
     apiFetch("/genres").then((data) => setGenres(data.items || [])).catch(() => setGenres([])).finally(() => setGenresLoading(false));
     apiFetch("/search").then((data) => setDiscoveryItems(selectDiscoveryCarouselItems(data.items || []))).catch(() => setDiscoveryItems([])).finally(() => setDiscoveryLoading(false));
+    apiFetch("/authors").then((data) => setAuthors(normalizeAuthorDiscoveryItems(data.items || []))).catch(() => setAuthors([])).finally(() => setAuthorsLoading(false));
   }, []);
 
   return (
@@ -963,6 +994,7 @@ export function HomePage({ me }) {
       <BenefitsStrip benefits={SEARCH_BENEFITS} ariaLabel="Beneficios de la búsqueda de libros" />
       {searchFilters !== null ? <SearchResults filters={searchFilters} stores={stores} me={me} onClearFilters={() => { setDraftFilters(EMPTY_SEARCH_FILTERS); setSearchFilters(EMPTY_SEARCH_FILTERS); }} /> : null}
       <BookstoresSection stores={stores} loading={storesLoading} />
+      <AuthorsCarousel authors={authors} loading={authorsLoading} />
       <ReadingClubsSection me={me} />
       <NewsletterSignup />
     </>
@@ -1608,7 +1640,7 @@ export function ReaderPage({ slug, search = "", me = null }) {
   if (error || !reader) return <div className="page-state"><EmptyState title="No encontramos a este lector">{error || "Revis\u00E1 el enlace o volv\u00E9 a la b\u00FAsqueda."}</EmptyState><button className="secondary-button" onClick={() => navigate("/")}>Volver a buscar</button></div>;
 
   return <section className="store-page reader-page">
-    <div className="store-profile-panel reader-profile-panel"><div className="reader-profile-identity"><ReaderMonogram displayName={reader.display_name} className="is-profile-hero" /><div className="store-identity"><div className="reader-profile-labels"><p className="section-label">Lector en Bookia</p><ReaderAuthorBadge isAuthor={reader.is_author} /></div><h1>{reader.display_name}</h1><ReaderBiography key={slug} value={reader.description || "Comparte clubes de lectura con la comunidad Bookia."} />{reader.favorite_genres?.length ? <div className="store-tags" aria-label="Generos favoritos">{reader.favorite_genres.map((genre) => <span key={genre.id} className="store-tag">{genre.name}</span>)}</div> : null}</div></div><ReaderPassport reader={reader} /></div>
+    <div className="store-profile-panel reader-profile-panel"><div className="reader-profile-identity">{reader.avatar_url ? <img className="reader-monogram is-profile-hero reader-profile-avatar" src={resolveApiUrl(reader.avatar_url)} alt={`Foto de ${reader.display_name}`} /> : <ReaderMonogram displayName={reader.display_name} className="is-profile-hero" />}<div className="store-identity"><div className="reader-profile-labels"><p className="section-label">Lector en Bookia</p><ReaderAuthorBadge isAuthor={reader.is_author} /></div><h1>{reader.display_name}</h1><ReaderBiography key={slug} value={reader.description || "Comparte clubes de lectura con la comunidad Bookia."} />{reader.favorite_genres?.length ? <div className="store-tags" aria-label="Generos favoritos">{reader.favorite_genres.map((genre) => <span key={genre.id} className="store-tag">{genre.name}</span>)}</div> : null}</div></div><ReaderPassport reader={reader} /></div>
     <ReaderSocialLinks links={reader.social_links || []} />
     <ReaderAuthorBooks reader={reader} books={authorBooks} onOpenDetails={openAuthorBook} />
     <ReaderAuthorBookDetailModal reader={reader} book={selectedAuthorBook} onClose={closeAuthorBook} onRequireAuth={requireAuthorAuth} />

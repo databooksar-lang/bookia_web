@@ -3,7 +3,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { createServer } from "vite";
 
-import { activateAuthorProfile, deactivateAuthorProfile, getAuthorProfileView, isActiveAuthor, updateAuthorProfileWhatsApp } from "../src/authorProfileState.js";
+import { activateAuthorProfile, deactivateAuthorProfile, getAuthorProfileView, isActiveAuthor, removeAuthorAvatar, updateAuthorAvatar, updateAuthorProfileWhatsApp } from "../src/authorProfileState.js";
 
 export function registerAuthorProfileStateTests(test) {
   test("derives author views without reader profile privacy", () => {
@@ -29,6 +29,19 @@ export function registerAuthorProfileStateTests(test) {
       { path: "/dashboard/author-profile/deactivate", options: { method: "POST" } },
       { path: "/dashboard/author-profile", options: { method: "PATCH", body: JSON.stringify({ whatsapp_phone: "11 2222-3333" }) } },
     ]);
+  });
+
+  test("uploads and removes an author avatar through the protected profile endpoints", async () => {
+    const requests = [];
+    const apiFetch = async (path, options) => { requests.push({ path, options }); return { author_profile: { avatar_url: "/authors/ana/avatar" } }; };
+    const avatar = new File(["image"], "avatar.png", { type: "image/png" });
+    assert.deepEqual(await updateAuthorAvatar(apiFetch, avatar), { avatar_url: "/authors/ana/avatar" });
+    await removeAuthorAvatar(apiFetch);
+    assert.equal(requests[0].path, "/dashboard/author-profile/avatar");
+    assert.equal(requests[0].options.method, "POST");
+    assert.ok(requests[0].options.body instanceof FormData);
+    assert.equal(requests[1].path, "/dashboard/author-profile/avatar");
+    assert.equal(requests[1].options.method, "DELETE");
   });
 
   test("renders activation consent, active state, and the public badge from real components", async () => {
