@@ -26,6 +26,7 @@ export function registerAuthorDiscoveryStateTests(test) {
         loading: false,
       }));
       assert.match(markup, /Autores en Bookia/);
+      assert.match(markup, /<section id="autores" class="authors-carousel"/);
       assert.match(markup, /Ana Borges/);
       assert.match(markup, /Escribe poesía/);
       assert.match(markup, /href="\/readers\/ana-borges"/);

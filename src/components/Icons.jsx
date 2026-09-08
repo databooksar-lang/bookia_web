@@ -95,6 +95,15 @@ export function BookIcon({ size = 22 }) {
   );
 }
 
+export function AuthorIcon({ size = 18 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="8" r="3.25" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M5.5 20v-1.25a6.5 6.5 0 0 1 13 0V20" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function SparkleIcon({ size = 18 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">

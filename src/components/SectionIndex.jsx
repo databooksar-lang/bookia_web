@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 
-import { BookIcon, SearchIcon, SparkleIcon, StoreIcon } from "./Icons";
+import { AuthorIcon, BookIcon, SearchIcon, StoreIcon } from "./Icons";
 import { HOME_SECTION_INDEX_ITEMS } from "../sectionIndexState";
 
-const SECTION_ICONS = { buscar: SearchIcon, librerias: StoreIcon, clubes: BookIcon, novedades: SparkleIcon };
+const SECTION_ICONS = { buscar: SearchIcon, librerias: StoreIcon, clubes: BookIcon, autores: AuthorIcon };
 
 export function SectionIndex() {
   const [activeId, setActiveId] = useState("buscar");
