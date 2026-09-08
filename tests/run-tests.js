@@ -350,7 +350,7 @@ tests.push(["greets authenticated readers and bookstores by name in the site hea
     const sharedProps = { pathname: "/", refreshMe: () => {} };
     const readerMarkup = renderToStaticMarkup(createElement(SiteHeader, {
       ...sharedProps,
-      me: { reader_profile: { display_name: "Ana" } },
+      me: { reader_profile: { display_name: "Ana", slug: "ana-lee" } },
     }));
     const bookstoreMarkup = renderToStaticMarkup(createElement(SiteHeader, {
       ...sharedProps,
@@ -370,6 +370,12 @@ tests.push(["greets authenticated readers and bookstores by name in the site hea
     assert.match(bookstoreMarkup, /Mi perfil/);
     assert.doesNotMatch(readerMarkup, /Ver vidriera digital/);
     assert.doesNotMatch(visitorMarkup, /Ver vidriera digital/);
+    const readerActions = readerMarkup.slice(readerMarkup.indexOf('</nav>'));
+    assert.match(readerActions, /href="\/profile"[^>]*>Mi Perfil<\/a>/);
+    assert.match(readerActions, /href="\/readers\/ana-lee"[^>]*>Perfil Público<\/a>/);
+    assert.ok(readerActions.indexOf("Mi Perfil") < readerActions.indexOf("Perfil Público"));
+    assert.doesNotMatch(unnamedMarkup, /Perfil Público/);
+    assert.doesNotMatch(visitorMarkup, /Perfil Público/);
     for (const status of ["active", "canceled", "payment_pending"]) {
       for (const pathname of ["/", "/dashboard", "/about"]) {
         const markup = renderToStaticMarkup(createElement(SiteHeader, {
