@@ -24,3 +24,14 @@ export async function updateAuthorProfileWhatsApp(apiFetch, whatsappPhone) {
   const data = await apiFetch("/dashboard/author-profile", { method: "PATCH", body: JSON.stringify({ whatsapp_phone: String(whatsappPhone || "").trim() || null }) });
   return data.author_profile;
 }
+
+export async function updateAuthorAvatar(apiFetch, avatar) {
+  const body = new FormData();
+  body.append("avatar", avatar);
+  const data = await apiFetch("/dashboard/author-profile/avatar", { method: "POST", body });
+  return data.author_profile;
+}
+
+export async function removeAuthorAvatar(apiFetch) {
+  await apiFetch("/dashboard/author-profile/avatar", { method: "DELETE" });
+}
