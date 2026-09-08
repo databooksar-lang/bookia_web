@@ -125,33 +125,33 @@
 }
 .reader-page .reader-profile-identity :is(button, a):focus-visible { outline-color: var(--cream); }
 
-.reader-page .reader-author-book-detail-modal { padding: 16px; }
-.reader-page .reader-author-book-detail-modal .book-detail-modal-card {
+.reader-author-book-detail-modal { padding: 16px; }
+.reader-author-book-detail-modal .book-detail-modal-card {
   box-sizing: border-box;
   max-height: calc(100dvh - 32px);
   overscroll-behavior: contain;
   padding: 20px;
   scroll-padding-top: 68px;
 }
-.reader-page .reader-author-book-detail-modal .book-detail-modal-close {
+.reader-author-book-detail-modal .book-detail-modal-close {
   position: sticky;
   top: 0;
   z-index: 5;
   background: var(--cream);
 }
-.reader-page .reader-author-book-detail-modal .book-detail-modal-layout {
+.reader-author-book-detail-modal .book-detail-modal-layout {
   grid-template-columns: minmax(120px, 200px) minmax(0, 1fr);
   gap: 24px;
 }
-.reader-page .reader-author-book-detail-modal .book-detail-cover { object-fit: contain; }
-.reader-page .reader-author-book-detail-modal .book-detail-copy h2 {
+.reader-author-book-detail-modal .book-detail-cover { object-fit: contain; }
+.reader-author-book-detail-modal .book-detail-copy h2 {
   font-size: clamp(1.5rem, 2.5vw, 2rem);
   line-height: 1.2;
   margin-top: 8px;
 }
-.reader-page .reader-author-book-detail-modal .book-detail-copy > :is(.primary-button, .secondary-button) { margin: 8px 8px 0 0; }
-.reader-page .reader-author-book-detail-modal .reader-author-book-detail-actions { padding-bottom: 8px; }
-.reader-page .reader-author-book-detail-actions .book-share-options {
+.reader-author-book-detail-modal .book-detail-copy > :is(.primary-button, .secondary-button) { margin: 8px 8px 0 0; }
+.reader-author-book-detail-modal .reader-author-book-detail-actions { padding-bottom: 8px; }
+.reader-author-book-detail-modal .reader-author-book-detail-actions .book-share-options {
   position: static;
   margin-top: 8px;
 }
@@ -181,9 +181,9 @@
   .reader-page .reader-public-author-book-card img { width: 64px; height: 96px; }
   .reader-page .section-heading { margin-bottom: 16px; }
   .reader-page .store-reading-clubs { margin-top: 24px; }
-  .reader-page .reader-author-book-detail-modal { padding: 10px; }
-  .reader-page .reader-author-book-detail-modal .book-detail-modal-card { max-height: calc(100dvh - 20px); padding: 16px; }
-  .reader-page .reader-author-book-detail-modal .book-detail-modal-layout { grid-template-columns: minmax(0, 1fr); gap: 16px; }
-  .reader-page .reader-author-book-detail-modal .book-detail-cover { width: 112px; justify-self: start; }
-  .reader-page .reader-author-book-detail-modal .book-detail-section { margin-top: 16px; padding-top: 16px; }
+  .reader-author-book-detail-modal { padding: 10px; }
+  .reader-author-book-detail-modal .book-detail-modal-card { max-height: calc(100dvh - 20px); padding: 16px; }
+  .reader-author-book-detail-modal .book-detail-modal-layout { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .reader-author-book-detail-modal .book-detail-cover { width: 112px; justify-self: start; }
+  .reader-author-book-detail-modal .book-detail-section { margin-top: 16px; padding-top: 16px; }
 }

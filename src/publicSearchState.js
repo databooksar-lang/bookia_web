@@ -18,33 +18,56 @@ export function buildPublicSearchParams(filters = {}) {
   return params;
 }
 
-export function selectDiscoveryCarouselItems(items = [], limit = 12) {
-  const requestedLimit = Number.isFinite(limit) ? Math.max(0, Math.floor(limit)) : 12;
-  if (requestedLimit === 0) return [];
+function prioritizeCoveredItems(items, coverKey) {
+  return [...items.filter((item) => item?.[coverKey]), ...items.filter((item) => !item?.[coverKey])];
+}
 
+function selectDistinctFirst(items, getId, getGroup) {
   const selected = [];
-  const selectedBookIds = new Set();
-  const selectedBookstores = new Set();
-
+  const selectedIds = new Set();
+  const selectedGroups = new Set();
   for (const item of items) {
-    const bookId = item?.id;
-    if (bookId === undefined || bookId === null || selectedBookIds.has(bookId)) continue;
-    const bookstoreKey = item?.bookstore?.id ?? item?.bookstore?.slug ?? `book-${bookId}`;
-    if (selectedBookstores.has(bookstoreKey)) continue;
+    const id = getId(item);
+    if (id === undefined || id === null || selectedIds.has(id)) continue;
+    const group = getGroup(item, id);
+    if (selectedGroups.has(group)) continue;
     selected.push(item);
-    selectedBookIds.add(bookId);
-    selectedBookstores.add(bookstoreKey);
-    if (selected.length === requestedLimit) return selected;
+    selectedIds.add(id);
+    selectedGroups.add(group);
   }
-
   for (const item of items) {
-    const bookId = item?.id;
-    if (bookId === undefined || bookId === null || selectedBookIds.has(bookId)) continue;
+    const id = getId(item);
+    if (id === undefined || id === null || selectedIds.has(id)) continue;
     selected.push(item);
-    selectedBookIds.add(bookId);
-    if (selected.length === requestedLimit) break;
+    selectedIds.add(id);
   }
+  return selected;
+}
 
+function getAuthorBookDiscoveryItems(authors = []) {
+  return authors.flatMap((author) => {
+    const displayName = String(author?.display_name || "").trim();
+    const slug = String(author?.slug || "").trim();
+    if (!displayName || !slug || !Array.isArray(author?.books)) return [];
+    const authorProfile = { display_name: displayName, slug, author_contact: author.author_contact || { available: false, contact_requires_auth: false } };
+    return author.books
+      .filter((book) => Number.isSafeInteger(book?.id) && book.id > 0 && String(book?.title || "").trim() && String(book?.cover_url || "").trim())
+      .map((book) => ({ ...book, id: `author:${slug}:${book.id}`, author_book_id: book.id, author: displayName, cover_image_url: book.cover_url, discovery_kind: "author_book", author_profile: authorProfile }));
+  });
+}
+
+export function selectDiscoveryCarouselItems(catalogItems = [], authorsOrLimit = [], requestedLimit = 12) {
+  const authors = Array.isArray(authorsOrLimit) ? authorsOrLimit : [];
+  const limit = Array.isArray(authorsOrLimit) ? requestedLimit : authorsOrLimit;
+  const maximum = Number.isFinite(limit) ? Math.max(0, Math.floor(limit)) : 12;
+  if (maximum === 0) return [];
+  const catalog = selectDistinctFirst(prioritizeCoveredItems(catalogItems, "cover_image_url"), (item) => item?.id, (item, id) => item?.bookstore?.id ?? item?.bookstore?.slug ?? `book-${id}`);
+  const authorBooks = selectDistinctFirst(getAuthorBookDiscoveryItems(authors), (item) => item?.id, (item) => item?.author_profile?.slug);
+  const selected = [];
+  for (let index = 0; selected.length < maximum && (index < catalog.length || index < authorBooks.length); index += 1) {
+    if (index < catalog.length) selected.push(catalog[index]);
+    if (selected.length < maximum && index < authorBooks.length) selected.push(authorBooks[index]);
+  }
   return selected;
 }
 

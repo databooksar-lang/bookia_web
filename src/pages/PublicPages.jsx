@@ -381,7 +381,7 @@ export function DiscoveryCarousel({ items = [], loading, onOpenBook }) {
             <span className="discovery-book-copy">
               <strong>{item.title}</strong>
               <span>{item.author || "Autor no visible"}</span>
-              <small>{item.bookstore?.name || "Librería en Bookia"}</small>
+              <small>{item.discovery_kind === "author_book" ? "Autor en Bookia" : item.bookstore?.name || "Librería en Bookia"}</small>
             </span>
           </button>
         ))}
@@ -419,10 +419,15 @@ export function AuthorsCarousel({ authors = [], loading }) {
 
 function InitialBookDiscovery({ items, loading, me }) {
   const [selectedBook, setSelectedBook] = useState(null);
+  const [selectedAuthorBook, setSelectedAuthorBook] = useState(null);
   const [selectedBookImageUrl, setSelectedBookImageUrl] = useState(null);
   const [authAction, setAuthAction] = useState(null);
 
   function openBookDetail(item) {
+    if (item.discovery_kind === "author_book") {
+      setSelectedAuthorBook(item);
+      return;
+    }
     trackBookDetailOpened(item, "discovery_carousel");
     const gallery = bookImageGallery(item);
     setSelectedBook(item);
@@ -432,6 +437,17 @@ function InitialBookDiscovery({ items, loading, me }) {
   function closeBookDetail() {
     setSelectedBook(null);
     setSelectedBookImageUrl(null);
+  }
+
+  function closeAuthorBookDetail() {
+    setSelectedAuthorBook(null);
+  }
+
+  function requireAuthorAuth(book) {
+    const slug = book?.author_profile?.slug;
+    if (!slug || !Number.isSafeInteger(book?.author_book_id)) return;
+    const action = startAuthorBookContactIntent({ book: { ...book, id: book.author_book_id }, returnPath: `/readers/${encodeURIComponent(slug)}?book=${book.author_book_id}` });
+    if (action) setAuthAction(action);
   }
 
   function requireBookstoreAuth({ item, source }) {
@@ -448,7 +464,7 @@ function InitialBookDiscovery({ items, loading, me }) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [selectedBook]);
 
-  return <><DiscoveryCarousel items={items} loading={loading} onOpenBook={openBookDetail} />{selectedBook ? <DiscoveryBookDetailModal selectedBook={selectedBook} selectedBookImageUrl={selectedBookImageUrl} onImageChange={setSelectedBookImageUrl} onClose={closeBookDetail} me={me} contactGate={{ me, onRequireAuth: requireBookstoreAuth }} isBackgroundObscured={Boolean(authAction)} /> : null}{authAction ? <AuthRequiredDialog action={authAction} onCancel={() => dismissReaderActionDialog(authAction, () => setAuthAction(null))} /> : null}</>;
+  return <><DiscoveryCarousel items={items} loading={loading} onOpenBook={openBookDetail} />{selectedBook ? <DiscoveryBookDetailModal selectedBook={selectedBook} selectedBookImageUrl={selectedBookImageUrl} onImageChange={setSelectedBookImageUrl} onClose={closeBookDetail} me={me} contactGate={{ me, onRequireAuth: requireBookstoreAuth }} isBackgroundObscured={Boolean(authAction)} /> : null}{selectedAuthorBook ? <ReaderAuthorBookDetailModal reader={selectedAuthorBook.author_profile} book={selectedAuthorBook} onClose={closeAuthorBookDetail} onRequireAuth={requireAuthorAuth} /> : null}{authAction ? <AuthRequiredDialog action={authAction} onCancel={() => dismissReaderActionDialog(authAction, () => setAuthAction(null))} /> : null}</>;
 }
 
 function DiscoveryBookDetailModal({ me, ...modalProps }) {
@@ -981,8 +997,14 @@ export function HomePage({ me }) {
   useEffect(() => {
     apiFetch("/bookstores").then((data) => setStores(data.items)).catch(() => setStores([])).finally(() => setStoresLoading(false));
     apiFetch("/genres").then((data) => setGenres(data.items || [])).catch(() => setGenres([])).finally(() => setGenresLoading(false));
-    apiFetch("/search").then((data) => setDiscoveryItems(selectDiscoveryCarouselItems(data.items || []))).catch(() => setDiscoveryItems([])).finally(() => setDiscoveryLoading(false));
-    apiFetch("/authors").then((data) => setAuthors(normalizeAuthorDiscoveryItems(data.items || []))).catch(() => setAuthors([])).finally(() => setAuthorsLoading(false));
+    Promise.all([apiFetch("/search").catch(() => ({ items: [] })), apiFetch("/authors").catch(() => ({ items: [] }))]).then(([searchData, authorsData]) => {
+      const authorItems = authorsData.items || [];
+      setDiscoveryItems(selectDiscoveryCarouselItems(searchData.items || [], authorItems));
+      setAuthors(normalizeAuthorDiscoveryItems(authorItems));
+    }).finally(() => {
+      setDiscoveryLoading(false);
+      setAuthorsLoading(false);
+    });
   }, []);
 
   return (

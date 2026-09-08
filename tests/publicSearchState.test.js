@@ -78,6 +78,38 @@ export function registerPublicSearchStateTests(register) {
     assert.deepEqual(selectDiscoveryCarouselItems(items, 0), []);
   });
 
+  register("alternates catalog books with cover-ready public author books", () => {
+    const catalogItems = [
+      { id: 1, title: "Catálogo uno", bookstore: { id: 10 } },
+      { id: 2, title: "Catálogo dos", bookstore: { id: 20 } },
+      { id: 3, title: "Catálogo tres", bookstore: { id: 30 } },
+    ];
+    const authors = [
+      {
+        display_name: "Ana Borges",
+        slug: "ana-borges",
+        author_contact: { available: false, contact_requires_auth: false },
+        books: [
+          { id: 7, title: "La casa del viento", synopsis: "Una novela.", genre: { name: "Novela" }, cover_url: "/readers/ana-borges/author-books/7/cover" },
+          { id: 8, title: "Sin portada", synopsis: "No debe aparecer.", cover_url: null },
+        ],
+      },
+      {
+        display_name: "Bruno Díaz",
+        slug: "bruno-diaz",
+        author_contact: { available: false, contact_requires_auth: false },
+        books: [{ id: 9, title: "El río", synopsis: "Poesía.", genre: { name: "Poesía" }, cover_url: "/readers/bruno-diaz/author-books/9/cover" }],
+      },
+    ];
+
+    const selected = selectDiscoveryCarouselItems(catalogItems, authors, 4);
+
+    assert.deepEqual(selected.map((item) => item.id), [1, "author:ana-borges:7", 2, "author:bruno-diaz:9"]);
+    assert.equal(selected[1].discovery_kind, "author_book");
+    assert.equal(selected[1].cover_image_url, "/readers/ana-borges/author-books/7/cover");
+    assert.equal(selected[1].author, "Ana Borges");
+  });
+
   register("builds bounded carousel scrolling for direction and reduced-motion preferences", () => {
     assert.deepEqual(
       getDiscoveryCarouselScrollOptions({ direction: 1, clientWidth: 1000, reduceMotion: false }),
