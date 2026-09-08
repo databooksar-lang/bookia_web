@@ -35,4 +35,29 @@ export function registerAuthorDiscoveryStateTests(test) {
       await vite.close();
     }
   });
+
+  test("renders a discovery author book with its cover and author label", async () => {
+    const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
+    try {
+      const { DiscoveryCarousel } = await vite.ssrLoadModule("/src/pages/PublicPages.jsx");
+      const markup = renderToStaticMarkup(createElement(DiscoveryCarousel, {
+        items: [{
+          id: "author:ana-borges:7",
+          discovery_kind: "author_book",
+          title: "La casa del viento",
+          author: "Ana Borges",
+          cover_image_url: "/readers/ana-borges/author-books/7/cover",
+          author_profile: { display_name: "Ana Borges", slug: "ana-borges", author_contact: { available: false, contact_requires_auth: false } },
+        }],
+        loading: false,
+        onOpenBook() {},
+      }));
+
+      assert.match(markup, /Tapa de La casa del viento/);
+      assert.match(markup, /Ana Borges/);
+      assert.match(markup, /Autor en Bookia/);
+    } finally {
+      await vite.close();
+    }
+  });
 }

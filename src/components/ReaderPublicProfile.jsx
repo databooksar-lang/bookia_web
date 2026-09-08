@@ -7,6 +7,7 @@ import { GoodreadsIcon, InstagramIcon, LinkIcon, TikTokIcon, WhatsAppIcon, YouTu
 import { AuthorBookShareMenu } from "./AuthorBookShareMenu";
 import { WhatsAppButton } from "./Commerce";
 import { BookstoreDescription } from "./BookstoreDescription";
+import { BookCover } from "./BookCover";
 
 const SOCIAL_LINK_DETAILS = {
   instagram: { label: "Instagram", Icon: InstagramIcon },
@@ -162,7 +163,7 @@ export function ReaderAuthorBookDetailModal({ reader, book, onClose, onRequireAu
   return <div className="book-detail-modal reader-author-book-detail-modal" role="dialog" aria-modal="true" aria-labelledby="author-book-detail-title" onClick={onClose}>
     <div ref={modalCardRef} className="book-detail-modal-card" onClick={(event) => event.stopPropagation()} onKeyDown={trapDialogFocus}>
       <button ref={closeButtonRef} type="button" className="book-detail-modal-close" onClick={onClose}>Cerrar</button>
-      <div className="book-detail-modal-layout"><img className="book-detail-cover" src={resolveApiUrl(book.cover_url)} alt={`Portada de ${book.title}`} /><div className="book-detail-copy">
+      <div className="book-detail-modal-layout"><BookCover item={{ ...book, cover_image_url: book.cover_url }} className="book-detail-cover" /><div className="book-detail-copy">
         <p className="reader-public-author-book-genre">{book.genre?.name || "Sin género"}</p><h2 id="author-book-detail-title">{book.title}</h2><p className="book-detail-author">{reader.display_name}</p>
         <div className="book-detail-section"><span>Sinopsis</span><p>{book.synopsis}</p></div>
         <dl className="book-detail-meta"><div><dt>Editorial</dt><dd>{book.publisher || "Editorial no visible"}</dd></div><div><dt>Año</dt><dd>{book.publication_year || "Año no visible"}</dd></div></dl>
