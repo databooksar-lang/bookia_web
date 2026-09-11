@@ -54,6 +54,19 @@ class FakeFile {
   }
 }
 
+async function loadStoryCoverAndCaptureRequests(coverUrl) {
+  const requests = [];
+  await loadInstagramStoryCover({
+    coverUrl,
+    fetchLike: async (url, options) => {
+      requests.push({ url, options });
+      return { ok: true, headers: new Headers({ "content-type": "image/png", "content-length": String(PNG_HEADER.byteLength) }), blob: async () => new Blob([PNG_HEADER], { type: "image/png" }) };
+    },
+    imageFactory: () => createStoryImage(900, 1200),
+  });
+  return requests;
+}
+
 export function registerBookSharingStateTests(register) {
   register("builds a canonical bookstore book-share URL", () => {
     assert.equal(
@@ -435,6 +448,24 @@ export function registerBookSharingStateTests(register) {
     });
 
     assert.deepEqual(requests, [{ url: "/api/catalog/42/cover", options: { credentials: "omit" } }]);
+  });
+
+  register("loads a public author-book cover without session credentials", async () => {
+    const requests = await loadStoryCoverAndCaptureRequests("/api/readers/fa-luz/author-books/4/cover");
+
+    assert.deepEqual(requests, [{ url: "/api/readers/fa-luz/author-books/4/cover", options: { credentials: "omit" } }]);
+  });
+
+  register("loads a public reading-club cover without session credentials", async () => {
+    const requests = await loadStoryCoverAndCaptureRequests("/api/reading-clubs/7/cover");
+
+    assert.deepEqual(requests, [{ url: "/api/reading-clubs/7/cover", options: { credentials: "omit" } }]);
+  });
+
+  register("keeps session credentials for a private dashboard cover", async () => {
+    const requests = await loadStoryCoverAndCaptureRequests("/api/dashboard/reading-clubs/7/cover");
+
+    assert.deepEqual(requests, [{ url: "/api/dashboard/reading-clubs/7/cover", options: { credentials: "include" } }]);
   });
 
   register("rejects a non-image cover response before downloading it", async () => {

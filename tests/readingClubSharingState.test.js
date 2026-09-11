@@ -125,7 +125,7 @@ export function registerReadingClubSharingStateTests(register) {
       FileCtor: FakeFile,
     });
 
-    assert.deepEqual(requests, [{ url: "/api/reading-clubs/7/cover", options: { credentials: "include" } }]);
+    assert.deepEqual(requests, [{ url: "/api/reading-clubs/7/cover", options: { credentials: "omit" } }]);
     assert.ok(documentLike.drawCalls.some((args) => args[0] === cover && args.length === 9));
     assert.deepEqual(file.type, "image/png");
     assert.match(file.name, /^bookia-club-book-talk-to-reach-japan-alice-munro\.png$/);
