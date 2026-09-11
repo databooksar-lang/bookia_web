@@ -58,11 +58,13 @@ export function buildAuthorBookInstagramStoryCoverUrl(book, { resolveUrl = (path
 function drawCover(context, image, x, y, width, height) {
   context.fillStyle = "#0b2d24";
   context.fillRect(x, y, width, height);
-  if (!image?.width || !image?.height) return;
-  const scale = Math.max(width / image.width, height / image.height);
+  const imageWidth = image?.naturalWidth || image?.width;
+  const imageHeight = image?.naturalHeight || image?.height;
+  if (!imageWidth || !imageHeight) return;
+  const scale = Math.max(width / imageWidth, height / imageHeight);
   const sourceWidth = width / scale;
   const sourceHeight = height / scale;
-  context.drawImage(image, (image.width - sourceWidth) / 2, (image.height - sourceHeight) / 2, sourceWidth, sourceHeight, x, y, width, height);
+  context.drawImage(image, (imageWidth - sourceWidth) / 2, (imageHeight - sourceHeight) / 2, sourceWidth, sourceHeight, x, y, width, height);
 }
 
 function drawLines(context, value, x, y, width, lineHeight, lines) {
