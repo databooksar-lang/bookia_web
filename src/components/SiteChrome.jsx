@@ -61,7 +61,10 @@ export function SiteHeader({ pathname, me, refreshMe }) {
               {item.label}
             </AppLink>
           ))}
-          {!me ? <AppLink href="/register" className="header-account">Registrate</AppLink> : null}
+          {!me ? <>
+            <AppLink href="/login" className="header-account header-login">Ingresar</AppLink>
+            <AppLink href="/register" className="header-account">Registrate</AppLink>
+          </> : null}
           {me ? <button className="header-logout" type="button" onClick={logout}>Cerrar sesion</button> : null}
         </nav>
         {me?.reader_profile && !me?.bookstore ? (

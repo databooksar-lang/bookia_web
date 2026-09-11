@@ -12,6 +12,7 @@ import { buildRegisterPath } from "../registerState";
 import { buildPendingReaderActionEvent, cancelPendingReaderAction, clearPendingReaderAction, completeResumablePendingReaderAction, readPendingReaderAction, savePendingReaderAction } from "../pendingReaderAction";
 import { displayBookstoreDescription } from "../profileEditorState";
 import { displayReadingClubDate } from "../readingClubState";
+import { displayNewsDate, getPublicNewsItems, newsCategoryLabel } from "../newsState";
 import { buildGoogleMapsAddressUrl, buildPublicSearchParams, buildReadingClubSearchParams, filterBookstores, getAvailableReadingClubGenres, getBookstoreTags, getDiscoveryCarouselNavigation, getDiscoveryCarouselScrollOptions, getVisibleReadingClubs, selectDiscoveryCarouselItems } from "../publicSearchState";
 import { normalizeAuthorDiscoveryItems } from "../authorDiscoveryState";
 import { EmptyState, WhatsAppButton } from "../components/Commerce";
@@ -1301,10 +1302,26 @@ export function BookstoreCatalogSearch({ storeName, initialFilters, genres, genr
   </form>;
 }
 
+export function BookstoreNews({ items, storeName }) {
+  const visibleItems = getPublicNewsItems(items);
+  if (!visibleItems.length) return null;
+
+  return <section className="store-news" aria-labelledby="store-news-title">
+    <div className="section-heading results-heading"><div><p className="section-label">Novedades</p><h2 id="store-news-title">Novedades de {storeName}</h2></div></div>
+    <div className="store-news-list">
+      {visibleItems.map((item) => <article className="store-news-card" key={item.id}>
+        {item.image_url ? <img className="store-news-image" src={resolveApiUrl(item.image_url)} alt={`Imagen de ${item.title}`} loading="lazy" /> : null}
+        <div className="store-news-copy"><span className="store-news-category">{newsCategoryLabel(item.category)}</span><h3>{item.title}</h3>{item.event_date ? <time dateTime={item.event_date}>{displayNewsDate(item.event_date)}</time> : null}<p>{item.description}</p></div>
+      </article>)}
+    </div>
+  </section>;
+}
+
 export function BookstorePage({ slug, me, refreshSession }) {
   const [store, setStore] = useState(null);
   const [items, setItems] = useState([]);
   const [readingClubs, setReadingClubs] = useState([]);
+  const [news, setNews] = useState([]);
   const [catalogFilters, setCatalogFilters] = useState(() => createSearchFilters());
   const [catalogTotal, setCatalogTotal] = useState(0);
   const [catalogOffset, setCatalogOffset] = useState(0);
@@ -1331,6 +1348,7 @@ export function BookstorePage({ slug, me, refreshSession }) {
     setLoading(true);
     setStore(null);
     setItems([]);
+    setNews([]);
     setSelectedBook(null);
     setCatalogFilters(createSearchFilters());
     setCatalogError("");
@@ -1347,7 +1365,7 @@ export function BookstorePage({ slug, me, refreshSession }) {
         data.items.push(...next.items);
         data.total = next.total;
       }
-      setStore(data.bookstore); setItems(data.items); setReadingClubs(data.reading_clubs || []); setError("");
+      setStore(data.bookstore); setItems(data.items); setReadingClubs(data.reading_clubs || []); setNews(data.news || []); setError("");
       setCatalogTotal(data.total ?? data.items.length); setCatalogOffset(data.items.length);
     }).catch((fetchError) => {
       if (request !== catalogRequest.current) return;
@@ -1476,6 +1494,7 @@ export function BookstorePage({ slug, me, refreshSession }) {
         <BookstoreContactCard store={store} me={contactSession} onRequireAuth={requireBookstoreAuth} />
       </div>
       {actionError ? <p className="feedback error bookstore-contact-feedback" role="alert">{actionError}</p> : null}
+      <BookstoreNews items={news} storeName={store.name} />
       <div className="store-catalog">
         <div className="section-heading results-heading"><div><p className="section-label">Estantes disponibles</p><h2>Catalogo de {store.name}</h2><p aria-live="polite">{catalogLoading ? "Buscando libros..." : `${catalogTotal} ${catalogTotal === 1 ? "libro" : "libros"} ${hasCatalogFilters ? (catalogTotal === 1 ? "encontrado" : "encontrados") : (catalogTotal === 1 ? "publicado" : "publicados")}`}</p></div></div>
         <BookstoreCatalogSearch key={slug} storeName={store.name} initialFilters={catalogFilters} genres={genres} genresLoading={genresLoading} onSearch={searchCatalog} onClear={() => searchCatalog(createSearchFilters())} />

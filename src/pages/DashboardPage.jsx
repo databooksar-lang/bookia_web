@@ -16,6 +16,7 @@ import { BillingSubscriptionPanel } from "../components/BillingSubscriptionPanel
 import { BookShareMenu } from "../components/BookShareMenu";
 import { normalizeFollowerMetrics } from "../analyticsState";
 import { ReadingClubManager } from "../components/ReadingClubManager";
+import { NewsManager } from "../components/NewsManager";
 import DashboardMetrics from "../components/DashboardMetrics";
 import { TiendanubeIntegrationPanel } from "../components/TiendanubeIntegrationPanel";
 import { GoogleSheetsIntegrationPanel } from "../components/GoogleSheetsIntegrationPanel";
@@ -63,6 +64,7 @@ const DASHBOARD_TABS = [
   { section: "catalog", label: "Catalogo", emoji: "📚" },
   { section: "integrations", label: "Integraciones", emoji: "🔌" },
   { section: "clubs", label: "Clubes de lectura", emoji: "📖" },
+  { section: "news", label: "Novedades", emoji: "✨" },
   { section: "metrics", label: "Metricas", emoji: "📊" },
   { section: "subscription", label: "Suscripcion", emoji: "💳" },
 ];
@@ -656,6 +658,15 @@ export function DashboardPage({ me, refreshMe, locationSearch = "" }) {
         isActive={section === "clubs"}
       >
         <ReadingClubManager host={{ type: "bookstore", id: me.bookstore.id, slug: me.bookstore.slug }} hostName={me.bookstore.name} source="dashboard_reading_clubs" onClubCountChange={setReadingClubCount} genres={genres} genresLoading={genresLoading} genresError={genresError} />
+      </DashboardPanel>
+
+      <DashboardPanel
+        label="Novedades"
+        title="Novedades de tu librería"
+        description="Compartí ofertas, eventos y novedades en tu vidriera digital."
+        isActive={section === "news"}
+      >
+        <NewsManager />
       </DashboardPanel>
 
       <DashboardPanel

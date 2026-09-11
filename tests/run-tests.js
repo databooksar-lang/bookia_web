@@ -369,6 +369,8 @@ tests.push(["greets authenticated readers and bookstores by name in the site hea
     assert.match(bookstoreMarkup, /Hola Eterna Cadencia!/);
     assert.match(unnamedMarkup, /Hola!/);
     assert.doesNotMatch(visitorMarkup, /Hola/);
+    assert.match(visitorMarkup, /href="\/login"[^>]*>Ingresar<\/a>/);
+    assert.match(visitorMarkup, /href="\/register"[^>]*>Registrate<\/a>/);
     assert.match(readerMarkup, /Cerrar sesion/);
     assert.match(bookstoreMarkup, /Mi perfil/);
     assert.doesNotMatch(readerMarkup, /Ver vidriera digital/);
