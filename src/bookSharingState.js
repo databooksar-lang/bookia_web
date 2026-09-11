@@ -175,7 +175,7 @@ function assertSafeStoryCoverDimensions({ width, height }) {
 function storyCoverRequestCredentials(coverUrl) {
   try {
     const pathname = new URL(coverUrl, "https://bookia.invalid").pathname;
-    return /^\/(?:api\/)?catalog\/\d+\/cover$/.test(pathname) ? "omit" : "include";
+    return /^\/(?:api\/)?(?:catalog\/\d+\/cover|readers\/[^/]+\/author-books\/\d+\/cover|reading-clubs\/\d+\/cover)$/.test(pathname) ? "omit" : "include";
   } catch {
     return "include";
   }

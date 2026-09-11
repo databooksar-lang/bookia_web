@@ -437,6 +437,54 @@ export function registerBookSharingStateTests(register) {
     assert.deepEqual(requests, [{ url: "/api/catalog/42/cover", options: { credentials: "omit" } }]);
   });
 
+  register("loads a public author-book cover without session credentials", async () => {
+    const requests = [];
+    const image = createStoryImage(900, 1200);
+
+    await loadInstagramStoryCover({
+      coverUrl: "/api/readers/fa-luz/author-books/4/cover",
+      fetchLike: async (url, options) => {
+        requests.push({ url, options });
+        return { ok: true, headers: new Headers({ "content-type": "image/png", "content-length": String(PNG_HEADER.byteLength) }), blob: async () => new Blob([PNG_HEADER], { type: "image/png" }) };
+      },
+      imageFactory: () => image,
+    });
+
+    assert.deepEqual(requests, [{ url: "/api/readers/fa-luz/author-books/4/cover", options: { credentials: "omit" } }]);
+  });
+
+  register("loads a public reading-club cover without session credentials", async () => {
+    const requests = [];
+    const image = createStoryImage(900, 1200);
+
+    await loadInstagramStoryCover({
+      coverUrl: "/api/reading-clubs/7/cover",
+      fetchLike: async (url, options) => {
+        requests.push({ url, options });
+        return { ok: true, headers: new Headers({ "content-type": "image/png", "content-length": String(PNG_HEADER.byteLength) }), blob: async () => new Blob([PNG_HEADER], { type: "image/png" }) };
+      },
+      imageFactory: () => image,
+    });
+
+    assert.deepEqual(requests, [{ url: "/api/reading-clubs/7/cover", options: { credentials: "omit" } }]);
+  });
+
+  register("keeps session credentials for a private dashboard cover", async () => {
+    const requests = [];
+    const image = createStoryImage(900, 1200);
+
+    await loadInstagramStoryCover({
+      coverUrl: "/api/dashboard/reading-clubs/7/cover",
+      fetchLike: async (url, options) => {
+        requests.push({ url, options });
+        return { ok: true, headers: new Headers({ "content-type": "image/png", "content-length": String(PNG_HEADER.byteLength) }), blob: async () => new Blob([PNG_HEADER], { type: "image/png" }) };
+      },
+      imageFactory: () => image,
+    });
+
+    assert.deepEqual(requests, [{ url: "/api/dashboard/reading-clubs/7/cover", options: { credentials: "include" } }]);
+  });
+
   register("rejects a non-image cover response before downloading it", async () => {
     await assert.rejects(
       () => loadInstagramStoryCover({
