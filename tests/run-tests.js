@@ -647,7 +647,7 @@ tests.push(["uses a progressive and accessible public book search flow", () => {
   assert.match(publicPagesSource, /No encontramos libros con esos filtros/);
   assert.match(publicPagesSource, /Limpiar filtros/);
 }]);
-tests.push(["keeps Buscar as the home page with Bookia's approved public-search copy", () => {
+tests.push(["keeps Buscar as the home page without the newsletter signup", () => {
   const appSource = readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
 
@@ -658,19 +658,19 @@ tests.push(["keeps Buscar as the home page with Bookia's approved public-search 
   assert.match(publicPagesSource, /Confirm. disponibilidad por WhatsApp antes de ir\./);
   assert.match(publicPagesSource, /Hac\\u00E9 que tus libros lleguen a m\\u00E1s lectores\./);
   assert.match(publicPagesSource, /Crear cuenta para mi librer/);
-  assert.match(publicPagesSource, /newsletter-subscribers/);
-  assert.match(publicPagesSource, /Tu correo electr\\u00F3nico/);
-  assert.match(publicPagesSource, /Quiero recibir novedades/);
+  assert.doesNotMatch(publicPagesSource, /newsletter-subscribers/);
+  assert.doesNotMatch(publicPagesSource, /Tu correo electr\\u00F3nico/);
+  assert.doesNotMatch(publicPagesSource, /Quiero recibir novedades/);
 }]);
 tests.push(["places contextual benefit strips after the bookstore and reading-club sections", () => {
   const publicPagesSource = readFileSync(new URL("../src/pages/PublicPages.jsx", import.meta.url), "utf8");
   const homePageSource = publicPagesSource.match(/export function HomePage\([^)]*\) \{([\s\S]*?)\r?\n\}\r?\n\r?\n\r?\nexport function BookstoresPage/);
   const bookstoresSectionSource = publicPagesSource.match(/function BookstoresSection\(\{ stores, loading \}\) \{([\s\S]*?)\r?\n\}\r?\n\r?\n\r?\nfunction ReadingClubsSection/);
-  const readingClubsSectionSource = publicPagesSource.match(/function ReadingClubsSection\(\{ me \}\) \{([\s\S]*?)\r?\n\}\r?\n\r?\nfunction NewsletterSignup/);
+  const readingClubsSectionSource = publicPagesSource.match(/function ReadingClubsSection\(\{ me \}\) \{([\s\S]*?)\r?\n\}\r?\n\r?\nfunction ContactLink/);
 
   assert.ok(homePageSource, "HomePage should remain isolated before BookstoresPage");
   assert.ok(bookstoresSectionSource, "BookstoresSection should remain isolated before ReadingClubsSection");
-  assert.ok(readingClubsSectionSource, "ReadingClubsSection should remain isolated before NewsletterSignup");
+  assert.ok(readingClubsSectionSource, "ReadingClubsSection should remain isolated before ContactLink");
   assert.match(homePageSource[1], /<HeroSearch[\s\S]*?<BenefitsStrip benefits=\{SEARCH_BENEFITS\} ariaLabel="Beneficios de la b\u00FAsqueda de libros" \/>[\s\S]*?<SearchResults[\s\S]*?<BookstoresSection/s);
   assert.match(publicPagesSource, /Busc. como te resulte m.s f.cil/);
   assert.match(publicPagesSource, /Eleg. c.mo quer.s leer/);
