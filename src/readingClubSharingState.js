@@ -1,4 +1,4 @@
-import { copyBookShareUrl, loadInstagramStoryCover, loadInstagramStoryLogo, shareBookToInstagram, shareInstagramStoryFile } from "./bookSharingState.js";
+import { copyBookShareUrl, loadInstagramStoryCover, loadInstagramStoryLogo, releaseInstagramStoryImage, shareBookToInstagram, shareInstagramStoryFile } from "./bookSharingState.js";
 import { displayReadingClubDate } from "./readingClubState.js";
 
 const STORY_WIDTH = 1080;
@@ -256,6 +256,7 @@ export async function createReadingClubInstagramStoryFile({ club, hostName, cove
   } else {
     drawReadingClubStoryExpandedDetails(context, metadata);
   }
+  releaseInstagramStoryImage(cover);
   const ctaTop = 1482;
   context.fillStyle = "#e85d3f";
   context.fillRect(140, ctaTop, 800, 150);

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 
 import * as bookSharingState from "../src/bookSharingState.js";
 
-const { buildBookShareMessage, buildBookShareUrl, buildInstagramStoryCoverPath, buildInstagramStoryMetadata, buildTelegramShareHref, buildWhatsAppShareHref, copyBookShareUrl, getSharedBookId, loadInstagramStoryCover, shareBookToInstagram, shareInstagramStoryFile } = bookSharingState;
+const { buildBookShareMessage, buildBookShareUrl, buildInstagramStoryCoverPath, buildInstagramStoryMetadata, buildTelegramShareHref, buildWhatsAppShareHref, copyBookShareUrl, getSharedBookId, loadInstagramStoryCover, releaseInstagramStoryImage, shareBookToInstagram, shareInstagramStoryFile } = bookSharingState;
 
 const PNG_HEADER = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 2, 88, 0, 0, 3, 132]);
 
@@ -454,6 +454,28 @@ export function registerBookSharingStateTests(register) {
     const requests = await loadStoryCoverAndCaptureRequests("/api/readers/fa-luz/author-books/4/cover");
 
     assert.deepEqual(requests, [{ url: "/api/readers/fa-luz/author-books/4/cover", options: { credentials: "omit" } }]);
+  });
+
+  register("keeps a loaded Story cover available until its canvas has drawn it", async () => {
+    const originalCreateObjectURL = URL.createObjectURL;
+    const originalRevokeObjectURL = URL.revokeObjectURL;
+    const revoked = [];
+    URL.createObjectURL = () => "blob:story-cover";
+    URL.revokeObjectURL = (url) => revoked.push(url);
+    try {
+      const image = await loadInstagramStoryCover({
+        coverUrl: "/api/catalog/42/cover",
+        fetchLike: async () => ({ ok: true, headers: new Headers({ "content-type": "image/png", "content-length": String(PNG_HEADER.byteLength) }), blob: async () => new Blob([PNG_HEADER], { type: "image/png" }) }),
+        imageFactory: () => createStoryImage(900, 1200),
+      });
+      assert.deepEqual(revoked, []);
+      releaseInstagramStoryImage(image);
+      releaseInstagramStoryImage(image);
+      assert.deepEqual(revoked, ["blob:story-cover"]);
+    } finally {
+      URL.createObjectURL = originalCreateObjectURL;
+      URL.revokeObjectURL = originalRevokeObjectURL;
+    }
   });
 
   register("loads a public reading-club cover without session credentials", async () => {

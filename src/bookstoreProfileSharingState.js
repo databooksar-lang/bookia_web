@@ -1,4 +1,4 @@
-import { copyBookShareUrl, loadInstagramStoryBookstoreLogo, shareInstagramStoryFile } from "./bookSharingState.js";
+import { copyBookShareUrl, loadInstagramStoryBookstoreLogo, releaseInstagramStoryImage, shareInstagramStoryFile } from "./bookSharingState.js";
 
 const STORY_WIDTH = 1080;
 const STORY_HEIGHT = 1920;
@@ -209,6 +209,8 @@ export async function createBookstoreProfileInstagramStoryFile({ bookstore, bann
     context.textAlign = "center";
     context.fillText(buildMonogram(metadata.bookstoreName), STORY_WIDTH / 2, logoY + 112);
   }
+  releaseInstagramStoryImage(banner);
+  releaseInstagramStoryImage(logo);
 
   context.fillStyle = "#f7f1e6";
   context.font = "700 76px Georgia, serif";
