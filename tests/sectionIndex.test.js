@@ -6,7 +6,7 @@ export function registerSectionIndexTests(register) {
   register("defines the four public home section anchors with accessible labels", () => {
     assert.deepEqual(
       HOME_SECTION_INDEX_ITEMS.map((item) => [item.id, item.label]),
-      [["buscar", "Buscar"], ["librerias", "Librerías"], ["clubes", "Clubes"], ["autores", "Autores"]],
+      [["buscar", "Buscar"], ["librerias", "Librerías"], ["autores", "Autores"], ["clubes", "Clubes"]],
     );
 
   });
