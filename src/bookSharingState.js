@@ -10,6 +10,7 @@ const STORY_COVER_MAX_BYTES = 10 * 1024 * 1024;
 const STORY_COVER_MAX_EDGE = 6000;
 const STORY_COVER_MAX_PIXELS = 24 * 1024 * 1024;
 const STORY_LOGO_URL = "/images/logo-cuadrado.png";
+const storyImageObjectUrls = new WeakMap();
 
 const STORY_AVAILABILITY_LABELS = {
   available: "Disponible",
@@ -192,6 +193,13 @@ export async function loadInstagramStoryCover({ coverUrl, fetchLike = globalThis
   });
 }
 
+export function releaseInstagramStoryImage(image) {
+  const objectUrl = storyImageObjectUrls.get(image);
+  if (!objectUrl) return;
+  storyImageObjectUrls.delete(image);
+  URL.revokeObjectURL(objectUrl);
+}
+
 async function loadInstagramStoryImage({ imageUrl, credentials, fetchLike, imageFactory, loadError, decodeError }) {
   if (!imageUrl || typeof fetchLike !== "function") return null;
   const response = await fetchLike(imageUrl, { credentials });
@@ -208,9 +216,11 @@ async function loadInstagramStoryImage({ imageUrl, credentials, fetchLike, image
       image.onerror = () => reject(new Error(decodeError));
       image.src = objectUrl;
     });
+    storyImageObjectUrls.set(image, objectUrl);
     return image;
-  } finally {
+  } catch (error) {
     URL.revokeObjectURL(objectUrl);
+    throw error;
   }
 }
 
@@ -426,6 +436,7 @@ export async function createInstagramStoryFile({ item, bookstore, coverUrl, book
   const [cover, bookstoreLogo] = await Promise.all([coverPromise, bookstoreLogoPromise]);
 
   drawStoryBookstoreIdentity(context, bookstoreLogo, metadata.bookstoreName);
+  releaseInstagramStoryImage(bookstoreLogo);
   context.textAlign = "left";
   context.fillStyle = "#f7f1e6";
   context.font = "800 20px system-ui, sans-serif";
@@ -444,6 +455,7 @@ export async function createInstagramStoryFile({ item, bookstore, coverUrl, book
   context.fillStyle = "rgba(247, 241, 230, 0.22)";
   context.fillRect(-280, -340, 600, 720);
   drawStoryCover(context, cover, -310, -370, 600, 720);
+  releaseInstagramStoryImage(cover);
   context.restore();
 
   context.save();

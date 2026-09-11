@@ -1,4 +1,4 @@
-import { copyBookShareUrl, loadInstagramStoryCover, loadInstagramStoryLogo, shareInstagramStoryFile } from "./bookSharingState.js";
+import { copyBookShareUrl, loadInstagramStoryCover, loadInstagramStoryLogo, releaseInstagramStoryImage, shareInstagramStoryFile } from "./bookSharingState.js";
 
 function normalizedPath(basePath) {
   if (!basePath || basePath === "/") return "";
@@ -95,6 +95,7 @@ export async function createAuthorBookInstagramStoryFile({ book, authorName, cov
   ]);
   if (logo) context.drawImage(logo, 830, 150, 108, 108);
   drawCover(context, cover, 140, 350, 350, 525);
+  releaseInstagramStoryImage(cover);
   context.fillStyle = "#0b2d24"; context.font = "700 58px Georgia, serif"; drawLines(context, metadata.title, 540, 430, 390, 68, 3);
   context.fillStyle = "#536259"; context.font = "600 28px system-ui, sans-serif"; drawLines(context, metadata.authorName, 540, 665, 390, 38, 2);
   context.fillStyle = "#e4e6db"; context.fillRect(140, 940, 800, 58);
