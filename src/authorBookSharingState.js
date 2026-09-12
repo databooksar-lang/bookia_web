@@ -14,6 +14,11 @@ function truncate(value, limit) {
   return text.length <= limit ? text : `${text.slice(0, limit - 1).trimEnd()}…`;
 }
 
+export function resolveAuthorBookId(book) {
+  return [book?.author_book_id, book?.id]
+    .find((candidate) => Number.isSafeInteger(candidate) && candidate > 0) ?? null;
+}
+
 export function buildAuthorBookShareUrl({ origin, basePath = "/", readerSlug, bookId }) {
   const url = new URL(`${normalizedPath(basePath)}/readers/${encodeURIComponent(readerSlug || "")}`, origin);
   url.searchParams.set("book", String(bookId));
@@ -47,7 +52,7 @@ export function buildAuthorBookInstagramStoryMetadata({ book, authorName }) {
 }
 
 export function buildAuthorBookInstagramStoryCoverUrl(book, { resolveUrl = (path) => path } = {}) {
-  const id = book?.id;
+  const id = resolveAuthorBookId(book);
   const cover = String(book?.cover_url || "").trim();
   if (!Number.isSafeInteger(id) || id <= 0 || !cover || cover.startsWith("//")) return null;
   const pathname = cover.split(/[?#]/, 1)[0].replace(/^\/api/, "");

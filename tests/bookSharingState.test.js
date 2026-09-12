@@ -248,6 +248,10 @@ export function registerBookSharingStateTests(register) {
     assert.equal(buildInstagramStoryCoverPath({ id: 42, cover_image_url: "/dashboard/catalog/42/images/7" }), "/dashboard/catalog/42/images/7");
   });
 
+  register("keeps the public catalog primary-gallery route for a Story", () => {
+    assert.equal(buildInstagramStoryCoverPath({ id: 42, cover_image_url: "/catalog/42/images/7" }), "/catalog/42/images/7");
+  });
+
   register("keeps API-prefixed and absolute catalog cover URLs for a Story", () => {
     assert.equal(buildInstagramStoryCoverPath({ id: 42, cover_image_url: "/api/dashboard/catalog/42/cover" }), "/api/dashboard/catalog/42/cover");
     assert.equal(buildInstagramStoryCoverPath({ id: 42, cover_image_url: "https://api.bookia.example/dashboard/catalog/42/images/7" }, { trustedOrigins: ["https://api.bookia.example"] }), "https://api.bookia.example/dashboard/catalog/42/images/7");
@@ -386,6 +390,27 @@ export function registerBookSharingStateTests(register) {
     assert.match(file.name, /^bookia-story-estadistica-practica-para-ciencia-de-datos\.png$/);
   });
 
+  register("draws a decoded catalog cover that has intrinsic but no layout dimensions", async () => {
+    const cover = createStoryImage(0, 0);
+    cover.naturalWidth = 900;
+    cover.naturalHeight = 1200;
+    const documentLike = createStoryDocument([cover]);
+
+    await bookSharingState.createInstagramStoryFile({
+      item: { id: 42, title: "Libro", cover_image_url: "/catalog/42/cover" },
+      bookstore: { name: "Librería", slug: "libreria" },
+      coverUrl: "/api/catalog/42/cover",
+      fetchLike: async () => ({ ok: true, headers: new Headers({ "content-type": "image/png", "content-length": String(PNG_HEADER.byteLength) }), blob: async () => new Blob([PNG_HEADER], { type: "image/png" }) }),
+      documentLike,
+      FileCtor: FakeFile,
+    });
+
+    assert.deepEqual(
+      documentLike.drawCalls.find(([image]) => image === cover),
+      [cover, 0, 60, 900, 1080, -310, -370, 600, 720],
+    );
+  });
+
   register("uses readable bookstore monograms when a Story logo is unavailable", async () => {
     const oneWordDocument = createStoryDocument();
     const twoWordDocument = createStoryDocument();
@@ -448,6 +473,12 @@ export function registerBookSharingStateTests(register) {
     });
 
     assert.deepEqual(requests, [{ url: "/api/catalog/42/cover", options: { credentials: "omit" } }]);
+  });
+
+  register("loads a public catalog gallery image without session credentials", async () => {
+    const requests = await loadStoryCoverAndCaptureRequests("/api/catalog/42/images/7");
+
+    assert.deepEqual(requests, [{ url: "/api/catalog/42/images/7", options: { credentials: "omit" } }]);
   });
 
   register("loads a public author-book cover without session credentials", async () => {
