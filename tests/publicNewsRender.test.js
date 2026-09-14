@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
-import test from "node:test";
 
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { createServer } from "vite";
 
+export function registerPublicNewsRenderTests(test) {
 test("renders only active bookstore news with optional image and event date", async () => {
   const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
   try {
@@ -34,3 +34,4 @@ test("renders only active bookstore news with optional image and event date", as
     await vite.close();
   }
 });
+}

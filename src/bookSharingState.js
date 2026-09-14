@@ -176,7 +176,7 @@ function assertSafeStoryCoverDimensions({ width, height }) {
 function storyCoverRequestCredentials(coverUrl) {
   try {
     const pathname = new URL(coverUrl, "https://bookia.invalid").pathname;
-    return /^\/(?:api\/)?(?:catalog\/\d+\/cover|readers\/[^/]+\/author-books\/\d+\/cover|reading-clubs\/\d+\/cover)$/.test(pathname) ? "omit" : "include";
+    return /^\/(?:api\/)?(?:catalog\/\d+\/(?:cover|images\/\d+)|readers\/[^/]+\/author-books\/\d+\/cover|reading-clubs\/\d+\/cover)$/.test(pathname) ? "omit" : "include";
   } catch {
     return "include";
   }
@@ -264,11 +264,13 @@ function drawStoryCover(context, image, x, y, width, height) {
     return;
   }
 
-  const scale = Math.max(width / image.width, height / image.height);
+  const imageWidth = image.naturalWidth || image.width;
+  const imageHeight = image.naturalHeight || image.height;
+  const scale = Math.max(width / imageWidth, height / imageHeight);
   const sourceWidth = width / scale;
   const sourceHeight = height / scale;
-  const sourceX = (image.width - sourceWidth) / 2;
-  const sourceY = (image.height - sourceHeight) / 2;
+  const sourceX = (imageWidth - sourceWidth) / 2;
+  const sourceY = (imageHeight - sourceHeight) / 2;
   context.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height);
   context.restore();
 }
@@ -365,7 +367,7 @@ export function buildInstagramStoryCoverPath(item, { trustedOrigins = [] } = {})
     pathname = coverPath.split(/[?#]/, 1)[0];
   }
 
-  const allowedPath = new RegExp(`^/(?:api/)?(?:dashboard/catalog/${itemId}(?:/cover|/images/\\d+)|catalog/${itemId}/cover)$`);
+  const allowedPath = new RegExp(`^/(?:api/)?(?:dashboard/)?catalog/${itemId}(?:/cover|/images/\\d+)$`);
   return allowedPath.test(pathname) ? coverPath : null;
 }
 

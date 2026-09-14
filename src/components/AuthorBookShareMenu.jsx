@@ -3,7 +3,7 @@ import { useId, useState } from "react";
 import { resolveApiUrl } from "../api";
 import { buildTelegramShareHref, buildWhatsAppShareHref } from "../bookSharingState";
 import { basePath } from "../routing";
-import { buildAuthorBookInstagramStoryCoverUrl, buildAuthorBookShareMessage, buildAuthorBookShareUrl, copyBookShareUrl, createAuthorBookInstagramStoryFile, shareAuthorBookInstagramStory } from "../authorBookSharingState";
+import { buildAuthorBookInstagramStoryCoverUrl, buildAuthorBookShareMessage, buildAuthorBookShareUrl, copyBookShareUrl, createAuthorBookInstagramStoryFile, resolveAuthorBookId, shareAuthorBookInstagramStory } from "../authorBookSharingState";
 import { InstagramIcon, ShareIcon, TelegramIcon, WhatsAppIcon } from "./Icons";
 
 export function AuthorBookShareMenu({ book, reader }) {
@@ -11,8 +11,9 @@ export function AuthorBookShareMenu({ book, reader }) {
   const [message, setMessage] = useState("");
   const [storyBusy, setStoryBusy] = useState(false);
   const menuId = useId();
-  if (!book?.id || !reader?.slug) return null;
-  const data = { title: book.title, url: buildAuthorBookShareUrl({ origin: globalThis.window?.location?.origin || "https://bookia.invalid", basePath, readerSlug: reader.slug, bookId: book.id }), text: buildAuthorBookShareMessage({ book, authorName: reader.display_name }) };
+  const bookId = resolveAuthorBookId(book);
+  if (!bookId || !reader?.slug) return null;
+  const data = { title: book.title, url: buildAuthorBookShareUrl({ origin: globalThis.window?.location?.origin || "https://bookia.invalid", basePath, readerSlug: reader.slug, bookId }), text: buildAuthorBookShareMessage({ book, authorName: reader.display_name }) };
   const close = (nextMessage) => { setMessage(nextMessage); setIsOpen(false); };
   async function copy() { try { await copyBookShareUrl(data.url); close("Enlace copiado."); } catch { setMessage("No pudimos copiar el enlace en este navegador."); } }
   async function story() {

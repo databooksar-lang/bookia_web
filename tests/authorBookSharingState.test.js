@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-import { buildAuthorBookShareMessage, buildAuthorBookShareUrl, createAuthorBookInstagramStoryFile, getSharedAuthorBookId } from "../src/authorBookSharingState.js";
+import { buildAuthorBookInstagramStoryCoverUrl, buildAuthorBookShareMessage, buildAuthorBookShareUrl, createAuthorBookInstagramStoryFile, getSharedAuthorBookId, resolveAuthorBookId } from "../src/authorBookSharingState.js";
 
 function createStoryDocument(cover, logo) {
   const drawCalls = [];
@@ -38,6 +38,25 @@ export function registerAuthorBookSharingStateTests(register) {
     assert.equal(getSharedAuthorBookId("?book=7"), 7);
     assert.equal(getSharedAuthorBookId("?book=0"), null);
     assert.equal(getSharedAuthorBookId("?book=7x"), null);
+  });
+
+  register("uses the canonical author-book id when sharing a discovery carousel item", () => {
+    const book = {
+      id: "author:fa-luz:4",
+      author_book_id: 4,
+      title: "La flor invertida",
+      cover_url: "/readers/fa-luz/author-books/4/cover",
+    };
+
+    assert.equal(resolveAuthorBookId(book), 4);
+    assert.equal(
+      buildAuthorBookShareUrl({ origin: "https://bookia.app", readerSlug: "fa-luz", bookId: resolveAuthorBookId(book) }),
+      "https://bookia.app/readers/fa-luz?book=4",
+    );
+    assert.equal(
+      buildAuthorBookInstagramStoryCoverUrl(book, { resolveUrl: (path) => `/api${path}` }),
+      "/api/readers/fa-luz/author-books/4/cover",
+    );
   });
 
   register("draws a decoded author-book cover that has intrinsic but no layout dimensions", async () => {

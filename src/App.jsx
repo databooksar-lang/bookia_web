@@ -121,7 +121,7 @@ export default function App() {
         {page}
       </main>
       {NATIVE_ANDROID ? null : <SiteFooter />}
-      <MobileTabBar me={me} pathname={pathname} nativeAndroid={NATIVE_ANDROID} />
+      <MobileTabBar me={me} pathname={pathname} search={search} nativeAndroid={NATIVE_ANDROID} />
     </div>
   );
 }
