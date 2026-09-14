@@ -204,6 +204,13 @@ const tests = [
   }],
 ];
 
+function registerTestGroups(...groups) {
+  const groupTests = [];
+  const register = (name, fn) => groupTests.push([name, fn]);
+  groups.forEach((group) => group(register));
+  tests.push(...groupTests);
+}
+
 registerProfileEditorStateTests((name, fn) => tests.push([name, fn]));
 registerBookstoreDescriptionFormatTests((name, fn) => tests.push([name, fn]));
 registerBookstoreDescriptionRenderTests((name, fn) => tests.push([name, fn]));
@@ -233,11 +240,13 @@ registerRegisterStateTests((name, fn) => tests.push([name, fn]));
 registerBillingStateTests((name, fn) => tests.push([name, fn]));
 registerBillingSubscriptionStateTests((name, fn) => tests.push([name, fn]));
 registerDashboardNavigationStateTests((name, fn) => tests.push([name, fn]));
-registerNewsDashboardNavigationTests((name, fn) => tests.push([name, fn]));
-registerNewsManagerRenderTests((name, fn) => tests.push([name, fn]));
-registerNewsStateTests((name, fn) => tests.push([name, fn]));
-registerNewsStylesTests((name, fn) => tests.push([name, fn]));
-registerPublicNewsRenderTests((name, fn) => tests.push([name, fn]));
+registerTestGroups(
+  registerNewsDashboardNavigationTests,
+  registerNewsManagerRenderTests,
+  registerNewsStateTests,
+  registerNewsStylesTests,
+  registerPublicNewsRenderTests,
+);
 registerReaderProfileStateTests((name, fn) => tests.push([name, fn]));
 registerReaderProfileNavigationStateTests((name, fn) => tests.push([name, fn]));
 registerAuthorProfileStateTests((name, fn) => tests.push([name, fn]));
@@ -359,9 +368,11 @@ tests.push(["centralizes logout in the authenticated site header", () => {
 tests.push(["mobile bookstore navigation links to the correct sections and marks only the current tab", async () => {
   const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
   try {
-    const { MobileTabBar } = await vite.ssrLoadModule("/src/components/MobileTabBar.jsx");
+    const { MobileTabBar, isMobileTabActive } = await vite.ssrLoadModule("/src/components/MobileTabBar.jsx");
     const props = { nativeAndroid: true, me: { bookstore: { slug: "eterna" } }, pathname: "/dashboard", search: "?section=new-book" };
     const markup = renderToStaticMarkup(createElement(MobileTabBar, props));
+    assert.equal(isMobileTabActive("/dashboard?section=new-book", props.pathname, props.search), true);
+    assert.equal(isMobileTabActive("/dashboard?section=profile", props.pathname, props.search), false);
     assert.deepEqual([...markup.matchAll(/href="([^"]+)"/g)].map((m) => m[1]), ["/", "/dashboard?section=new-book", "/dashboard?section=profile", "/bookstores/eterna"]);
     assert.match(markup, /Alta de libro/);
     assert.match(markup, /Vidriera digital/);

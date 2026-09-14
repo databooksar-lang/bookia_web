@@ -14,6 +14,18 @@ const TABS = [
   { label: "Favoritos", href: "/profile?section=favorites", icon: "♡" },
 ];
 
+export function isMobileTabActive(href, pathname, search = "") {
+  const [tabPath, tabSearch = ""] = href.split("?");
+  if (pathname !== tabPath) return false;
+
+  const params = new URLSearchParams(search);
+  const tabParams = new URLSearchParams(tabSearch);
+  if (tabPath === "/dashboard") return (params.get("section") || "profile") === tabParams.get("section");
+  if (tabPath === "/") return (params.get("focus") === "search") === (tabParams.get("focus") === "search");
+  if (tabPath === "/profile") return (params.get("section") === "favorites") === (tabParams.get("section") === "favorites");
+  return true;
+}
+
 export function MobileTabBar({ me, pathname, search = "", nativeAndroid = isNativeAndroidRuntime() }) {
   if (!nativeAndroid) return null;
   const tabs = me?.bookstore ? [
@@ -22,17 +34,8 @@ export function MobileTabBar({ me, pathname, search = "", nativeAndroid = isNati
     { label: "Perfil", href: "/dashboard?section=profile", icon: PROFILE_ICON },
     { label: "Vidriera digital", href: `/bookstores/${encodeURIComponent(me.bookstore.slug)}`, icon: "▦" },
   ] : [...TABS, { label: "Perfil", href: me ? "/profile" : "/login", icon: PROFILE_ICON }];
-  const params = new URLSearchParams(search);
   return <nav className="mobile-tab-bar" aria-label="Navegación de la app">{tabs.map((tab) => {
-    const [tabPath, tabSearch = ""] = tab.href.split("?");
-    const tabParams = new URLSearchParams(tabSearch);
-    const active = pathname === tabPath && (tabPath === "/dashboard"
-      ? (params.get("section") || "profile") === tabParams.get("section")
-      : tabPath === "/"
-        ? (params.get("focus") === "search") === (tabParams.get("focus") === "search")
-        : tabPath === "/profile"
-          ? (params.get("section") === "favorites") === (tabParams.get("section") === "favorites")
-          : true);
+    const active = isMobileTabActive(tab.href, pathname, search);
     return <AppLink key={tab.label} href={tab.href} className={`mobile-tab${active ? " is-active" : ""}`} aria-current={active ? "page" : undefined}><span aria-hidden="true">{tab.icon}</span><span>{tab.label}</span></AppLink>;
   })}</nav>;
 }
