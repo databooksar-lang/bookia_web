@@ -28,9 +28,9 @@ import { registerReaderProfileStateTests } from "./readerProfileState.test.js";
 import { registerReaderProfileNavigationStateTests } from "./readerProfileNavigationState.test.js";
 import { registerReaderIdentityStateTests } from "./readerIdentityState.test.js";
 import { registerReaderWantedBooksStateTests } from "./readerWantedBooksState.test.js";
-import { registerAuthorDiscoveryStateTests } from "./authorDiscoveryState.test.js";
 import { registerReaderPublicProfileRenderTests } from "./readerPublicProfileRender.test.js";
 import { registerAuthorProfileStateTests } from "./authorProfileState.test.js";
+import { registerAuthorDiscoveryStateTests } from "./authorDiscoveryState.test.js";
 import { registerAuthorBooksStateTests } from "./authorBooksState.test.js";
 import { registerAuthorBooksRenderTests } from "./authorBooksRender.test.js";
 import { registerReaderFavoriteBookRowTests } from "./readerFavoriteBookRow.test.js";
@@ -52,15 +52,20 @@ import { registerMobilePlatformTests } from "./mobilePlatform.test.js";
 import { registerMobileSessionVaultTests } from "./mobileSessionVault.test.js";
 import { registerMobilePushNotificationsTests } from "./mobilePushNotifications.test.js";
 import { registerMobileDeepLinksTests } from "./mobileDeepLinks.test.js";
+import { registerNewsDashboardNavigationTests } from "./newsDashboardNavigation.test.js";
+import { registerNewsManagerRenderTests } from "./newsManagerRender.test.js";
+import { registerNewsStateTests } from "./newsState.test.js";
+import { registerNewsStylesTests } from "./newsStyles.test.js";
+import { registerPublicNewsRenderTests } from "./publicNewsRender.test.js";
 
 import { registerDashboardNavigationStateTests } from './dashboardNavigationState.test.js';
 
 const tests = [
   ["treats /genres as an API route", () => {
     assert.equal(isBookiaApiRoute("/reading-clubs?genre_slug=policial"), true);
-    assert.equal(isBookiaApiRoute("/authors"), true);
     assert.equal(isBookiaApiRoute("/genres"), true);
     assert.equal(isBookiaApiRoute("/genres?active=true"), true);
+    assert.equal(isBookiaApiRoute("/authors"), true);
     assert.equal(isBookiaApiRoute("/analytics/acquisition-events"), true);
     assert.equal(isBookiaApiRoute("/analytics/reader-funnel-events"), true);
   }],
@@ -228,10 +233,15 @@ registerRegisterStateTests((name, fn) => tests.push([name, fn]));
 registerBillingStateTests((name, fn) => tests.push([name, fn]));
 registerBillingSubscriptionStateTests((name, fn) => tests.push([name, fn]));
 registerDashboardNavigationStateTests((name, fn) => tests.push([name, fn]));
+registerNewsDashboardNavigationTests((name, fn) => tests.push([name, fn]));
+registerNewsManagerRenderTests((name, fn) => tests.push([name, fn]));
+registerNewsStateTests((name, fn) => tests.push([name, fn]));
+registerNewsStylesTests((name, fn) => tests.push([name, fn]));
+registerPublicNewsRenderTests((name, fn) => tests.push([name, fn]));
 registerReaderProfileStateTests((name, fn) => tests.push([name, fn]));
-registerAuthorDiscoveryStateTests((name, fn) => tests.push([name, fn]));
 registerReaderProfileNavigationStateTests((name, fn) => tests.push([name, fn]));
 registerAuthorProfileStateTests((name, fn) => tests.push([name, fn]));
+registerAuthorDiscoveryStateTests((name, fn) => tests.push([name, fn]));
 registerAuthorBooksStateTests((name, fn) => tests.push([name, fn]));
 registerAuthorBooksRenderTests((name, fn) => tests.push([name, fn]));
 registerReaderIdentityStateTests((name, fn) => tests.push([name, fn]));
@@ -346,6 +356,29 @@ tests.push(["centralizes logout in the authenticated site header", () => {
   assert.doesNotMatch(readerProfileSource, /function logout\(\)/);
   assert.doesNotMatch(readerProfileSource, /Cerrar sesion/);
 }]);
+tests.push(["mobile bookstore navigation links to the correct sections and marks only the current tab", async () => {
+  const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
+  try {
+    const { MobileTabBar } = await vite.ssrLoadModule("/src/components/MobileTabBar.jsx");
+    const props = { nativeAndroid: true, me: { bookstore: { slug: "eterna" } }, pathname: "/dashboard", search: "?section=new-book" };
+    const markup = renderToStaticMarkup(createElement(MobileTabBar, props));
+    assert.deepEqual([...markup.matchAll(/href="([^"]+)"/g)].map((m) => m[1]), ["/", "/dashboard?section=new-book", "/dashboard?section=profile", "/bookstores/eterna"]);
+    assert.match(markup, /Alta de libro/);
+    assert.match(markup, /Vidriera digital/);
+    assert.equal((markup.match(/aria-current="page"/g) || []).length, 1);
+    assert.match(markup, /href="\/dashboard\?section=new-book"[^>]*aria-current="page"/);
+    const profile = renderToStaticMarkup(createElement(MobileTabBar, { ...props, search: "" }));
+    assert.match(profile, /href="\/dashboard\?section=profile"[^>]*aria-current="page"/);
+    const reader = renderToStaticMarkup(createElement(MobileTabBar, { ...props, me: { reader_profile: {} }, pathname: "/profile", search: "?section=favorites" }));
+    assert.match(reader, /Favoritos/);
+    assert.doesNotMatch(reader, /Alta de libro|Vidriera digital/);
+    assert.equal((reader.match(/aria-current="page"/g) || []).length, 1);
+    assert.equal(renderToStaticMarkup(createElement(MobileTabBar, { ...props, nativeAndroid: false })), "");
+  } finally {
+    await vite.close();
+  }
+}]);
+
 tests.push(["greets authenticated readers and bookstores by name in the site header", async () => {
   const vite = await createServer({ server: { middlewareMode: true }, appType: "custom" });
   try {
@@ -1171,11 +1204,13 @@ tests.push(["documents Android push privacy, native sessions and marketplace bou
 
   assert.match(privacySource, /Firebase Cloud Messaging/);
   assert.match(privacySource, /token de dispositivo/);
+  assert.match(privacySource, /librer[ií]a que segu[ií]s publica una novedad/i);
   assert.match(privacySource, /desactivar/i);
   assert.match(privacySource, /retención|conservamos/i);
   assert.match(cookiesSource, /Android/);
   assert.match(cookiesSource, /almacenamiento seguro nativo/);
   assert.match(termsSource, /plataforma digital/);
+  assert.match(termsSource, /retirar las novedades/i);
   assert.match(termsSource, /no vende libros directamente/i);
 }]);
 
