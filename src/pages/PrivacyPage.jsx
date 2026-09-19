@@ -4,10 +4,11 @@ export function PrivacyPage() {
   return <article className="editorial-page about-page legal-page">
     <p className="section-label">Politica de Privacidad</p>
     <h1>Tu informacion, tratada con claridad.</h1>
-    <p>Vigente desde el 6 de septiembre de 2026.</p>
+    <p>Vigente desde el 19 de septiembre de 2026.</p>
     <h2>Responsable</h2>
     <p>Marcelo Gabriel Gonzalez, en el partido de Gral San Martin, Provincia de Buenos Aires. Consultas: <a href="mailto:bookia.app.admin@gmail.com">bookia.app.admin@gmail.com</a>.</p>
     <h2>Datos y finalidades</h2>
+    <p>Al crear una cuenta lectora, guardamos de forma privada el paso pendiente y la finalización de las preguntas de bienvenida para que puedas retomarlas. Los libros buscados, la foto y el WhatsApp de autor son opcionales; podés completarlos o modificarlos después desde tu perfil. La cuenta y los datos ya guardados se conservan aunque cierres estas preguntas.</p>
     <p>Tratamos datos de cuenta, perfil, rasgos lectores declarados, libros buscados, libros guardados, librerias seguidas, estado de autor y registro de su declaracion, titulos, sinopsis, genero, editorial, ano y portadas de obras propias, incluido su celular con WhatsApp opcional, datos de librerias -incluido el celular con WhatsApp-, catalogos, imagenes, sesiones, suscripciones -incluido el correo de la cuenta pagadora de Mercado Pago-, datos de acceso con Google -identificador, correo verificado y, para altas de lectores, nombre- y metricas seudonimizadas y agregadas de interaccion publica para prestar Bookia, proteger la plataforma, brindar soporte, administrar planes y cobros, mostrar estadisticas agregadas a las librerias y, con consentimiento separado, enviar novedades y promociones.</p>
     <p>Las personas anfitrionas pueden cargar portadas de clubes de lectura; las conservamos en la infraestructura de Bookia mientras exista el club o hasta que se eliminen.</p>
     <p>Las librerias pueden cargar voluntariamente novedades, ofertas y eventos con titulo, categoria, descripcion, fecha e imagen opcionales. Los datos activos se muestran publicamente en el perfil de la libreria; las imagenes se conservan en la infraestructura de Bookia mientras la novedad exista o hasta que la libreria las reemplace, retire o elimine.</p>

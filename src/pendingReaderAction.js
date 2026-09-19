@@ -1,5 +1,6 @@
 import { apiFetch } from "./api.js";
 import { trackReaderFunnelEvent } from "./analyticsState.js";
+import { needsReaderOnboarding, READER_ONBOARDING_PATH } from "./readerOnboardingState.js";
 
 export const PENDING_READER_ACTION_STORAGE_KEY = "bookia.pending_reader_action";
 const PENDING_READER_ACTION_VERSION = 2;
@@ -256,18 +257,22 @@ export async function completeResumablePendingReaderAction({ type, targetId, sto
 
 export async function completePendingReaderAuthentication({ sessionData, registered = false, fallbackPath, storage = currentStorage(), origin = currentOrigin(), now = currentTime, navigateTo, apply = applyPendingReaderAction, track = trackReaderFunnelEvent } = {}) {
   const action = readPendingReaderAction({ storage, origin, now });
-  if (!action) {
-    navigateTo?.(fallbackPath);
-    return { status: "none", returnPath: fallbackPath };
-  }
   const authenticationMode = getPendingActionAuthenticationMode(action, sessionData);
   if (authenticationMode === "wrong_account") {
     clearPendingReaderAction({ storage });
     navigateTo?.(fallbackPath);
     return { status: "wrong_account", action, returnPath: fallbackPath };
   }
-  if (registered && action.type !== "contact_author") {
+  if (registered && action && action.type !== "contact_author") {
     Promise.resolve().then(() => track(buildPendingReaderActionEvent(action, "reader_registration_completed"))).catch(() => {});
+  }
+  if (needsReaderOnboarding(sessionData)) {
+    navigateTo?.(READER_ONBOARDING_PATH);
+    return { status: "onboarding", returnPath: READER_ONBOARDING_PATH };
+  }
+  if (!action) {
+    navigateTo?.(fallbackPath);
+    return { status: "none", returnPath: fallbackPath };
   }
   if (authenticationMode === "resume") {
     navigateTo?.(action.return_path);

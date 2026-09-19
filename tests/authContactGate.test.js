@@ -25,7 +25,7 @@ export function registerAuthContactGateTests(test) {
 
     assert.doesNotMatch(terms, /contactar directamente a las librerias sin crear una cuenta/i);
     assert.match(terms, /Vigente desde el 6 de septiembre de 2026/);
-    assert.match(privacy, /Vigente desde el 6 de septiembre de 2026/);
+    assert.match(privacy, /Vigente desde el 19 de septiembre de 2026/);
     assert.match(terms, /contacto digital.*WhatsApp.*cuenta autenticada.*todas las superficies de descubrimiento/is);
     assert.match(terms, /inter.s.*club de lectura.*cuenta autenticada/is);
     assert.doesNotMatch(terms, /Esta regla no alcanza al descubrimiento anonimo/i);

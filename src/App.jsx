@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { flushSync } from "react-dom";
 
 import { apiFetch, subscribeToSessionExpiry } from "./api";
 import { SiteFooter, SiteHeader } from "./components/SiteChrome";
@@ -6,6 +7,8 @@ import { Redirect } from "./components/Redirect";
 import { navigate, useLocationState } from "./navigation";
 import { ForgotPasswordPage, LoginPage, ResetPasswordPage } from "./pages/AuthPages";
 import { RegisterPage } from "./pages/RegisterPage";
+import { ReaderOnboardingPage } from "./pages/ReaderOnboardingPage";
+import { needsReaderOnboarding, READER_ONBOARDING_PATH } from "./readerOnboardingState";
 import { isPlansRegistrationContext } from "./registerState";
 import { DashboardPage } from "./pages/DashboardPage";
 import { AboutPage, BookstorePage, BookstoresPage, HomePage, PlansPage, ReaderPage } from "./pages/PublicPages";
@@ -44,8 +47,11 @@ export default function App() {
       });
   }, []);
 
-  const completeReaderAuthentication = useCallback(async (sessionData, { registered = false } = {}) => {
-    const result = await completePendingReaderAuthentication({ sessionData, registered, fallbackPath: getAccountDestination(sessionData), navigateTo: navigate });
+  const completeReaderAuthentication = useCallback(async (sessionData, { registered = false, onboardingFinished = false } = {}) => {
+    // The router dispatches a native popstate event. Commit authentication first
+    // so the protected destination cannot render with the previous null session.
+    flushSync(() => setMe(sessionData));
+    const result = await completePendingReaderAuthentication({ sessionData, registered, fallbackPath: onboardingFinished ? "/" : getAccountDestination(sessionData), navigateTo: navigate });
     if (result.status === "wrong_account") {
       setReaderActionFeedback({ kind: "error", message: "Esta acción necesita un perfil lector y no se aplicó a esta cuenta." });
       return result;
@@ -105,6 +111,7 @@ export default function App() {
   else if (pathname === "/cookies") page = <CookiePolicyPage />;
   else if (pathname === "/login") page = <LoginPage onLogin={refreshMe} onAuthenticated={completeReaderAuthentication} pendingAction={pendingReaderAction} me={me} sessionExpired={new URLSearchParams(search).get("reason") === "session-expired"} />;
   else if (pathname === "/register") page = <RegisterPage onRegister={refreshMe} onAuthenticated={completeReaderAuthentication} pendingAction={pendingReaderAction} me={me} locationSearch={search} />;
+  else if (pathname === READER_ONBOARDING_PATH) page = <ReaderOnboardingPage key={me?.account?.email} me={me} onSession={setMe} pendingAction={pendingReaderAction} onContinue={(sessionData) => completeReaderAuthentication(sessionData, { onboardingFinished: true })} />;
   else if (pathname === "/forgot-password") page = <ForgotPasswordPage />;
   else if (pathname === "/reset-password") page = <ResetPasswordPage locationSearch={search} />;
   else if (pathname === "/dashboard") page = <DashboardPage me={me} refreshMe={refreshMe} locationSearch={search} />;
@@ -112,6 +119,10 @@ export default function App() {
   else if (pathname === "/profile") page = <ReaderProfilePage me={me} refreshMe={refreshMe} locationSearch={search} />;
   else if (pathname.startsWith("/bookstores/")) page = <BookstorePage slug={pathname.replace("/bookstores/", "")} me={me} refreshSession={refreshMe} />;
   else if (pathname.startsWith("/readers/")) page = <ReaderPage slug={pathname.replace("/readers/", "")} search={search} me={me} />;
+
+  if (needsReaderOnboarding(me) && ![READER_ONBOARDING_PATH, "/login", "/terms", "/privacy", "/cookies"].includes(pathname)) {
+    page = <Redirect to={READER_ONBOARDING_PATH} />;
+  }
 
   return (
     <div className={`app-shell${NATIVE_ANDROID ? " is-native-android" : ""}`}>

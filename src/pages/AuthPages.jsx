@@ -105,7 +105,7 @@ export function LoginPage({ onLogin, onAuthenticated, pendingAction, me, session
 
   if (me) {
     const destination = getAccountDestination(me);
-    const isReader = destination === "/profile";
+    const isReader = Boolean(me.reader_profile);
     return <AuthLayout label="Sesión activa" title="Ya tenés una sesión activa" description="Tu cuenta está lista para continuar."><button className="primary-button auth-submit" onClick={() => navigate(destination)}>{isReader ? "Ir a mi perfil" : "Ir al panel"} <ArrowIcon /></button></AuthLayout>;
   }
   if (googleLinkMessage) {
