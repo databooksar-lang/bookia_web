@@ -1,0 +1,61 @@
+.reader-onboarding { display: grid; grid-template-columns: minmax(240px, .8fr) minmax(0, 1.2fr); max-width: 1060px; margin: 48px auto; border: 1px solid #ded8ca; border-radius: 18px; overflow: hidden; background: #fffdf8; color: var(--forest-deep); }
+.reader-onboarding-intro { padding: 48px 36px; background: #e7eee4; display: flex; flex-direction: column; align-items: flex-start; }
+.reader-onboarding-intro h2 { font-family: var(--serif); font-size: clamp(1.8rem, 3vw, 2.65rem); line-height: 1.1; margin: 20px 0 14px; }
+.reader-onboarding-intro p { line-height: 1.6; color: #4c6255; }
+.reader-onboarding-intro img { width: 100%; max-width: 300px; align-self: center; margin: 24px 0; mix-blend-mode: multiply; }
+.reader-onboarding-intro .reader-onboarding-account-ready { margin-top: auto; font-size: .85rem; border-top: 1px solid #c5d3c2; padding-top: 20px; }
+.reader-onboarding-panel { padding: 44px 40px; min-width: 0; }
+.reader-onboarding-panel h1 { font-family: var(--serif); font-size: clamp(1.85rem, 3.5vw, 2.65rem); line-height: 1.12; margin: 24px 0 16px; outline: none; }
+.reader-onboarding-panel > p { color: #586458; line-height: 1.6; }
+.reader-onboarding-progress { display: flex; list-style: none; padding: 0; margin: 0 0 28px; gap: 24px; font-size: .84rem; color: #667466; }
+.reader-onboarding-progress li { display: flex; align-items: center; gap: 8px; }
+.reader-onboarding-progress span { display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid #bac9b7; border-radius: 50%; }
+.reader-onboarding-progress [aria-current] { color: var(--forest-deep); font-weight: 800; }
+.reader-onboarding-progress [aria-current] span { background: var(--forest-deep); color: white; border-color: var(--forest-deep); }
+.reader-onboarding-back { padding: 4px 0; background: none; border: 0; color: var(--forest); cursor: pointer; }
+.reader-onboarding-form { margin: 24px 0 16px; }
+.reader-onboarding-form fieldset { display: grid; gap: 18px; border: 0; padding: 0; margin: 0; min-width: 0; }
+.reader-onboarding-form label { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; font-size: .88rem; font-weight: 700; }
+.reader-onboarding-form small { font-size: .78rem; font-weight: 400; color: #586458; line-height: 1.5; }
+.reader-onboarding-form input:not([type=checkbox]):not([type=radio]) { display: block; width: 100%; min-width: 0; box-sizing: border-box; min-height: 46px; border: 1px solid #cfc7b8; border-radius: 7px; padding: 10px 12px; color: var(--forest-deep); background: white; font: inherit; font-weight: 400; }
+.reader-onboarding button:focus-visible, .reader-onboarding a:focus-visible, .reader-onboarding input:focus-visible { outline: 3px solid #be9437; outline-offset: 3px; }
+.reader-onboarding button:disabled, .reader-onboarding fieldset:disabled { opacity: .6; }
+.reader-onboarding-books { list-style: none; padding: 0; margin: 22px 0 12px; }
+.reader-onboarding-books li { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid #e2dfd5; }
+.reader-onboarding-books li > span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.reader-onboarding-books strong, .reader-onboarding-books small { display: block; }
+.reader-onboarding-books small { margin-top: 4px; color: #586458; }
+.reader-onboarding-books button { background: none; color: #6a4930; border: 0; padding: 10px 4px; cursor: pointer; }
+.reader-onboarding .reader-onboarding-hint { font-size: .8rem; color: #586458; line-height: 1.5; }
+.reader-onboarding-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 18px; margin-top: 18px; }
+.reader-onboarding-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.reader-onboarding-choices label { padding: 17px 12px; border: 1px solid #cfc7b8; border-radius: 8px; cursor: pointer; align-items: center; }
+.reader-onboarding-choices .is-selected { background: #edf2e8; border-color: #406748; }
+.reader-onboarding input[type=radio], .reader-onboarding input[type=checkbox] { accent-color: var(--forest); width: 17px; height: 17px; flex-shrink: 0; }
+.reader-onboarding-callout { padding: 16px; border-radius: 8px; background: #eef2e7; font-size: .9rem; line-height: 1.6; margin: 0; }
+.reader-onboarding-photo { display: flex; gap: 16px; align-items: center; min-width: 0; }
+.reader-onboarding-photo > img, .reader-onboarding-photo > span { width: 64px; height: 64px; object-fit: cover; border-radius: 50%; flex-shrink: 0; background: #edf2e8; display: grid; place-items: center; }
+.reader-onboarding-photo label { min-width: 0; }
+.reader-onboarding-form input[type=file] { font-size: .75rem; padding: 8px; }
+.reader-onboarding-form .reader-onboarding-legal { flex-wrap: nowrap; align-items: flex-start; font-size: .78rem; font-weight: 400; line-height: 1.6; }
+.reader-onboarding-legal input { margin-top: 3px; }
+.reader-onboarding-error { color: #942d28 !important; font-size: .88rem; line-height: 1.6; }
+.reader-onboarding-notice { padding: 12px 16px; background: #eef2e7; border-radius: 8px; font-size: .88rem; }
+.reader-onboarding-next { display: grid; gap: 20px; margin: 28px 0; }
+.reader-onboarding-next > div { border: 1px solid #ddd8c9; border-radius: 10px; padding: 20px; }
+.reader-onboarding-next h2 { font-family: var(--serif); font-size: 1.4rem; margin: 0 0 10px; }
+.reader-onboarding-next p { font-size: .9rem; color: #586458; line-height: 1.6; }
+@media (max-width: 760px) {
+  .reader-onboarding { grid-template-columns: 1fr; margin: 20px 16px; }
+  .reader-onboarding-intro { padding: 24px; }
+  .reader-onboarding-intro h2 { font-size: 1.65rem; margin: 12px 0; }
+  .reader-onboarding-intro > p:not(.reader-onboarding-account-ready), .reader-onboarding-intro img { display: none; }
+  .reader-onboarding-intro .reader-onboarding-account-ready { margin: 0; padding: 0; border: 0; }
+  .reader-onboarding-panel { padding: 28px 24px; }
+  .reader-onboarding-progress { gap: 20px; }
+}
+@media (max-width: 380px) {
+  .reader-onboarding-panel { padding: 24px 18px; }
+  .reader-onboarding-choices { grid-template-columns: 1fr; }
+  .reader-onboarding-photo { align-items: flex-start; flex-direction: column; }
+}

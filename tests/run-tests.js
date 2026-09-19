@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { registerReaderOnboardingStateTests } from "./readerOnboardingState.test.js";
+import { registerReaderOnboardingRenderTests } from "./readerOnboardingRender.test.js";
 import { registerPhotoIngestionStateTests } from "./photoIngestionState.test.js";
 import { registerBookstoreCatalogSearchTests } from "./bookstoreCatalogSearch.test.js";
 import { existsSync, readFileSync } from "node:fs";
@@ -455,7 +457,7 @@ tests.push(["keeps plan selection inside the bookstore registration flow", () =>
   assert.doesNotMatch(registerSource, /if \(me\) \{\s*navigate\(/);
   assert.match(redirectSource, /useEffect\(\(\) => \{\s*navigate\(to\);/);
   assert.match(appSource, /page = <Redirect to="\/register" \/>/);
-  assert.match(registerSource, /return <Redirect to=\{me\.bookstore \? "\/dashboard" : "\/"\} \/>/);
+  assert.match(registerSource, /return <Redirect to=\{getAccountDestination\(me\)\} \/>/);
   assert.match(registerSource, /return <Redirect to="\/register" \/>/);
   assert.match(registerSource, /navigate\("\/plans\?register=bookstore"\)/);
   assert.match(registerSource, /buildRegisterPath/);
@@ -1224,6 +1226,9 @@ tests.push(["documents Android push privacy, native sessions and marketplace bou
   assert.match(termsSource, /retirar las novedades/i);
   assert.match(termsSource, /no vende libros directamente/i);
 }]);
+
+registerReaderOnboardingStateTests((name, fn) => tests.push([name, fn]));
+registerReaderOnboardingRenderTests((name, fn) => tests.push([name, fn]));
 
 for (const [name, fn] of tests) {
   try {

@@ -2,6 +2,12 @@
 
 SPA de React/Vite para el buscador publico, la ficha de librerias y el panel de gestion.
 
+## Bienvenida de lectores
+
+Las cuentas lectoras nuevas, por correo o Google, continúan en `/onboarding/reader`: libros buscados opcionales y respuesta Sí/No sobre autoría. El progreso privado de `/me` permite retomar el paso pendiente; las cuentas anteriores quedan exentas. Foto y WhatsApp son opcionales y sus errores permiten reintentar o finalizar sin los datos pendientes. La acción que originó el registro se conserva con las reglas de vigencia existentes y se retoma desde la bienvenida final.
+
+Publicar primero la migración y la API del backend, y después el frontend. Los archivos bajo `/src/**` ya están cubiertos por los watch paths de Railway. Verificar con `npm test` y `npm run build`; las pruebas incluyen rutas, renderizado y guardados parciales.
+
 ## Carga desde fotos
 
 La prueba gratuita de 15 días incluye todas las funcionalidades de IA, incluida la carga por foto y el autocompletado de descripciones y géneros, con hasta 10 libros. Al vencer se restringen las modificaciones y la IA.
